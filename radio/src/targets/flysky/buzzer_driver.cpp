@@ -277,19 +277,22 @@ inline void buzzerOff()
 void playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t flags, int8_t freqIncr)
 {
   if (!(flags & PLAY_NOW) && buzzerState.duration) {
-      // skip PLAY_BACKGROUND if other tone is playing
-      if (!(flags & PLAY_BACKGROUND) && !buzzerFifo.full())
-        buzzerFifo.push(BuzzerTone(freq, len, pause, flags, freqIncr));
-      return;
+    // skip PLAY_BACKGROUND if other tone is playing
+    if (!(flags & PLAY_BACKGROUND) && !buzzerFifo.full())
+      buzzerFifo.push(BuzzerTone(freq, len, pause, flags, freqIncr));
+    return;
   } else if ((flags & PLAY_NOW) && (buzzerState.repeat > 0)) { // push back to queue
-      if (!buzzerFifo.full()) {
-        buzzerFifo.push(BuzzerTone(
-          buzzerState.tone.freq,
-          buzzerState.tone.duration,
-          buzzerState.tone.pause,
-          buzzerState.repeat,
-          buzzerState.tone.freqIncr));
+    if (!buzzerFifo.full()) {
+      if (buzzerState.duration - len < buzzerState.tone.duration / 2) {
+        buzzerState.repeat--;
       }
+      buzzerFifo.push(BuzzerTone(
+        buzzerState.tone.freq,
+        buzzerState.tone.duration,
+        buzzerState.tone.pause,
+        buzzerState.repeat,
+        buzzerState.tone.freqIncr));
+    }
   }
 
   uint8_t repeat = flags & 0x0f;
