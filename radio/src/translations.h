@@ -850,6 +850,7 @@ extern const char STR_BLCOLOR[];
   extern const char STR_PREFLIGHT[];
   extern const char STR_CHECKLIST[];
   extern const char STR_VIEW_NOTES[];
+  extern const char STR_ENTER_DFU[];
   extern const char STR_MODEL_SELECT[];
   extern const char STR_RESET_SUBMENU[];
   extern const char STR_LOWALARM[];

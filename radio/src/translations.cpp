@@ -585,6 +585,7 @@ const char STR_BLCOLOR[]   = TR_BLCOLOR;
   const char STR_PREFLIGHT[]  = TR_PREFLIGHT;
   const char STR_CHECKLIST[]  = TR_CHECKLIST;
   const char STR_VIEW_NOTES[]  = TR_VIEW_NOTES;
+  const char STR_ENTER_DFU[] = TR_ENTER_DFU;
   const char STR_MODEL_SELECT[]  = TR_MODEL_SELECT;
   const char STR_RESET_SUBMENU[]  = TR_RESET_SUBMENU;
   const char STR_LOWALARM[]  = TR_LOWALARM;

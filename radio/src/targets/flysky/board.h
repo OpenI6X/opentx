@@ -408,6 +408,7 @@ void backlightEnable();
 #define USB_NAME                        "FS I6X"
 #define USB_MANUFACTURER                'F', 'l', 'y', 'S', 'k', 'y', ' ', ' '  /* 8 bytes */
 #define USB_PRODUCT                     'I', '6', 'X', ' ', ' ', ' ', ' ', ' '  /* 8 Bytes */
+void enterDFUMode();
 
 #if defined(__cplusplus) && !defined(SIMU)
 }

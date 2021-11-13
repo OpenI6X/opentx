@@ -1137,6 +1137,7 @@
 #define TR_SCALE               "Měřítko"
 #define TR_VIEW_CHANNELS       "Zobrazit kanály"
 #define TR_VIEW_NOTES          "Zobrazit poznámky"
+#define TR_ENTER_DFU           "DFU mode"
 #define TR_MODEL_SELECT        "Zvolit model"
 #define TR_MODS_FORBIDDEN      "Změny nejsou povoleny!"
 #define TR_UNLOCKED            "Odemčeno"

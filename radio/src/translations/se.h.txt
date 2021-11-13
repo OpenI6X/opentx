@@ -1148,6 +1148,7 @@
 #define TR_SCALE               "Skala"
 #define TR_VIEW_CHANNELS       "Visa Kanaler"
 #define TR_VIEW_NOTES          "Visa Noteringars"
+#define TR_ENTER_DFU           "DFU mode"
 #define TR_MODEL_SELECT        "Välj Modell"
 #define TR_MODS_FORBIDDEN      "Modifikationer förbjudna!"
 #define TR_UNLOCKED            "Olåst"

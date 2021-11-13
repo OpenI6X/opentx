@@ -1135,6 +1135,7 @@
 #define TR_SCALE               "Skalieren"
 #define TR_VIEW_CHANNELS       "Zeige Kanäle"
 #define TR_VIEW_NOTES          "Zeige Notizen"
+#define TR_ENTER_DFU           "DFU mode"
 #define TR_MODEL_SELECT        "Modell auswählen"
 #define TR_MODS_FORBIDDEN      "Anpassung verboten!"
 #define TR_UNLOCKED            "Entsperrt"

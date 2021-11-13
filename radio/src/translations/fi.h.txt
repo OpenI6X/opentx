@@ -1134,6 +1134,7 @@
 #define TR_SCALE               "Scale"
 #define TR_VIEW_CHANNELS       "View Channels"
 #define TR_VIEW_NOTES          "View Notes"
+#define TR_ENTER_DFU           "DFU mode"
 #define TR_MODEL_SELECT        "Model Select"
 #define TR_MODS_FORBIDDEN      "Muutokset kielletty!"
 #define TR_UNLOCKED            "Avattu"

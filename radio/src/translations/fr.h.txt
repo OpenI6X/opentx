@@ -1154,6 +1154,7 @@
 #define TR_SCALE                       "Echelle"
 #define TR_VIEW_CHANNELS               "Voir voies"
 #define TR_VIEW_NOTES                  "Voir notes"
+#define TR_ENTER_DFU                   "DFU mode"
 #define TR_MODEL_SELECT                "Sélection modèle"
 #define TR_MODS_FORBIDDEN              "Modifications désactivées!"
 #define TR_UNLOCKED                    "Déverrouillé"

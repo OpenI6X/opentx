@@ -285,6 +285,10 @@ void onMainViewMenu(const char *result)
   else if (result == STR_VIEW_NOTES) {
     pushModelNotes();
   }
+#else
+ else if (result == STR_ENTER_DFU) {
+    enterDFUMode();
+  }
 #endif
   else if (result == STR_RESET_SUBMENU) {
     POPUP_MENU_ADD_ITEM(STR_RESET_FLIGHT);
@@ -363,6 +367,8 @@ void menuMainView(event_t event)
       POPUP_MENU_ADD_ITEM(STR_STATISTICS);
 #if !defined(PCBI6)
       POPUP_MENU_ADD_ITEM(STR_ABOUT_US);
+#else
+      POPUP_MENU_ADD_ITEM(STR_ENTER_DFU);
 #endif
       POPUP_MENU_START(onMainViewMenu);
       break;

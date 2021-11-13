@@ -419,3 +419,12 @@ uint16_t getBatteryVoltage()
   uint32_t mv = (adcValues[TX_VOLTAGE] * (3300 * BATT_SCALE)) / (4095 * 51);
   return (uint16_t)(mv / 10) + 20;
 }
+
+void enterDFUMode(){
+  // Our STM32 F072 has:
+  // 16k SRAM in address 0x2000 0000 - 0x2000 3FFF
+  *((unsigned long *)0x20003FF0) = 0xDEADBEEF;
+
+  // Reset the processor
+  NVIC_SystemReset();
+}
