@@ -217,16 +217,17 @@ void strRemove(char * src, char * str) {
   }
 }
 
-void strRemoveBracketed(char * src) {
-  char * srcStrPtr = src;
-  char * srcStrPtr2;
-  while (srcStrPtr = strstr(srcStrPtr, "(")) {
-    if (srcStrPtr2 = strstr(srcStrPtr, ")")) {
-      strcpy(srcStrPtr, srcStrPtr2 + 1);
-    } else {
-      break;
+void strRemoveBetween(char * src, char * begin, char * end) {
+    char endLen = strlen(end);
+    char * srcStrPtr = src;
+    char * srcStrPtr2;
+    while (srcStrPtr = strstr(srcStrPtr, begin)) {
+        if (srcStrPtr2 = strstr(srcStrPtr, end)) {
+            strcpy(srcStrPtr, srcStrPtr2 + 0 /*endLen - 1*/);
+        } else {
+            break;
+        }
     }
-  }  
 }
 
 void fieldTextSelectionLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
@@ -235,7 +236,7 @@ void fieldTextSelectionLoad(FieldProps * field, uint8_t * data, uint8_t offset) 
   if (field->valuesLength == 0) {
     strRemove((char*)&data[offset], "AUX");
     strRemove((char*)&data[offset], "mW");
-    strRemoveBracketed((char*)&data[offset]);
+    strRemoveBetween((char*)&data[offset], "Hz", ";");
     sLen = strlen((char*)&data[offset]);
     memcpy(&valuesBuffer[valuesBufferOffset], (char*)&data[offset], sLen);
     field->valuesOffset = valuesBufferOffset;
