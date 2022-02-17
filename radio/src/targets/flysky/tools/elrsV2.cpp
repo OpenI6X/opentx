@@ -230,13 +230,26 @@ void strRemoveBetween(char * src, char * begin, char * end) {
     }
 }
 
+void strCutoffAt(char * src, char * at) {
+    char * srcStrPtr = src;
+    char * srcStrPtr2;
+    while (srcStrPtr = strstr(srcStrPtr, at)) {
+        if (srcStrPtr2 = strstr(srcStrPtr, ";")) {
+            strcpy(srcStrPtr, srcStrPtr2);
+        } else {
+            *srcStrPtr = '\0';
+            break;
+        }
+    }
+}
+
 void fieldTextSelectionLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
   uint8_t sLen = len;
   if (field->valuesLength == 0) {
     strRemove((char*)&data[offset], "AUX");
     strRemove((char*)&data[offset], "mW");
-    strRemoveBetween((char*)&data[offset], "Hz", ";");
+    strCutoffAt((char*)&data[offset], "Hz");
     sLen = strlen((char*)&data[offset]);
     memcpy(&valuesBuffer[valuesBufferOffset], (char*)&data[offset], sLen);
     field->valuesOffset = valuesBufferOffset;
