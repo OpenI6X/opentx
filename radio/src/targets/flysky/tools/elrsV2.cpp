@@ -18,7 +18,7 @@
 
 extern uint8_t cScriptRunning;
 
-#define NAME_MAX_LEN 12
+#define CMD_MAX_LEN 12
 
 struct FieldProps {
   uint8_t nameOffset;     
@@ -209,7 +209,7 @@ void selectField(int8_t step) {
   }
 }
 
-void strRemove(char * src, char * str) {
+void strRemove(char * src, const char * str) {
   char strLen = strlen(str);
   char * srcStrPtr = src;
   while (srcStrPtr = strstr(srcStrPtr, str)) {
@@ -217,8 +217,8 @@ void strRemove(char * src, char * str) {
   }
 }
 
-void strRemoveBetween(char * src, char * begin, char * end) {
-    char endLen = strlen(end);
+void strRemoveBetween(char * src, const char * begin, const char * end) {
+//    char endLen = strlen(end);
     char * srcStrPtr = src;
     char * srcStrPtr2;
     while (srcStrPtr = strstr(srcStrPtr, begin)) {
@@ -230,7 +230,7 @@ void strRemoveBetween(char * src, char * begin, char * end) {
     }
 }
 
-void strCutoffAt(char * src, char * at) {
+void strCutoffAt(char * src, const char * at) {
     char * srcStrPtr = src;
     char * srcStrPtr2;
     while (srcStrPtr = strstr(srcStrPtr, at)) {
@@ -413,7 +413,7 @@ void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
     // field->hidden = hidden;
     offset = strlen((char*)&fieldData[2]) + 1 + 2; 
     if (field->nameLength == 0 && !hidden) {
-      field->nameLength = min(offset - 3, NAME_MAX_LEN);
+      field->nameLength = (field->type == 14/*cmd*/) ? min(offset - 3, CMD_MAX_LEN) : offset - 3;
       field->nameOffset = namesBufferOffset;
       memcpy(&namesBuffer[namesBufferOffset], &fieldData[2], field->nameLength); 
       namesBufferOffset += field->nameLength;
