@@ -25,16 +25,21 @@ Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
 * Bootloader (DFU bootloader) - Start by pushing trims to the center, like regular OpenTX one
 * USB Joystick & Storage modes (To enable on standard cable: General Settings > USB Detect: "Once")
 
-## Navigation:
+## Navigation
 
 | Key | Function |
 | --- | --- |
-| UP     | Up. Hold for stats |                              
-| DOWN   | Down. Hold for telemetry |                                  
-| OK     | Confirm. Hold for Model menu |
-| CANCEL | Exit. Hold for graceful shutdown (Needed to save timers) |                      
-| BIND   | Go right in a line. Go to next page. Hold for general menu. |
-| RIGHT POT |  Scroll left/right or thru values |
+| UP     | Up. Hold on main screen for stats. |                              
+| DOWN   | Down. Hold on main screen for telemetry |                                  
+| OK     | Confirm. Hold on main screen for model menu. |
+| CANCEL | Exit. **Hold for graceful shutdown - needed to save timers and some general settings.** |                      
+| BIND   | Go right in a line. Go to next page. Hold on main screen for general menu. |
+| LEFT POT |  Change edited value. |
+| RIGHT POT |  Scroll pages left/right. |
+
+## Hardware connections (optional)
+
+![hw](https://github.com/OpenI6X/opentx/raw/master/doc/flysky/openi6x_hardware.jpeg?raw=true)
 
 ## Contributors
 

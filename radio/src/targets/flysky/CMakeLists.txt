@@ -22,7 +22,7 @@ if(PCB STREQUAL I6X)
   set(LCD_DRIVER lcd_driver.cpp)
   set(DEFAULT_MODE 2)
   set(GVAR_SCREEN model_gvars.cpp)
-  set(SERIAL2_DRIVER serial2_driver.cpp)
+  set(AUX_SERIAL_DRIVER aux_serial_driver.cpp)
   set(DEFAULT_TEMPLATE_SETUP "0" CACHE STRING "Default channel order")
 
   add_definitions(-DTELEMETRY_FRSKY)

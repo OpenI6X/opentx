@@ -359,7 +359,7 @@ void menuRadioSetup(event_t event)
       case ITEM_SETUP_BATTERY_WARNING:
         lcdDrawTextAlignedLeft(y, STR_BATTERYWARNING);
         putsVolts(RADIO_SETUP_2ND_COLUMN, y, g_eeGeneral.vBatWarn, attr|LEFT);
-        if(attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatWarn, 40, 120); //4-12V
+        if(attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatWarn, 35, 120); //3.5-12V
         break;
 
       case ITEM_SETUP_MEMORY_WARNING:

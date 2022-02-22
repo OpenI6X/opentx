@@ -11,7 +11,8 @@ parameters:
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
   build-elrsv2:
-    machine: true
+    machine:
+      image: ubuntu-2004:202111-02
     steps:
      - checkout
      - run: docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=NO GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO DEBUG=NO PCBI6X_ELRSV2=YES" -v $PWD:/opentx vitass/opentx-fw-build
@@ -19,7 +20,8 @@ jobs:
         path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
         destination: openi6x-<< pipeline.parameters.build-version >>-elrsv2.bin
   build-standard:
-    machine: true
+    machine:
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - run: docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=NO GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO DEBUG=NO" -v $PWD:/opentx vitass/opentx-fw-build
@@ -27,7 +29,8 @@ jobs:
           path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
           destination: openi6x-<< pipeline.parameters.build-version >>.bin
   build-heli:
-    machine: true
+    machine:
+      image: ubuntu-2004:202111-02
     steps:
       - checkout
       - run: docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=YES GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO DEBUG=NO" -v $PWD:/opentx vitass/opentx-fw-build

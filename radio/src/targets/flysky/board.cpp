@@ -260,11 +260,13 @@ void boardInit()
   RCC_AHBPeriphClockCmd(RCC_AHB1_LIST, ENABLE);
   RCC_APB1PeriphClockCmd(RCC_APB1_LIST, ENABLE);
   RCC_APB2PeriphClockCmd(RCC_APB2_LIST, ENABLE);
-#if defined(DEBUG) && defined(SERIAL_GPIO)
-  serial2Init(UART_MODE_DEBUG, 0); // default serial mode (None if DEBUG not defined)
+
+#if defined(DEBUG) && defined(AUX_SERIAL_GPIO)
+  auxSerialInit(UART_MODE_DEBUG, 0); // default serial mode (None if DEBUG not defined)
   TRACE("\ni6X board started :)");
   TRACE("RCC->CSR = %08x", RCC->CSR);
 #endif
+
   pwrInit();
   keysInit();
 
@@ -282,10 +284,9 @@ void boardInit()
   __enable_irq();
   buzzerInit();
   backlightInit();
-  backlightEnable();
   i2cInit();
-  eepromInit();
   usbInit();
+  eepromInit();
   //storageEraseAll(false);
   // TRACE("i2c test");
   // i2c_test();
@@ -414,7 +415,7 @@ void checkTrainerSettings()
         break;*/
 #if defined(TRAINER_BATTERY_COMPARTMENT)
     case TRAINER_MODE_MASTER_BATTERY_COMPARTMENT:
-      //serial2Stop();
+      //auxSerialStop();
       break;
 #endif
     }
@@ -438,8 +439,8 @@ void checkTrainerSettings()
 #if defined(TRAINER_BATTERY_COMPARTMENT)
     case TRAINER_MODE_MASTER_BATTERY_COMPARTMENT:
       /*
-        if (g_eeGeneral.serial2Mode == UART_MODE_SBUS_TRAINER) {
-          serial2SbusInit();
+        if (g_eeGeneral.auxSerialMode == UART_MODE_SBUS_TRAINER) {
+          auxSerialSbusInit();
           break;
       }*/
       // no break

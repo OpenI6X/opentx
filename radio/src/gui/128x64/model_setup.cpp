@@ -61,7 +61,9 @@ enum MenuModelSetupItems {
   ITEM_MODEL_THROTTLE_TRACE,
   ITEM_MODEL_THROTTLE_TRIM,
   ITEM_MODEL_PREFLIGHT_LABEL,
+#if !defined(PCBI6X)
   ITEM_MODEL_CHECKLIST_DISPLAY,
+#endif
   ITEM_MODEL_THROTTLE_WARNING,
   ITEM_MODEL_SWITCHES_WARNING,
 #if defined(PCBTARANIS)
@@ -322,14 +324,14 @@ void menuModelSetup(event_t event)
     0, // Throttle trim
     // 0, // Throttle trim switch
     LABEL(PreflightCheck), 
-    0, 
+//    0, // Checklist
     0, 
     NUM_SWITCHES-1, 
     NUM_STICKS+NUM_POTS+NUM_SLIDERS+NUM_ROTARY_ENCODERS-1, 
     0,
     LABEL(InternalModule),
     INTERNAL_MODULE_MODE_ROWS,
-#if !defined(PCBI6X)      
+#if !defined(PCBI6X)
     INTERNAL_MODULE_CHANNELS_ROWS,
 #endif    
 #if defined(PCBI6X)    
@@ -525,11 +527,11 @@ void menuModelSetup(event_t event)
       case ITEM_MODEL_PREFLIGHT_LABEL:
         lcdDrawTextAlignedLeft(y, STR_PREFLIGHT);
         break;
-
+#if !defined(PCBI6X)
       case ITEM_MODEL_CHECKLIST_DISPLAY:
         ON_OFF_MENU_ITEM(g_model.displayChecklist, MODEL_SETUP_2ND_COLUMN, y, STR_CHECKLIST, attr, event);
         break;
-
+#endif
       case ITEM_MODEL_THROTTLE_WARNING:
         g_model.disableThrottleWarning = !editCheckBox(!g_model.disableThrottleWarning, MODEL_SETUP_2ND_COLUMN, y, STR_THROTTLEWARNING, attr, event);
         break;
@@ -546,7 +548,7 @@ void menuModelSetup(event_t event)
 #endif
 
       case ITEM_MODEL_SWITCHES_WARNING:
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBI6X)
         {
           #define FIRSTSW_STR   STR_VSRCRAW+(MIXSRC_FIRST_SWITCH-MIXSRC_Rud+1)*length
           uint8_t length = STR_VSRCRAW[0];

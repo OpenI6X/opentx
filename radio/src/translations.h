@@ -127,8 +127,8 @@ extern const char STR_OPEN9X[];
 #endif
 #define OFS_TRNCHN             (OFS_TRNMODE + sizeof(TR_TRNMODE))
 #if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
-  #define OFS_UART3MODES       (OFS_TRNCHN + sizeof(TR_TRNCHN))
-  #define OFS_SWTYPES          (OFS_UART3MODES + sizeof(TR_UART3MODES))
+  #define OFS_AUX_SERIALMODES       (OFS_TRNCHN + sizeof(TR_TRNCHN))
+  #define OFS_SWTYPES          (OFS_AUX_SERIALMODES + sizeof(TR_AUX_SERIALMODES))
   #define OFS_POTTYPES         (OFS_SWTYPES + sizeof(TR_SWTYPES))
   #define OFS_SLIDERTYPES      (OFS_POTTYPES + sizeof(TR_POTTYPES))
   #define OFS_VTRIMINC         (OFS_SLIDERTYPES + sizeof(TR_SLIDERTYPES))
@@ -225,7 +225,7 @@ extern const char STR_OPEN9X[];
 #define STR_VBEEPMODE           (STR_OPEN9X + OFS_VBEEPMODE)
 #define STR_TRNMODE             (STR_OPEN9X + OFS_TRNMODE)
 #define STR_TRNCHN              (STR_OPEN9X + OFS_TRNCHN)
-#define STR_UART3MODES          (STR_OPEN9X + OFS_UART3MODES)
+#define STR_AUX_SERIALMODES      (STR_OPEN9X + OFS_AUX_SERIALMODES)
 #define STR_SWTYPES             (STR_OPEN9X + OFS_SWTYPES)
 #define STR_POTTYPES            (STR_OPEN9X + OFS_POTTYPES)
 #define STR_SLIDERTYPES         (STR_OPEN9X + OFS_SLIDERTYPES)
@@ -930,7 +930,7 @@ extern const char STR_BLCOLOR[];
   extern const char STR_SCALE[];
   extern const char STR_VIEW_CHANNELS[];
   extern const char STR_POTWARNING[];
-  extern const char STR_UART3MODE[];
+  extern const char STR_AUX_SERIALMODE[];
   extern const char STR_THROTTLE_LABEL[];
   extern const char STR_SCRIPT[];
   extern const char STR_INPUTS[];

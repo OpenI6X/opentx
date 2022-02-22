@@ -594,7 +594,7 @@ void checkSwitches()
         }
       }
     }
-#elif defined(PCBTARANIS)
+#elif defined(PCBTARANIS) || defined(PCBI6X)
     for (int i=0; i<NUM_SWITCHES; i++) {
       if (SWITCH_WARNING_ALLOWED(i) && !(g_model.switchWarningEnable & (1<<i))) {
         swarnstate_t mask = ((swarnstate_t)0x03 << (i*2));
@@ -603,6 +603,7 @@ void checkSwitches()
         }
       }
     }
+#if !defined(PCBI6X)
     if (g_model.potsWarnMode) {
       evalFlightModeMixes(e_perout_mode_normal, 0);
       bad_pots = 0;
@@ -616,6 +617,7 @@ void checkSwitches()
         }
       }
     }
+#endif
 #else
     for (int i=0; i<NUM_SWITCHES-1; i++) {
       if (!(g_model.switchWarningEnable & (1<<i))) {
@@ -639,12 +641,16 @@ void checkSwitches()
     backlightOn();
 
     // first - display warning
-#if defined(PCBTARANIS) || defined(PCBHORUS)
-    if ((last_bad_switches != switches_states) || (last_bad_pots != bad_pots)) {
+#if defined(PCBTARANIS) || defined(PCBHORUS)|| defined(PCBI6X)
+    if ((last_bad_switches != switches_states) /*|| (last_bad_pots != bad_pots)*/) {
+#if defined(PCBI6X)
+      RAISE_ALERT(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP, last_bad_switches == 0xff ? AU_SWITCH_ALERT : AU_NONE);
+#else
       drawAlertBox(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP);
       if (last_bad_switches == 0xff || last_bad_pots == 0xff) {
         AUDIO_ERROR_MESSAGE(AU_SWITCH_ALERT);
       }
+#endif // PCBI6X
       int x = SWITCH_WARNING_LIST_X, y = SWITCH_WARNING_LIST_Y;
       int numWarnings = 0;
       for (int i=0; i<NUM_SWITCHES; ++i) {
@@ -668,6 +674,12 @@ void checkSwitches()
           swarnstate_t mask = ((swarnstate_t)0x03 << (i*2));
           LcdFlags attr = ((states & mask) == (switches_states & mask)) ? 0 : INVERS;
           if (attr) {
+#if defined(PCBI6X)
+            char c = "\300-\301"[(states & mask) >> (i*2)];
+            drawSource(x, y, MIXSRC_FIRST_SWITCH+i, attr);
+            lcdDrawChar(lcdNextPos, y, c, attr);
+            x = lcdNextPos + 3;
+#else
             if (++numWarnings < 7) {
               char c = "\300-\301"[(states & mask) >> (i*2)];
               drawSource(x, y, MIXSRC_FIRST_SWITCH+i, attr);
@@ -677,11 +689,12 @@ void checkSwitches()
             else if (numWarnings == 7) {
               lcdDrawText(x, y, "...", 0);
             }
+#endif // PCBI6X
           }
         }
 #endif
       }
-
+#if !defined(PCBI6X)
       if (g_model.potsWarnMode) {
         if (y == 4*FH+3) {
           y = 6*FH-2;
@@ -722,6 +735,7 @@ void checkSwitches()
         }
       }
       last_bad_pots = bad_pots;
+#endif // PCBI6X
 #else
     if (last_bad_switches != switches_states) {
       RAISE_ALERT(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP, last_bad_switches == 0xff ? AU_SWITCH_ALERT : AU_NONE);

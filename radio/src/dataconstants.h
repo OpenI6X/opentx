@@ -259,7 +259,11 @@ enum UartModes {
   UART_MODE_SBUS_TRAINER,
   UART_MODE_LUA,
   UART_MODE_COUNT,
+#if !defined(PCBI6X)
   UART_MODE_MAX = UART_MODE_COUNT-1
+#else
+  UART_MODE_MAX = UART_MODE_COUNT-1-3 // only off/debug or mirror
+#endif
 };
 
 #if defined(PCBHORUS)

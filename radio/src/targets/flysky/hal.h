@@ -428,20 +428,20 @@ extern void ISR_TIMER3_CAPT_vect(void);
 
 #define TRAINER_BATTERY_COMPARTMENT
 
-// serial2
-#define SERIAL_RCC_AHB1Periph         (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_DMA1)
-#define SERIAL_RCC_APB2Periph         RCC_APB2Periph_USART1
-#define SERIAL_GPIO                   GPIOA
-#define SERIAL_GPIO_PIN_TX            GPIO_Pin_9 // PA9
-#define SERIAL_GPIO_PIN_RX            GPIO_Pin_10 // PA10
-#define SERIAL_GPIO_PinSource_TX      GPIO_PinSource9
-#define SERIAL_GPIO_PinSource_RX      GPIO_PinSource10
-#define SERIAL_GPIO_AF                GPIO_AF_1
-#define SERIAL_USART                  USART1
-#define SERIAL_USART_IRQHandler       USART1_IRQHandler
-#define SERIAL_USART_IRQn             USART1_IRQn
-#define SERIAL_DMA_Stream_RX          
-#define SERIAL_DMA_Channel_RX         DMA1_Channel3
+// auxSerial
+#define AUX_SERIAL_RCC_AHB1Periph         (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_DMA1)
+#define AUX_SERIAL_RCC_APB2Periph         RCC_APB2Periph_USART1
+#define AUX_SERIAL_GPIO                   GPIOA
+#define AUX_SERIAL_GPIO_PIN_TX            GPIO_Pin_9 // PA9
+#define AUX_SERIAL_GPIO_PIN_RX            GPIO_Pin_10 // PA10
+#define AUX_SERIAL_GPIO_PinSource_TX      GPIO_PinSource9
+#define AUX_SERIAL_GPIO_PinSource_RX      GPIO_PinSource10
+#define AUX_SERIAL_GPIO_AF                GPIO_AF_1
+#define AUX_SERIAL_USART                  USART1
+#define AUX_SERIAL_USART_IRQHandler       USART1_IRQHandler
+#define AUX_SERIAL_USART_IRQn             USART1_IRQn
+#define AUX_SERIAL_DMA_Stream_RX          
+#define AUX_SERIAL_DMA_Channel_RX         DMA1_Channel3
 
 #define SPORT_MAX_BAUDRATE            400000
 

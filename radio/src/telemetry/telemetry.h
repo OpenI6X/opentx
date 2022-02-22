@@ -130,6 +130,8 @@ const uint8_t CROSSFIRE_PERIODS[] = {
 #define CROSSFIRE_PERIOD         4000 /* us; 250 Hz */
 #endif
 
+#define CROSSFIRE_TELEM_MIRROR_BAUDRATE   115200
+
 extern uint8_t telemetryRxBuffer[TELEMETRY_RX_PACKET_SIZE];
 extern uint8_t telemetryRxBufferCount;
 extern uint8_t outputTelemetryBuffer[TELEMETRY_OUTPUT_FIFO_SIZE] __DMA;

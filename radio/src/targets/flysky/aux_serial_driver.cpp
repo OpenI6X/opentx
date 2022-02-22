@@ -21,25 +21,25 @@
 #include "opentx.h"
 #include <stdio.h>
 
-uint8_t serial2Mode = 0;
+uint8_t auxSerialMode = 0;
 
-void uartSetup(unsigned int baudrate, bool dma)
+void auxSerialSetup(unsigned int baudrate, bool dma)
 {
   USART_InitTypeDef USART_InitStructure;
   GPIO_InitTypeDef GPIO_InitStructure;
 
-  RCC_AHBPeriphClockCmd(SERIAL_RCC_AHB1Periph, ENABLE);
-  RCC_APB2PeriphClockCmd(SERIAL_RCC_APB2Periph, ENABLE);
+  RCC_AHBPeriphClockCmd(AUX_SERIAL_RCC_AHB1Periph, ENABLE);
+  RCC_APB2PeriphClockCmd(AUX_SERIAL_RCC_APB2Periph, ENABLE);
 
-  GPIO_PinAFConfig(SERIAL_GPIO, SERIAL_GPIO_PinSource_RX, SERIAL_GPIO_AF);
-  GPIO_PinAFConfig(SERIAL_GPIO, SERIAL_GPIO_PinSource_TX, SERIAL_GPIO_AF);
+  GPIO_PinAFConfig(AUX_SERIAL_GPIO, AUX_SERIAL_GPIO_PinSource_RX, AUX_SERIAL_GPIO_AF);
+  GPIO_PinAFConfig(AUX_SERIAL_GPIO, AUX_SERIAL_GPIO_PinSource_TX, AUX_SERIAL_GPIO_AF);
 
-  GPIO_InitStructure.GPIO_Pin = SERIAL_GPIO_PIN_TX | SERIAL_GPIO_PIN_RX;
+  GPIO_InitStructure.GPIO_Pin = AUX_SERIAL_GPIO_PIN_TX | AUX_SERIAL_GPIO_PIN_RX;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(SERIAL_GPIO, &GPIO_InitStructure);
+  GPIO_Init(AUX_SERIAL_GPIO, &GPIO_InitStructure);
 
   USART_InitStructure.USART_BaudRate = baudrate;
   USART_InitStructure.USART_WordLength = USART_WordLength_8b;
@@ -47,63 +47,68 @@ void uartSetup(unsigned int baudrate, bool dma)
   USART_InitStructure.USART_Parity = USART_Parity_No;
   USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
   USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
-  USART_Init(SERIAL_USART, &USART_InitStructure);
-  USART_Cmd(SERIAL_USART, ENABLE);
+  USART_Init(AUX_SERIAL_USART, &USART_InitStructure);
+
+  USART_Cmd(AUX_SERIAL_USART, ENABLE);
 }
 
-void serial2Init(unsigned int mode, unsigned int protocol)
+void auxSerialInit(unsigned int mode, unsigned int protocol)
 {
-  serial2Stop();
+  auxSerialStop();
 
-  serial2Mode = mode;
+  auxSerialMode = mode;
   switch (mode)
   {
   case UART_MODE_TELEMETRY_MIRROR:
-#if !defined(STM32F0)
-    uartSetup(FRSKY_SPORT_BAUDRATE, false);
+#if defined(CROSSFIRE)
+      if (protocol == PROTOCOL_PULSES_CROSSFIRE) { // PROTOCOL_TELEMETRY_CROSSFIRE
+        auxSerialSetup(CROSSFIRE_TELEM_MIRROR_BAUDRATE, false);
+        break;
+      }
 #endif
+    auxSerialSetup(FRSKY_SPORT_BAUDRATE, false);
     break;
 #if defined(DEBUG) || defined(CLI)
   case UART_MODE_DEBUG:
-    uartSetup(DEBUG_BAUDRATE, false);
+    auxSerialSetup(DEBUG_BAUDRATE, false);
     break;
 #endif
+#if !defined(PCBI6X)
   case UART_MODE_TELEMETRY:
-#if !defined(STM32F0)
     if (protocol == PROTOCOL_FRSKY_D_SECONDARY)
     {
-      uartSetup(FRSKY_D_BAUDRATE, true);
+      auxSerialSetup(FRSKY_D_BAUDRATE, true);
     }
-#endif
     break;
   case UART_MODE_LUA:
-    uartSetup(DEBUG_BAUDRATE, false);
+    auxSerialSetup(DEBUG_BAUDRATE, false);
+#endif
   }
 }
 
-void serial2Putc(char c)
+void auxSerialPutc(char c)
 {
 #if !defined(SIMU)
-  while (USART_GetFlagStatus(SERIAL_USART, USART_FLAG_TXE) == RESET);
-  USART_SendData(SERIAL_USART, c);
+  while (USART_GetFlagStatus(AUX_SERIAL_USART, USART_FLAG_TXE) == RESET);
+  USART_SendData(AUX_SERIAL_USART, c);
 #endif
 }
 
-void serial2SbusInit()
+void auxSerialSbusInit()
 {
-  // uartSetup(SBUS_BAUDRATE, true);
-  // SERIAL_USART->CR1 |= USART_CR1_M | USART_CR1_PCE ;
+  // auxSerialSetup(SBUS_BAUDRATE, true);
+  // AUX_SERIAL_USART->CR1 |= USART_CR1_M | USART_CR1_PCE ;
 }
 
-void serial2Stop()
+void auxSerialStop()
 {
-  USART_DeInit(SERIAL_USART);
+  USART_DeInit(AUX_SERIAL_USART);
 }
 
-uint8_t serial2TracesEnabled()
+uint8_t auxSerialTracesEnabled()
 {
 #if defined(DEBUG)
-  return (serial2Mode == UART_MODE_DEBUG);
+  return (auxSerialMode == UART_MODE_DEBUG);
 #else
   return false;
 #endif
@@ -115,7 +120,7 @@ uint8_t serial2TracesEnabled()
 //   // Send
 //   if (USART_GetITStatus(SERIAL_USART, USART_IT_TXE) != RESET) {
 //     uint8_t txchar;
-//     if (serial2TxFifo.pop(txchar)) {
+//     if (auxSerialTxFifo.pop(txchar)) {
 //       /* Write one byte to the transmit data register */
 //       USART_SendData(SERIAL_USART, txchar);
 //     }
@@ -131,7 +136,7 @@ uint8_t serial2TracesEnabled()
 //     while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
 //       uint8_t data = SERIAL_USART->DR;
 //       if (!(status & USART_FLAG_ERRORS)) {
-//         switch (serial2Mode) {
+//         switch (auxSerialMode) {
 //           case UART_MODE_DEBUG:
 //             cliRxFifo.push(data);
 //             break;

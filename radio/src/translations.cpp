@@ -40,7 +40,7 @@ const char STR_OPEN9X[]  =
     ISTR(TRNMODE)
     ISTR(TRNCHN)
 #if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
-    ISTR(UART3MODES)
+    ISTR(AUX_SERIALMODES)
     ISTR(SWTYPES)
     ISTR(POTTYPES)
     ISTR(SLIDERTYPES)
@@ -664,7 +664,7 @@ const char STR_BLCOLOR[]   = TR_BLCOLOR;
   const char STR_ALTITUDE[]  = TR_ALTITUDE;
   const char STR_SCALE[]  = TR_SCALE;
   const char STR_VIEW_CHANNELS[]  = TR_VIEW_CHANNELS;
-  const char STR_UART3MODE[]  = TR_UART3MODE;
+  const char STR_AUX_SERIALMODE[]  = TR_AUX_SERIALMODE;
   const char STR_THROTTLE_LABEL[]  = TR_THROTTLE_LABEL;
   const char STR_SCRIPT[]  = TR_SCRIPT;
   const char STR_INPUTS[]  = TR_INPUTS;

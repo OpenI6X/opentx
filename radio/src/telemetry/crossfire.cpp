@@ -238,6 +238,13 @@ bool isCrossfireOutputBufferAvailable() {
 }
 
 void processCrossfireTelemetryData(uint8_t data) {
+
+#if defined(AUX_SERIAL)
+  if (g_eeGeneral.auxSerialMode == UART_MODE_TELEMETRY_MIRROR) {
+    auxSerialPutc(data);
+  }
+#endif
+
   if (telemetryRxBufferCount == 0 && data != RADIO_ADDRESS) {
     TRACE("[XF] address 0x%02X error", data);
     telemetryErrors++;
