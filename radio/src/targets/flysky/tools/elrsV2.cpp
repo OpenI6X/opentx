@@ -224,13 +224,11 @@ static uint8_t strRemoveTo(char * src, const char * str, const uint8_t len) {
 
 static void fieldTextSelectionLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
-  uint8_t sLen = len;
   if (field->valuesLength == 0) {
-    sLen = strlen((char*)&data[offset]);
-    memcpy(&valuesBuffer[valuesBufferOffset], (char*)&data[offset], sLen);
+    memcpy(&valuesBuffer[valuesBufferOffset], (char*)&data[offset], len);
     field->valuesOffset = valuesBufferOffset;
-    field->valuesLength = sLen;
-    valuesBufferOffset += sLen;
+    field->valuesLength = len;
+    valuesBufferOffset += len;
   }
   offset += len + 1;
   field->value = data[offset];
