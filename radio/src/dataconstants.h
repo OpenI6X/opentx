@@ -79,11 +79,7 @@
   #define MAX_SPECIAL_FUNCTIONS        11 // number of functions assigned to switches
   #define MAX_TRAINER_CHANNELS         8
   #define MAX_INPUTS                   16
-#if defined(PCBI6X_ELRSV2)
   #define MAX_TELEMETRY_SENSORS        26 // 48b each
-#else
-  #define MAX_TELEMETRY_SENSORS        30
-#endif
   #define MAX_SCRIPTS				           0
 #else
   #define MAX_MODELS                   16

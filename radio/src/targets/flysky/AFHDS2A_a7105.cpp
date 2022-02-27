@@ -140,10 +140,12 @@ void AFHDS2A_build_packet(uint8_t type) {
         packet[9 + ch * 2] = channelMicros & 0xFF;
         packet[10 + ch * 2] = (channelMicros >> 8) & 0xFF;
       }
+#ifdef AFHDS2A_LQI_CH
       // override channel with LQI
       val = 1000 + 10 * telemetryData.rssi.value;
-      packet[9 + ((14 - 1) * 2)] = val & 0xff;
-      packet[10 + ((14 - 1) * 2)] = (val >> 8) & 0xff;
+      packet[9 + ((AFHDS2A_LQI_CH - 1) * 2)] = val & 0xff;
+      packet[10 + ((AFHDS2A_LQI_CH - 1) * 2)] = (val >> 8) & 0xff;
+#endif
       break;
     case AFHDS2A_PACKET_FAILSAFE:
       packet[0] = 0x56;
