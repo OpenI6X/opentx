@@ -133,7 +133,7 @@ TASK_FUNCTION(mixerTask) {
     if (pwrCheck() == e_power_off) {
       TASK_RETURN();
     }
-#else
+#elif !defined(PCBI6X)
     if (isForcePowerOffRequested()) {
       pwrOff();
     }
