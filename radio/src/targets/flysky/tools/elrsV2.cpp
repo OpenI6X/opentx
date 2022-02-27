@@ -57,7 +57,7 @@ tmr10ms_t fieldTimeout = 0;
 uint8_t fieldId = 1;
 uint8_t fieldChunk = 0;
 
-#define FIELD_DATA_MAX_LEN 96U // 84 + safe margin
+#define FIELD_DATA_MAX_LEN 120U // 84 + safe margin
 // static uint8_t *fieldData = &reusableBuffer.MSC_BOT_Data[256 - FIELD_DATA_MAX_LEN];
 static uint8_t fieldData[FIELD_DATA_MAX_LEN];
 uint8_t fieldDataLen = 0;
