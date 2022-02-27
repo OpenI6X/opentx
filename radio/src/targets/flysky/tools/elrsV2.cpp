@@ -4,14 +4,10 @@
  * Limitations:
  * - no multiple devices, only ExpressLRS transmitter,
  * - no integer/float/string fields support, ExpressLRS uses only selection anyway,
- * - field unit ie.: "mW" is not displayed,
+ * - field unit is not displayed,
  * - info fields display only label without value,
- * - commands names are trimmed to 12 characters,
- * - dynamically remove not critical strings from values to save RAM.
+ * - dynamically remove not critical strings from values ("AUX") to save RAM.
  * 
- * TODO:
- * - Trim values even while in buffer to reduce max buffer size
- * - Pit mode still need to be trimmed to fit in valuesBuffer for edge configs
  */
 
 #include <stdio.h>
@@ -21,8 +17,6 @@
 #define PACKED __attribute__((packed))
 
 extern uint8_t cScriptRunning;
-
-#define CMD_MAX_LEN 12
 
 struct FieldProps {
   uint8_t nameOffset;     
@@ -43,9 +37,11 @@ struct FieldFunctions {
   void (*display)(FieldProps*, uint8_t, uint8_t);
 };
 
+#define NAMES_BUFFER_SIZE 148
+#define VALUES_BUFFER_SIZE 128
 uint8_t *namesBuffer = reusableBuffer.MSC_BOT_Data;
 uint8_t namesBufferOffset = 0;
-uint8_t *valuesBuffer = &reusableBuffer.MSC_BOT_Data[256]; 
+uint8_t *valuesBuffer = &reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE]; 
 uint8_t valuesBufferOffset = 0;
 
 #define deviceId 0xEE
@@ -62,10 +58,12 @@ uint8_t fieldId = 1;
 uint8_t fieldChunk = 0;
 
 #define FIELD_DATA_MAX_LEN 96U // 84 + safe margin
-static uint8_t fieldData[FIELD_DATA_MAX_LEN]; 
+// static uint8_t *fieldData = &reusableBuffer.MSC_BOT_Data[256 - FIELD_DATA_MAX_LEN];
+static uint8_t fieldData[FIELD_DATA_MAX_LEN];
 uint8_t fieldDataLen = 0;
 
-static FieldProps fields[26]; 
+#define FIELDS_MAX_COUNT 26 // 26 * 8b = 208b
+FieldProps *fields = (FieldProps *)&reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE + VALUES_BUFFER_SIZE]; 
 uint8_t fieldsLen = 0;
 
 static char goodBadPkt[11] = "?/???    ?";
@@ -213,7 +211,7 @@ static void selectField(int8_t step) {
 }
 
 static uint8_t strRemoveTo(char * src, const char * str, const uint8_t len) {
-  char strLen = strlen(str);
+  const char strLen = strlen(str);
   char * srcStrPtr = src;
   uint8_t removedLen = 0;
   while ((srcStrPtr = strstr(srcStrPtr, str)) && (srcStrPtr < src + len)) {
@@ -224,54 +222,10 @@ static uint8_t strRemoveTo(char * src, const char * str, const uint8_t len) {
   return removedLen;
 }
 
-static void strRemove(char * src, const char * str) {
-  char strLen = strlen(str);
-  char * srcStrPtr = src;
-  while ((srcStrPtr = strstr(srcStrPtr, str))) {
-    strcpy(srcStrPtr, srcStrPtr + strLen);
-  }
-}
-
-static void strRemoveBetween(char * src, const char * begin, const char * end) {
-//    char endLen = strlen(end);
-    char * srcStrPtr = src;
-    char * srcStrPtr2;
-    while ((srcStrPtr = strstr(srcStrPtr, begin))) {
-        if ((srcStrPtr2 = strstr(srcStrPtr, end))) {
-            strcpy(srcStrPtr, srcStrPtr2 + 0 /*endLen - 1*/);
-        } else {
-            break;
-        }
-    }
-}
-
-static void strCutoffAt(char * src, const char * at) {
-    char * srcStrPtr = src;
-    char * srcStrPtr2;
-    while ((srcStrPtr = strstr(srcStrPtr, at))) {
-        if ((srcStrPtr2 = strstr(srcStrPtr, ";"))) {
-            strcpy(srcStrPtr, srcStrPtr2);
-        } else {
-            *srcStrPtr = '\0';
-            break;
-        }
-    }
-}
-
-static void fieldSelectionClean(char * data) {
-    strRemove(data, "AUX");
-    strRemove(data, "mW");
-    strCutoffAt(data, "Hz");
-}
-
 static void fieldTextSelectionLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
   uint8_t sLen = len;
   if (field->valuesLength == 0) {
-    // strRemove((char*)&data[offset], "AUX");
-    // strRemove((char*)&data[offset], "mW");
-    // strCutoffAt((char*)&data[offset], "Hz");
-    fieldSelectionClean((char*)&data[offset]);
     sLen = strlen((char*)&data[offset]);
     memcpy(&valuesBuffer[valuesBufferOffset], (char*)&data[offset], sLen);
     field->valuesOffset = valuesBufferOffset;
@@ -316,6 +270,10 @@ static void fieldFolderOpen(FieldProps * field) {
   pageOffset = 0;
   folderAccess = field->id;
   fields[backButtonId].parent = folderAccess;
+  for (uint32_t i = 0; i < backButtonId; i++) {
+    fields[i].valuesLength = 0;
+  }
+  reloadAllField();
 }
 
 static void fieldCommandLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
@@ -359,6 +317,10 @@ static void fieldUnifiedDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
 static void UIbackExec(FieldProps * field = 0) {
   folderAccess = 0;
   fields[backButtonId].parent = 255;
+  for (uint32_t i = 0; i < backButtonId; i++) {
+    fields[i].valuesLength = 0;
+  }
+  reloadAllField();
 }
 
 static void parseDeviceInfoMessage(uint8_t* data) {
@@ -411,18 +373,13 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
   }
   TRACE("length %d", length); // to know what is the max single chunk size
   // trim values
-  // todo - pass string end - with partial chunks there is no guarantee of \0 at the end
-  // and then substract \0 position difference from length
-  // rest of the packet should also be moved - everything to current end
   uint8_t selectionPos = strlen((char*)&fieldData[2]) + 1 + 2;
-  // fieldDataLen -= strRemoveTo((char*)&fieldData[selectionPos], "dbm)", fieldDataLen - selectionPos);
   fieldDataLen -= strRemoveTo((char*)&fieldData[selectionPos], "AUX", fieldDataLen - selectionPos);
-  // fieldDataLen -= strRemoveTo((char*)&fieldData[selectionPos], "mW", fieldDataLen - selectionPos);
   if (chunks > 0) {
     fieldChunk = fieldChunk + 1;
     statusComplete = 0;
   } else { 
-    TRACE("%s, %d", &fieldData[2], fieldDataLen);
+    TRACE("%d, %s, %d", fieldId, &fieldData[2], fieldDataLen);
     DUMP(fieldData, fieldDataLen);
     fieldChunk = 0;
     if (fieldDataLen < 4) { 
@@ -444,15 +401,20 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
     field->parent = parent;
     field->type = type;
     // field->hidden = hidden;
-    offset = strlen((char*)&fieldData[2]) + 1 + 2; 
-    if (field->nameLength == 0 && !hidden) {
-      field->nameLength = (field->type == 13/*cmd*/) ? min(offset - 3, CMD_MAX_LEN) : offset - 3;
-      field->nameOffset = namesBufferOffset;
-      memcpy(&namesBuffer[namesBufferOffset], &fieldData[2], field->nameLength); 
-      namesBufferOffset += field->nameLength;
-    }
-    if (functions[field->type - 9].load) {
-      functions[field->type - 9].load(field, fieldData, offset);
+    offset = strlen((char*)&fieldData[2]) + 1 + 2;
+
+    if (parent != folderAccess) {
+      field->nameLength = 0; // clear
+    } else {
+      if (field->nameLength == 0 && !hidden) {
+        field->nameLength = offset - 3;
+        field->nameOffset = namesBufferOffset;
+        memcpy(&namesBuffer[namesBufferOffset], &fieldData[2], field->nameLength); 
+        namesBufferOffset += field->nameLength;
+      }
+      if (functions[field->type - 9].load) {
+        functions[field->type - 9].load(field, fieldData, offset);
+      }
     }
 
     if (fieldPopup == 0) { 
@@ -464,7 +426,7 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
         allParamsLoaded = 1;
         fieldId = 1;
       } else {
-        fieldId = 1 + (fieldId % (fieldsLen-1));
+        fieldId++; // fieldId = 1 + (fieldId % (fieldsLen-1));
       }
       fieldTimeout = getTime() + 200;
     } else {
@@ -587,7 +549,7 @@ static void handleDevicePageEvent(event_t event) {
       crossfireTelemetryPush4(0x2C, fieldId, fieldChunk); 
     } else {
       if (folderAccess == 0 && allParamsLoaded == 1) { 
-        reloadAllField();
+        // reloadAllField();
         crossfireTelemetryPing();
       }
       UIbackExec();
@@ -706,12 +668,12 @@ static void runPopupPage(event_t event) {
 
 void ELRSV2_stop() {
   registerCrossfireTelemetryCallback(nullptr);
-  reloadAllField(); 
+  // reloadAllField();
   UIbackExec(); 
   fieldPopup = 0;
   if (cScriptRunning) {
     cScriptRunning = 0;
-    memset(reusableBuffer.MSC_BOT_Data, 0, 512);
+    // memset(reusableBuffer.MSC_BOT_Data, 0, 512);
     popMenu();
   }
 }
