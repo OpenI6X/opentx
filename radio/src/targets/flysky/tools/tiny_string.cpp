@@ -1,9 +1,7 @@
 /**
- * Smallest possible implementation of sprintf and itoa for elrsv2 needs.
+ * Minimal implementation of sprintf and itoa for elrsv2 needs.
  */
 #include <cstdarg>
-#include <stdio.h>
-#include <stdlib.h>
 
 int tiny_itoa(int number, char *arr) {
     int r, len, digits = 1, i = 0;
@@ -37,7 +35,7 @@ void tiny_sprintf(char *arr, char const *fmt, char len, char num, ...) {
 
   while ((ch = *fmt++)) {
 
-    if ( '%' == ch ) {
+    if ('%' == ch) {
       switch ((ch = *fmt++)) {
           case 'c':
               char_temp = va_arg(args, int);
@@ -56,7 +54,6 @@ void tiny_sprintf(char *arr, char const *fmt, char len, char num, ...) {
       }
     }
     else {
-        // putc(ch, file);
         arr[length] = ch;
         length++;
     }

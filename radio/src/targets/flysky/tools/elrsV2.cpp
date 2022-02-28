@@ -10,10 +10,8 @@
  * 
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "opentx.h"
-#include "tiny_string_tools.cpp"
+#include "tiny_string.cpp"
 
 #define PACKED __attribute__((packed))
 
