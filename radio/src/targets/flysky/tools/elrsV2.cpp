@@ -444,7 +444,7 @@ static void parseElrsInfoMessage(uint8_t* data) {
   uint8_t badPkt = data[3];
   uint16_t goodPkt = (data[4]*256) + data[5];
   char state = (elrsFlags & 1) ? 'C' : '-';
-  tiny_sprintf(goodBadPkt, "%d/%d   %c", 0, 3, badPkt, goodPkt, state);
+  tiny_sprintf(goodBadPkt, "%u/%u   %c", 0, 3, badPkt, goodPkt, state);
 
   // If flags are changing, reset the warning timeout to display/hide message immediately
   if (data[6] != elrsFlags) {

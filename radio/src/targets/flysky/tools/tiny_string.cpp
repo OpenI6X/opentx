@@ -44,7 +44,7 @@ void tiny_sprintf(char *arr, char const *fmt, char len, char num, ...) {
           memcpy(&arr[length], string_temp, len);
           length += len;
           break;
-        case 'd':
+        case 'u':
           int_temp = va_arg(args, int);
           length += tiny_itoa(int_temp, &arr[length]);
           break;
