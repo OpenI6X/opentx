@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "opentx.h"
+#include "tiny_string_tools.cpp"
 
 #define PACKED __attribute__((packed))
 
@@ -295,8 +296,8 @@ static void fieldCommandSave(FieldProps * field) {
 
 static void fieldUnifiedDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
   const char* backPat = "[----BACK----]";
-  const char* folderPat = "> %.*s";
-  const char* cmdPat = "[%.*s]";
+  const char* folderPat = "> %s";
+  const char* cmdPat = "[%s]";
   uint8_t textIndent = textXoffset + 9;
   char *pat;
   if (field->type == 11) {
@@ -308,7 +309,7 @@ static void fieldUnifiedDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
     pat = (char *)cmdPat;
   }
   char stringTmp[24];
-  sprintf((char *)&stringTmp, pat, field->nameLength, (char *)&namesBuffer[field->nameOffset]);
+  tiny_sprintf((char *)&stringTmp, pat, field->nameLength, 1, (char *)&namesBuffer[field->nameOffset]);
   lcdDrawText(textIndent, y, (char *)&stringTmp, attr | BOLD);
 }
 
@@ -401,8 +402,8 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
     // field->hidden = hidden;
     offset = strlen((char*)&fieldData[2]) + 1 + 2;
 
-    if (parent != folderAccess) {
-      field->nameLength = 0; // clear
+    if (parent != folderAccess || type < 9) { // not current folder or usupported type
+      field->nameLength = 0; // mark as clear
     } else {
       if (field->nameLength == 0 && !hidden) {
         field->nameLength = offset - 3;
@@ -445,7 +446,7 @@ static void parseElrsInfoMessage(uint8_t* data) {
   uint8_t badPkt = data[3];
   uint16_t goodPkt = (data[4]*256) + data[5];
   char state = (elrsFlags & 1) ? 'C' : '-';
-  sprintf(goodBadPkt, "%u/%u   %c", badPkt, goodPkt, state); 
+  tiny_sprintf(goodBadPkt, "%d/%d   %c", 0, 3, badPkt, goodPkt, state);
 
   // If flags are changing, reset the warning timeout to display/hide message immediately
   if (data[6] != elrsFlags) {
