@@ -5,6 +5,7 @@
 
 int tiny_itoa(int number, char *arr) {
   int r, len, digits = 1, i = 0;
+  const uint8_t radix = 10;
 
   if (number > 99) digits++;
   if (number > 9) digits++;
@@ -13,10 +14,10 @@ int tiny_itoa(int number, char *arr) {
   arr[i] = '0';
 
   while (number != 0) {
-      digits--;
-      r = number % 10;
-      arr[i + digits] = r + '0';
-      number /= 10;
+    digits--;
+    r = number % radix;
+    arr[i + digits] = r + '0';
+    number /= radix;
   }
 
   return len;
