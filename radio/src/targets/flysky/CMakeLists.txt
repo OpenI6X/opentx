@@ -1,7 +1,7 @@
 option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
 option(LCD_DUAL_BUFFER "Dual LCD Buffer" OFF)
 option(TARANIS_INTERNAL_PPM "Taranis internal module hack to output PPM" OFF)
-option(PCBI6X_ELRSV2 "Enable ExpressLRS v2 configuration tool" OFF) # ~6kB FLASH
+option(PCBI6X_ELRSV2 "Enable ExpressLRS v2 configuration tool" OFF) # ~4kB FLASH
 
 if(PCB STREQUAL I6X)
   set(PWR_BUTTON "PRESS")
