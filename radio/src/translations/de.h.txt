@@ -71,7 +71,7 @@
 #define TR_TRNCHN              "CH1CH2CH3CH4"
 
 #if defined(PCBI6X)
-#define LEN_AUX_SERIALMODES                 "\014"
+#define LEN_AUX_SERIALMODES                 "\012"
 #if defined(CLI) || defined(DEBUG)
 #define TR_AUX_SERIALMODES                  "Debug\0      ""Telem Mirror"
 #else
