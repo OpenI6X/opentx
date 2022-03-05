@@ -40,7 +40,6 @@ if(PCBI6X_ELRSV2)
   add_definitions(-DPCBI6X_ELRSV2)
 else() # features disabled for ELRSV2
   add_definitions(-DPCBI6X_USB_MSD)
-  add_definitions(-DMENU_DIAGKEYS) # 364B
 endif()
 
 set(TARGET_SRC
@@ -58,8 +57,7 @@ set(TARGET_DIR flysky)
 set(PPM_LIMITS_SYMETRICAL YES)
 set(DEFAULT_TEMPLATE_SETUP 21) # AETR
 add_definitions(-DPCBI6X -DBUZZER)
-add_definitions(-DMENU_DIAGANAS) # 360B
-# add_definitions(-DMENU_DIAGKEYS) # 364B
+# add_definitions(-DMENU_DIAG_ANAS_KEYS) # ~600B
 
 if(NOT DEFAULT_TEMPLATE_SETUP STREQUAL "")
   add_definitions(-DDEFAULT_TEMPLATE_SETUP=${DEFAULT_TEMPLATE_SETUP})

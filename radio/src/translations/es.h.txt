@@ -981,6 +981,10 @@
 #define TR_MODULE_BIND         "[Enlace]"
 #define TR_MODULE_RANGE        "[Limites]"
 #define TR_RESET_BTN           "[Reset]"
+#define TR_DEBUG                       "Debug"
+#define TR_KEYS_BTN                BUTTON(TR("SW","Switches"))
+#define TR_ANALOGS_BTN                 BUTTON(TR("Ana","Analogs"))
+#define TR_CALIB_BTN                   BUTTON("Calibration")
 #define TR_SET                 "[Ajuste]"
 #define TR_TRAINER             "Aprendiz"
 #define TR_ANTENNAPROBLEM      CENTER "¡Problema antena TX!"

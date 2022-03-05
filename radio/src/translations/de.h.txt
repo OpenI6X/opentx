@@ -999,6 +999,10 @@
 #define TR_MODULE_BIND         BUTTON(TR("Bnd","Bind"))   //9XR-Pro
 #define TR_MODULE_RANGE        BUTTON(TR("Rng", "Range"))  //9XR-Pro
 #define TR_RESET_BTN           BUTTON("Reset")
+#define TR_DEBUG                       "Debug"
+#define TR_KEYS_BTN                BUTTON(TR("SW","Switches"))
+#define TR_ANALOGS_BTN                 BUTTON(TR("Ana","Analogs"))
+#define TR_CALIB_BTN                   BUTTON("Calibration")
 #define TR_SET                 BUTTON("Set")
 #define TR_TRAINER             "DSC Buchse PPM In/Out"
 #define TR_ANTENNAPROBLEM      CENTER "TX-Antennenproblem!"

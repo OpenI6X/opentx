@@ -980,6 +980,10 @@
 #define TR_MODULE_BIND                 BUTTON(TR("Bnd", "Bind"))
 #define TR_MODULE_RANGE                BUTTON(TR("Prt", "Port."))
 #define TR_RESET_BTN                   BUTTON("RAZ")
+#define TR_DEBUG                       "Debug"
+#define TR_KEYS_BTN                BUTTON(TR("Swtchs", "Switches"))
+#define TR_ANALOGS_BTN                 BUTTON(TR("Anas", "Analogs"))
+#define TR_CALIB_BTN                   BUTTON("Calibration")
 #define TR_SET                         BUTTON("Déf")
 #define TR_TRAINER                     "Ecolage"
 #define TR_ANTENNAPROBLEM              CENTER "Antenne radio défectueuse!"

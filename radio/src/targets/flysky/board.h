@@ -291,6 +291,7 @@ enum EnumSwitchesPositions
 };
 #define IS_3POS(x)            ((x) == SW_SC)
 #define IS_TOGGLE(x)					false
+#define NUM_SWITCHES          4
 
 void keysInit(void);
 uint8_t keyState(uint8_t index);
