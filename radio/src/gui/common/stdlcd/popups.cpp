@@ -23,7 +23,6 @@
 uint8_t popupMenuOffsetType = MENU_OFFSET_INTERNAL;
 void (*popupFunc)(event_t event) = NULL;
 
-#if defined(NAVIGATION_MENUS)
 const char * popupMenuItems[POPUP_MENU_MAX_LINES];
 uint8_t s_menu_item = 0;
 uint16_t popupMenuItemsCount = 0;
@@ -123,4 +122,4 @@ const char * runPopupMenu(event_t event)
 
   return result;
 }
-#endif
+

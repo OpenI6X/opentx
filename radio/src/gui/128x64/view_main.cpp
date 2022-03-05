@@ -255,7 +255,6 @@ void displayVoltageOrAlarm()
   #define EVT_KEY_STATISTICS             EVT_KEY_LONG(KEY_UP)
 #endif
 
-#if defined(NAVIGATION_MENUS)
 void onMainViewMenu(const char *result)
 {
   if (result == STR_RESET_TIMER1) {
@@ -300,7 +299,6 @@ void onMainViewMenu(const char *result)
   }
 #endif
 }
-#endif
 
 void menuMainView(event_t event)
 {
@@ -334,7 +332,6 @@ void menuMainView(event_t event)
               g_eeGeneral.view = (g_eeGeneral.view + (CHANNELS_PAGES*ALTERNATE_VIEW) + ((event==EVT_KEY_PREVIOUS_PAGE) ? -ALTERNATE_VIEW : ALTERNATE_VIEW)) % (CHANNELS_PAGES*ALTERNATE_VIEW);
       break;
 
-#if defined(NAVIGATION_MENUS)
     case EVT_KEY_CONTEXT_MENU:
       killEvents(event);
 #if defined(PCBI6X)
@@ -353,7 +350,6 @@ void menuMainView(event_t event)
 #endif
       POPUP_MENU_START(onMainViewMenu);
       break;
-#endif
 
 #if MENUS_LOCK != 2 /*no menus*/
 #if defined(EVT_KEY_LAST_MENU)
@@ -413,18 +409,7 @@ void menuMainView(event_t event)
         gvarDisplayTimer = 0;
       }
 #endif
-#if !defined(NAVIGATION_MENUS)
-      if (view == VIEW_TIMER2) {
-        timerReset(1);
-      }
-#endif
       break;
-
-#if !defined(NAVIGATION_MENUS)
-    case EVT_KEY_LONG(KEY_EXIT):
-      flightReset();
-      break;
-#endif
   }
 
   switch (view_base) {
