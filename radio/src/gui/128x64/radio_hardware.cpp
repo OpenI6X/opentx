@@ -402,7 +402,7 @@ void menuRadioHardware(event_t event)
             pushMenu(menuRadioDiagKeys);
         }
         break;
-#endif MENU_DIAG_ANAS_KEYS
+#endif // MENU_DIAG_ANAS_KEYS
     }
   }
 }
