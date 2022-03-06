@@ -1,33 +1,13 @@
 /**
- * Minimal implementation of sprintf and itoa for elrsv2 needs.
+ * Minimal implementation of sprintf for elrsv2 needs.
  */
 #include <cstdarg>
-
-int tiny_itoa(int number, char *arr) {
-  int r, len, digits = 1, i = 0;
-  const uint8_t radix = 10;
-
-  if (number > 99) digits++;
-  if (number > 9) digits++;
-  
-  len = digits;
-  arr[i] = '0';
-
-  while (number != 0) {
-    digits--;
-    r = number % radix;
-    arr[i + digits] = r + '0';
-    number /= radix;
-  }
-
-  return len;
-}
 
 void tiny_sprintf(char *arr, char const *fmt, char len, char num, ...) {
   va_list args;
   va_start(args, num);
   char ch;
-  int length = 0;
+  unsigned int length = 0;
   int int_temp;
   char char_temp;
   char *string_temp;
@@ -47,7 +27,8 @@ void tiny_sprintf(char *arr, char const *fmt, char len, char num, ...) {
           break;
         case 'u':
           int_temp = va_arg(args, int);
-          length += tiny_itoa(int_temp, &arr[length]);
+          char *tmp_ptr = strAppendUnsigned(&arr[length], int_temp);
+          length += (tmp_ptr - &arr[length]);
           break;
       }
     }
