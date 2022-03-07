@@ -17,11 +17,13 @@ Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
 
 ## Implemented features 
 
-* AFHDS2A protocol
-* PPM in/out
-* CRSF with ExpressLRS and Crossfire modules, CRSFshot enabled
-  * MEGA Bauds up to 1.8M
-  * ExpressLRS V2 configuration (ELRSV2.lua port)
+* Protocols
+  * AFHDS
+  * AFHDS2A with SBUS, IBUS, SBUS16 and IBUS16 modes
+  * PPM in/out
+  * CRSF with ExpressLRS and Crossfire modules, CRSFshot enabled
+    * MEGA Bauds up to 1.8M
+    * ExpressLRS V2 configuration (ELRSV2.lua port)
 * Telemetry
 * Audio tones, alarms and vario sound custom implementation
 * DFU bootloader - Start by pushing trims to the center, like regular OpenTX one
