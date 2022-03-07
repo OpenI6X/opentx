@@ -4,10 +4,12 @@
 [![Release](https://img.shields.io/github/v/release/OpenI6X/opentx?include_prereleases)](https://github.com/OpenI6X/opentx/releases)
 [![GitHub all releases](https://img.shields.io/github/downloads/OpenI6X/opentx/total)](https://github.com/OpenI6X/opentx/releases)
 
-**OpenTX** port for the venerable **Flysky i6X** RC radio transmitter.<br>
+**OpenTX** port for the venerable **Flysky FS-i6X** RC radio transmitter.
+
+
 You can find instructions and videos contributed by fellow early adopters in the [RCGroups thread](https://www.rcgroups.com/forums/showthread.php?3916435-FlySky-I6X-port-of-OpenTX), [Telegram group](https://t.me/otx_flysky_i6x) and [Rakish Rc](https://www.youtube.com/c/RakishRc) youtube channel. 
 
-New developers are highly welcome! See [developers guide](https://github.com/OpenI6X/opentx/wiki/Contribute) and [known issues](https://github.com/OpenI6X/opentx/issues).
+New contributions are highly welcome! See [developers guide](https://github.com/OpenI6X/opentx/wiki/Contribute).
 
 ## Installation
 
@@ -21,21 +23,20 @@ Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
   * MEGA Bauds up to 1.8M
   * ExpressLRS V2 configuration (ELRSV2.lua port)
 * Telemetry
-* Audio tones, alarms and vario custom implementation
-* Bootloader (DFU bootloader) - Start by pushing trims to the center, like regular OpenTX one
-* USB Joystick & Storage modes (To enable on standard cable: General Settings > USB Detect: "Once")
+* Audio tones, alarms and vario sound custom implementation
+* DFU bootloader - Start by pushing trims to the center, like regular OpenTX one
+* USB Joystick & Storage modes (To enable on standard cable: General Settings > USB Detect: Once)
 
 ## Navigation
 
-| Key | Function |
-| --- | --- |
-| UP     | Up. Hold on main screen for stats. |                              
-| DOWN   | Down. Hold on main screen for telemetry |                                  
-| OK     | Confirm. Hold on main screen for model menu. |
-| CANCEL | Exit. **Hold for graceful shutdown - needed to save timers and some general settings.** |                      
-| BIND   | Go right in a line. Go to next page. Hold on main screen for general menu. |
-| LEFT POT |  Change edited value. |
-| RIGHT POT |  Scroll pages left/right. |
+| Key | Function                                                                                           |
+| --- |----------------------------------------------------------------------------------------------------|
+| UP     | Up. Hold on main screen for stats.                                                                 |                              
+| DOWN   | Down. Hold on main screen for telemetry                                                            |                                  
+| OK     | Confirm. Hold on main screen for model menu.                                                       |
+| CANCEL | Exit. **Hold for graceful shutdown - needed to save timers and some general settings.**            |                      
+| BIND   | Scroll pages right or left (long press), go right in a line. Hold on main screen for general menu. |
+| LEFT POT | Change edited value.                                                                               |
 
 ## Hardware connections (optional)
 
