@@ -3,9 +3,9 @@
  */
 #include <cstdarg>
 
-void tiny_sprintf(char *arr, char const *fmt, char len, char num, ...) {
+void tiny_sprintf(char *arr, char const *fmt, char strLen, char argsLen, ...) {
   va_list args;
-  va_start(args, num);
+  va_start(args, argsLen);
   char ch;
   unsigned int length = 0;
   int int_temp;
@@ -22,8 +22,8 @@ void tiny_sprintf(char *arr, char const *fmt, char len, char num, ...) {
           break;
         case 's':
           string_temp = va_arg(args, char *);
-          memcpy(&arr[length], string_temp, len);
-          length += len;
+          memcpy(&arr[length], string_temp, strLen);
+          length += strLen;
           break;
         case 'u':
           int_temp = va_arg(args, int);
@@ -31,8 +31,7 @@ void tiny_sprintf(char *arr, char const *fmt, char len, char num, ...) {
           length += (tmp_ptr - &arr[length]);
           break;
       }
-    }
-    else {
+    } else {
         arr[length] = ch;
         length++;
     }
