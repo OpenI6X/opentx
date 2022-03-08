@@ -20,26 +20,9 @@
 #define AFHDS2A_HUB_TELEMETRY
 //#define AFHDS2A_NUMFREQ			16
 
-#if ((AFHDS2A_CHANNELS - 0) > 18)
-# error "wrong number of channels"
-#endif
-
-#if ((AFHDS2A_CHANNELS - 0) > 16)
-# if defined(AFHDS2A_LQI_CH) 
-#  if ((AFHDS2A_LQI_CH > AFHDS2A_CHANNELS) || (AFHDS2A_LQI_CH <= 16))
-#   warning "wrong AFHDS2A_LQI_CH"
-#   ifdef AFHDS2A_LQI_CH
-#    undef AFHDS2A_LQI_CH
-#   endif
-#  endif
-# endif
-#else 
-# if defined(AFHDS2A_LQI_CH)
-#  warning "questionable AFHDS2A_LQI_CH setting"
-# endif
-#endif
-
 extern int8_t s_editMode;
+
+static uint8_t num_ch;
 
 inline uint32_t GetChipID(void) {
   return (uint32_t)(READ_REG(*((uint32_t *)UID_BASE))) ^
@@ -149,7 +132,7 @@ void AFHDS2A_build_packet(const uint8_t type) {
   switch (type) {
     case AFHDS2A_PACKET_STICKS:
       packet[0] = 0x58;
-      for (uint8_t ch = 0; ch < AFHDS2A_CHANNELS; ++ch) {
+      for (uint8_t ch = 0; ch < num_ch; ++ch) {
         // channelOutputs: -1024 to 1024
 #if defined(AFHDS2A_LQI_CH)
         const uint16_t channelMicros = (ch == (AFHDS2A_LQI_CH - 1)) ? 
@@ -171,7 +154,7 @@ void AFHDS2A_build_packet(const uint8_t type) {
       break;
     case AFHDS2A_PACKET_FAILSAFE:
       packet[0] = 0x56;
-      for (uint8_t ch = 0; ch < AFHDS2A_CHANNELS; ch++) {
+      for (uint8_t ch = 0; ch < num_ch; ch++) {
         if (g_model.moduleData[INTERNAL_MODULE].failsafeMode == FAILSAFE_CUSTOM &&
             g_model.moduleData[INTERNAL_MODULE].failsafeChannels[ch] < FAILSAFE_CHANNEL_HOLD) {
           const uint16_t failsafeMicros = g_model.moduleData[INTERNAL_MODULE].failsafeChannels[ch] / 2 + RADIO_PPM_CENTER;
@@ -195,8 +178,7 @@ void AFHDS2A_build_packet(const uint8_t type) {
 
       packet[11] = g_model.moduleData[INTERNAL_MODULE].servoFreq;
       packet[12] = g_model.moduleData[INTERNAL_MODULE].servoFreq >> 8;
-      if (g_model.moduleData[INTERNAL_MODULE].subType == AFHDS2A_SUBTYPE_PPM_IBUS || 
-            g_model.moduleData[INTERNAL_MODULE].subType ==AFHDS2A_SUBTYPE_PPM_SBUS) {
+      if (g_model.moduleData[INTERNAL_MODULE].subType & (AFHDS2A_SUBTYPE_PPM_IBUS & AFHDS2A_SUBTYPE_PPM_SBUS)) {
         packet[13] = 0x01;  // PPM output enabled
       } else {
         packet[13] = 0x00;
@@ -208,8 +190,7 @@ void AFHDS2A_build_packet(const uint8_t type) {
       packet[18] = 0x05;  // ?
       packet[19] = 0xdc;  // ?
       packet[20] = 0x05;  // ?
-      if (g_model.moduleData[INTERNAL_MODULE].subType == AFHDS2A_SUBTYPE_PWM_SBUS || 
-            g_model.moduleData[INTERNAL_MODULE].subType == AFHDS2A_SUBTYPE_PPM_SBUS) {
+      if (g_model.moduleData[INTERNAL_MODULE].subType & (AFHDS2A_SUBTYPE_PWM_SBUS & AFHDS2A_SUBTYPE_PPM_SBUS)) {
         packet[21] = 0xdd;  // SBUS output enabled
       } else {
         packet[21] = 0xde;  // IBUS
@@ -393,6 +374,11 @@ void initAFHDS2A() {
   A7105_Init();
   packet_count = 0;
   hopping_frequency_no = 0;
+  if(g_model.moduleData[INTERNAL_MODULE].subType & 0x04) {
+    num_ch = 17;
+  } else {
+    num_ch = 14;
+  }
   BIND_STOP;
   BIND_DONE;
 }
