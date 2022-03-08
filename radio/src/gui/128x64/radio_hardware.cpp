@@ -137,6 +137,12 @@ enum MenuRadioHardwareItems {
 #if defined(MENU_DIAG_ANAS_KEYS)
   ITEM_RADIO_HARDWARE_DEBUG,
 #endif
+#if defined(EEPROM_RLC)
+#if !defined(PCBI6X)
+  ITEM_RADIO_BACKUP_EEPROM,
+#endif
+  ITEM_RADIO_FACTORY_RESET,
+#endif
   ITEM_RADIO_HARDWARE_MAX
 };
 
@@ -173,6 +179,18 @@ enum MenuRadioHardwareItems {
 
 #define HW_SETTINGS_COLUMN1            30
 #define HW_SETTINGS_COLUMN2            (30 + 5*FW)
+
+#if defined(EEPROM_RLC)
+void onFactoryResetConfirm(const char result)
+{
+  if (result) {
+    warningResult = 0;
+    showMessageBox(STR_STORAGE_FORMAT);
+    storageEraseAll(false);
+    NVIC_SystemReset();
+  }
+}
+#endif
 
 void menuRadioHardware(event_t event)
 {
@@ -403,6 +421,27 @@ void menuRadioHardware(event_t event)
         }
         break;
 #endif // MENU_DIAG_ANAS_KEYS
+#if !defined(PCBI6X)
+      case ITEM_RADIO_BACKUP_EEPROM:
+        lcdDrawText(0, y, BUTTON(STR_EEBACKUP), attr);
+        if (attr && event == EVT_KEY_FIRST(KEY_ENTER)) {
+          s_editMode = EDIT_SELECT_FIELD;
+          eepromBackup();
+        }
+        break;
+#endif // PCBI6X
+      case ITEM_RADIO_FACTORY_RESET:
+        onFactoryResetConfirm(warningResult);
+        if (LCD_W < 212)
+          lcdDrawText(LCD_W / 2, y, BUTTON(TR_FACTORYRESET), attr | CENTERED);
+        else
+          lcdDrawText(HW_SETTINGS_COLUMN2, y, BUTTON(TR_FACTORYRESET), attr);
+        if (attr && event == EVT_KEY_BREAK(KEY_ENTER)) {
+          s_editMode = EDIT_SELECT_FIELD;
+//          POPUP_CONFIRMATION(STR_CONFIRMRESET, onFactoryResetConfirm);
+          POPUP_CONFIRMATION(STR_CONFIRMRESET);
+       }
+        break;
     }
   }
 }

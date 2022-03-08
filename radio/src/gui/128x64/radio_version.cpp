@@ -39,32 +39,16 @@ enum MenuRadioVersionItems
 #if defined(PXX2)
   ITEM_RADIO_MODULES_VERSION,
 #endif
-#if defined(EEPROM_RLC)
-#if defined(SDCARD)
-  ITEM_RADIO_BACKUP_EEPROM,
-#endif
-  ITEM_RADIO_FACTORY_RESET,
-#endif
   ITEM_RADIO_VERSION_COUNT
 };
 
 void menuRadioVersion(event_t event)
 {
-#if defined(EEPROM_RLC)
-  if (warningResult) {
-    warningResult = 0;
-    showMessageBox(STR_STORAGE_FORMAT);
-    storageEraseAll(false);
-    NVIC_SystemReset();
-  }
-#endif
-
   SIMPLE_MENU(STR_MENUVERSION, menuTabGeneral, MENU_RADIO_VERSION, ITEM_RADIO_VERSION_COUNT);
 
-  coord_t y = MENU_HEADER_HEIGHT + 1;
-  lcdDrawTextAlignedLeft(MENU_HEADER_HEIGHT+FH, vers_stamp);
-  y += 5*FH;
-  // TODO this was good on AVR radios, but horrible now ...
+  coord_t y = MENU_HEADER_HEIGHT + 2;
+  lcdDrawText(FW, y, vers_stamp, SMLSIZE);
+  y += 5 * (FH - 1);
 
 #if defined(COPROCESSOR)
   if (Coproc_valid == 1) {
@@ -83,23 +67,6 @@ void menuRadioVersion(event_t event)
   if (menuVerticalPosition == ITEM_RADIO_MODULES_VERSION && event == EVT_KEY_BREAK(KEY_ENTER)) {
     s_editMode = EDIT_SELECT_FIELD;
     pushMenu(menuRadioModulesVersion);
-  }
-#endif
-
-#if defined(EEPROM_RLC)
-#if defined(SDCARD)
-  lcdDrawText(0, y, BUTTON(TR_EEBACKUP), menuVerticalPosition == ITEM_RADIO_BACKUP_EEPROM ? INVERS : 0);
-  y += FH;
-  if (menuVerticalPosition == ITEM_RADIO_BACKUP_EEPROM && event == EVT_KEY_BREAK(KEY_ENTER)) {
-    s_editMode = EDIT_SELECT_FIELD;
-    eepromBackup();
-  }
-#endif
-  lcdDrawText(0, y, BUTTON(TR_FACTORYRESET), menuVerticalPosition == ITEM_RADIO_FACTORY_RESET ? INVERS : 0);
-  // y += FH;
-  if (menuVerticalPosition == ITEM_RADIO_FACTORY_RESET && event == EVT_KEY_BREAK(KEY_ENTER)) {
-    s_editMode = EDIT_SELECT_FIELD;
-    POPUP_CONFIRMATION(STR_CONFIRMRESET);
   }
 #endif
 }
