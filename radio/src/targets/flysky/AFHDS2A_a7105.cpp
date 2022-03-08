@@ -144,8 +144,7 @@ void AFHDS2A_build_packet(const uint8_t type) {
         if (ch < 14) {
             packet[9 + ch * 2] = channelMicros & 0xFF;
             packet[10 + ch * 2] = (channelMicros >> 8) & 0x0F;
-        }
-        else {
+        } else {
             packet[10 + (ch - 14) * 6] |= (channelMicros ) << 4;
             packet[12 + (ch - 14) * 6] |= (channelMicros ) & 0xF0;
             packet[14 + (ch - 14) * 6] |= (channelMicros >> 4) & 0xF0;
@@ -374,7 +373,7 @@ void initAFHDS2A() {
   A7105_Init();
   packet_count = 0;
   hopping_frequency_no = 0;
-  if(g_model.moduleData[INTERNAL_MODULE].subType & 0x04) {
+  if (g_model.moduleData[INTERNAL_MODULE].subType & 0x04) {
     num_ch = 17;
   } else {
     num_ch = 14;
