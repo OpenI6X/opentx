@@ -40,6 +40,11 @@ Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
 | BIND   | Scroll pages right or left (long press), go right in a line. Hold on main screen for general menu. |
 | LEFT POT | Change edited value.                                                                               |
 
+
+## Shutdown
+
+FlySky FS-i6X don't have hardware power off like other OpenTX devices, therefore to properly shutdown with all settings saved, hold CANCEL button until screen is off then switch off.
+
 ## Hardware connections (optional)
 
 ![hw](https://github.com/OpenI6X/opentx/raw/master/doc/flysky/openi6x_hardware.jpeg?raw=true)
