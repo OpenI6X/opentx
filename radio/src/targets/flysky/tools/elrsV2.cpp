@@ -17,6 +17,8 @@
 
 extern uint8_t cScriptRunning;
 
+#define INFO_MAX_LEN 5
+
 struct FieldProps {
   uint8_t nameOffset;     
   uint8_t nameLength;
@@ -404,7 +406,7 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
       field->nameLength = 0; // mark as clear
     } else {
       if (field->nameLength == 0 && !hidden) {
-        field->nameLength = offset - 3;
+        field->nameLength = (field->type == 13/*info*/) ? min(offset - 3, INFO_MAX_LEN) : offset - 3;
         field->nameOffset = namesBufferOffset;
         memcpy(&namesBuffer[namesBufferOffset], &fieldData[2], field->nameLength); 
         namesBufferOffset += field->nameLength;
