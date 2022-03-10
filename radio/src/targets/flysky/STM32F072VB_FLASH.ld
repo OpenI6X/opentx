@@ -35,7 +35,7 @@ _estack = 0x20003FFF;    /* end of RAM */
 _heap_end = 0x0;         /* end of heap */
 
 /* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 128;    /* required amount of heap  */
+_Min_Heap_Size = 0;    /* required amount of heap  */
 _Min_Stack_Size = 1024; /* required amount of stack */
 
 /* Specify the memory areas */
