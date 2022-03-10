@@ -402,9 +402,9 @@ void backlightEnable();
 #if !defined(SIMU)
   void usbJoystickUpdate();
 #endif
-#define USB_NAME                        "FS i6X"
+#define USB_NAME                        "FS-i6X"
 #define USB_MANUFACTURER                'F', 'l', 'y', 'S', 'k', 'y', ' ', ' '  /* 8 bytes */
-#define USB_PRODUCT                     'i', '6', 'X', ' ', ' ', ' ', ' ', ' '  /* 8 Bytes */
+#define USB_PRODUCT                     'F', 'S', '-', 'i', '6', 'X', ' ', ' '  /* 8 Bytes */
 
 #if defined(__cplusplus) && !defined(SIMU)
 }
