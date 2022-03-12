@@ -275,6 +275,8 @@ static void fieldFolderOpen(FieldProps * field) {
   reloadAllField();
 }
 
+static void noopOpen(FieldProps * field) {}
+
 static void fieldCommandLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
   field->value = data[offset]; 
   field->valuesOffset = data[offset+1]; 
@@ -345,9 +347,9 @@ static void parseDeviceInfoMessage(uint8_t* data) {
 
 static const FieldFunctions functions[] = {
   { .load=fieldTextSelectionLoad, .save=fieldTextSelectionSave, .display=fieldTextSelectionDisplay }, 
-  { .load=nullptr, .save=nullptr, .display=fieldStringDisplay }, 
+  { .load=nullptr, .save=noopOpen, .display=fieldStringDisplay }, 
   { .load=nullptr, .save=fieldFolderOpen, .display=fieldUnifiedDisplay }, 
-  { .load=nullptr, .save=nullptr, .display=fieldStringDisplay }, 
+  { .load=nullptr, .save=noopOpen, .display=fieldStringDisplay }, 
   { .load=fieldCommandLoad, .save=fieldCommandSave, .display=fieldUnifiedDisplay }, 
   { .load=nullptr, .save=UIbackExec, .display=fieldUnifiedDisplay } 
 };
@@ -406,7 +408,7 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
       field->nameLength = 0; // mark as clear
     } else {
       if (field->nameLength == 0 && !hidden) {
-        field->nameLength = (field->type == 13/*info*/) ? min(offset - 3, INFO_MAX_LEN) : offset - 3;
+        field->nameLength = (field->type == 12/*info*/) ? min(offset - 3, INFO_MAX_LEN) : offset - 3;
         field->nameOffset = namesBufferOffset;
         memcpy(&namesBuffer[namesBufferOffset], &fieldData[2], field->nameLength); 
         namesBufferOffset += field->nameLength;
@@ -419,9 +421,9 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
     if (fieldPopup == 0) { 
       if (fieldId == fields_count) {
         TRACE("namesBufferOffset %d", namesBufferOffset);
-        DUMP(namesBuffer, 256);
+        DUMP(namesBuffer, NAMES_BUFFER_SIZE);
         TRACE("valuesBufferOffset %d", valuesBufferOffset);
-        DUMP(valuesBuffer, 256);
+        DUMP(valuesBuffer, VALUES_BUFFER_SIZE);
         allParamsLoaded = 1;
         fieldId = 1;
       } else {
