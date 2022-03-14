@@ -85,7 +85,6 @@ set(TARGET_SRC
   backlight_driver.cpp
   extmodule_driver.cpp
   adc_driver.cpp
-  i2c_common_v2.cpp
   i2c_driver.cpp
   crc_driver.cpp
   tools/elrsV2.cpp
