@@ -17,132 +17,95 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-
 #include "opentx.h"
+#include "board.h"
 
-// Resolve clash with libopencm3 defines
-
-#undef FLASH_BASE
-#undef PERIPH_BASE
-#undef I2C1_BASE
-#undef I2C2_BASE
-#undef I2C1
-#undef I2C2
-#undef I2C_CR1_PECEN
-#undef I2C_CR1_ALERTEN
-#undef I2C_CR1_SMBDEN
-#undef I2C_CR1_SMBHEN
-#undef I2C_CR1_GCEN
-#undef I2C_CR1_WUPEN
-#undef I2C_CR1_NOSTRETCH
-#undef I2C_CR1_SBC
-#undef I2C_CR1_RXDMAEN
-#undef I2C_CR1_TXDMAEN
-#undef I2C_CR1_ANFOFF
-#undef I2C_CR1_ERRIE
-#undef I2C_CR1_TCIE
-#undef I2C_CR1_STOPIE
-#undef I2C_CR1_NACKIE
-#undef I2C_CR1_ADDRIE
-#undef I2C_CR1_RXIE
-#undef I2C_CR1_TXIE
-#undef I2C_CR1_PE
-#undef I2C_CR2_PECBYTE
-#undef I2C_CR2_AUTOEND
-#undef I2C_CR2_RELOAD
-#undef I2C_CR2_NACK
-#undef I2C_CR2_STOP
-#undef I2C_CR2_START
-#undef I2C_CR2_HEAD10R
-#undef I2C_CR2_ADD10
-#undef I2C_CR2_RD_WRN
-#undef I2C_ISR_BUSY
-#undef I2C_ISR_ALERT
-#undef I2C_ISR_TIMEOUT
-#undef I2C_ISR_PECERR
-#undef I2C_ISR_OVR
-#undef I2C_ISR_ARLO
-#undef I2C_ISR_BERR
-#undef I2C_ISR_TCR
-#undef I2C_ISR_TC
-#undef I2C_ISR_STOPF
-#undef I2C_ISR_NACKF
-#undef I2C_ISR_ADDR
-#undef I2C_ISR_RXNE
-#undef I2C_ISR_TXIS
-#undef I2C_ISR_TXE
-#undef I2C_ICR_ALERTCF
-#undef I2C_ICR_TIMOUTCF
-#undef I2C_ICR_PECCF
-#undef I2C_ICR_OVRCF
-#undef I2C_ICR_ARLOCF
-#undef I2C_ICR_BERRCF
-#undef I2C_ICR_STOPCF
-#undef I2C_ICR_NACKCF
-#undef I2C_ICR_ADDRCF
-
-#include <stdio.h>
-#include <string.h>
-
-#include "i2c_common_v2.h"
+void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrite);
+void eepromWaitEepromStandbyState(void);
 
 void i2cInit()
 {
-  GPIO_InitTypeDef gpio_init;
-  gpio_init.GPIO_Pin = I2C_SCL_GPIO_PIN | I2C_SDA_GPIO_PIN;
-  gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
-  gpio_init.GPIO_Mode = GPIO_Mode_AF;
-  gpio_init.GPIO_OType = GPIO_OType_OD;
-  gpio_init.GPIO_PuPd = GPIO_PuPd_UP;
-  GPIO_Init(I2C_GPIO, &gpio_init);
+  I2C_DeInit(I2C);
+
+ GPIO_InitTypeDef GPIO_InitStructure;
+//  GPIO_InitStructure.GPIO_Pin = I2C_WP_GPIO_PIN;
+//  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+//  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+//  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+//  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+//  GPIO_Init(I2C_WP_GPIO, &GPIO_InitStructure);
+//  GPIO_ResetBits(I2C_WP_GPIO, I2C_WP_GPIO_PIN);
+
+  I2C_InitTypeDef I2C_InitStructure;
+  I2C_InitStructure.I2C_Timing = I2C_TIMING_400K;
+  // I2C_InitStructure.I2C_ClockSpeed = I2C_SPEED;
+  // I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
+  I2C_InitStructure.I2C_OwnAddress1 = 0x00;
+  I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
+  I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
+  I2C_InitStructure.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
+  // I2C_InitStructure.I2C_AnalogFilter = I2C_AnalogFilter_Enable;
+  // I2C_InitStructure.I2C_DigitalFilter = 0x00;
+  I2C_Init(I2C, &I2C_InitStructure);
+  I2C_Cmd(I2C, ENABLE);
 
   GPIO_PinAFConfig(I2C_GPIO, I2C_SCL_GPIO_PinSource, I2C_GPIO_AF);
   GPIO_PinAFConfig(I2C_GPIO, I2C_SDA_GPIO_PinSource, I2C_GPIO_AF);
 
-  __IO uint32_t tmpreg;
-  SET_BIT(RCC->AHBENR, RCC_AHBENR_GPIOAEN);
-  /* Delay after an RCC peripheral clock enabling */
-  tmpreg = READ_BIT(RCC->AHBENR, RCC_AHBENR_GPIOAEN);
-
-  SET_BIT(RCC->AHBENR, RCC_AHBENR_GPIOBEN);
-  /* Delay after an RCC peripheral clock enabling */
-  tmpreg = READ_BIT(RCC->AHBENR, RCC_AHBENR_GPIOBEN);
-
-  SET_BIT(RCC->AHBENR, RCC_AHBENR_GPIOCEN);
-  /* Delay after an RCC peripheral clock enabling */
-  tmpreg = READ_BIT(RCC->AHBENR, RCC_AHBENR_GPIOCEN);
-
-  SET_BIT(RCC->AHBENR, RCC_AHBENR_GPIODEN);
-  /* Delay after an RCC peripheral clock enabling */
-  tmpreg = READ_BIT(RCC->AHBENR, RCC_AHBENR_GPIODEN);
-
-  SET_BIT(RCC->AHBENR, RCC_AHBENR_GPIOEEN);
-  /* Delay after an RCC peripheral clock enabling */
-  tmpreg = READ_BIT(RCC->AHBENR, RCC_AHBENR_GPIOEEN);
-
-  SET_BIT(RCC->AHBENR, RCC_AHBENR_GPIOFEN);
-  /* Delay after an RCC peripheral clock enabling */
-  tmpreg = READ_BIT(RCC->AHBENR, RCC_AHBENR_GPIOFEN);
+  GPIO_InitStructure.GPIO_Pin = I2C_SCL_GPIO_PIN | I2C_SDA_GPIO_PIN;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(I2C_GPIO, &GPIO_InitStructure);
 }
 
-void eepromInit() {
-  uint32_t i2c;
+/**
+ 
+  *** Polling Mode ***
+  ====================
+    [..] In Polling Mode, the I2C communication can be managed by 15 flags:
+        (#) I2C_FLAG_TXE: to indicate the status of Transmit data register empty flag.
+        (#) I2C_FLAG_TXIS: to indicate the status of Transmit interrupt status flag .
+        (#) I2C_FLAG_RXNE: to indicate the status of Receive data register not empty flag.
+        (#) I2C_FLAG_ADDR: to indicate the status of Address matched flag (slave mode).
+        (#) I2C_FLAG_NACKF: to indicate the status of NACK received flag.
+        (#) I2C_FLAG_STOPF: to indicate the status of STOP detection flag.
+        (#) I2C_FLAG_TC: to indicate the status of Transfer complete flag(master mode).
+        (#) I2C_FLAG_TCR: to indicate the status of Transfer complete reload flag.
+        (#) I2C_FLAG_BERR: to indicate the status of Bus error flag.
+        (#) I2C_FLAG_ARLO: to indicate the status of Arbitration lost flag.
+        (#) I2C_FLAG_OVR: to indicate the status of Overrun/Underrun flag.
+        (#) I2C_FLAG_PECERR: to indicate the status of PEC error in reception flag.
+        (#) I2C_FLAG_TIMEOUT: to indicate the status of Timeout or Tlow detection flag.
+        (#) I2C_FLAG_ALERT: to indicate the status of SMBus Alert flag.
+        (#) I2C_FLAG_BUSY: to indicate the status of Bus busy flag.
 
-  i2c = I2C2;
-  i2c_reset(i2c);
+    [..] In this Mode it is advised to use the following functions:
+        (+) FlagStatus I2C_GetFlagStatus(I2C_TypeDef* I2Cx, uint32_t I2C_FLAG);
+        (+) void I2C_ClearFlag(I2C_TypeDef* I2Cx, uint32_t I2C_FLAG);
 
-  /* Disable the I2C before changing any configuration. */
-  i2c_peripheral_disable(i2c);
+    [..]
+        (@)Do not use the BUSY flag to handle each data transmission or reception.It is 
+           better to use the TXIS and RXNE flags instead.
+*/
+#define I2C_TIMEOUT_MAX 1000
+bool I2C_WaitEvent(uint32_t event)
+{
+  uint32_t timeout = I2C_TIMEOUT_MAX;
+  while (!I2C_GetFlagStatus(I2C, event)) {
+    if ((timeout--) == 0) return false;
+  }
+  return true;
+}
 
-  /* setup from libopencm3-examples */
-  i2c_enable_analog_filter(i2c);
-  i2c_set_digital_filter(i2c, 0);
-  i2c_set_speed(i2c, i2c_speed_sm_100k, 8);  // i2c_speed_fm_400k  400k causes total mess for some users
-  i2c_enable_stretching(i2c);
-  i2c_set_7bit_addr_mode(i2c);
-
-  /* If everything is configured -> enable the peripheral. */
-  i2c_peripheral_enable(i2c);
+bool I2C_WaitEventCleared(uint32_t event)
+{
+  uint32_t timeout = I2C_TIMEOUT_MAX;
+  while (I2C_GetFlagStatus(I2C, event)) {
+    if ((timeout--) == 0) return false;
+  }
+  return true;
 }
 
 void eepromPageRead(uint8_t *buffer, size_t address, size_t size) {
@@ -163,7 +126,7 @@ void eepromPageRead(uint8_t *buffer, size_t address, size_t size) {
 }
 
 void eepromPageWrite(uint8_t *buffer, uint16_t address, uint8_t size) {
-  static uint8_t temp[2 + EEPROM_PAGE_SIZE];
+  static uint8_t temp[2 + I2C_FLASH_PAGESIZE];
   temp[0] = (uint8_t)(address >> 8);
   temp[1] = (uint8_t)(address & 0xFF);
   // uint8_t start_page = address / 64;
@@ -192,66 +155,43 @@ void eepromPageWrite(uint8_t *buffer, uint16_t address, uint8_t size) {
 #endif
 }
 
-void eepromReadBlock(uint8_t *buffer, size_t address, size_t size) {
-  //TRACE("eepromStartRead addr %d %d bytes", address, size);
-  // first segment, until page limit
-  uint8_t offset = address % EEPROM_PAGE_SIZE;
-  uint8_t count = EEPROM_PAGE_SIZE - offset;
-  if (size < count) {
-    count = size;
+void eepromReadBlock(uint8_t * buffer, size_t address, size_t size)
+{
+  while (!I2C_EE_ReadBlock(buffer, address, size)) {
+    i2cInit();
   }
-  eepromPageRead(buffer, address, count);
-  if (size > count) {
-    // second segment, entire pages in between
-    uint16_t remaining = (size - count) % EEPROM_PAGE_SIZE;
-    uint8_t full_pages = (size - count) / EEPROM_PAGE_SIZE;
-    uint8_t i;
-    for (i = 0; i < full_pages; i++) {
-      eepromPageRead(
-          buffer + count + (i * EEPROM_PAGE_SIZE),
-          address + count + (i * EEPROM_PAGE_SIZE),
-          EEPROM_PAGE_SIZE);
-    }
-    if (remaining) {
-      eepromPageRead(
-          buffer + count + (full_pages * EEPROM_PAGE_SIZE),
-          address + count + (full_pages * EEPROM_PAGE_SIZE),
-          remaining);
-    }
-  }
-
-  //DUMP(buffer, size);
 }
 
-void eepromWriteBlock(uint8_t *buffer, size_t address, size_t size) {
-  //TRACE("eepromStartWrite addr %d %d bytes", address, size);
-  // first segment, until page limit
-  uint8_t offset = address % EEPROM_PAGE_SIZE;
-  uint8_t count = EEPROM_PAGE_SIZE - offset;
+/**
+  * @brief  Writes buffer of data to the I2C EEPROM.
+  * @param  buffer : pointer to the buffer containing the data to be
+  *   written to the EEPROM.
+  * @param  address : EEPROM's internal address to write to.
+  * @param  size : number of bytes to write to the EEPROM.
+  * @retval None
+  */
+void eepromWriteBlock(uint8_t * buffer, size_t address, size_t size)
+{
+  uint8_t offset = address % I2C_FLASH_PAGESIZE;
+  uint8_t count = I2C_FLASH_PAGESIZE - offset;
   if (size < count) {
     count = size;
   }
-  eepromPageWrite(buffer, address, count);
-  if (size > count) {
-    // second segment, entire pages in between
-    uint16_t remaining = (size - count) % EEPROM_PAGE_SIZE;
-    uint8_t full_pages = (size - count) / EEPROM_PAGE_SIZE;
-    uint8_t i;
-    for (i = 0; i < full_pages; i++) {
-      eepromPageWrite(
-          buffer + count + (i * EEPROM_PAGE_SIZE),
-          address + count + (i * EEPROM_PAGE_SIZE),
-          EEPROM_PAGE_SIZE);
-    }
-
-    // third segment, remainder
-    if (remaining) {
-      eepromPageWrite(
-          buffer + count + (full_pages * EEPROM_PAGE_SIZE),
-          address + count + (full_pages * EEPROM_PAGE_SIZE),
-          remaining);
+  while (count > 0) {
+    eepromPageWrite(buffer, address, count);
+    eepromWaitEepromStandbyState(); // TODO
+    address += count;
+    buffer += count;
+    size -= count;
+    count = I2C_FLASH_PAGESIZE;
+    if (size < I2C_FLASH_PAGESIZE) {
+      count = size;
     }
   }
+}
+
+uint8_t eepromIsTransferComplete() {
+  return 1;
 }
 
 void i2c_test() {
@@ -264,18 +204,4 @@ void i2c_test() {
   eepromWriteBlock(temp, 10, 128);
   memset(temp, 0, 128);
   eepromReadBlock(temp, 10, 128);
-}
-
-void eepromBlockErase(uint32_t address) {
-  // TRACE("eepromBlockErase");
-  // static uint8_t erasedBlock[EEPROM_BLOCK_SIZE]; // can't be on the stack!
-  // memset(erasedBlock, 0xFF, sizeof(erasedBlock));
-  // eepromStartWrite(erasedBlock, address, EEPROM_BLOCK_SIZE);
-  // TRACE("done");
-}
-uint8_t eepromReadStatus() {
-  return 1;
-}
-uint8_t eepromIsTransferComplete() {
-  return 1;
 }

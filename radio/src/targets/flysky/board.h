@@ -411,18 +411,11 @@ void backlightEnable();
 #endif
 
 // I2C driver: EEPROM
-#define I2C_ADDRESS_EEPROM    0x50
-#define EEPROM_SIZE           (16*1024)
-#define EEPROM_PAGE_SIZE      (64)
-#define EEPROM_BLOCK_SIZE     (64)
-//#define EEPROM_VERIFY_WRITES
+#define EEPROM_SIZE                   (16*1024)
 
 void i2cInit(void);
-void eepromInit();
 void eepromReadBlock(uint8_t * buffer, size_t address, size_t size);
 void eepromWriteBlock(uint8_t * buffer, size_t address, size_t size);
-void eepromBlockErase(uint32_t address);
-uint8_t eepromReadStatus();
 uint8_t eepromIsTransferComplete();
 void i2c_test();
 
