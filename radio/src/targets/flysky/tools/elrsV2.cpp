@@ -38,12 +38,23 @@ struct FieldFunctions {
   void (*display)(FieldProps*, uint8_t, uint8_t);
 };
 
-#define NAMES_BUFFER_SIZE 148
-#define VALUES_BUFFER_SIZE 128
+#define NAMES_BUFFER_SIZE 176 // 156 + margin for future options
+#define VALUES_BUFFER_SIZE 164 // 144 + margin for future options
 uint8_t *namesBuffer = reusableBuffer.MSC_BOT_Data;
 uint8_t namesBufferOffset = 0;
 uint8_t *valuesBuffer = &reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE]; 
 uint8_t valuesBufferOffset = 0;
+
+// 84 + safe margin, ideally without trimming 144
+// but last 25 are used for popup messages
+#define FIELD_DATA_MAX_LEN 120U
+static uint8_t *fieldData = &reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE + VALUES_BUFFER_SIZE];
+// static uint8_t fieldData[FIELD_DATA_MAX_LEN];
+uint8_t fieldDataLen = 0;
+
+#define FIELDS_MAX_COUNT 32 // 32 * 8 = 256b // 30 + 2 margin for future fields
+FieldProps fields[FIELDS_MAX_COUNT]; // = (FieldProps *)&reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE + VALUES_BUFFER_SIZE]; 
+uint8_t fieldsLen = 0;
 
 #define deviceId 0xEE
 #define handsetId 0xEF
@@ -57,15 +68,6 @@ FieldProps * fieldPopup = 0;
 tmr10ms_t fieldTimeout = 0; 
 uint8_t fieldId = 1;
 uint8_t fieldChunk = 0;
-
-#define FIELD_DATA_MAX_LEN 120U // 84 + safe margin
-// static uint8_t *fieldData = &reusableBuffer.MSC_BOT_Data[256 - FIELD_DATA_MAX_LEN];
-static uint8_t fieldData[FIELD_DATA_MAX_LEN];
-uint8_t fieldDataLen = 0;
-
-#define FIELDS_MAX_COUNT 26 // 26 * 8b = 208b
-FieldProps *fields = (FieldProps *)&reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE + VALUES_BUFFER_SIZE]; 
-uint8_t fieldsLen = 0;
 
 static char goodBadPkt[11] = "?/???    ?";
 uint8_t elrsFlags = 0;
@@ -223,6 +225,9 @@ static uint8_t strRemoveTo(char * src, const char * str, const uint8_t len) {
   return removedLen;
 }
 
+/**
+ * Reused also for INFO fields value (i.e. commit sha) for 0 flash cost
+ */
 static void fieldTextSelectionLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
   if (field->valuesLength == 0) {
@@ -260,6 +265,15 @@ static void fieldTextSelectionDisplay(FieldProps * field, uint8_t y, uint8_t att
   lcdDrawSizedText(COL2, y, (char *)&valuesBuffer[start], len , attr);
 }
 
+// shows commit hash, 56b
+// no need for it since fieldTextSelectionLoad serves exactly the same purpose for info fields
+// static void fieldStringLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
+//   field->valuesOffset = valuesBufferOffset;
+//   field->valuesLength = strlen((char*)&data[offset]);
+//   memcpy(&valuesBuffer[valuesBufferOffset], &data[offset], field->valuesLength); 
+//   valuesBufferOffset += field->valuesLength;
+// }
+
 static void fieldStringDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
   lcdDrawSizedText(COL2, y, (char *)&valuesBuffer[field->valuesOffset], field->valuesLength, attr);
 }
@@ -278,7 +292,7 @@ static void fieldFolderOpen(FieldProps * field) {
 static void noopOpen(FieldProps * field) {}
 
 static void fieldCommandLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
-  field->value = data[offset]; 
+  field->value = data[offset];
   field->valuesOffset = data[offset+1]; 
   strcpy((char *)&fieldData[FIELD_DATA_MAX_LEN - 24 - 1], (char *)&data[offset+2]); 
   if (field->value == 0) { 
@@ -349,7 +363,7 @@ static const FieldFunctions functions[] = {
   { .load=fieldTextSelectionLoad, .save=fieldTextSelectionSave, .display=fieldTextSelectionDisplay }, 
   { .load=nullptr, .save=noopOpen, .display=fieldStringDisplay }, 
   { .load=nullptr, .save=fieldFolderOpen, .display=fieldUnifiedDisplay }, 
-  { .load=nullptr, .save=noopOpen, .display=fieldStringDisplay }, 
+  { .load=fieldTextSelectionLoad, .save=noopOpen, .display=fieldStringDisplay }, 
   { .load=fieldCommandLoad, .save=fieldCommandSave, .display=fieldUnifiedDisplay }, 
   { .load=nullptr, .save=UIbackExec, .display=fieldUnifiedDisplay } 
 };
