@@ -5,8 +5,7 @@
  * - no multiple devices, only ExpressLRS transmitter,
  * - no integer/float/string fields support, ExpressLRS uses only selection anyway,
  * - field unit is not displayed,
- * - info fields display only label without value,
- * - dynamically remove not critical strings from values ("AUX") to save RAM.
+ * - dynamically shorten values strings ("AUX" -> "A") to save RAM.
  * 
  */
 
@@ -17,6 +16,7 @@
 
 extern uint8_t cScriptRunning;
 
+// disabled, there is enough space now
 #define INFO_MAX_LEN 5
 
 struct FieldProps {
@@ -38,8 +38,8 @@ struct FieldFunctions {
   void (*display)(FieldProps*, uint8_t, uint8_t);
 };
 
-#define NAMES_BUFFER_SIZE 176 // 156 + margin for future options
-#define VALUES_BUFFER_SIZE 164 // 144 + margin for future options
+#define NAMES_BUFFER_SIZE 192 // 156 + margin for future options
+#define VALUES_BUFFER_SIZE 176 // 144 + margin for future options
 uint8_t *namesBuffer = reusableBuffer.MSC_BOT_Data;
 uint8_t namesBufferOffset = 0;
 uint8_t *valuesBuffer = &reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE]; 
@@ -389,7 +389,7 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
   TRACE("length %d", length); // to know what is the max single chunk size
   // trim values
   uint8_t selectionPos = strlen((char*)&fieldData[2]) + 1 + 2;
-  fieldDataLen -= strRemoveTo((char*)&fieldData[selectionPos], "AUX", fieldDataLen - selectionPos);
+  fieldDataLen -= strRemoveTo((char*)&fieldData[selectionPos], "UX", fieldDataLen - selectionPos); // trim AUX to A
   if (chunks > 0) {
     fieldChunk = fieldChunk + 1;
     statusComplete = 0;
@@ -422,7 +422,7 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
       field->nameLength = 0; // mark as clear
     } else {
       if (field->nameLength == 0 && !hidden) {
-        field->nameLength = (field->type == 12/*info*/) ? min(offset - 3, INFO_MAX_LEN) : offset - 3;
+        field->nameLength = offset - 3; // (field->type == 12/*info*/) ? min(offset - 3, INFO_MAX_LEN) : offset - 3;
         field->nameOffset = namesBufferOffset;
         memcpy(&namesBuffer[namesBufferOffset], &fieldData[2], field->nameLength); 
         namesBufferOffset += field->nameLength;
