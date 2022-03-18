@@ -309,9 +309,7 @@ EndSendBIND123_:  //-----------------------------------------------------------
 ResBIND123_:  //-----------------------------------------------------------
   A7105_ReadData(AFHDS2A_RXPACKET_SIZE);
   if ((packet[0] == 0xbc) & (packet[9] == 0x01)) {
-    for (uint8_t i = 0; i < 4; i++) {
-      g_model.moduleData[INTERNAL_MODULE].rxID[i] = packet[5 + i];
-    }
+    memcpy(&g_model.moduleData[INTERNAL_MODULE].rxID, &packet[5], sizeof(g_model.moduleData[INTERNAL_MODULE].rxID));
     RadioState = (RadioState & 0xF0) | AFHDS2A_BIND4;
     bind_phase = 0;
     SETBIT(RadioState, SEND_RES, SEND);
