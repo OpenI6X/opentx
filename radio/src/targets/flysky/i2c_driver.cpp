@@ -28,19 +28,8 @@ void i2cInit()
   // TRACE("i2cInit");
   I2C_DeInit(I2C);
 
- GPIO_InitTypeDef GPIO_InitStructure;
-//  GPIO_InitStructure.GPIO_Pin = I2C_WP_GPIO_PIN;
-//  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-//  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-//  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
-//  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-//  GPIO_Init(I2C_WP_GPIO, &GPIO_InitStructure);
-//  GPIO_ResetBits(I2C_WP_GPIO, I2C_WP_GPIO_PIN);
-
   I2C_InitTypeDef I2C_InitStructure;
-  I2C_InitStructure.I2C_Timing = 0x50330309;//I2C_TIMING_400K;
-  // I2C_InitStructure.I2C_ClockSpeed = I2C_SPEED;
-  // I2C_InitStructure.I2C_DutyCycle = I2C_DutyCycle_2;
+  I2C_InitStructure.I2C_Timing = I2C_TIMING_400K;
   I2C_InitStructure.I2C_OwnAddress1 = 0x00;
   I2C_InitStructure.I2C_Mode = I2C_Mode_I2C;
   I2C_InitStructure.I2C_Ack = I2C_Ack_Enable;
@@ -53,6 +42,7 @@ void i2cInit()
   GPIO_PinAFConfig(I2C_GPIO, I2C_SCL_GPIO_PinSource, I2C_GPIO_AF);
   GPIO_PinAFConfig(I2C_GPIO, I2C_SDA_GPIO_PinSource, I2C_GPIO_AF);
 
+  GPIO_InitTypeDef GPIO_InitStructure;
   GPIO_InitStructure.GPIO_Pin = I2C_SCL_GPIO_PIN | I2C_SDA_GPIO_PIN;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
@@ -246,7 +236,6 @@ bool I2C_EE_WaitEepromStandbyState(void)
   //       return false;
   //       }
   //   TRACE("Standby loop Transfer");
-
   // } while (!I2C_WaitEvent(I2C_FLAG_TXIS));
 
   // if (!I2C_WaitEvent(I2C_FLAG_STOPF))
@@ -254,7 +243,6 @@ bool I2C_EE_WaitEepromStandbyState(void)
   //     TRACE("Standby I2C_FLAG_STOPF");
   //     return false;
   //   }
-  
   return true;
 }
 
