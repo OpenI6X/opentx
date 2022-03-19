@@ -47,7 +47,7 @@ uint8_t valuesBufferOffset = 0;
 
 // 84 + safe margin, ideally without trimming 144
 // but last 25 are used for popup messages
-#define FIELD_DATA_MAX_LEN 120U
+#define FIELD_DATA_MAX_LEN (512 - NAMES_BUFFER_SIZE - VALUES_BUFFER_SIZE) // 120+
 static uint8_t *fieldData = &reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE + VALUES_BUFFER_SIZE];
 // static uint8_t fieldData[FIELD_DATA_MAX_LEN];
 uint8_t fieldDataLen = 0;
@@ -129,8 +129,8 @@ static void crossfireTelemetryPush4(const uint8_t cmd, const uint8_t third, cons
 }
 
 static void crossfireTelemetryPing(){
-  uint8_t crsfPushData[2] = { 0x00, 0xEA };
-  crossfireTelemetryPush(0x28, crsfPushData, 2);
+  static const uint8_t crsfPushData[2] = { 0x00, 0xEA };
+  crossfireTelemetryPush(0x28, (uint8_t *) crsfPushData, 2);
 }
 
 static void allocateFields() {
