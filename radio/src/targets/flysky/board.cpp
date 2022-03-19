@@ -289,6 +289,7 @@ void boardInit()
   //storageEraseAll(false);
   // TRACE("i2c test");
   // i2c_test();
+  // while (true) ;
 
 #if defined(DEBUG)
   DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP | DBGMCU_TIM1_STOP | DBGMCU_TIM2_STOP | DBGMCU_TIM3_STOP | DBGMCU_TIM6_STOP | DBGMCU_TIM14_STOP, ENABLE);
