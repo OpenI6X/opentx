@@ -23,11 +23,9 @@
 void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrite);
 void eepromWaitEepromStandbyState(void);
 
-#define I2C_TIMEOUT_MAX 1000
-
 void i2cInit()
 {
-  TRACE("i2cInit");
+  // TRACE("i2cInit");
   I2C_DeInit(I2C);
 
  GPIO_InitTypeDef GPIO_InitStructure;
@@ -63,6 +61,7 @@ void i2cInit()
   GPIO_Init(I2C_GPIO, &GPIO_InitStructure);
 }
 
+#define I2C_TIMEOUT_MAX 1000
 bool I2C_WaitEvent(uint32_t event)
 {
   uint32_t timeout = I2C_TIMEOUT_MAX;
@@ -95,14 +94,6 @@ bool I2C_WaitEventCleared(uint32_t event)
   * @param  NumByteToRead : number of bytes to read from the EEPROM.
   * @retval None
   */
-
-//I2C_Status I2C1_Read_NBytes(uint8_t driver_Addr(I2C_ADDRESS_EEPROM), uint8_t start_Addr, uint8_t number_Bytes, uint8_t *read_Buffer)
-
-// #define I2C_FAIL 0
-// #define I2C_OK 1
-
-// static int I2C_Timeout = 0;
-
 bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRead)
 {
   // TRACE("I2C_EE_ReadBlock %d, %d", ReadAddr, NumByteToRead);
@@ -110,24 +101,20 @@ bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRea
     return false;
  
   I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, 2, I2C_SoftEnd_Mode, I2C_Generate_Start_Write);
-
   if (!I2C_WaitEvent(I2C_FLAG_TXIS))
     return false;
 
   I2C_SendData(I2C, (uint8_t)((ReadAddr & 0xFF00) >> 8));
-
   if (!I2C_WaitEvent(I2C_FLAG_TXE))
     return false;
 
   I2C_SendData(I2C, (uint8_t)(ReadAddr & 0x00FF));
-
   if (!I2C_WaitEvent(I2C_FLAG_TC))
     return false;
 
   I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, NumByteToRead,  I2C_AutoEnd_Mode, I2C_Generate_Start_Read);
  
-  while (NumByteToRead)
-  {
+  while (NumByteToRead) {
     if (!I2C_WaitEvent(I2C_FLAG_RXNE))
       return false;
  
@@ -160,36 +147,6 @@ void eepromReadBlock(uint8_t * buffer, size_t address, size_t size)
   }
 }
 
-void eepromPageWrite(uint8_t *buffer, uint16_t address, uint8_t size) {
-//   static uint8_t temp[2 + I2C_FLASH_PAGESIZE];
-//   temp[0] = (uint8_t)(address >> 8);
-//   temp[1] = (uint8_t)(address & 0xFF);
-//   // uint8_t start_page = address / 64;
-//   // uint8_t end_page = (address + size - 1) / 64;
-//   // TRACE("eepromPageWrite addr %d size %d [start page %d end page %d]", address, size, start_page, end_page);
-//   memcpy(temp + 2, buffer, size);
-//   //DUMP(temp, size + 2);
-//   i2c_transfer7(I2C2, I2C_ADDRESS_EEPROM, temp, size + 2, NULL, 0);
-
-// #ifdef RTOS_WAIT_MS
-//   RTOS_WAIT_MS(5);
-// #else
-//   delay_ms(5);
-// #endif
-
-// #if defined(EEPROM_VERIFY_WRITES)
-//   eepromPageRead(temp, address, size);
-//   for (int i = 0; i < size; i++) {
-//     if (temp[i] != buffer[i]) {
-//       TRACE("--------- eeprom verify failed  ----------");
-//       while (1)
-//         ;
-//     }
-//   }
-
-// #endif
-}
-
 /**
   * @brief  Writes buffer of data to the I2C EEPROM.
   * @param  buffer : pointer to the buffer containing the data to be
@@ -200,37 +157,124 @@ void eepromPageWrite(uint8_t *buffer, uint16_t address, uint8_t size) {
   */
 void eepromWriteBlock(uint8_t * buffer, size_t address, size_t size)
 {
-  // uint8_t offset = address % I2C_FLASH_PAGESIZE;
-  // uint8_t count = I2C_FLASH_PAGESIZE - offset;
-  // if (size < count) {
-  //   count = size;
-  // }
-  // while (count > 0) {
-  //   eepromPageWrite(buffer, address, count);
-  //   eepromWaitEepromStandbyState(); // TODO
-  //   address += count;
-  //   buffer += count;
-  //   size -= count;
-  //   count = I2C_FLASH_PAGESIZE;
-  //   if (size < I2C_FLASH_PAGESIZE) {
-  //     count = size;
-  //   }
-  // }
+  uint8_t offset = address % I2C_FLASH_PAGESIZE;
+  uint8_t count = I2C_FLASH_PAGESIZE - offset;
+  if (size < count) {
+    count = size;
+  }
+  while (count > 0) {
+    eepromPageWrite(buffer, address, count);
+    eepromWaitEepromStandbyState();
+    address += count;
+    buffer += count;
+    size -= count;
+    count = I2C_FLASH_PAGESIZE;
+    if (size < I2C_FLASH_PAGESIZE) {
+      count = size;
+    }
+  }
 }
 
-uint8_t eepromIsTransferComplete() {
+uint8_t eepromIsTransferComplete() 
+{
   return 1;
 }
 
-void i2c_test() {
-  static uint8_t temp[255];
-  // uint8_t i;
-  // for (i = 0; i < 128; i++) {
-  //   temp[i] = i;
+/**
+  * @brief  Writes more than one byte to the EEPROM with a single WRITE cycle.
+  * @note   The number of byte can't exceed the EEPROM page size.
+  * @param  pBuffer : pointer to the buffer containing the data to be
+  *   written to the EEPROM.
+  * @param  WriteAddr : EEPROM's internal address to write to.
+  * @param  NumByteToWrite : number of bytes to write to the EEPROM.
+  * @retval None
+  */
+bool I2C_EE_PageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrite)
+{
+  if (!I2C_WaitEventCleared(I2C_FLAG_BUSY))
+    return false;
+
+  I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, 2, I2C_Reload_Mode, I2C_Generate_Start_Write);
+  if (!I2C_WaitEvent(I2C_FLAG_TXIS))
+    return false;
+
+  I2C_SendData(I2C, (uint8_t)((WriteAddr & 0xFF00) >> 8));
+  if (!I2C_WaitEvent(I2C_FLAG_TXE))
+    return false;
+
+  I2C_SendData(I2C, (uint8_t)(WriteAddr & 0x00FF));
+  if (!I2C_WaitEvent(I2C_FLAG_TCR))
+    return false;
+
+  I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, NumByteToWrite, I2C_AutoEnd_Mode, I2C_No_StartStop);
+
+  /* While there is data to be written */
+  while (NumByteToWrite--) {
+    if (!I2C_WaitEvent(I2C_FLAG_TXIS))
+      return false;
+
+    I2C_SendData(I2C, *pBuffer);
+    pBuffer++;
+  }
+
+  if (!I2C_WaitEvent(I2C_FLAG_STOPF))
+    return false;
+
+  return true;
+}
+
+void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrite)
+{
+  // TRACE("eepromPageWrite %d, %d", WriteAddr, NumByteToWrite);
+  while (!I2C_EE_PageWrite(pBuffer, WriteAddr, NumByteToWrite)) {
+    i2cInit();
+  }
+}
+
+/**
+  * @brief  Wait for EEPROM Standby state
+  * @param  None
+  * @retval None
+  */
+bool I2C_EE_WaitEepromStandbyState(void)
+{
+  // do {
+  //   // I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, 1, I2C_Reload_Mode, I2C_No_StartStop);
+  //   if (!I2C_WaitEvent(I2C_FLAG_TXIS))
+  //     {
+  //       TRACE("Standby loop I2C_FLAG_TXIS");
+  //       return false;
+  //       }
+  //   TRACE("Standby loop Transfer");
+
+  // } while (!I2C_WaitEvent(I2C_FLAG_TXIS));
+
+  // if (!I2C_WaitEvent(I2C_FLAG_STOPF))
+  //   {
+  //     TRACE("Standby I2C_FLAG_STOPF");
+  //     return false;
+  //   }
+  
+  return true;
+}
+
+void eepromWaitEepromStandbyState(void)
+{
+  RTOS_WAIT_MS(5);
+  // while (!I2C_EE_WaitEepromStandbyState()) {
+  //   i2cInit();
   // }
-  // DUMP(temp, 128);
-  // eepromWriteBlock(temp, 10, 128);
-  // memset(temp, 0, 128);
-  eepromReadBlock(temp, 10, 255);
-  DUMP(temp, 255);
+}
+
+void i2c_test() {
+  static uint8_t temp[128];
+  uint8_t i;
+  for (i = 0; i < 128; i++) {
+    temp[i] = i;
+  }
+  DUMP(temp, 128);
+  eepromWriteBlock(temp, 10, 128);
+  memset(temp, 0, 128);
+  eepromReadBlock(temp, 10, 128);
+  DUMP(temp, 128);
 }
