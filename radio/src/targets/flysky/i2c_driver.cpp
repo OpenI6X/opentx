@@ -228,30 +228,33 @@ void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrit
   */
 bool I2C_EE_WaitEepromStandbyState(void)
 {
-  // do {
-  //   // I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, 1, I2C_Reload_Mode, I2C_No_StartStop);
-  //   if (!I2C_WaitEvent(I2C_FLAG_TXIS))
-  //     {
-  //       TRACE("Standby loop I2C_FLAG_TXIS");
-  //       return false;
-  //       }
-  //   TRACE("Standby loop Transfer");
-  // } while (!I2C_WaitEvent(I2C_FLAG_TXIS));
+  uint32_t timeout = I2C_TIMEOUT_MAX;
+  do {
+    I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, 0, I2C_AutoEnd_Mode, I2C_Generate_Start_Read);
+    // if (!I2C_WaitEvent(I2C_FLAG_TXIS))
+    //   {
+    //     TRACE("Standby loop I2C_FLAG_TXIS");
+    //     return false;
+    //     }
+    if ((timeout--) == 0) {
+      return false;
+    }
+  } while (!I2C_WaitEvent(I2C_FLAG_STOPF));
 
   // if (!I2C_WaitEvent(I2C_FLAG_STOPF))
   //   {
   //     TRACE("Standby I2C_FLAG_STOPF");
   //     return false;
   //   }
+  // TRACE("Standby loop count %d", I2C_TIMEOUT_MAX - timeout);
   return true;
 }
 
 void eepromWaitEepromStandbyState(void)
 {
-  RTOS_WAIT_MS(5);
-  // while (!I2C_EE_WaitEepromStandbyState()) {
-  //   i2cInit();
-  // }
+  while (!I2C_EE_WaitEepromStandbyState()) {
+    i2cInit();
+  }
 }
 
 void i2c_test() {
