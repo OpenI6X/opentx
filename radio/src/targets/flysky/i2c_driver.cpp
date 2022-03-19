@@ -23,7 +23,7 @@
 void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrite);
 void eepromWaitEepromStandbyState(void);
 
-#define I2C_TIMEOUT_MAX 2000
+#define I2C_TIMEOUT_MAX 1000
 
 void i2cInit()
 {
@@ -56,7 +56,7 @@ void i2cInit()
   GPIO_PinAFConfig(I2C_GPIO, I2C_SDA_GPIO_PinSource, I2C_GPIO_AF);
 
   GPIO_InitStructure.GPIO_Pin = I2C_SCL_GPIO_PIN | I2C_SDA_GPIO_PIN;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
@@ -67,7 +67,10 @@ bool I2C_WaitEvent(uint32_t event)
 {
   uint32_t timeout = I2C_TIMEOUT_MAX;
   while (!I2C_GetFlagStatus(I2C, event)) {
-    if ((timeout--) == 0) return false;
+    if ((timeout--) == 0) {
+      TRACE("I2C_WaitEvent %x", event);
+      return false;
+    }
   }
   return true;
 }
@@ -76,7 +79,10 @@ bool I2C_WaitEventCleared(uint32_t event)
 {
   uint32_t timeout = I2C_TIMEOUT_MAX;
   while (I2C_GetFlagStatus(I2C, event)) {
-    if ((timeout--) == 0) return false;
+    if ((timeout--) == 0) {
+      TRACE("I2C_WaitEventCleared %x", event);
+      return false;
+    }
   }
   return true;
 }
@@ -95,94 +101,62 @@ bool I2C_WaitEventCleared(uint32_t event)
 // #define I2C_FAIL 0
 // #define I2C_OK 1
 
-static int I2C_Timeout = 0;
+// static int I2C_Timeout = 0;
 
 bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRead)
 {
-  
- uint16_t read_Num;
- 
-  I2C_Timeout = I2C_TIMEOUT_MAX;
-  while(I2C_GetFlagStatus(I2C, I2C_FLAG_BUSY) != RESET)
-  {
-    if((I2C_Timeout--) == 0)
-    {
-      TRACE("I2C_EE_ReadBlock I2C_FLAG_BUSY");
-      return false;
-    }
-  }
+  // TRACE("I2C_EE_ReadBlock %d, %d", ReadAddr, NumByteToRead);
+  if (!I2C_WaitEventCleared(I2C_FLAG_BUSY))
+    return false;
  
   I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, 2, I2C_SoftEnd_Mode, I2C_Generate_Start_Write);
- 
-  I2C_Timeout = I2C_TIMEOUT_MAX;
-  while(I2C_GetFlagStatus(I2C, I2C_FLAG_TXIS) == RESET)
-  {
-    if((I2C_Timeout--) == 0)
-    {
-      TRACE("I2C_EE_ReadBlock I2C_FLAG_TXIS");
-      return false;
-    }
-  }
+
+  if (!I2C_WaitEvent(I2C_FLAG_TXIS))
+    return false;
 
   I2C_SendData(I2C, (uint8_t)((ReadAddr & 0xFF00) >> 8));
 
-  I2C_Timeout = I2C_TIMEOUT_MAX;
-  while(I2C_GetFlagStatus(I2C, I2C_FLAG_TXIS) == RESET)
-  {
-    if((I2C_Timeout--) == 0)
-    {
-      TRACE("I2C_EE_ReadBlock I2C_FLAG_TXIS");
-      return false;
-    }
-  }
+  if (!I2C_WaitEvent(I2C_FLAG_TXE))
+    return false;
 
   I2C_SendData(I2C, (uint8_t)(ReadAddr & 0x00FF));
 
-  I2C_Timeout = I2C_TIMEOUT_MAX;
-  while(I2C_GetFlagStatus(I2C, I2C_FLAG_TC) == RESET)
-  {
-    if((I2C_Timeout--) == 0)
-    {
-      TRACE("I2C_EE_ReadBlock I2C_FLAG_TC");
-      return false;
-    }
-  }
- 
+  if (!I2C_WaitEvent(I2C_FLAG_TC))
+    return false;
+
   I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, NumByteToRead,  I2C_AutoEnd_Mode, I2C_Generate_Start_Read);
  
-  for(read_Num = 0; read_Num < NumByteToRead; read_Num++)
+  while (NumByteToRead)
   {
-    I2C_Timeout = I2C_TIMEOUT_MAX;
-    while(I2C_GetFlagStatus(I2C, I2C_FLAG_RXNE) == RESET)
-    {
-      if((I2C_Timeout--) == 0)
-      {
-        TRACE("I2C_EE_ReadBlock I2C_FLAG_RXNE");
-        return false;
-      }
-    }
- 
-    pBuffer[read_Num] = I2C_ReceiveData(I2C);
-  }
- 
-  I2C_Timeout = I2C_TIMEOUT_MAX;
-  while(I2C_GetFlagStatus(I2C, I2C_FLAG_STOPF) == RESET)
-  {
-    if((I2C_Timeout--) == 0)
-    {
-      TRACE("I2C_EE_ReadBlock I2C_FLAG_STOPF");
+    if (!I2C_WaitEvent(I2C_FLAG_RXNE))
       return false;
-    }
+ 
+    *pBuffer++ = I2C_ReceiveData(I2C);
+    NumByteToRead--;
   }
+
+  if (!I2C_WaitEvent(I2C_FLAG_STOPF))
+    return false;
  
   return true;
 }
 
 void eepromReadBlock(uint8_t * buffer, size_t address, size_t size)
 {
-  TRACE("eepromReadBlock");
-  while (!I2C_EE_ReadBlock(buffer, address, size)) {
-    i2cInit();
+  // I2C_TransferHandling can handle up to 255 bytes at once
+  uint16_t maxSize = 255;
+  uint8_t round = 0;
+  while (size > maxSize) {
+    size -= maxSize;
+    while (!I2C_EE_ReadBlock(buffer + (round * maxSize), address, maxSize)) {
+      i2cInit();
+    }
+    round++;
+  }
+  if (size) {
+    while (!I2C_EE_ReadBlock(buffer + (round * maxSize), address, size)) {
+      i2cInit();
+    }
   }
 }
 
