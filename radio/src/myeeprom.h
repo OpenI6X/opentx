@@ -35,7 +35,7 @@
 #define WARN_MEM (!(g_eeGeneral.warnOpts & WARN_MEM_BIT))
 #define BEEP_VAL ((g_eeGeneral.warnOpts & WARN_BVAL_BIT) >> 3)
 
-#define EEPROM_VER 219
+#define EEPROM_VER 220
 #define FIRST_CONV_EEPROM_VER 216
 
 #define GET_PPM_POLARITY(idx) g_model.moduleData[idx].ppm.pulsePol
