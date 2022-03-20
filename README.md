@@ -25,7 +25,7 @@ Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
     * MEGA Bauds up to 1.8M
     * ExpressLRS V2 configuration (ELRSV2.lua port)
 * 16 channels
-* Telemetry
+* Telemetry, up to 26 sensors
 * Audio tones, alarms and vario sound custom implementation
 * DFU bootloader - Start by pushing trims to the center, like regular OpenTX one
 * USB Joystick & Storage modes (To enable on standard cable: General Settings > USB Detect: Once)
