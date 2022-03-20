@@ -4,7 +4,7 @@
 [![Release](https://img.shields.io/github/v/release/OpenI6X/opentx?include_prereleases)](https://github.com/OpenI6X/opentx/releases)
 [![GitHub all releases](https://img.shields.io/github/downloads/OpenI6X/opentx/total)](https://github.com/OpenI6X/opentx/releases)
 
-**OpenTX** port for the venerable **Flysky FS-i6X** RC radio transmitter.
+**OpenTX** port for the venerable Flysky FS-i6X RC radio transmitter.
 
 
 You can find instructions and videos contributed by fellow early adopters in the [RCGroups thread](https://www.rcgroups.com/forums/showthread.php?3916435-FlySky-I6X-port-of-OpenTX), [Telegram group](https://t.me/otx_flysky_i6x) and [Rakish Rc](https://www.youtube.com/c/RakishRc) youtube channel. 
@@ -31,19 +31,19 @@ Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
 
 ## Navigation
 
-| Key | Function                                                                                           |
-| --- |----------------------------------------------------------------------------------------------------|
-| UP     | Up. Hold on main screen for stats.                                                                 |                              
-| DOWN   | Down. Hold on main screen for telemetry                                                            |                                  
-| OK     | Confirm. Hold on main screen for model menu.                                                       |
-| CANCEL | Exit. **Hold for graceful shutdown - needed to save timers and some general settings.**            |                      
+| Key | Function                                                                           |
+| --- |------------------------------------------------------------------------------------|
+| UP     | Up. Hold on main screen for stats.                                                 |                              
+| DOWN   | Down. Hold on main screen for telemetry                                            |                                  
+| OK     | Confirm. Hold on main screen for model menu.                                       |
+| CANCEL | Exit.                                                                              |                      
 | BIND   | Scroll pages right or left (long press), go right in a line. Hold on main screen for general menu. |
-| LEFT POT | Change edited value.                                                                               |
+| LEFT POT | Change edited value.                                                               |
 
 
 ## Shutdown
 
-FlySky FS-i6X don't have hardware power off like other OpenTX devices, but there is a way to trigger it by holding CANCEL button until screen turns off then switch off.
+FlySky FS-i6X don't have graceful shutdown button like other OpenTX devices, but there is a way to trigger it by holding CANCEL button until screen turns off then switch off.
 
 When to use this method:
 * With USB connected - if USB is connected then settings are not stored with standard delay (2 seconds).
