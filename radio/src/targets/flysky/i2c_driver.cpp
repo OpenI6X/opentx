@@ -228,24 +228,18 @@ void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrit
   */
 bool I2C_EE_WaitEepromStandbyState(void)
 {
-  uint32_t timeout = I2C_TIMEOUT_MAX;
+  uint32_t maxLoop = 100;
   do {
     I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, 0, I2C_AutoEnd_Mode, I2C_Generate_Start_Read);
     // if (!I2C_WaitEvent(I2C_FLAG_TXIS))
-    //   {
-    //     TRACE("Standby loop I2C_FLAG_TXIS");
-    //     return false;
-    //     }
-    if ((timeout--) == 0) {
+    //   return false;
+    if ((maxLoop--) == 0) {
       return false;
     }
   } while (!I2C_WaitEvent(I2C_FLAG_STOPF));
 
   // if (!I2C_WaitEvent(I2C_FLAG_STOPF))
-  //   {
-  //     TRACE("Standby I2C_FLAG_STOPF");
-  //     return false;
-  //   }
+  //   return false;
   // TRACE("Standby loop count %d", I2C_TIMEOUT_MAX - timeout);
   return true;
 }
