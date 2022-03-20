@@ -43,7 +43,11 @@ Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
 
 ## Shutdown
 
-FlySky FS-i6X don't have hardware power off like other OpenTX devices, therefore to properly shutdown with all settings saved, hold CANCEL button until screen is off then switch off.
+FlySky FS-i6X don't have hardware power off like other OpenTX devices, but there is a way to trigger it by holding CANCEL button until screen turns off then switch off.
+
+When to use this method:
+* With USB connected - if USB is connected then settings are not stored with standard delay (2 seconds).
+* To save timers.
 
 ## Hardware connections (optional)
 
