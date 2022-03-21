@@ -79,7 +79,6 @@ bool I2C_WaitEventCleared(uint32_t event)
   */
 bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRead)
 {
-  // TRACE("I2C_EE_ReadBlock %d, %d", ReadAddr, NumByteToRead);
   if (!I2C_WaitEventCleared(I2C_FLAG_BUSY))
     return false;
  
@@ -220,7 +219,6 @@ bool I2C_EE_PageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWri
 
 void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrite)
 {
-  // TRACE("eepromPageWrite %d, %d", WriteAddr, NumByteToWrite);
   while (!I2C_EE_PageWrite(pBuffer, WriteAddr, NumByteToWrite)) {
     i2cInit();
   }
