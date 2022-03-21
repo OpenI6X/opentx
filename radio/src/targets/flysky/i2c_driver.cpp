@@ -25,7 +25,6 @@ void eepromWaitEepromStandbyState(void);
 
 void i2cInit()
 {
-  // TRACE("i2cInit");
   I2C_DeInit(I2C);
 
   I2C_InitTypeDef I2C_InitStructure;
@@ -56,10 +55,7 @@ bool I2C_WaitEvent(uint32_t event)
 {
   uint32_t timeout = I2C_TIMEOUT_MAX;
   while (!I2C_GetFlagStatus(I2C, event)) {
-    if ((timeout--) == 0) {
-      TRACE("I2C_WaitEvent %x", event);
-      return false;
-    }
+    if ((timeout--) == 0) return false;
   }
   return true;
 }
@@ -68,10 +64,7 @@ bool I2C_WaitEventCleared(uint32_t event)
 {
   uint32_t timeout = I2C_TIMEOUT_MAX;
   while (I2C_GetFlagStatus(I2C, event)) {
-    if ((timeout--) == 0) {
-      TRACE("I2C_WaitEventCleared %x", event);
-      return false;
-    }
+    if ((timeout--) == 0) return false;
   }
   return true;
 }
@@ -155,6 +148,18 @@ void eepromWriteBlock(uint8_t * buffer, size_t address, size_t size)
   while (count > 0) {
     eepromPageWrite(buffer, address, count);
     eepromWaitEepromStandbyState();
+
+#if defined(EEPROM_VERIFY_WRITES)
+    static uint8_t temp[I2C_FLASH_PAGESIZE];
+    eepromReadBlock(temp, address, count);
+    for (int i = 0; i < count; i++) {
+      if (temp[i] != buffer[i]) {
+        TRACE("eeprom verify failed %x, %d", address, count);
+        while (1) ;
+      }
+    }
+#endif
+
     address += count;
     buffer += count;
     size -= count;
@@ -228,19 +233,22 @@ void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrit
   */
 bool I2C_EE_WaitEepromStandbyState(void)
 {
-  uint32_t maxLoop = 100;
-  do {
-    I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, 0, I2C_AutoEnd_Mode, I2C_Generate_Start_Read);
-    // if (!I2C_WaitEvent(I2C_FLAG_TXIS))
-    //   return false;
-    if ((maxLoop--) == 0) {
-      return false;
-    }
-  } while (!I2C_WaitEvent(I2C_FLAG_STOPF));
+//  do {
+//    I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, 1, I2C_Reload_Mode, I2C_Generate_Start_Write);
+//    if (!I2C_WaitEvent(I2C_FLAG_TXIS))
+//      return false;
+//
+//    I2C_SendData(I2C, 0);
+//    if (!I2C_WaitEvent(I2C_FLAG_TCR))
+//      return false;
+//
+//  } while (!I2C_WaitEvent(I2C_FLAG_TXIS));
+//
+//  if (!I2C_WaitEvent(I2C_FLAG_STOPF))
+//    return false;
 
-  // if (!I2C_WaitEvent(I2C_FLAG_STOPF))
-  //   return false;
-  // TRACE("Standby loop count %d", I2C_TIMEOUT_MAX - timeout);
+  RTOS_WAIT_MS(5);
+
   return true;
 }
 
