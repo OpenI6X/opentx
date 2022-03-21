@@ -81,7 +81,7 @@
 #define I2C_SDA_GPIO_PinSource        GPIO_PinSource11
 //0x40B22536; //100kHz 0x10950C27; //400kHz
 // 0x30E32E44;
-#define I2C_TIMING_400K               0x50330309; // 400kHz
+#define I2C_TIMING_400K               0x30E32E44; //0x50330309; // 400kHz
 #define I2C_ADDRESS_EEPROM            0xA0 // 0x50 << 1 (convert to upper 7 bits)
 #define I2C_FLASH_PAGESIZE            64
 #define EEPROM_BLOCK_SIZE     (64)
