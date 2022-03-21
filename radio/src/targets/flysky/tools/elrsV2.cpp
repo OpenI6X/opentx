@@ -81,8 +81,9 @@ uint8_t statusComplete = 0;
 int8_t expectedChunks = -1;
 // uint8_t deviceIsELRS_TX = 0;
 tmr10ms_t linkstatTimeout = 100;
-tmr10ms_t titleShowWarnTimeout = 100;
 uint8_t titleShowWarn = 0;
+tmr10ms_t titleShowWarnTimeout = 100;
+uint8_t reloadFolder = 0;
 
 #define COL2           70
 #define maxLineIndex   6
@@ -377,6 +378,9 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
   if (fieldDataLen == 0) {
     expectedChunks = -1;
   }
+  if (fieldId == reloadFolder) { // if we finally receive the folder id, reset the pending reload folder flag
+    reloadFolder = 0;
+  }
   FieldProps* field = &fields[fieldId - 1];
   uint8_t chunks = data[4];
   if (field == 0 || (chunks != expectedChunks && expectedChunks != -1)) {
@@ -407,7 +411,7 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
     uint8_t type = fieldData[1] & 0x7F;
     uint8_t hidden = (fieldData[1] & 0x80) ? 1 : 0; 
     uint8_t offset;
-    if (field->nameLength != 0) { 
+    if (field->nameLength != 0) {
       if (field->parent != parent || field->type != type/* || field->hidden != hidden*/) {
         fieldDataLen = 0; 
         return; 
@@ -433,21 +437,27 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
     }
 
     if (fieldPopup == 0) { 
-      if (fieldId == fields_count) {
+      if (fieldId == fields_count) { // if we have loaded all params
         TRACE("namesBufferOffset %d", namesBufferOffset);
         DUMP(namesBuffer, NAMES_BUFFER_SIZE);
         TRACE("valuesBufferOffset %d", valuesBufferOffset);
         DUMP(valuesBuffer, VALUES_BUFFER_SIZE);
         allParamsLoaded = 1;
         fieldId = 1;
-      } else {
+      } else if (allParamsLoaded == 0) {
         fieldId++; // fieldId = 1 + (fieldId % (fieldsLen-1));
+      } else if (reloadFolder != 0) { // if we still have to reload the folder name
+        fieldId = reloadFolder;
+        fieldChunk = 0;
+        statusComplete = 0;
       }
       fieldTimeout = getTime() + 200;
     } else {
       fieldTimeout = getTime() + fieldPopup->valuesOffset; 
     }
-    statusComplete = 1;
+    if (reloadFolder == 0) {
+      statusComplete = 1;  // status is not complete, we got to reload the folder
+    }
     fieldDataLen = 0; 
   }
 }
@@ -461,15 +471,16 @@ static void parseElrsInfoMessage(uint8_t* data) {
 
   uint8_t badPkt = data[3];
   uint16_t goodPkt = (data[4]*256) + data[5];
-  char state = (elrsFlags & 1) ? 'C' : '-';
-  tiny_sprintf(goodBadPkt, "%u/%u   %c", 0, 3, badPkt, goodPkt, state);
-
+  uint8_t newFlags = data[6];
   // If flags are changing, reset the warning timeout to display/hide message immediately
-  if (data[6] != elrsFlags) {
-    elrsFlags = data[6];
+  if (newFlags != elrsFlags) {
+    elrsFlags = newFlags;
     titleShowWarnTimeout = 0;
   }
   strcpy(elrsFlagsInfo, (char*)&data[7]); 
+
+  char state = (elrsFlags & 1) ? 'C' : '-';
+  tiny_sprintf(goodBadPkt, "%u/%u   %c", 0, 3, badPkt, goodPkt, state);
 }
 
 static void refreshNext(uint8_t command = 0, uint8_t* data = 0, uint8_t length = 0) {
@@ -582,10 +593,19 @@ static void handleDevicePageEvent(event_t event) {
         }
         if (!edit) {
           if (field->type < 11 || field->type == 13) {
+            // For editable field types and commands, request this field's
+            // data again, with a short delay to allow the module EEPROM to
+            // commit. Do this before save() to allow save to override
             fieldTimeout = getTime() + 20;
             fieldId = field->id;
             fieldChunk = 0;
-            fieldDataLen = 0; 
+            statusComplete = 0;
+            if (field->parent) {
+              // if it is inside a folder, then we reload the folder
+              reloadFolder = field->parent;
+              fields[field->parent].nameLength = 0;
+            }
+            fieldDataLen = 0;
           }
           functions[field->type - 9].save(field);
         }
