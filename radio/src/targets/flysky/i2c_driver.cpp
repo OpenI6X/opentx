@@ -81,7 +81,7 @@ bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRea
 {
   if (!I2C_WaitEventCleared(I2C_FLAG_BUSY))
     return false;
- 
+
   I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, 2, I2C_SoftEnd_Mode, I2C_Generate_Start_Write);
   if (!I2C_WaitEvent(I2C_FLAG_TXIS))
     return false;
@@ -95,18 +95,18 @@ bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRea
     return false;
 
   I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, NumByteToRead,  I2C_AutoEnd_Mode, I2C_Generate_Start_Read);
- 
+
   while (NumByteToRead) {
     if (!I2C_WaitEvent(I2C_FLAG_RXNE))
       return false;
- 
+
     *pBuffer++ = I2C_ReceiveData(I2C);
     NumByteToRead--;
   }
 
   if (!I2C_WaitEvent(I2C_FLAG_STOPF))
     return false;
- 
+
   return true;
 }
 
@@ -169,7 +169,7 @@ void eepromWriteBlock(uint8_t * buffer, size_t address, size_t size)
   }
 }
 
-uint8_t eepromIsTransferComplete() 
+uint8_t eepromIsTransferComplete()
 {
   return 1;
 }
