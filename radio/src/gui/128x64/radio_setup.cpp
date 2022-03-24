@@ -609,7 +609,6 @@ void menuRadioSetup(event_t event)
           resumePulses();
           clearKeyEvents();
         }
-        MOVE_CURSOR_FROM_HERE();
         break;
     }
   }
