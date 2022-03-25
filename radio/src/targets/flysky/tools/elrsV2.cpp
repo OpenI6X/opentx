@@ -56,9 +56,11 @@ uint8_t fieldDataLen = 0;
 FieldProps fields[FIELDS_MAX_COUNT]; // = (FieldProps *)&reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE + VALUES_BUFFER_SIZE];
 uint8_t fieldsLen = 0;
 
-//#define DEVICES_MAX_COUNT 3
+#define DEVICES_MAX_COUNT 4
 //DeviceProps devices[DEVICES_MAX_COUNT];
+uint8_t deviceIds[DEVICES_MAX_COUNT];
 uint8_t devicesLen = 0;
+uint8_t otherDevicesId = 255;
 
 uint8_t deviceId = 0xEE;
 uint8_t handsetId = 0xEF;
@@ -219,15 +221,14 @@ static void selectField(int8_t step) {
   }
 }
 
-static DeviceProps * getDevice(uint8_t deviceId) {
+static uint8_t getDevice(uint8_t deviceId) {
   TRACE("getDevice %x", deviceId);
-  for (uint32_t i = 1; i < devicesLen; i++) {
-    if (devices[i].id == deviceId) {
-      return &devices[i];
+  for (uint8_t i = 0; i < devicesLen; i++) {
+    if (deviceIds[i] == deviceId) {
+      return deviceIds[i];
     }
   }
-  TRACE("getDevice device not found");
-  return nullptr;
+  return 0;
 }
 
 static uint8_t strRemoveTo(char * src, const char * str, const uint8_t len) {
@@ -309,6 +310,10 @@ static void fieldFolderOpen(FieldProps * field) {
 
 static void fieldFolderDeviceOpen(FieldProps * field) {
   crossfireTelemetryPing(); //broadcast with standard handset ID to get all node respond correctly
+// if folderAccess == devices folder, store only devices instead of fields
+  fields_count = devicesLen;
+  devicesLen = 0;
+  fieldsLen = 0;
   return fieldFolderOpen(field);
 }
 
@@ -364,6 +369,7 @@ static void UIbackExec(FieldProps * field = 0) {
   }
   reloadAllField();
   devicesLen = 0;
+  fields_count = 0;
 }
 
 static void changeDeviceId(uint8_t devId) { //change to selected device ID
@@ -382,56 +388,81 @@ static void changeDeviceId(uint8_t devId) { //change to selected device ID
 }
 
 static void fieldDeviceIdSelect(FieldProps * field) {
-  TRACE("fieldDeviceIdSelect %d", field->id);
-  DeviceProps * device = getDevice(field->id);
-  changeDeviceId(device->id);
-  crossfireTelemetryPing();
+  TRACE("fieldDeviceIdSelect %x", field->id);
+//  DeviceProps * device = getDevice(field->id);
+ changeDeviceId(field->id);
+ crossfireTelemetryPing();
 }
 
 // kopiuj devices do fields ustawiając parent na "Other devices"
 static void createDeviceFields() { // put other devices in the field list
   TRACE("createDeviceFields %d", devicesLen);
-  TRACE("move backbutton from %d to %d", backButtonId, fields_count + 2 + devicesLen);
-  fields[fields_count + 2 + devicesLen].id = fields[backButtonId].id;
-  fields[fields_count + 2 + devicesLen].nameLength = fields[backButtonId].nameLength;
-  fields[fields_count + 2 + devicesLen].type = fields[backButtonId].type;
-  fields[fields_count + 2 + devicesLen].parent = fields[backButtonId].parent;
-  backButtonId = fields_count + 2 + devicesLen; // move back button to the end of the list, so it will always show up at the bottom.
-  for (uint32_t i = 0; i < devicesLen; i++) {
-    TRACE("createDeviceFields at %d", fields_count+2+i);
-    fields[fields_count+2+i].id = devices[i].id; // fields_count+2+i + 1;
-    fields[fields_count+2+i].nameOffset = devices[i].nameOffset;
-    fields[fields_count+2+i].nameLength = devices[i].nameLength;
-    fields[fields_count+2+i].type = 15;
-    if (devices[i].id == deviceId) {
-      // fields[fields_count+1+i] = {id = fields_count+1+i, name=devices[i].name, parent = 255, type=15}
-      fields[fields_count+2+i].parent = 255;
-    } else {
-      // fields[fields_count+1+i] = {id = fields_count+1+i, name=devices[i].name, parent = fields_count+1, type=15}
-      fields[fields_count+2+i].parent = fields_count+1+1;
-    }
-  }
-  fieldsLen = fields_count + 2 + devicesLen + 1;
-  TRACE("fieldsLen %d", fieldsLen);
+//  TRACE("move backbutton from %d to %d", backButtonId, fields_count + 2 + devicesLen);
+ fields[fields_count + 2 /* + devicesLen */].id = fields[backButtonId].id;
+ fields[fields_count + 2 /* + devicesLen */].nameLength = fields[backButtonId].nameLength;
+ fields[fields_count + 2 /* + devicesLen */].type = fields[backButtonId].type;
+ fields[fields_count + 2 /* + devicesLen */].parent = fields[backButtonId].parent;
+ backButtonId = fields_count + 2 /* + devicesLen */; // move back button to the end of the list, so it will always show up at the bottom.
+//  for (uint32_t i = 0; i < devicesLen; i++) {
+//    TRACE("createDeviceFields at %d", fields_count+2+i);
+//    fields[fields_count+2+i].id = devices[i].id; // fields_count+2+i + 1;
+//    fields[fields_count+2+i].nameOffset = devices[i].nameOffset;
+//    fields[fields_count+2+i].nameLength = devices[i].nameLength;
+//    fields[fields_count+2+i].type = 15;
+//    if (devices[i].id == deviceId) {
+//      // fields[fields_count+1+i] = {id = fields_count+1+i, name=devices[i].name, parent = 255, type=15}
+//      fields[fields_count+2+i].parent = 255;
+//    } else {
+//      // fields[fields_count+1+i] = {id = fields_count+1+i, name=devices[i].name, parent = fields_count+1, type=15}
+//      fields[fields_count+2+i].parent = fields_count+1+1;
+//    }
+//  }
+ fieldsLen = fields_count + 2 /* + devicesLen */ + 1;
+//  TRACE("fieldsLen %d", fieldsLen);
 }
 
 static void parseDeviceInfoMessage(uint8_t* data) {
   uint8_t offset;
   uint8_t id = data[2];
-  TRACE("parseDeviceInfoMessage %x", id);
-  offset = strlen((char*)&data[3]) + 1 + 3; 
-  DeviceProps * device = getDevice(id);
-  TRACE("device is %d", device);
-  if (device == nullptr) {
-    TRACE("add device %x, %s at %d", id, &data[3], devicesLen);
-    devices[devicesLen].id = id;
-    devices[devicesLen].nameLength = offset - 4;
-    devices[devicesLen].nameOffset = namesBufferOffset;
-    memcpy(&namesBuffer[namesBufferOffset], &data[3], devices[devicesLen].nameLength);
-    namesBufferOffset += devices[devicesLen].nameLength;
+  TRACE("parseDeviceInfoMessage %x folderAcc %d, f_c %d, devLen %d", id, folderAccess, fields_count, devicesLen);
+  offset = strlen((char*)&data[3]) + 1 + 3;
+//  DeviceProps * device = getDevice(id);
+//  TRACE("device is %d", device);
+//  if (device == nullptr) {
+//    TRACE("add device %x, %s at %d", id, &data[3], devicesLen);
+//    devices[devicesLen].id = id;
+//    devices[devicesLen].nameLength = offset - 4;
+//    devices[devicesLen].nameOffset = namesBufferOffset;
+//    memcpy(&namesBuffer[namesBufferOffset], &data[3], devices[devicesLen].nameLength);
+//    namesBufferOffset += devices[devicesLen].nameLength;
+//    devicesLen++;
+//  }
+  
+  uint8_t devId = getDevice(id);
+  if (!devId) {
+    deviceIds[devicesLen] = id;
+    if (folderAccess == otherDevicesId) { // if "Other Devices" opened store devices to fields
+      fields[devicesLen].id = id;
+      fields[devicesLen].type = 15;
+      fields[devicesLen].nameLength = offset - 4;
+      fields[devicesLen].nameOffset = namesBufferOffset;
+      memcpy(&namesBuffer[namesBufferOffset], &data[3], fields[devicesLen].nameLength);
+      namesBufferOffset += fields[devicesLen].nameLength;
+      if (fields[devicesLen].id == deviceId) {
+        fields[devicesLen].parent = 255; // hide current device
+      } else {
+        fields[devicesLen].parent = otherDevicesId; // set parent to "Other Devices"
+      }
+      if (devicesLen == fields_count - 1) {
+        allParamsLoaded = 1;
+        fieldId = 1;
+        createDeviceFields();
+      }
+    }
     devicesLen++;
   }
-  if (deviceId == id) {
+
+  if (deviceId == id && folderAccess != otherDevicesId) {
     memcpy(deviceName, (char *)&data[3], 16);
     deviceIsELRS_TX = ((memcmp(&data[offset], "ELRS", 4) == 0) && (deviceId == 0xEE)) ? 1 : 0; // SerialNumber = 'E L R S' and ID is TX module
     uint8_t newFieldCount = data[offset+12];
@@ -441,14 +472,15 @@ static void parseDeviceInfoMessage(uint8_t* data) {
       fields_count = newFieldCount;
       allocateFields();
       TRACE("add other devices at %d", fields_count+1);
-      fields[fields_count+1].id = fields_count+1+1; // add other devices folder
-      fields[fields_count+1].nameLength = 1;
-      fields[fields_count+1].parent = 255; // hidden initally
-      fields[fields_count+1].type = 16;
+      otherDevicesId = fields_count+0+1;
+      fields[fields_count+0].id = otherDevicesId; // add "Other Devices"
+      fields[fields_count+0].nameLength = 1;
+      fields[fields_count+0].parent = 255; // hidden initally
+      fields[fields_count+0].type = 16;
       if (newFieldCount == 0) {
         allParamsLoaded = 1;
         fieldId = 1;
-//        createDeviceFields();
+        createDeviceFields();
       }
     }
   }
@@ -594,7 +626,7 @@ static void parseElrsInfoMessage(uint8_t* data) {
 static void refreshNext(uint8_t command = 0, uint8_t* data = 0, uint8_t length = 0) {
   if (command == 0x29) {
     parseDeviceInfoMessage(data);
-  } else if (command == 0x2B) {
+  } else if (command == 0x2B && folderAccess != otherDevicesId /* !devicesFolderOpened */) {
     parseParameterInfoMessage(data, length);
     if (allParamsLoaded < 1 || statusComplete == 0) {
       fieldTimeout = 0; 
@@ -747,8 +779,8 @@ static void runDevicePage(event_t event) {
   lcd_title();
 
   FieldProps * field;
-  if (devicesLen > 1) { // show other device folder
-    fields[fields_count+1].parent = 0;
+  if (devicesLen > 1) { // show Other Devices folder
+    fields[fields_count+0].parent = 0;
   }
   if (elrsFlags > 0x1F) {
     lcd_warn();
