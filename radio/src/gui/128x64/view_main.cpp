@@ -570,6 +570,13 @@ void menuMainView(event_t event)
     if (isAsteriskDisplayed()) {
       lcdDrawChar(REBOOT_X, 0 * FH, '!', INVERS);
     }
+
+#if defined(PCBI6X)
+    // Add square in case of pending or ongoing eeprom write
+    if (storageDirtyMsk || eepromIsWriting()) {
+      lcdDrawRect(REBOOT_X, 0 * FH, 4, 4);
+    }
+#endif // PCBI6X
   }
 
 #if defined(GVARS)
