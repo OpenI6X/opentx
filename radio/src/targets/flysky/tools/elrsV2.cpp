@@ -2,7 +2,6 @@
  * ExpressLRS V2 lua configuration script port to C.
  * 
  * Limitations:
- * - no multiple devices, only ExpressLRS transmitter,
  * - no integer/float/string fields support, ExpressLRS uses only selection anyway,
  * - field unit is not displayed,
  * - dynamically shorten values strings ("AUX" -> "A") to save RAM.
@@ -57,8 +56,7 @@ FieldProps fields[FIELDS_MAX_COUNT]; // = (FieldProps *)&reusableBuffer.MSC_BOT_
 uint8_t fieldsLen = 0;
 
 #define DEVICES_MAX_COUNT 4
-//DeviceProps devices[DEVICES_MAX_COUNT];
-uint8_t deviceIds[DEVICES_MAX_COUNT];
+static uint8_t deviceIds[DEVICES_MAX_COUNT];
 uint8_t devicesLen = 0;
 uint8_t otherDevicesId = 255;
 
@@ -426,18 +424,6 @@ static void parseDeviceInfoMessage(uint8_t* data) {
   uint8_t id = data[2];
   TRACE("parseDeviceInfoMessage %x folderAcc %d, f_c %d, devLen %d", id, folderAccess, fields_count, devicesLen);
   offset = strlen((char*)&data[3]) + 1 + 3;
-//  DeviceProps * device = getDevice(id);
-//  TRACE("device is %d", device);
-//  if (device == nullptr) {
-//    TRACE("add device %x, %s at %d", id, &data[3], devicesLen);
-//    devices[devicesLen].id = id;
-//    devices[devicesLen].nameLength = offset - 4;
-//    devices[devicesLen].nameOffset = namesBufferOffset;
-//    memcpy(&namesBuffer[namesBufferOffset], &data[3], devices[devicesLen].nameLength);
-//    namesBufferOffset += devices[devicesLen].nameLength;
-//    devicesLen++;
-//  }
-  
   uint8_t devId = getDevice(id);
   if (!devId) {
     deviceIds[devicesLen] = id;
@@ -570,7 +556,7 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
         memcpy(&namesBuffer[namesBufferOffset], &fieldData[2], field->nameLength); 
         namesBufferOffset += field->nameLength;
       }
-      if (functions[field->type - 9].load) {
+      if (field->type >= 9 && functions[field->type - 9].load) {
         functions[field->type - 9].load(field, fieldData, offset);
       }
     }
@@ -733,7 +719,7 @@ static void handleDevicePageEvent(event_t event) {
       crossfireTelemetryPush4(0x2D, 0x2E, 0x00);
     } else {
       FieldProps * field = getField(lineIndex);
-      if (field != 0 && field->nameLength > 0) {
+      if (field != 0 && field->nameLength > 0 && field->type >= 9) {
         if (field->type == 10) { 
         } else if (field->type < 11) {
           edit = 1 - edit;
@@ -795,7 +781,7 @@ static void runDevicePage(event_t event) {
         if (field->type < 11 or field->type == 12) { 
           lcdDrawSizedText(textXoffset, y*textSize+textYoffset, (char *)&namesBuffer[field->nameOffset], field->nameLength, 0);
         }
-        if (functions[field->type - 9].display) {
+        if (field->type >= 9 && functions[field->type - 9].display) {
           functions[field->type - 9].display(field, y*textSize+textYoffset, attr);
         }
       }
