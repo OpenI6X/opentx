@@ -5,7 +5,6 @@
  * - no integer/float/string fields support, ExpressLRS uses only selection anyway,
  * - field unit is not displayed,
  * - dynamically shorten values strings ("AUX" -> "A") to save RAM.
- * 
  */
 
 #include "opentx.h"
@@ -39,9 +38,9 @@ struct FieldFunctions {
 
 #define NAMES_BUFFER_SIZE 192 // 156 + margin for future options
 #define VALUES_BUFFER_SIZE 176 // 144 + margin for future options
-uint8_t *namesBuffer = reusableBuffer.MSC_BOT_Data;
+static uint8_t *namesBuffer = reusableBuffer.MSC_BOT_Data;
 uint8_t namesBufferOffset = 0;
-uint8_t *valuesBuffer = &reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE]; 
+static uint8_t *valuesBuffer = &reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE];
 uint8_t valuesBufferOffset = 0;
 
 // 84 + safe margin, ideally without trimming 144
@@ -52,7 +51,7 @@ static uint8_t *fieldData = &reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE + VAL
 uint8_t fieldDataLen = 0;
 
 #define FIELDS_MAX_COUNT 32 // 32 * 8 = 256b // 30 + 2 margin for future fields
-FieldProps fields[FIELDS_MAX_COUNT]; // = (FieldProps *)&reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE + VALUES_BUFFER_SIZE];
+static FieldProps fields[FIELDS_MAX_COUNT]; // = (FieldProps *)&reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE + VALUES_BUFFER_SIZE];
 uint8_t fieldsLen = 0;
 
 #define DEVICES_MAX_COUNT 4
@@ -134,7 +133,7 @@ static void crossfireTelemetryPush4(const uint8_t cmd, const uint8_t third, cons
 }
 
 static void crossfireTelemetryPing(){
-  static const uint8_t crsfPushData[2] = { 0x00, 0xEA };
+  const uint8_t crsfPushData[2] = { 0x00, 0xEA };
   crossfireTelemetryPush(0x28, (uint8_t *) crsfPushData, 2);
 }
 
