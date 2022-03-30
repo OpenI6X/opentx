@@ -77,23 +77,20 @@ volatile tmr10ms_t g_tmr10ms;
 volatile uint8_t rtc_count = 0;
 uint32_t watchdogTimeout = 0;
 
-void watchdogSuspend(uint32_t timeout) {
+void watchdogSuspend(uint32_t timeout) 
+{
   watchdogTimeout = timeout;
 }
 
-void per10ms() {
+void per10ms() 
+{
   g_tmr10ms++;
-  static uint16_t wdt_cnt = 0;
-  wdt_cnt++;
-  if (wdt_cnt > 10) {  // per 100ms
-    wdt_cnt = 0;
-    wdt_reset();
+
+  if (watchdogTimeout)
+  {
+    watchdogTimeout -= 1;
+    wdt_reset(); // Retrigger hardware watchdog
   }
-  // if (watchdogTimeout)
-  // {
-  //   watchdogTimeout -= 1;
-  //   wdt_reset(); // Retrigger hardware watchdog
-  // }
 
 #if defined(GUI)
   if (lightOffCounter)
