@@ -104,6 +104,7 @@ void usbInit()
 
 void usbStart()
 {
+  watchdogSuspend(200); // 2s, PCBI6X fix for occasional reboots on joystick connect
   switch (getSelectedUsbMode()) {
 #if !defined(BOOT)
     case USB_JOYSTICK_MODE:
@@ -196,7 +197,7 @@ void usbJoystickUpdate()
       int16_t value = channelOutputs[i] + 1024;
       if ( value > 2047 ) value = 2047;
       else if ( value < 0 ) value = 0;
-#if defined(PCBI6X)
+#if defined(PCBI6Xxxx)
       HID_Buffer[i*2 +2] = static_cast<uint8_t>(value & 0xFF);
       HID_Buffer[i*2 +3] = static_cast<uint8_t>((value >> 8) & 0x07);
 #else
