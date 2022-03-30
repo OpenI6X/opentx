@@ -197,7 +197,7 @@ void usbJoystickUpdate()
       int16_t value = channelOutputs[i] + 1024;
       if ( value > 2047 ) value = 2047;
       else if ( value < 0 ) value = 0;
-#if defined(PCBI6Xxxx)
+#if defined(PCBI6X)
       HID_Buffer[i*2 +2] = static_cast<uint8_t>(value & 0xFF);
       HID_Buffer[i*2 +3] = static_cast<uint8_t>((value >> 8) & 0x07);
 #else
