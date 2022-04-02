@@ -15,7 +15,7 @@ New contributions are highly welcome! See [developers guide](https://github.com/
 
 Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
 
-## Implemented features 
+## Features 
 
 * Protocols:
   * AFHDS
@@ -44,10 +44,12 @@ Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
 
 ## Shutdown
 
-FlySky FS-i6X don't have graceful shutdown button like other OpenTX devices, but there is a way to trigger it by holding CANCEL button until screen turns off then switch off.
+Do not switch off you device when you see small square icon in top right corner of main screen - it indicates that there are settings not yet stored. Wait until it disappears or use graceful shutdown method.
+
+FlySky FS-i6X don't have graceful shutdown button like other OpenTX devices use to save all settings before turning off, but there is a way to trigger it by holding CANCEL button until screen turns off, then use switch.
 
 When to use this method:
-* With USB connected - if USB is connected then settings are not stored with standard delay (2 seconds).
+* With USB connected - if USB is connected then settings are not stored with standard delay.
 * To save timers.
 
 ## Hardware connections (optional)
