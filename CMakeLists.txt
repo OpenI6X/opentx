@@ -44,7 +44,7 @@ now(TIME)
 git_id(GIT_STR)
 
 FILE(READ "git_tag.txt" GIT_STR)
-string(REGEX REPLACE "(.*)\n" "\\1" ${GIT_STR} ${GIT_STR})
+string(REPLACE "\n" "" GIT_STR ${GIT_STR})
 
 message(STATUS "OpenTX ${VERSION} @${GIT_STR}")
 
