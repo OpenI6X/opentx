@@ -312,7 +312,6 @@ uint32_t readTrims(void);
 
 // WDT driver
 #define WDTO_500MS                      500
-#define WDTO_1000MS                     1000
 #if defined(WATCHDOG_DISABLED) || defined(SIMU)
   #define wdt_enable(x)
   #define wdt_reset()

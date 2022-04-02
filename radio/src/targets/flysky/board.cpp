@@ -240,11 +240,6 @@ extern "C" void INTERRUPT_xMS_IRQHandler()
 }
 #endif
 
-#if defined(PWR_PRESS_BUTTON) && !defined(SIMU)
-#define PWR_PRESS_DURATION_MIN 100 // 1s
-#define PWR_PRESS_DURATION_MAX 500 // 5s
-#endif
-
 void boardInit()
 {
 #if defined(STM32F0) && defined(BOOT)
@@ -283,7 +278,6 @@ void boardInit()
   init5msTimer();
   __enable_irq();
   buzzerInit();
-  backlightInit();
   i2cInit();
   usbInit();
 
@@ -296,79 +290,8 @@ void boardInit()
   DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP | DBGMCU_TIM1_STOP | DBGMCU_TIM2_STOP | DBGMCU_TIM3_STOP | DBGMCU_TIM6_STOP | DBGMCU_TIM14_STOP, ENABLE);
 #endif
 
-#if defined(PWR_PRESS_BUTTON)
-  if (!WAS_RESET_BY_WATCHDOG_OR_SOFTWARE())
-  {
-    lcdClear();
-#if defined(PCBX9E)
-    lcdDrawBitmap(76, 2, bmp_lock, 0, 60);
-#else
-    lcdDrawFilledRect(LCD_W / 2 - 18, LCD_H / 2 - 3, 6, 6, SOLID, 0);
-#endif
-    lcdRefresh();
-    lcdRefreshWait();
-
-    tmr10ms_t start = get_tmr10ms();
-    tmr10ms_t duration = 0;
-    uint8_t pwr_on = 0;
-    while (pwrPressed())
-    {
-      duration = get_tmr10ms() - start;
-      if (duration < PWR_PRESS_DURATION_MIN)
-      {
-        unsigned index = duration / (PWR_PRESS_DURATION_MIN / 4);
-        lcdClear();
-#if defined(PCBX9E)
-        lcdDrawBitmap(76, 2, bmp_startup, index * 60, 60);
-#else
-        for (uint8_t i = 0; i < 4; i++)
-        {
-          if (index >= i)
-          {
-            lcdDrawFilledRect(LCD_W / 2 - 18 + 10 * i, LCD_H / 2 - 3, 6, 6, SOLID, 0);
-          }
-        }
-#endif
-      }
-      else if (duration >= PWR_PRESS_DURATION_MAX)
-      {
-        drawSleepBitmap();
-        backlightDisable();
-      }
-      else
-      {
-        if (pwr_on != 1)
-        {
-          pwr_on = 1;
-          pwrInit();
-          backlightInit();
-          haptic.play(15, 3, PLAY_NOW);
-        }
-      }
-      lcdRefresh();
-      lcdRefreshWait();
-    }
-    if (duration < PWR_PRESS_DURATION_MIN || duration >= PWR_PRESS_DURATION_MAX)
-    {
-      boardOff();
-    }
-  }
-  else
-  {
-    pwrInit();
-    backlightInit();
-  }
-#if defined(TOPLCD_GPIO)
-  toplcdInit();
-#endif
-#else // defined(PWR_PRESS_BUTTON)
   backlightInit();
-#endif
 
-  if (HAS_SPORT_UPDATE_CONNECTOR())
-  {
-    sportUpdateInit();
-  }
 #endif // !defined(SIMU)
 }
 
@@ -376,16 +299,12 @@ void boardOff()
 {
   BACKLIGHT_DISABLE();
 
-#if defined(TOPLCD_GPIO)
-  toplcdOff();
-#endif
-
-#if defined(PWR_PRESS_BUTTON)
-  while (pwrPressed())
-  {
-    wdt_reset();
-  }
-#endif
+//#if defined(PWR_BUTTON_PRESS)
+//  while (pwrPressed())
+//  {
+//    wdt_reset();
+//  }
+//#endif
   lcdOff();
   SysTick->CTRL = 0; // turn off systick
   pwrOff();

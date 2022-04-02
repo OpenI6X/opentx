@@ -113,7 +113,7 @@ bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRea
 void eepromReadBlock(uint8_t * buffer, size_t address, size_t size)
 {
   // I2C_TransferHandling can handle up to 255 bytes at once
-  uint16_t maxSize = 255;
+  const uint8_t maxSize = 255;
   uint8_t round = 0;
   while (size > maxSize) {
     size -= maxSize;
