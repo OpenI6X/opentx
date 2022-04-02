@@ -43,6 +43,8 @@ today(DATE)
 now(TIME)
 git_id(GIT_STR)
 
+FILE(READ "git_tag.txt" GIT_STR)
+
 message(STATUS "OpenTX ${VERSION} @${GIT_STR}")
 
 # options shared by all targets
