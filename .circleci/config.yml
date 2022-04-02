@@ -15,7 +15,9 @@ jobs:
       image: ubuntu-2004:202111-02
     steps:
      - checkout
-     - run: docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=NO GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO PPM_UNIT=PERCENT_PREC0 DEBUG=NO PCBI6X_ELRSV2=YES" -v $PWD:/opentx vitass/opentx-fw-build
+     - run: |
+         git rev-parse --short=8 HEAD > git_tag.txt
+         docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=NO GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO PPM_UNIT=PERCENT_PREC0 DEBUG=NO PCBI6X_ELRSV2=YES" -v $PWD:/opentx vitass/opentx-fw-build
      - store_artifacts:
         path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
         destination: openi6x-<< pipeline.parameters.build-version >>-elrsv2.bin
@@ -24,7 +26,9 @@ jobs:
       image: ubuntu-2004:202111-02
     steps:
       - checkout
-      - run: docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=NO GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO PPM_UNIT=PERCENT_PREC0 DEBUG=NO" -v $PWD:/opentx vitass/opentx-fw-build
+      - run: |
+          git rev-parse --short=8 HEAD > git_tag.txt
+          docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=NO GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO PPM_UNIT=PERCENT_PREC0 DEBUG=NO" -v $PWD:/opentx vitass/opentx-fw-build
       - store_artifacts:
           path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
           destination: openi6x-<< pipeline.parameters.build-version >>.bin
@@ -33,7 +37,9 @@ jobs:
       image: ubuntu-2004:202111-02
     steps:
       - checkout
-      - run: docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=YES GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO PPM_UNIT=PERCENT_PREC0 DEBUG=NO" -v $PWD:/opentx vitass/opentx-fw-build
+      - run: |
+          git rev-parse --short=8 HEAD > git_tag.txt
+          docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=YES GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO PPM_UNIT=PERCENT_PREC0 DEBUG=NO" -v $PWD:/opentx vitass/opentx-fw-build
       - store_artifacts:
           path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
           destination: openi6x-<< pipeline.parameters.build-version >>-heli.bin
@@ -53,25 +59,25 @@ jobs:
 workflows:
   openi6x-release-workflow:
     jobs:
-      - build-elrsv2:
-          filters:
-            branches:
-              only:
-                - master
+      - build-elrsv2 #:
+#          filters:
+#            branches:
+#              only:
+#                - master
 #              ignore: /.*/
 #            tags:
 #              only: /openi6x-*$/
-      - build-standard:
-          filters:
-            branches:
-              only: /master$/
+      - build-standard #:
+#          filters:
+#            branches:
+#              only: /master$/
 #              ignore: /.*/
 #            tags:
 #              only: /openi6x-*$/
-      - build-heli:
-          filters:
-            branches:
-              only: /master$/
+      - build-heli #:
+#          filters:
+#            branches:
+#              only: /master$/
 #              ignore: /.*/
 #            tags:
 #              only: /openi6x-*$/
