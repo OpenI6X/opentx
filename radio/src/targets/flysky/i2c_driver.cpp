@@ -147,18 +147,6 @@ void eepromWriteBlock(uint8_t * buffer, size_t address, size_t size)
   while (count > 0) {
     eepromPageWrite(buffer, address, count);
     eepromWaitEepromStandbyState();
-
-#if defined(EEPROM_VERIFY_WRITES)
-    static uint8_t temp[I2C_FLASH_PAGESIZE];
-    eepromReadBlock(temp, address, count);
-    for (int i = 0; i < count; i++) {
-      if (temp[i] != buffer[i]) {
-        TRACE("eeprom verify failed %x, %d", address, count);
-        while (1) ;
-      }
-    }
-#endif
-
     address += count;
     buffer += count;
     size -= count;
@@ -245,7 +233,7 @@ bool I2C_EE_WaitEepromStandbyState(void)
 //  if (!I2C_WaitEvent(I2C_FLAG_STOPF))
 //    return false;
 
-  RTOS_WAIT_MS(5);
+  delay_ms(5);
 
   return true;
 }

@@ -43,8 +43,13 @@ today(DATE)
 now(TIME)
 git_id(GIT_STR)
 
-FILE(READ "git_tag.txt" GIT_STR)
-string(REPLACE "\n" "" GIT_STR ${GIT_STR})
+set(GIT_TAG_FILE "${PROJECT_SOURCE_DIR}/git_tag.txt")
+if(EXISTS ${GIT_TAG_FILE})
+  FILE(READ ${GIT_TAG_FILE} GIT_STR)
+  string(REPLACE "\n" "" GIT_STR ${GIT_STR})
+else()
+  message("${GIT_TAG_FILE} not found")
+endif()
 
 message(STATUS "OpenTX ${VERSION} @${GIT_STR}")
 
