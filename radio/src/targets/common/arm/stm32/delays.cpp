@@ -23,9 +23,6 @@
 #if defined(STM32F2)
   #include "dwt.h"    // the old ST library that we use does not define DWT register for STM32F2xx
 #endif
-#if defined(STM32F0)
-  #include "coocox.h"
-#endif
 
 #define SYSTEM_TICKS_1US    ((CFG_CPU_FREQ + 500000)  / 1000000)      // number of system ticks in 1us
 #define SYSTEM_TICKS_01US   ((CFG_CPU_FREQ + 5000000) / 10000000)     // number of system ticks in 0.1us (rounding needed for sys frequencies that are not multiple of 10MHz)

@@ -87,7 +87,7 @@ bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRea
     return false;
 
   I2C_SendData(I2C, (uint8_t)((ReadAddr & 0xFF00) >> 8));
-  if (!I2C_WaitEvent(I2C_FLAG_TXE))
+  if (!I2C_WaitEvent(I2C_FLAG_TXIS))
     return false;
 
   I2C_SendData(I2C, (uint8_t)(ReadAddr & 0x00FF));
@@ -181,7 +181,7 @@ bool I2C_EE_PageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWri
     return false;
 
   I2C_SendData(I2C, (uint8_t)((WriteAddr & 0xFF00) >> 8));
-  if (!I2C_WaitEvent(I2C_FLAG_TXE))
+  if (!I2C_WaitEvent(I2C_FLAG_TXIS))
     return false;
 
   I2C_SendData(I2C, (uint8_t)(WriteAddr & 0x00FF));
@@ -219,22 +219,7 @@ void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrit
   */
 bool I2C_EE_WaitEepromStandbyState(void)
 {
-//  do {
-//    I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, 1, I2C_Reload_Mode, I2C_Generate_Start_Write);
-//    if (!I2C_WaitEvent(I2C_FLAG_TXIS))
-//      return false;
-//
-//    I2C_SendData(I2C, 0);
-//    if (!I2C_WaitEvent(I2C_FLAG_TCR))
-//      return false;
-//
-//  } while (!I2C_WaitEvent(I2C_FLAG_TXIS));
-//
-//  if (!I2C_WaitEvent(I2C_FLAG_STOPF))
-//    return false;
-
   delay_ms(5);
-
   return true;
 }
 
