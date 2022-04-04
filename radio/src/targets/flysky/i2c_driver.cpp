@@ -219,7 +219,7 @@ void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrit
   */
 bool I2C_EE_WaitEepromStandbyState(void)
 {
-  delay_ms(5);
+  RTOS_WAIT_MS(5);
   return true;
 }
 

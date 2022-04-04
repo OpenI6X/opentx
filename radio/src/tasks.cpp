@@ -250,7 +250,9 @@ void tasksStart() {
   RTOS_CREATE_TASK(audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE, AUDIO_TASK_PRIO);
 #endif
 
+#if !defined(PCBI6X)
   RTOS_CREATE_MUTEX(audioMutex);
+#endif
   RTOS_CREATE_MUTEX(mixerMutex);
 
   RTOS_START();
