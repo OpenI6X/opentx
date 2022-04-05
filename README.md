@@ -11,6 +11,13 @@ You can find instructions and videos contributed by fellow early adopters in the
 
 New contributions are highly welcome! See [developers guide](https://github.com/OpenI6X/opentx/wiki/Contribute).
 
+### Nightlies
+If you want to have all the latest features, fixes and bugs you can download latest nightly build:
+1. Go to: https://github.com/OpenI6X/opentx.
+2. Click on <span style="color:green;font-weight:700;font-size:20px">✓</span> icon next to latest commit id.
+3. Click on "Details" next to build of your choice.
+4. Click on "ARTIFACTS" tab.
+5. Download .bin file.
 ## Installation
 
 Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
@@ -18,7 +25,6 @@ Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
 ## Features 
 
 * Protocols:
-  * AFHDS
   * AFHDS2A with SBUS, IBUS, SBUS16 and IBUS16 modes
   * PPM in/out
   * CRSF with ExpressLRS and Crossfire modules, CRSFshot enabled
