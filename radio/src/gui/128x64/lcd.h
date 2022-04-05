@@ -59,7 +59,6 @@ typedef uint8_t display_t;
 #define ZCHAR                          0x80
 
 /* lcdDrawNumber additional flags */
-#define UNSIGN                         0x08
 #define LEADING0                       0x10
 #define PREC1                          0x20
 #define PREC2                          0x30

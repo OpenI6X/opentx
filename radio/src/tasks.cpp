@@ -161,8 +161,13 @@ TASK_FUNCTION(mixerTask) {
         usbJoystickUpdate();
       }
 #endif
-
-      if (heartbeat == HEART_WDT_CHECK) {
+      /**
+       * This is a workaround for PCBI6X
+       * When HEART_WDT_CHECK (int + ext module) == 7
+       * then it fails if heartbeat is up to 3 on internal module.
+       * because pulses logic is custom i have made this condition also custom.
+       */
+      if (heartbeat == HEART_WDT_CHECK || heartbeat == 3) {
         wdt_reset();
         heartbeat = 0;
       }
@@ -245,7 +250,9 @@ void tasksStart() {
   RTOS_CREATE_TASK(audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE, AUDIO_TASK_PRIO);
 #endif
 
+#if !defined(PCBI6X)
   RTOS_CREATE_MUTEX(audioMutex);
+#endif
   RTOS_CREATE_MUTEX(mixerMutex);
 
   RTOS_START();

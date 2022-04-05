@@ -142,9 +142,11 @@ uint8_t *  USBD_USR_DeviceDescriptor( uint8_t speed , uint16_t *length)
       pid = USBD_CDC_PID;
       break;
 #endif
+#if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
     case USB_MASS_STORAGE_MODE:
       pid = USBD_MSC_PID;
       break;
+#endif
   }
 
   /* USB Standard Device Descriptor */

@@ -175,7 +175,7 @@ bool menuRadioHardware(event_t event)
         lcdDrawNumber(HW_SETTINGS_COLUMN+50, y, CROSSFIRE_BAUDRATES[g_eeGeneral.telemetryBaudrate], attr|LEFT);
         if (attr) {
           g_eeGeneral.telemetryBaudrate = DIM(CROSSFIRE_BAUDRATES) - 1 - checkIncDecModel(event, DIM(CROSSFIRE_BAUDRATES) - 1 - g_eeGeneral.telemetryBaudrate, 0, DIM(CROSSFIRE_BAUDRATES) - 1);
-          if (checkIncDec_Ret) {
+          if (checkIncDec_Ret && IS_EXTERNAL_MODULE_ON()) {
             pauseMixerCalculations();
             pausePulses();
             EXTERNAL_MODULE_OFF();
@@ -205,8 +205,8 @@ bool menuRadioHardware(event_t event)
 
 #if defined(AUX_SERIAL)
       case ITEM_RADIO_HARDWARE_AUX_SERIAL_MODE:
-        lcdDrawText(MENUS_MARGIN_LEFT, y, STR_AUX_SERIALMODE);
-        g_eeGeneral.auxSerialMode = editChoice(HW_SETTINGS_COLUMN+50, y, STR_AUX_SERIALMODES, g_eeGeneral.auxSerialMode, 0, UART_MODE_MAX, attr, event);
+        lcdDrawText(MENUS_MARGIN_LEFT, y, STR_AUX_SERIAL_MODE);
+        g_eeGeneral.auxSerialMode = editChoice(HW_SETTINGS_COLUMN+50, y, STR_AUX_SERIAL_MODES, g_eeGeneral.auxSerialMode, 0, UART_MODE_MAX, attr, event);
         if (attr && checkIncDec_Ret) {
           auxSerialInit(g_eeGeneral.auxSerialMode, modelTelemetryProtocol());
         }

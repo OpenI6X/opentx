@@ -24,7 +24,7 @@ uint8_t currentSpeakerVolume = 255;
 uint8_t requiredSpeakerVolume = 255;
 uint8_t mainRequestFlags = 0;
 
-#if !defined(LUA) && defined(PCBI6X_ELRSV2)
+#if defined(PCBI6X_ELRSV2)
 extern void ELRSV2_stop();
 uint8_t cScriptRunning = 0;
 #endif
@@ -32,7 +32,7 @@ uint8_t cScriptRunning = 0;
 #if defined(STM32)
 void onUSBConnectMenu(const char *result)
 {
-#if !defined(PCBI6) || defined(PCBI6_USB_MSD)
+#if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
   if (result == STR_USB_MASS_STORAGE) {
     setSelectedUsbMode(USB_MASS_STORAGE_MODE);
   }
@@ -41,7 +41,7 @@ void onUSBConnectMenu(const char *result)
   if (result == STR_USB_JOYSTICK) {
     setSelectedUsbMode(USB_JOYSTICK_MODE);
   }
-#if !defined(PCBI6)
+#if !defined(PCBI6X)
   else if (result == STR_USB_SERIAL) {
     setSelectedUsbMode(USB_SERIAL_MODE);
   }

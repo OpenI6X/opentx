@@ -484,6 +484,7 @@ int setTelemetryValue(TelemetryProtocol protocol, uint16_t id, uint8_t subId, ui
 
   int index = availableTelemetryIndex();
   if (index >= 0) {
+    storageDirty(EE_MODEL);
     switch (protocol) {
 #if defined(TELEMETRY_FRSKY_SPORT)
       case TELEM_PROTO_FRSKY_SPORT:

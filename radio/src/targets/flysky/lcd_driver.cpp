@@ -200,7 +200,7 @@ void lcdSetRefVolt(uint8_t val){
 
 void lcdReset(){
     // wait for voltages to be stable
-    delay_ms(100);
+    delay_ms(10);
     LCD_RST_LO();
     delay_us(20);  // at least 5us
     LCD_RST_HI();

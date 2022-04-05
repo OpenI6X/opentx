@@ -47,7 +47,7 @@ void pwrOff() {
   }
 }
 
-#define PWR_TRIGGER_DELAY 200 // 2s
+#define PWR_PRESS_DURATION_MIN 200 // 2s
 
 /**
  * i6X dont have a dedicated power trigger
@@ -60,7 +60,7 @@ uint32_t pwrPressed() {
     if (pwr_trigger_time == 0) {
       pwr_trigger_time = get_tmr10ms();
     }
-    if (get_tmr10ms() - pwr_trigger_time > PWR_TRIGGER_DELAY) {
+    if (get_tmr10ms() - pwr_trigger_time > PWR_PRESS_DURATION_MIN) {
       return 1;
     }
   } else {

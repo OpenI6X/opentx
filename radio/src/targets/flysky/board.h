@@ -312,7 +312,6 @@ uint32_t readTrims(void);
 
 // WDT driver
 #define WDTO_500MS                      500
-#define WDTO_1000MS                     1000
 #if defined(WATCHDOG_DISABLED) || defined(SIMU)
   #define wdt_enable(x)
   #define wdt_reset()
@@ -402,27 +401,20 @@ void backlightEnable();
 #if !defined(SIMU)
   void usbJoystickUpdate();
 #endif
-#define USB_NAME                        "FS i6X"
+#define USB_NAME                        "FS-i6X"
 #define USB_MANUFACTURER                'F', 'l', 'y', 'S', 'k', 'y', ' ', ' '  /* 8 bytes */
-#define USB_PRODUCT                     'i', '6', 'X', ' ', ' ', ' ', ' ', ' '  /* 8 Bytes */
+#define USB_PRODUCT                     'F', 'S', '-', 'i', '6', 'X', ' ', ' '  /* 8 Bytes */
 
 #if defined(__cplusplus) && !defined(SIMU)
 }
 #endif
 
 // I2C driver: EEPROM
-#define I2C_ADDRESS_EEPROM    0x50
-#define EEPROM_SIZE           (16*1024)
-#define EEPROM_PAGE_SIZE      (64)
-#define EEPROM_BLOCK_SIZE     (64)
-//#define EEPROM_VERIFY_WRITES
+#define EEPROM_SIZE                   (16*1024)
 
 void i2cInit(void);
-void eepromInit();
 void eepromReadBlock(uint8_t * buffer, size_t address, size_t size);
 void eepromWriteBlock(uint8_t * buffer, size_t address, size_t size);
-void eepromBlockErase(uint32_t address);
-uint8_t eepromReadStatus();
 uint8_t eepromIsTransferComplete();
 void i2c_test();
 

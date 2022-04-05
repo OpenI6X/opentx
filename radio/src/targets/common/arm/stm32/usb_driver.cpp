@@ -104,6 +104,7 @@ void usbInit()
 
 void usbStart()
 {
+  watchdogSuspend(200); // 2s, PCBI6X fix for occasional reboots on joystick connect
   switch (getSelectedUsbMode()) {
 #if !defined(BOOT)
     case USB_JOYSTICK_MODE:

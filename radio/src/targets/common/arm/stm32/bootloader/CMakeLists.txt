@@ -136,13 +136,6 @@ set(BOOTLOADER_SRC
   )
 endif()
 
-if(PCB STREQUAL I6X)
-    set(BOOTLOADER_SRC
-    ${BOOTLOADER_SRC}
-    ../../../../../targets/${TARGET_DIR}/i2c_common_v2.cpp
-    )
-endif()
-
 if(NOT (PCB STREQUAL X10 OR PCB STREQUAL X12S))
   set(BOOTLOADER_SRC
     ${BOOTLOADER_SRC}

@@ -33,7 +33,7 @@ if(PCB STREQUAL I6X)
   add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
   add_definitions(-DEEPROM_VARIANT=0)
   add_definitions(-DSOFTWARE_VOLUME)
-  add_definitions(-DAFHDS2A_LQI_CH=14) # inject LQI at channel
+  add_definitions(-DAFHDS2A_LQI_CH=17) # inject LQI at channel
 endif()
 
 if(PCBI6X_ELRSV2)
@@ -85,7 +85,6 @@ set(TARGET_SRC
   backlight_driver.cpp
   extmodule_driver.cpp
   adc_driver.cpp
-  i2c_common_v2.cpp
   i2c_driver.cpp
   crc_driver.cpp
   tools/elrsV2.cpp

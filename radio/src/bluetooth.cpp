@@ -72,7 +72,7 @@ char * bluetoothReadline(bool error_reset)
 #if defined(PCBX9E) && !defined(USEHORUSBT)     // X9E BT module can get unresponsive
       TRACE("NO RESPONSE FROM BT MODULE");
 #endif
-      return NULL;
+      return nullptr;
     }
     TRACE_NOCRLF("%02X ", byte);
     if (byte == '\n') {

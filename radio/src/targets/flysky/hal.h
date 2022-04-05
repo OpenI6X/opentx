@@ -79,6 +79,15 @@
 #define I2C_SDA_GPIO_PIN              GPIO_Pin_11
 #define I2C_SCL_GPIO_PinSource        GPIO_PinSource10
 #define I2C_SDA_GPIO_PinSource        GPIO_PinSource11
+// 0x40B22536; //100kHz 0x10950C27; //400kHz
+// 0x00E51842 - CubeMX 48MHz, 400k, 200ns/200ns, analog on
+// 0x10D55F7C - CubeMX 48MHz, 100k, 300ns/300ns, analog on
+// 0x00401B5A - Erfly6 48MHz, 375k,   ?ns/  ?ns, analog off
+#define I2C_TIMING                    0x00401B5A;
+#define I2C_ADDRESS_EEPROM            0xA0 // 0x50 << 1 (convert to upper 7 bits)
+#define I2C_FLASH_PAGESIZE            64
+#define EEPROM_BLOCK_SIZE     (64)
+//#define EEPROM_VERIFY_WRITES
 
 // ADC
 #define ADC_MAIN                        ADC1

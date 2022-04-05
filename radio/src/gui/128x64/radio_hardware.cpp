@@ -137,6 +137,12 @@ enum MenuRadioHardwareItems {
 #if defined(MENU_DIAG_ANAS_KEYS)
   ITEM_RADIO_HARDWARE_DEBUG,
 #endif
+#if defined(EEPROM_RLC)
+#if !defined(PCBI6X)
+  ITEM_RADIO_BACKUP_EEPROM,
+#endif
+  ITEM_RADIO_FACTORY_RESET,
+#endif
   ITEM_RADIO_HARDWARE_MAX
 };
 
@@ -173,6 +179,18 @@ enum MenuRadioHardwareItems {
 
 #define HW_SETTINGS_COLUMN1            30
 #define HW_SETTINGS_COLUMN2            (30 + 5*FW)
+
+#if defined(EEPROM_RLC)
+void onFactoryResetConfirm(const char result)
+{
+  if (result) {
+    warningResult = 0;
+    showMessageBox(STR_STORAGE_FORMAT);
+    storageEraseAll(false);
+    NVIC_SystemReset();
+  }
+}
+#endif
 
 void menuRadioHardware(event_t event)
 {
@@ -329,7 +347,7 @@ void menuRadioHardware(event_t event)
       case ITEM_RADIO_HARDWARE_SERIAL_BAUDRATE:
         g_eeGeneral.telemetryBaudrate = editChoice(HW_SETTINGS_COLUMN2, y, STR_MAXBAUDRATE, "\0041.8M921k400k115k", g_eeGeneral.telemetryBaudrate, 0, DIM(CROSSFIRE_BAUDRATES) - 1, attr, event);
         if (attr) {
-          if (checkIncDec_Ret) {
+          if (checkIncDec_Ret && IS_EXTERNAL_MODULE_ON()) {
             pauseMixerCalculations();
             pausePulses();
             EXTERNAL_MODULE_OFF();
@@ -379,15 +397,19 @@ void menuRadioHardware(event_t event)
 
 #if defined(AUX_SERIAL)
       case ITEM_RADIO_HARDWARE_AUX_SERIAL_MODE:
-        g_eeGeneral.auxSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, STR_AUX_SERIALMODE, STR_AUX_SERIALMODES, g_eeGeneral.auxSerialMode, 0, UART_MODE_MAX, attr, event);
+        g_eeGeneral.auxSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, STR_AUX_SERIAL_MODE, STR_AUX_SERIAL_MODES, g_eeGeneral.auxSerialMode, 0, UART_MODE_MAX, attr, event);
         if (attr && checkIncDec_Ret) {
           auxSerialInit(g_eeGeneral.auxSerialMode, modelTelemetryProtocol());
+          storageDirty(EE_GENERAL);
         }
         break;
 #endif
 
       case ITEM_RADIO_HARDWARE_JITTER_FILTER:
         g_eeGeneral.jitterFilter = 1 - editCheckBox(1 - g_eeGeneral.jitterFilter, HW_SETTINGS_COLUMN2, y, STR_JITTER_FILTER, attr, event);
+        if (attr && checkIncDec_Ret) {
+          storageDirty(EE_GENERAL);
+        }
         break;
 
 #if defined(MENU_DIAG_ANAS_KEYS)
@@ -403,6 +425,27 @@ void menuRadioHardware(event_t event)
         }
         break;
 #endif // MENU_DIAG_ANAS_KEYS
+#if !defined(PCBI6X)
+      case ITEM_RADIO_BACKUP_EEPROM:
+        lcdDrawText(0, y, BUTTON(STR_EEBACKUP), attr);
+        if (attr && event == EVT_KEY_FIRST(KEY_ENTER)) {
+          s_editMode = EDIT_SELECT_FIELD;
+          eepromBackup();
+        }
+        break;
+#endif // PCBI6X
+      case ITEM_RADIO_FACTORY_RESET:
+        onFactoryResetConfirm(warningResult);
+        if (LCD_W < 212)
+          lcdDrawText(LCD_W / 2, y, BUTTON(TR_FACTORYRESET), attr | CENTERED);
+        else
+          lcdDrawText(HW_SETTINGS_COLUMN2, y, BUTTON(TR_FACTORYRESET), attr);
+        if (attr && event == EVT_KEY_BREAK(KEY_ENTER)) {
+          s_editMode = EDIT_SELECT_FIELD;
+//          POPUP_CONFIRMATION(STR_CONFIRMRESET, onFactoryResetConfirm);
+          POPUP_CONFIRMATION(STR_CONFIRMRESET);
+       }
+        break;
     }
   }
 }

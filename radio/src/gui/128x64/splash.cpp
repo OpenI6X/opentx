@@ -24,7 +24,7 @@
 const unsigned char splashdata[]  = {
   'S','P','S',0,
 #if defined(PCBI6X)
-  #include "bitmaps/128x64/splash_i6x_trim.lbm"
+  #include "bitmaps/128x64/splash_i6x_neg_trim.lbm"
 #else
   #include "bitmaps/128x64/splash.lbm"
 #endif
@@ -36,7 +36,6 @@ void drawSplash()
 {
   lcdClear();
 #if defined(PCBI6X)
-  lcdDrawSolidFilledRect(0, 0, LCD_W, LCD_H);
   lcdDraw1bitBitmap(8, 16, splash_lbm, 0, 0);
 #else
   lcdDraw1bitBitmap(0, 0, splash_lbm, 0, 0);

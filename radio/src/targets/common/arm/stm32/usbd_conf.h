@@ -28,7 +28,7 @@
 #define USBD_CFG_MAX_NUM           1
 #define USBD_ITF_MAX_NUM           1
 #if defined(PCBI6X)
-#define USB_MAX_STR_DESC_SIZ       (20 * 2) + 2 // max usb desc * 2 + 2
+#define USB_MAX_STR_DESC_SIZ       (21 * 2) + 2 // max usb desc * 2 + 2
 #else
 #define USB_MAX_STR_DESC_SIZ       64
 #endif
