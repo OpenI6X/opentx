@@ -228,7 +228,7 @@ static uint8_t getDevice(uint8_t deviceId) {
   return 0;
 }
 
-static uint8_t strRemoveTo(char * src, const char * str, const uint8_t len) {
+static uint8_t strRemove(char * src, const char * str, const uint8_t len) {
   const char strLen = strlen(str);
   char * srcStrPtr = src;
   uint8_t removedLen = 0;
@@ -245,14 +245,14 @@ static uint8_t strRemoveTo(char * src, const char * str, const uint8_t len) {
  */
 static void fieldTextSelectionLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
+  field->value = data[offset + len + 1];
+  len -= strRemove((char*)&data[offset], "UX", len); // trim AUX to A
   if (field->valuesLength == 0) {
     memcpy(&valuesBuffer[valuesBufferOffset], (char*)&data[offset], len);
     field->valuesOffset = valuesBufferOffset;
     field->valuesLength = len;
     valuesBufferOffset += len;
   }
-  offset += len + 1;
-  field->value = data[offset];
 }
 
 static void fieldTextSelectionSave(FieldProps * field) {
@@ -515,13 +515,11 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
     fieldData[fieldDataLen++] = data[i];
   }
   TRACE("length %d", length); // to know what is the max single chunk size
-  // trim values
-  uint8_t selectionPos = strlen((char*)&fieldData[2]) + 1 + 2;
-  fieldDataLen -= strRemoveTo((char*)&fieldData[selectionPos], "UX", fieldDataLen - selectionPos); // trim AUX to A
+
   if (chunks > 0) {
     fieldChunk = fieldChunk + 1;
     statusComplete = 0;
-  } else { 
+  } else {
     TRACE("%d, %s, %d", fieldId, &fieldData[2], fieldDataLen);
     DUMP(fieldData, fieldDataLen);
     fieldChunk = 0;
@@ -735,7 +733,7 @@ static void handleDevicePageEvent(event_t event) {
             if (field->parent) {
               // if it is inside a folder, then we reload the folder
               reloadFolder = field->parent;
-              fields[field->parent].nameLength = 0;
+              fields[field->parent - 1].nameLength = 0;
             }
             fieldDataLen = 0;
           }
