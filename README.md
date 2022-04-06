@@ -11,7 +11,7 @@ You can find instructions and videos contributed by fellow early adopters in the
 
 New contributions are highly welcome! See [developers guide](https://github.com/OpenI6X/opentx/wiki/Contribute).
 
-### Nightlies
+### Nightly builds
 If you want to have all the latest features, fixes (and bugs) you can download latest build here:
 1. Go to: https://github.com/OpenI6X/opentx.
 2. Click on <span style="color:green;font-weight:700;font-size:20px">✓</span> icon next to latest commit id.
@@ -58,6 +58,10 @@ FlySky FS-i6X don't have graceful shutdown button like other OpenTX devices, but
 When to use this method:
 * With USB connected - when USB is connected then settings are not stored with standard delay.
 * To save timers.
+
+## Mode 1
+
+With Mode 1 radio you may experience inverted gimbal movement and swapped gimbals on main screen. To fix this swap gimbal connectors (red-white one with black-white one).
 
 ## Hardware connections (optional)
 
