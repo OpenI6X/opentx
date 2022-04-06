@@ -12,12 +12,13 @@ You can find instructions and videos contributed by fellow early adopters in the
 New contributions are highly welcome! See [developers guide](https://github.com/OpenI6X/opentx/wiki/Contribute).
 
 ### Nightlies
-If you want to have all the latest features, fixes and bugs you can download latest nightly build:
+If you want to have all the latest features, fixes (and bugs) you can download latest build here:
 1. Go to: https://github.com/OpenI6X/opentx.
 2. Click on <span style="color:green;font-weight:700;font-size:20px">✓</span> icon next to latest commit id.
 3. Click on "Details" next to build of your choice.
 4. Click on "ARTIFACTS" tab.
 5. Download .bin file.
+
 ## Installation
 
 Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
@@ -25,7 +26,7 @@ Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
 ## Features 
 
 * Protocols:
-  * AFHDS2A with SBUS, IBUS, SBUS16 and IBUS16 modes
+  * AFHDS2A with SBUS, IBUS and extended SBUS16, IBUS16 - 16 channels modes
   * PPM in/out
   * CRSF with ExpressLRS and Crossfire modules, CRSFshot enabled
     * MEGA Bauds up to 1.8M
@@ -52,10 +53,10 @@ Go to the [wiki](https://github.com/OpenI6X/opentx/wiki) for detailed steps.
 
 Do not switch off you device when you see small square icon in top right corner of main screen - it indicates that there are settings not yet stored. Wait until it disappears or use graceful shutdown method.
 
-FlySky FS-i6X don't have graceful shutdown button like other OpenTX devices, but there is a way to trigger it by holding CANCEL button until screen turns off, then use switch.
+FlySky FS-i6X don't have graceful shutdown button like other OpenTX devices, but you can trigger it by holding CANCEL button until screen turns off, then use switch.
 
 When to use this method:
-* With USB connected - if USB is connected then settings are not stored with standard delay.
+* With USB connected - when USB is connected then settings are not stored with standard delay.
 * To save timers.
 
 ## Hardware connections (optional)
