@@ -642,7 +642,7 @@ static void lcd_title() {
 
   const uint8_t barHeight = 9;
   if (titleShowWarn) {
-    lcdDrawChar(LCD_W, 1, tostring(elrsFlags), RIGHT); 
+    lcdDrawChar(LCD_W - FW - 1, 1, tostring(elrsFlags));
   } else {
     lcdDrawText(LCD_W - 1, 1, goodBadPkt, RIGHT);
     lcdDrawVerticalLine(LCD_W - 10, 0, barHeight, SOLID, INVERS); 
