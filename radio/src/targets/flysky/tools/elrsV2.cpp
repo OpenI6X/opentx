@@ -23,9 +23,9 @@ struct FieldProps {
   uint8_t valuesOffset;  
   uint8_t valuesLength;
   uint8_t parent;
-  uint8_t type;// : 4;
-  uint8_t value;// : 4;
-  uint8_t id;// : 5;         
+  uint8_t type;
+  uint8_t value;
+  uint8_t id;
   // uint8_t hidden : 1;
   // uint8_t spare : 2;     
 } PACKED;
@@ -44,8 +44,8 @@ static uint8_t *valuesBuffer = &reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE];
 uint8_t valuesBufferOffset = 0;
 
 // 84 + safe margin, ideally without trimming 144
-// but last 25 are used for popup messages
-#define FIELD_DATA_MAX_LEN (512 - NAMES_BUFFER_SIZE - VALUES_BUFFER_SIZE) // 120+
+// last 25b are also used for popup messages
+#define FIELD_DATA_MAX_LEN (512 - NAMES_BUFFER_SIZE - VALUES_BUFFER_SIZE) // 144+
 static uint8_t *fieldData = &reusableBuffer.MSC_BOT_Data[NAMES_BUFFER_SIZE + VALUES_BUFFER_SIZE];
 // static uint8_t fieldData[FIELD_DATA_MAX_LEN];
 uint8_t fieldDataLen = 0;
@@ -62,7 +62,8 @@ uint8_t otherDevicesId = 255;
 uint8_t deviceId = 0xEE;
 uint8_t handsetId = 0xEF;
 
-static char deviceName[16];
+#define DEVICE_NAME_MAX_LEN 20
+static char deviceName[DEVICE_NAME_MAX_LEN];
 uint8_t lineIndex = 1;
 uint8_t pageOffset = 0;
 uint8_t edit = 0; 
@@ -433,7 +434,7 @@ static void parseDeviceInfoMessage(uint8_t* data) {
   }
 
   if (deviceId == id && folderAccess != otherDevicesId) {
-    memcpy(deviceName, (char *)&data[3], 16);
+    memcpy(deviceName, (char *)&data[3], DEVICE_NAME_MAX_LEN);
     deviceIsELRS_TX = ((memcmp(&data[offset], "ELRS", 4) == 0) && (deviceId == 0xEE)) ? 1 : 0; // SerialNumber = 'E L R S' and ID is TX module
     uint8_t newFieldCount = data[offset+12];
     TRACE("deviceId match %x, newFieldsCount %d", deviceId, newFieldCount);
@@ -641,7 +642,7 @@ static void lcd_title() {
 
   const uint8_t barHeight = 9;
   if (titleShowWarn) {
-    lcdDrawText(LCD_W, 1, tostring(elrsFlags), RIGHT); 
+    lcdDrawSizedText(LCD_W, 1, tostring(elrsFlags), 1, RIGHT); 
   } else {
     lcdDrawText(LCD_W - 1, 1, goodBadPkt, RIGHT);
     lcdDrawVerticalLine(LCD_W - 10, 0, barHeight, SOLID, INVERS); 
@@ -653,9 +654,9 @@ static void lcd_title() {
   } else {
     lcdDrawFilledRect(0, 0, LCD_W, barHeight, SOLID);
     if (titleShowWarn) {
-      lcdDrawText(textXoffset, 1, elrsFlagsInfo, INVERS);
+      lcdDrawSizedText(textXoffset, 1, elrsFlagsInfo, 16, INVERS);
     } else {
-      lcdDrawSizedText(textXoffset, 1, (allParamsLoaded == 1) ? deviceName : "Loading...", 16, INVERS);
+      lcdDrawSizedText(textXoffset, 1, (allParamsLoaded == 1) ? deviceName : "Loading...", DEVICE_NAME_MAX_LEN, INVERS);
     }
   }
 }
