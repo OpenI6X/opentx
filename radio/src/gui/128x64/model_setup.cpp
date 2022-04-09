@@ -261,6 +261,7 @@ void menuModelSetup(event_t event)
 #endif
 
   int8_t old_editMode = s_editMode;
+  int8_t old_posHorz = menuHorizontalPosition;
 
 #if defined(PCBTARANIS)
   MENU_TAB({
@@ -577,7 +578,10 @@ void menuModelSetup(event_t event)
                   break;
 
                 case EVT_KEY_LONG(KEY_ENTER):
-                  if (menuHorizontalPosition < 0 || menuHorizontalPosition >= NUM_SWITCHES) {
+#if !defined(PCBI6X)
+                  if (menuHorizontalPosition < 0 || menuHorizontalPosition >= NUM_SWITCHES)
+#endif
+                  {
                     START_NO_HIGHLIGHT();
                     getMovedSwitch();
                     g_model.switchWarningState = switches_states;
@@ -590,13 +594,11 @@ void menuModelSetup(event_t event)
             }
           }
 
-          LcdFlags line = attr;
-
           int current = 0;
-          for (int i=0; i<NUM_SWITCHES; i++) {
+          for (int i = 0; i < NUM_SWITCHES; i++) {
             if (SWITCH_WARNING_ALLOWED(i)) {
               div_t qr = div(current, 5);
-              if (!READ_ONLY() && event==EVT_KEY_BREAK(KEY_ENTER) && line && l_posHorz==current) {
+              if (!READ_ONLY() && event==EVT_KEY_BREAK(KEY_ENTER) && attr && l_posHorz == current && old_posHorz >= 0) {
                 g_model.switchWarningEnable ^= (1 << i);
                 storageDirty(EE_MODEL);
 #if defined(PCBXLITE)
@@ -605,8 +607,8 @@ void menuModelSetup(event_t event)
               }
               uint8_t swactive = !(g_model.switchWarningEnable & (1<<i));
               c = "\300-\301"[states & 0x03];
-              //lcdDrawChar(MODEL_SETUP_2ND_COLUMN+qr.rem*(2*FW+1), y+FH*qr.quot, 'A'+i, line && (menuHorizontalPosition==current) ? INVERS : 0);
-              lcdDrawSizedText(MODEL_SETUP_2ND_COLUMN + qr.rem*((2*FW)+1), y+FH*qr.quot, FIRSTSW_STR+(i*length)+3, 1, line && (menuHorizontalPosition==current) ? INVERS : 0);
+              // lcdDrawChar(MODEL_SETUP_2ND_COLUMN+qr.rem*(2*FW+1), y+FH*qr.quot, 'A'+i, attr && (menuHorizontalPosition==current) ? INVERS : 0);
+              lcdDrawSizedText(MODEL_SETUP_2ND_COLUMN + qr.rem*((2*FW)+1), y+FH*qr.quot, FIRSTSW_STR+(i*length)+3, 1, attr && (menuHorizontalPosition==current) ? INVERS : 0);
               if (swactive) lcdDrawChar(lcdNextPos, y+FH*qr.quot, c);
               ++current;
             }
@@ -645,7 +647,6 @@ void menuModelSetup(event_t event)
             }
           }
         }
-        LcdFlags line = attr;
 
         for (uint8_t i=0; i<NUM_SWITCHES-1/*not on TRN switch*/; i++) {
           uint8_t swactive = !(g_model.switchWarningEnable & 1 << i);
@@ -661,11 +662,11 @@ void menuModelSetup(event_t event)
             c = *(STR_VSWITCHES - 2 + 9 + (3*(i+1)));
             states >>= 1;
           }
-          if (line && (menuHorizontalPosition == i)) {
+          if (attr && (menuHorizontalPosition == i)) {
             attr = BLINK | INVERS;
           }
           lcdDrawChar(MODEL_SETUP_2ND_COLUMN+i*FW, y, (swactive) ? c : '-', attr);
-          lcdDrawText(MODEL_SETUP_2ND_COLUMN+(NUM_SWITCHES*FW), y, "<]", (menuHorizontalPosition == NUM_SWITCHES-1 && !NO_HIGHLIGHT()) ? line : 0);
+          lcdDrawText(MODEL_SETUP_2ND_COLUMN+(NUM_SWITCHES*FW), y, "<]", (menuHorizontalPosition == NUM_SWITCHES-1 && !NO_HIGHLIGHT()) ? attr : 0);
         }
 #endif
         break;
