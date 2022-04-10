@@ -109,24 +109,6 @@ extern uint8_t telemetryState;
 #define TELEMETRY_RX_PACKET_SIZE       19  // 9 bytes (full packet), worst case 18 bytes with byte-stuffing (+1)
 #endif
 
-const uint32_t CROSSFIRE_BAUDRATES[] = {
-  115200,
-  400000,
-  921600,
-  1870000,
-};
-const uint8_t CROSSFIRE_PERIODS[] = {
-  16,
-  4,
-  4,
-  4,
-};
-
-#define CROSSFIRE_BAUDRATE    CROSSFIRE_BAUDRATES[g_eeGeneral.telemetryBaudrate]
-#define CROSSFIRE_PERIOD      (CROSSFIRE_PERIODS[g_eeGeneral.telemetryBaudrate] * 1000)
-
-#define CROSSFIRE_TELEM_MIRROR_BAUDRATE   115200
-
 extern uint8_t telemetryRxBuffer[TELEMETRY_RX_PACKET_SIZE];
 extern uint8_t telemetryRxBufferCount;
 extern uint8_t outputTelemetryBuffer[TELEMETRY_OUTPUT_FIFO_SIZE] __DMA;

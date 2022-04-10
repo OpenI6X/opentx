@@ -104,6 +104,25 @@ void processCrossfireTelemetryData(uint8_t data);
 void crossfireSetDefault(int index, uint8_t id, uint8_t subId);
 bool isCrossfireOutputBufferAvailable();
 uint8_t createCrossfireModelIDFrame(uint8_t * frame);
+
+const uint32_t CROSSFIRE_BAUDRATES[] = {
+  115200,
+  400000,
+  921600,
+  1870000,
+};
+const uint8_t CROSSFIRE_PERIODS[] = {
+  16,
+  4,
+  4,
+  4,
+};
+
+#define CROSSFIRE_BAUDRATE    CROSSFIRE_BAUDRATES[g_eeGeneral.telemetryBaudrate]
+#define CROSSFIRE_PERIOD      (CROSSFIRE_PERIODS[g_eeGeneral.telemetryBaudrate] * 1000)
+
+#define CROSSFIRE_TELEM_MIRROR_BAUDRATE   115200
+
 #if !defined(LUA)
 bool crossfireTelemetryPush(uint8_t command, uint8_t *data, uint8_t length);
 #endif
