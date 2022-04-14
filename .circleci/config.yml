@@ -23,7 +23,7 @@ jobs:
             sudo mv /tmp/gcc-arm-none-eabi-4_7-2013q3 /opt/gcc-arm-none-eabi
             rm /tmp/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
             export PATH=$PATH:/opt/gcc-arm-none-eabi/bin
-            source .bashrc
+            ls -la ~
             wget https://bootstrap.pypa.io/get-pip.py
             python3 get-pip.py
             pip3 install pillow libclang-py3 pyqt5
