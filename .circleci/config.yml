@@ -64,7 +64,7 @@ orbs:
 workflows:
   openi6x-release-workflow:
     jobs:
-      - build-elrsv2 #:
+      - build-elrsv2:
           context: SonarCloud
 #          filters:
 #            branches:
