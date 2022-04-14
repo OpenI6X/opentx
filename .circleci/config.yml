@@ -20,6 +20,8 @@ jobs:
           command: |
             wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2 -P /tmp
             tar -C /tmp -xjf /tmp/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
+            export PATH=$PATH:/tmp/gcc-arm-none-eabi-4_7-2013q3/bin
+            source ~/.bashrc
             wget https://bootstrap.pypa.io/get-pip.py
             python3 get-pip.py
             pip3 install pillow libclang-py3 pyqt5
