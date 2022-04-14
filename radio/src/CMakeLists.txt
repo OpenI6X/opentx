@@ -442,9 +442,9 @@ if(NOT MSVC)
   if(ARCH STREQUAL ARM)
 
     enable_language(ASM)
-    set(CMAKE_C_COMPILER arm-none-eabi-gcc)
-    set(CMAKE_CXX_COMPILER arm-none-eabi-g++)
-    set(CMAKE_ASM_COMPILER arm-none-eabi-as)
+    set(CMAKE_C_COMPILER /opt/gcc-arm-none-eabi/bin/arm-none-eabi-gcc)
+    set(CMAKE_CXX_COMPILER /opt/gcc-arm-none-eabi/bin/arm-none-eabi-g++)
+    set(CMAKE_ASM_COMPILER /opt/gcc-arm-none-eabi/bin/arm-none-eabi-as)
 
     set(CMAKE_SYSTEM_NAME Generic)
     set(CMAKE_SYSTEM_VERSION 1)
