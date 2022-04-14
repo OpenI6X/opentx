@@ -10,7 +10,7 @@ num_cpus=`grep 'physical id' /proc/cpuinfo | sort -u | wc -l`
 # Default build treats warnings as errors, set -Wno-error to override, e.g.: commit-tests.sh -Wno-error
 : ${WERROR:=1}
 # A board name to build for, or ALL
-: ${FLAVOR:=ALL}
+: ${FLAVOR:=I6X}
 
 for i in "$@"
 do
@@ -154,6 +154,15 @@ if [[ " X12S HORUS ALL " =~ " ${FLAVOR} " ]] ; then
   # OpenTX on Horus
   rm -rf *
   cmake ${COMMON_OPTIONS} -DPCB=X12S -DHELI=YES -DLUA=YES -DGVARS=YES ${SRCDIR}
+  make -j${CORES} ${FIRMARE_TARGET}
+  make -j${CORES} libsimulator
+  make -j${CORES} gtests ; ./gtests ${TEST_OPTIONS}
+fi
+
+if [[ " I6X ALL " =~ " ${FLAVOR} " ]] ; then
+  # OpenTX on Horus
+  rm -rf *
+  cmake ${COMMON_OPTIONS} -DPCB=I6X -DHELI=NO -DLUA=NO -DGVARS=YES -DLUA_COMPILER=NO -DMULTIMODULE=NO -DPCBI6X_ELRSV2=YES ${SRCDIR}
   make -j${CORES} ${FIRMARE_TARGET}
   make -j${CORES} libsimulator
   make -j${CORES} gtests ; ./gtests ${TEST_OPTIONS}
