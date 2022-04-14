@@ -27,7 +27,7 @@ jobs:
             sudo apt-get install -y libclang-6.0-dev
             curl -L -O https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
             unzip -o build-wrapper-linux-x86.zip
-            build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw_output ./tools/commit-tests.sh
+            build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw_output ./tools/commit-tests.sh -Wno-error
       - sonarcloud/scan
 
   build-elrsv2:
