@@ -11,8 +11,8 @@ parameters:
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
   sonar-scan:
-    machine:
-      image: cimg/python:3.10.4
+    docker:
+      - image: cimg/python:3.10.4
     steps:
       - checkout
       - run:
@@ -62,6 +62,7 @@ jobs:
       - store_artifacts:
           path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
           destination: openi6x-<< pipeline.parameters.build-version >>-heli.bin
+
 #  publish-github-release:
 #    docker:
 #      - image: cibuilds/github:0.13
