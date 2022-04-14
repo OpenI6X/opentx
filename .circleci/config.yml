@@ -18,11 +18,16 @@ jobs:
       - run:
           name: Build
           command: |
-            wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2 -P /tmp --progress=bar:force
+            wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2 -P /tmp
             tar -C /tmp -xjf /tmp/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
             sudo mv /tmp/gcc-arm-none-eabi-4_7-2013q3 /opt/gcc-arm-none-eabi
             rm /tmp/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
             export PATH=$PATH:/opt/gcc-arm-none-eabi/bin
+            source .bashrc
+            wget https://bootstrap.pypa.io/get-pip.py
+            python3 get-pip.py
+            pip3 install pillow libclang-py3 pyqt5
+            apt-get install -y libclang-3.9-dev
             curl -L -O https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
             unzip -o build-wrapper-linux-x86.zip
             build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw_output ./tools/commit-tests.sh
