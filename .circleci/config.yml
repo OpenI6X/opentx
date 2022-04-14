@@ -18,6 +18,7 @@ jobs:
      - run: |
          git rev-parse --short=8 HEAD > git_tag.txt
          docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=NO GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO PPM_UNIT=PERCENT_PREC0 DEBUG=NO PCBI6X_ELRSV2=YES" -v $PWD:/opentx vitass/opentx-fw-build
+     - sonarcloud/scan
      - store_artifacts:
         path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
         destination: openi6x-<< pipeline.parameters.build-version >>-elrsv2.bin
@@ -43,23 +44,28 @@ jobs:
       - store_artifacts:
           path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
           destination: openi6x-<< pipeline.parameters.build-version >>-heli.bin
-  publish-github-release:
-    docker:
-      - image: cibuilds/github:0.13
-    steps:
-      - attach_workspace:
-          at: /tmp
-      - run:
-          name: "Publish Release on GitHub"
-          command: |
-            ls -la
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete nightly-latest $CIRCLE_ARTIFACTS/
+#  publish-github-release:
+#    docker:
+#      - image: cibuilds/github:0.13
+#    steps:
+#      - attach_workspace:
+#          at: /tmp
+#      - run:
+#          name: "Publish Release on GitHub"
+#          command: |
+#            ls -la
+#            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete nightly-latest $CIRCLE_ARTIFACTS/
+
+orbs:
+  sonarcloud: sonarsource/sonarcloud@1.0.3
+
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   openi6x-release-workflow:
     jobs:
       - build-elrsv2 #:
+          context: SonarCloud
 #          filters:
 #            branches:
 #              only:
