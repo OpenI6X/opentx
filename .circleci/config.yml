@@ -23,6 +23,7 @@ jobs:
             export PATH=$PATH:/tmp/gcc-arm-none-eabi-4_7-2013q3/bin
             source ~/.bashrc
             pip3 install pillow libclang-py3 pyqt5
+            sudo apt-get update -y
             sudo apt-get install -y libclang-9-dev
             curl -L -O https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
             unzip -o build-wrapper-linux-x86.zip
