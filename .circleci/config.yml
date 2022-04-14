@@ -12,7 +12,7 @@ parameters:
 jobs:
   sonar-scan:
     machine:
-      image: ubuntu-2004:202111-02
+      image: cimg/python:3.10.4
     steps:
       - checkout
       - run:
