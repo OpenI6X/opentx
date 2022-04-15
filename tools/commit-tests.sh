@@ -160,12 +160,12 @@ if [[ " X12S HORUS ALL " =~ " ${FLAVOR} " ]] ; then
 fi
 
 if [[ " I6X ALL " =~ " ${FLAVOR} " ]] ; then
-  # OpenTX on Horus
+  # OpenTX on FlySky FS-i6X
   rm -rf *
   cmake ${COMMON_OPTIONS} -DPCB=I6X -DHELI=NO -DLUA=NO -DGVARS=YES -DLUA_COMPILER=NO -DMULTIMODULE=NO -DPCBI6X_ELRSV2=YES -DDISABLE_COMPANION=YES ${SRCDIR}
   make -j${CORES} ${FIRMARE_TARGET}
-#  make -j${CORES} libsimulator
-#  make -j${CORES} gtests ; ./gtests ${TEST_OPTIONS}
+  make -j${CORES} libsimulator
+  make -j${CORES} gtests ; ./gtests ${TEST_OPTIONS}
 fi
 
 if [[ " DEFAULT ALL " =~ " ${FLAVOR} " ]] ; then
