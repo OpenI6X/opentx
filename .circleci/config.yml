@@ -43,7 +43,7 @@ jobs:
          sudo apt-get install -y libclang-6.0-dev
          python3 ./tools/build-flysky.py -bI6X -tEN /home/circleci/project/
      - store_artifacts:
-        path: firmware.elf
+        path: firmware.bin
         destination: openi6x-<< pipeline.parameters.build-version >>-elrsv2.bin
 
   build-standard:
