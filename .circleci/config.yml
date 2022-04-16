@@ -2,13 +2,6 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-parameters:
-  build-version:
-    type: string
-    default: "1.4.0"
-
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
   sonar-scan:
     docker:
@@ -41,45 +34,9 @@ jobs:
           pip3 install pillow libclang-py3 pyqt5
           sudo apt-get update
           sudo apt-get install -y libclang-6.0-dev
-          python3 ./tools/build-flysky.py -bI6X-ELRSV2 -bI6X-HELI -bI6X-STD -tEN -tDE /home/circleci/project/
+          python3 ./tools/build-flysky.py -bI6X-ELRSV2 -bI6X-HELI -bI6X-STD -tALL /home/circleci/project/
       - store_artifacts:
           path: output
-
-  build-elrsv2:
-    machine:
-      image: ubuntu-2004:202111-02
-    steps:
-     - checkout
-     - run: |
-         git rev-parse --short=8 HEAD > git_tag.txt
-         docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=NO GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO PPM_UNIT=PERCENT_PREC0 DEBUG=NO PCBI6X_ELRSV2=YES" -v $PWD:/opentx vitass/opentx-fw-build
-     - store_artifacts:
-         path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
-         destination: openi6x-<< pipeline.parameters.build-version >>.bin
-
-  build-standard:
-    machine:
-      image: ubuntu-2004:202111-02
-    steps:
-      - checkout
-      - run: |
-          git rev-parse --short=8 HEAD > git_tag.txt
-          docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=NO GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO PPM_UNIT=PERCENT_PREC0 DEBUG=NO" -v $PWD:/opentx vitass/opentx-fw-build
-      - store_artifacts:
-          path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
-          destination: openi6x-<< pipeline.parameters.build-version >>.bin
-
-  build-heli:
-    machine:
-      image: ubuntu-2004:202111-02
-    steps:
-      - checkout
-      - run: |
-          git rev-parse --short=8 HEAD > git_tag.txt
-          docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=YES GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO PPM_UNIT=PERCENT_PREC0 DEBUG=NO" -v $PWD:/opentx vitass/opentx-fw-build
-      - store_artifacts:
-          path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
-          destination: openi6x-<< pipeline.parameters.build-version >>-heli.bin
 
 #  publish-github-release:
 #    docker:
@@ -101,31 +58,13 @@ orbs:
 workflows:
   openi6x-release-workflow:
     jobs:
-#      - sonar-scan:
-#          context: SonarCloud
+      - sonar-scan:
+          context: SonarCloud
       - build-all #:
-#      - build-elrsv2 #:
 #          filters:
 #            branches:
 #              only:
 #                - master
-#              ignore: /.*/
-#            tags:
-#              only: /openi6x-*$/
-#      - build-standard #:
-#          filters:
-#            branches:
-#              only: /master$/
-#              ignore: /.*/
-#            tags:
-#              only: /openi6x-*$/
-#      - build-heli #:
-#          filters:
-#            branches:
-#              only: /master$/
-#              ignore: /.*/
-#            tags:
-#              only: /openi6x-*$/
 #      - publish-github-release:
 ##          filters:
 ##            branches:
