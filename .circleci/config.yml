@@ -22,7 +22,7 @@ jobs:
             build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw_output ./tools/commit-tests.sh -Wno-error
       - sonarcloud/scan
 
-  build-all:
+  build-elrsv2:
     machine:
       image: ubuntu-2004:202111-02
     steps:
@@ -34,7 +34,39 @@ jobs:
           pip3 install pillow libclang-py3 pyqt5
           sudo apt-get update
           sudo apt-get install -y libclang-6.0-dev
-          python3 ./tools/build-flysky.py -bI6X-ELRSV2 -bI6X-HELI -bI6X-STD -tALL /home/circleci/project/
+          python3 ./tools/build-flysky.py -bI6X-ELRSV2 -tALL /home/circleci/project/
+      - store_artifacts:
+          path: output
+
+  build-heli:
+    machine:
+      image: ubuntu-2004:202111-02
+    steps:
+      - checkout
+      - run: |
+          wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2 -P /tmp
+          tar -C /tmp -xjf /tmp/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
+          export PATH=$PATH:/tmp/gcc-arm-none-eabi-4_7-2013q3/bin
+          pip3 install pillow libclang-py3 pyqt5
+          sudo apt-get update
+          sudo apt-get install -y libclang-6.0-dev
+          python3 ./tools/build-flysky.py -bI6X-HELI -tALL /home/circleci/project/
+      - store_artifacts:
+          path: output
+
+  build-std:
+    machine:
+      image: ubuntu-2004:202111-02
+    steps:
+      - checkout
+      - run: |
+          wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2 -P /tmp
+          tar -C /tmp -xjf /tmp/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
+          export PATH=$PATH:/tmp/gcc-arm-none-eabi-4_7-2013q3/bin
+          pip3 install pillow libclang-py3 pyqt5
+          sudo apt-get update
+          sudo apt-get install -y libclang-6.0-dev
+          python3 ./tools/build-flysky.py -bI6X-STD -tALL /home/circleci/project/
       - store_artifacts:
           path: output
 
@@ -81,7 +113,17 @@ workflows:
             branches:
               ignore:
                 - master
-      - build-all:
+      - build-elrsv2:
+          filters:
+            branches:
+              only:
+                - master
+      - build-heli:
+          filters:
+            branches:
+              only:
+                - master
+      - build-std:
           filters:
             branches:
               only:
