@@ -29,22 +29,33 @@ jobs:
             build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw_output ./tools/commit-tests.sh -Wno-error
       - sonarcloud/scan
 
+  build-all:
+    machine:
+      image: ubuntu-2004:202111-02
+    steps:
+      - checkout
+      - run: |
+          wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2 -P /tmp
+          tar -C /tmp -xjf /tmp/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
+          export PATH=$PATH:/tmp/gcc-arm-none-eabi-4_7-2013q3/bin
+          pip3 install pillow libclang-py3 pyqt5
+          sudo apt-get update
+          sudo apt-get install -y libclang-6.0-dev
+          python3 ./tools/build-flysky.py -bI6X-ELRSV2 -bI6X-HELI -bI6X-STD -tEN -tDE /home/circleci/project/
+      - store_artifacts:
+          path: output
+
   build-elrsv2:
     machine:
       image: ubuntu-2004:202111-02
     steps:
      - checkout
      - run: |
-         wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2 -P /tmp
-         tar -C /tmp -xjf /tmp/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
-         export PATH=$PATH:/tmp/gcc-arm-none-eabi-4_7-2013q3/bin
-         pip3 install pillow libclang-py3 pyqt5
-         sudo apt-get update
-         sudo apt-get install -y libclang-6.0-dev
-         python3 ./tools/build-flysky.py -bI6X -tEN /home/circleci/project/
+         git rev-parse --short=8 HEAD > git_tag.txt
+         docker run -it -e "BOARD_NAME=I6X" -e "CMAKE_FLAGS=PCB=I6X HELI=NO GVARS=YES LUA_COMPILER=NO MULTIMODULE=NO PPM_UNIT=PERCENT_PREC0 DEBUG=NO PCBI6X_ELRSV2=YES" -v $PWD:/opentx vitass/opentx-fw-build
      - store_artifacts:
-        path: firmware.bin
-        destination: openi6x-<< pipeline.parameters.build-version >>-elrsv2.bin
+         path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
+         destination: openi6x-<< pipeline.parameters.build-version >>.bin
 
   build-standard:
     machine:
@@ -92,7 +103,8 @@ workflows:
     jobs:
 #      - sonar-scan:
 #          context: SonarCloud
-      - build-elrsv2 #:
+      - build-all #:
+#      - build-elrsv2 #:
 #          filters:
 #            branches:
 #              only:

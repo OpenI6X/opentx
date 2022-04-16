@@ -9,13 +9,20 @@ import tempfile
 
 
 boards = {
-    "I6X": {
+    "I6X-ELRSV2": {
         "PCB": "I6X",
         "PCBI6X_ELRSV2": "YES",
-#         "MODULE_SIZE_STD": "NO",
-#         "PPM": "NO",
-#         "SBUS": "NO",
-#         "DEFAULT_MODE": "2",
+        "HELI": "NO",
+    },
+    "I6X-HELI": {
+        "PCB": "I6X",
+        "PCBI6X_ELRSV2": "NO",
+        "HELI": "YES",
+    },
+    "I6X-STD": {
+        "PCB": "I6X",
+        "PCBI6X_ELRSV2": "NO",
+        "HELI": "NO",
     },
 }
 
@@ -31,7 +38,6 @@ common_options = {
     "MULTIMODULE": "NO",
     "CROSSFIRE": "YES",
     "GVARS": "YES",
-    "HELI": "NO",
     "LUA": "NO",
     "LUA_COMPILER": "NO",
 }
@@ -56,8 +62,8 @@ def build(board, translation, srcdir):
     index = 0
     while 1:
         suffix = "" if index == 0 else "_%d" % index
-        # filename = "output/firmware_%s_%s_%s%s.bin" % (board.lower(), translation.lower(), timestamp(), suffix)
-        filename = "firmware.bin"
+        filename = "output/firmware_%s_%s_%s%s.bin" % (board.lower(), translation.lower(), timestamp(), suffix)
+        # filename = "firmware_%s.bin" % (board.lower())
         if not os.path.exists(filename):
             shutil.copy("%s/firmware.bin" % path, filename)
             break
