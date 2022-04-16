@@ -34,7 +34,7 @@
 
 #if defined(FRSKY_RELEASE)
 #define DISPLAY_VERSION "-frsky"
-#if defined(FLYSKY_RELEASE)
+#elif defined(FLYSKY_RELEASE)
 #define DISPLAY_VERSION "-flysky"
 #elif defined(JUMPER_RELEASE)
 #define DISPLAY_VERSION "-jumper"
