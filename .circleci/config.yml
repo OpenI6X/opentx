@@ -38,6 +38,22 @@ jobs:
       - store_artifacts:
           path: output
 
+  build-en:
+    machine:
+      image: ubuntu-2004:202111-02
+    steps:
+      - checkout
+      - run: |
+          wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2 -P /tmp
+          tar -C /tmp -xjf /tmp/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
+          export PATH=$PATH:/tmp/gcc-arm-none-eabi-4_7-2013q3/bin
+          pip3 install pillow libclang-py3 pyqt5
+          sudo apt-get update
+          sudo apt-get install -y libclang-6.0-dev
+          python3 ./tools/build-flysky.py -bI6X-ELRSV2 -bI6X-HELI -bI6X-STD -tEN /home/circleci/project/
+      - store_artifacts:
+          path: output
+
 #  publish-github-release:
 #    docker:
 #      - image: cibuilds/github:0.13
@@ -60,11 +76,16 @@ workflows:
     jobs:
       - sonar-scan:
           context: SonarCloud
-      - build-all #:
-#          filters:
-#            branches:
-#              only:
-#                - master
+      - build-en:
+          filters:
+            branches:
+              ignore:
+                - master
+      - build-all:
+          filters:
+            branches:
+              only:
+                - master
 #      - publish-github-release:
 ##          filters:
 ##            branches:

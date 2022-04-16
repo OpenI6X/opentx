@@ -63,7 +63,6 @@ def build(board, translation, srcdir):
     while 1:
         suffix = "" if index == 0 else "_%d" % index
         filename = "output/firmware_%s_%s_%s%s.bin" % (board.lower(), translation.lower(), timestamp(), suffix)
-        # filename = "firmware_%s.bin" % (board.lower())
         if not os.path.exists(filename):
             shutil.copy("%s/firmware.bin" % path, filename)
             break
