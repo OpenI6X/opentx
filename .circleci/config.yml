@@ -39,11 +39,11 @@ jobs:
          tar -C /tmp -xjf /tmp/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
          export PATH=$PATH:/tmp/gcc-arm-none-eabi-4_7-2013q3/bin
          pip3 install pillow libclang-py3 pyqt5
-         sudo apt-get update -y
+         sudo apt-get update
          sudo apt-get install -y libclang-6.0-dev
          python3 ./tools/build-flysky.py -bI6X -tEN /home/circleci/project/
      - store_artifacts:
-        path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
+        path: firmware.elf
         destination: openi6x-<< pipeline.parameters.build-version >>-elrsv2.bin
 
   build-standard:
