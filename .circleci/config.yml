@@ -41,7 +41,7 @@ jobs:
          pip3 install pillow libclang-py3 pyqt5
          sudo apt-get update -y
          sudo apt-get install -y libclang-6.0-dev
-         python3 ./tools/build-flysky.py -bI6X -tEN /home/circleci/opentx/
+         python3 ./tools/build-flysky.py -bI6X -tEN /home/circleci/project/
      - store_artifacts:
         path: opentx-i6x-<< pipeline.parameters.build-version >>.bin
         destination: openi6x-<< pipeline.parameters.build-version >>-elrsv2.bin
