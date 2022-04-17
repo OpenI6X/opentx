@@ -108,16 +108,16 @@ workflows:
     jobs:
       - sonar-scan:
           context: SonarCloud
-#      - build-en:
-#          filters:
-#            branches:
-#              ignore:
-#                - master
-      - build-elrsv2 #:
-#          filters:
-#            branches:
-#              only:
-#                - master
+      - build-en:
+          filters:
+            branches:
+              ignore:
+                - master
+      - build-elrsv2:
+          filters:
+            branches:
+              only:
+                - master
       - build-heli:
           filters:
             branches:
