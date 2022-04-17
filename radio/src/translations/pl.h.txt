@@ -73,16 +73,16 @@
 #if defined(PCBI6X)
 #define LEN_AUX_SERIAL_MODES                 "\014"
 #if defined(CLI) || defined(DEBUG)
-#define TR_AUX_SERIAL_MODES                  "Debug\0      ""Telemetria\0 "
+#define TR_AUX_SERIAL_MODES                  "Debug\0      ""Kopia Telem\0"
 #else
-#define TR_AUX_SERIAL_MODES                  "OFF\0        ""Telemetria\0 "
+#define TR_AUX_SERIAL_MODES                  "OFF\0        ""Kopia Telem\0"
 #endif
 #else
 #define LEN_AUX_SERIAL_MODES   "\015"  /*13 decimal*/
 #if defined(CLI) || defined(DEBUG)
-#define TR_AUX_SERIAL_MODES    "Debug\0       ""S-Port Kopia ""Telemetria\0  ""Trener SBUS\0 ""LUA\0          "
+#define TR_AUX_SERIAL_MODES    "Debug\0       ""Kopia Telem\0""Telemetria\0  ""Trener SBUS\0 ""LUA\0          "
 #else
-#define TR_AUX_SERIAL_MODES    "Wyłącz\0      ""S-Port Kopia ""Telemetria\0  ""Trener SBUS\0 ""LUA\0          "
+#define TR_AUX_SERIAL_MODES    "Wyłącz\0      ""Kopia Telem\0""Telemetria\0  ""Trener SBUS\0 ""LUA\0          "
 #endif
 #endif
 
@@ -961,7 +961,8 @@
 #define TR_MENUSENSOR          "CZUJNIK"
 #define TR_SENSOR              "SENSOR"
 #define TR_COUNTRYCODE         "Kod regionu"
-#define TR_USBMODE             "USB Mode"
+#define TR_USBDETECT           "USB Wykryj"
+#define TR_USBMODE             "USB Tryb"
 #define TR_VOICELANG           "Język głosu"
 #define TR_UNITSSYSTEM         "Jednostki"
 #define TR_EDIT                "Edytuj"
@@ -979,9 +980,9 @@
 #define TR_RESET_TELEMETRY     "Wyczyść telemetrię"
 #define TR_STATISTICS          "Statystyki"
 #define TR_ABOUT_US            "O nas"
-#define TR_USB_JOYSTICK        "USB Joystick (HID)"
-#define TR_USB_MASS_STORAGE    "USB Storage (SD)"
-#define TR_USB_SERIAL          "USB Serial (Debug)"
+#define TR_USB_JOYSTICK        "USB Joystick"
+#define TR_USB_MASS_STORAGE    "USB Storage"
+#define TR_USB_SERIAL          "USB Serial"
 #define TR_SETUP_SCREENS       "Setup screens"
 #define TR_MONITOR_SCREENS     "Monitors"
 #define TR_AND_SWITCH          "Przełącznik AND"

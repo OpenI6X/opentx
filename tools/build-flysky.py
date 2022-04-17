@@ -30,8 +30,8 @@ translations = [
     "EN",
     "PL",
     "CZ",
-    "DE"
-    # "ES"
+    "DE",
+    "ES"
 ]
 
 common_options = {

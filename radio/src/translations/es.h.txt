@@ -70,11 +70,20 @@
 #define LEN_TRNCHN             "\003"
 #define TR_TRNCHN              "CH1CH2CH3CH4"
 
+#if defined(PCBI6X)
+#define LEN_AUX_SERIAL_MODES                 "\014"
+#if defined(CLI) || defined(DEBUG)
+#define TR_AUX_SERIAL_MODES                  "Debug\0      ""Telem Mirror"
+#else
+#define TR_AUX_SERIAL_MODES                  "OFF\0        ""Telem Mirror"
+#endif
+#else
 #define LEN_AUX_SERIAL_MODES   "\015"
 #if defined(CLI) || defined(DEBUG)
-#define TR_AUX_SERIAL_MODES          "Debug\0       ""S-Port Mirror""Telemetry\0   ""SBUS Trainer\0""LUA\0         "
+#define TR_AUX_SERIAL_MODES          "Debug\0       ""Telem Mirror\0""Telemetry\0   ""SBUS Trainer\0""LUA\0         "
 #else
-#define TR_AUX_SERIAL_MODES          "OFF\0         ""S-Port Mirror""Telemetry\0   ""SBUS Trainer\0""LUA\0         "
+#define TR_AUX_SERIAL_MODES          "OFF\0         ""Telem Mirror\0""Telemetry\0   ""SBUS Trainer\0""LUA\0         "
+#endif
 #endif
 
 #define LEN_SWTYPES            "\006"
@@ -98,8 +107,17 @@
 #define LEN_COUNTRYCODES       TR("\002", "\007")
 #define TR_COUNTRYCODES        TR("US""JP""EU", "America""Japon\0 ""Europa\0")
 
-#define LEN_USBMODES           TR("\006", "\010")
+#if defined(PCBI6X)
+#define LEN_USBDETECTMODES             TR("\004", "\004")
+#define TR_USBDETECTMODES              TR("Auto""Once", "Auto""Once")
+#endif
+
+#define LEN_USBMODES                   TR("\006", "\010")
+#if defined(PCBI6X)
+#define TR_USBMODES                    TR("Ask\0  ""Joyst\0""Storag", "Ask\0    ""Joystick""Storage\0")
+#else
 #define TR_USBMODES            TR("Ask\0  ""Joyst\0""Storag""Serial", "Ask\0    ""Joystick""Storage\0""Serial\0 ")
+#endif
 
 #define LEN_TARANIS_PROTOCOLS  "\004"
 #if defined(PCBI6X)
@@ -542,12 +560,16 @@
 
 #if defined(PCBTARANIS)
   #define TR_ENTER             "[ENTER]"
+#elif defined(PCBI6X)
+  #define TR_ENTER                     "[ OK ]"
 #else
   #define TR_ENTER             "[MENU]"
 #endif
 
 #if defined(PCBHORUS)
   #define TR_EXIT              "[RTN]"
+#elif defined(PCBI6X)
+  #define TR_EXIT                      "[CANCEL]"
 #else
   #define TR_EXIT              "[SALIR]"
 #endif
@@ -949,6 +971,7 @@
 #define TR_MENUSENSOR          "SENSOR"
 #define TR_SENSOR              "SENSOR"
 #define TR_COUNTRYCODE         "Codigo Pais"
+#define TR_USBDETECT           "USB Detect"
 #define TR_USBMODE             "USB Mode"
 #define TR_VOICELANG           "Idioma voces"
 #define TR_UNITSSYSTEM         "Unidades"
@@ -967,9 +990,9 @@
 #define TR_RESET_TELEMETRY     "Reset Telemetria"
 #define TR_STATISTICS          "Estadisticas"
 #define TR_ABOUT_US            "Nosotros"
-#define TR_USB_JOYSTICK        "USB Joystick (HID)"
-#define TR_USB_MASS_STORAGE    "USB Storage (SD)"
-#define TR_USB_SERIAL          "USB Serial (Debug)"
+#define TR_USB_JOYSTICK        "USB Joystick"
+#define TR_USB_MASS_STORAGE    "USB Storage"
+#define TR_USB_SERIAL          "USB Serial"
 #define TR_SETUP_SCREENS       "Setup screens"
 #define TR_MONITOR_SCREENS     "Monitors"
 #define TR_AND_SWITCH          "AND Inter."
@@ -1233,6 +1256,7 @@
 #define ZSTR_CURR              "Curr"
 #define ZSTR_CAPACITY          "Capa"
 #define ZSTR_VFAS              "VFAS"
+#define ZSTR_BATT_PERCENT      "Bat%"
 #define ZSTR_ASPD              "ASpd"
 #define ZSTR_GSPD              "GSpd"
 #define ZSTR_HDG               "Hdg"
