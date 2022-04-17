@@ -70,11 +70,20 @@
 #define LEN_TRNCHN             "\003"
 #define TR_TRNCHN              "KN1KN2KN3KN4"
 
+#if defined(PCBI6X)
+#define LEN_AUX_SERIAL_MODES                 "\014"
+#if defined(CLI) || defined(DEBUG)
+#define TR_AUX_SERIAL_MODES                  "Debug\0      ""Telemetria\0 "
+#else
+#define TR_AUX_SERIAL_MODES                  "OFF\0        ""Telemetria\0 "
+#endif
+#else
 #define LEN_AUX_SERIAL_MODES   "\015"  /*13 decimal*/
 #if defined(CLI) || defined(DEBUG)
 #define TR_AUX_SERIAL_MODES    "Debug\0       ""S-Port Kopia ""Telemetria\0  ""Trener SBUS\0 ""LUA\0          "
 #else
 #define TR_AUX_SERIAL_MODES    "Wyłącz\0      ""S-Port Kopia ""Telemetria\0  ""Trener SBUS\0 ""LUA\0          "
+#endif
 #endif
 
 #define LEN_SWTYPES            "\006"
@@ -98,8 +107,17 @@
 #define LEN_COUNTRYCODES       TR("\002", "\007")
 #define TR_COUNTRYCODES        TR("US""JP""EU", "Ameryka""Japonia""Europa\0")
 
-#define LEN_USBMODES           TR("\006", "\010")
-#define TR_USBMODES            TR("Ask\0  ""Joyst\0""Storag""Serial", "Ask\0    ""Joystick""Storage\0""Serial\0 ")
+#if defined(PCBI6X)
+#define LEN_USBDETECTMODES             TR("\004", "\004")
+#define TR_USBDETECTMODES              TR("Auto""Once", "Auto""Once")
+#endif
+
+#define LEN_USBMODES                   TR("\006", "\010")
+#if defined(PCBI6X)
+#define TR_USBMODES                    TR("Ask\0  ""Joyst\0""Storag", "Ask\0    ""Joystick""Storage\0")
+#else
+#define TR_USBMODES                    TR("Ask\0  ""Joyst\0""Storag""Serial", "Ask\0    ""Joystick""Storage\0""Serial\0 ")
+#endif
 
 #define LEN_TARANIS_PROTOCOLS  "\004"
 #if defined(PCBI6X)
@@ -233,7 +251,7 @@
   #define TR_VVARIO            "[Wario]\0  "
 #endif
 
-#if defined(AUDIO)
+#if defined(AUDIO) || defined(BUZZER)
   #define TR_SOUND             "GrajDźwięk"
 #else
   #define TR_SOUND             "Pikanie\0  "
@@ -540,12 +558,16 @@
 
 #if defined(PCBTARANIS)
   #define TR_ENTER             "[ENTER]"
+#elif defined(PCBI6X)
+  #define TR_ENTER             "[ OK ]"
 #else
   #define TR_ENTER             "[MENU]"
 #endif
 
 #if defined(PCBHORUS)
   #define TR_EXIT              "[RTN]"
+#elif defined(PCBI6X)
+  #define TR_EXIT              "[CANCEL]"
 #else
   #define TR_EXIT              "[WYJŚ]"
 #endif
@@ -1224,6 +1246,7 @@
 #define ZSTR_CURR              "Curr"
 #define ZSTR_CAPACITY          "Capa"
 #define ZSTR_VFAS              "VFAS"
+#define ZSTR_BATT_PERCENT      "Bat%"
 #define ZSTR_ASPD              "ASpd"
 #define ZSTR_GSPD              "GSpd"
 #define ZSTR_HDG               "Hdg"

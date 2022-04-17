@@ -28,7 +28,7 @@ boards = {
 
 translations = [
     "EN",
-    # "PL",
+    "PL",
     "CZ",
     "DE"
     # "ES"
