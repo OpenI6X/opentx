@@ -66,7 +66,7 @@ jobs:
           pip3 install pillow libclang-py3 pyqt5
           sudo apt-get update
           sudo apt-get install -y libclang-6.0-dev
-          python3 ./tools/build-flysky.py -bI6X-STD -tALL /home/circleci/project/
+          python3 ./tools/build-flysky.py -bI6X -tALL /home/circleci/project/
       - store_artifacts:
           path: output
 
@@ -82,7 +82,7 @@ jobs:
           pip3 install pillow libclang-py3 pyqt5
           sudo apt-get update
           sudo apt-get install -y libclang-6.0-dev
-          python3 ./tools/build-flysky.py -bI6X-ELRSV2 -bI6X-HELI -bI6X-STD -tEN /home/circleci/project/
+          python3 ./tools/build-flysky.py -bI6X-ELRSV2 -bI6X-HELI -bI6X -tEN /home/circleci/project/
       - store_artifacts:
           path: output
 
@@ -113,21 +113,29 @@ workflows:
             branches:
               ignore:
                 - master
+          requires:
+            - sonar-scan
       - build-elrsv2:
           filters:
             branches:
               only:
                 - master
+          requires:
+            - sonar-scan
       - build-heli:
           filters:
             branches:
               only:
                 - master
+          requires:
+            - sonar-scan
       - build-std:
           filters:
             branches:
               only:
                 - master
+          requires:
+            - sonar-scan
 #      - publish-github-release:
 ##          filters:
 ##            branches:

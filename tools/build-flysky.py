@@ -19,7 +19,7 @@ boards = {
         "PCBI6X_ELRSV2": "NO",
         "HELI": "YES",
     },
-    "I6X-STD": {
+    "I6X": {
         "PCB": "I6X",
         "PCBI6X_ELRSV2": "NO",
         "HELI": "NO",
@@ -40,6 +40,7 @@ common_options = {
     "GVARS": "YES",
     "LUA": "NO",
     "LUA_COMPILER": "NO",
+    "DISABLE_COMPANION": "YES",
 }
 
 
@@ -54,7 +55,7 @@ def build(board, translation, srcdir):
         os.mkdir("output")
     path = tempfile.mkdtemp()
     os.chdir(path)
-    command = "cmake %s -DTRANSLATIONS=%s -DFLYSKY_RELEASE=YES -DDEFAULT_TEMPLATE_SETUP=21 %s" % (cmake_options, translation, srcdir)
+    command = "cmake %s -DTRANSLATIONS=%s -DDEFAULT_TEMPLATE_SETUP=21 %s" % (cmake_options, translation, srcdir)
     print(command)
     os.system(command)
     os.system("make firmware -j6")
@@ -62,7 +63,8 @@ def build(board, translation, srcdir):
     index = 0
     while 1:
         suffix = "" if index == 0 else "_%d" % index
-        filename = "output/firmware_%s_%s_%s%s.bin" % (board.lower(), translation.lower(), timestamp(), suffix)
+        # filename = "output/firmware_%s_%s_%s%s.bin" % (board.lower(), translation.lower(), timestamp(), suffix)
+        filename = "output/open%s_%s_%s%s.bin" % (board.lower(), translation.lower(), timestamp(), suffix)
         if not os.path.exists(filename):
             shutil.copy("%s/firmware.bin" % path, filename)
             break
