@@ -9,12 +9,12 @@ import tempfile
 
 
 boards = {
-    "I6X-ELRSV2": {
+    "I6X_ELRSV2": {
         "PCB": "I6X",
         "PCBI6X_ELRSV2": "YES",
         "HELI": "NO",
     },
-    "I6X-HELI": {
+    "I6X_HELI": {
         "PCB": "I6X",
         "PCBI6X_ELRSV2": "NO",
         "HELI": "YES",
