@@ -248,7 +248,7 @@
   #define TR_VVARIO            "[Vario]\0   "
 #endif
 
-#if defined(AUDIO)
+#if defined(AUDIO) || defined(PCBI6X)
   #define TR_SOUND             TR3("\221\222Zvuk\0    ", "\221\222Zvuk\0    ", "Hrát zvuk\0 ")
 #else
   #define TR_SOUND             "Pípnout\0   "

@@ -250,7 +250,7 @@
   #define TR_VVARIO            "[Vario]\0  "
 #endif
 
-#if defined(AUDIO) || defined(BUZZER)
+#if defined(AUDIO) || defined(PCBI6X)
   #define TR_SOUND             "Spiel Töne"
 #else
   #define TR_SOUND             "Spiel\0    "
