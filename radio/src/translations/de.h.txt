@@ -400,8 +400,13 @@
   #define TR_VARIOSRC          "Alt\0""Alt+""Vspd""A1\0 ""A2\0 "
 #endif
 
+#if defined(PCBI6X)
+  #define LEN_VTELEMSCREENTYPE "\006"
+  #define TR_VTELEMSCREENTYPE  " None ""Werte ""Balken"
+#else
   #define LEN_VTELEMSCREENTYPE "\007"
   #define TR_VTELEMSCREENTYPE  " None  "" Werte "" Balken"" Script"
+#endif
 
 #define LEN_GPSFORMAT          "\004"
 #define TR_GPSFORMAT           "GMS\0""NMEA"  //Koordinatenanzeige

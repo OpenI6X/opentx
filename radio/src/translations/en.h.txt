@@ -381,8 +381,13 @@
   #define TR_VARIOSRC                  "Alt\0""Alt+""VSpd""A1\0 ""A2\0"
 #endif
 
+#if defined(PCBI6X)
+  #define LEN_VTELEMSCREENTYPE         "\004"
+  #define TR_VTELEMSCREENTYPE          "None""Nums""Bars"
+#else
   #define LEN_VTELEMSCREENTYPE         "\006"
   #define TR_VTELEMSCREENTYPE          "None\0 ""Nums\0 ""Bars\0 ""Script"
+#endif
 
 #define LEN_GPSFORMAT                  "\004"
 #define TR_GPSFORMAT                   "DMS\0""NMEA"

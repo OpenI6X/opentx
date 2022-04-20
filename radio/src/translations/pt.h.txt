@@ -70,11 +70,20 @@
 #define LEN_TRNCHN       "\003"
 #define TR_TRNCHN        "CH1CH2CH3CH4"
 
-#define LEN_AUX_SERIAL_MODES   "\017"
+#if defined(PCBI6X)
+#define LEN_AUX_SERIAL_MODES                 "\014"
 #if defined(CLI) || defined(DEBUG)
-#define TR_AUX_SERIAL_MODES    "Debug\0         ""S-Port Mirror\0 ""Telemetry\0     ""SBUS Trainer\0  ""LUA\0           "
+#define TR_AUX_SERIAL_MODES                  "Debug\0      ""Telem Mirror"
 #else
-#define TR_AUX_SERIAL_MODES    "OFF\0           ""S-Port Mirror\0 ""Telemetry\0     ""SBUS Trainer\0  ""LUA\0           "
+#define TR_AUX_SERIAL_MODES                  "OFF\0        ""Telem Mirror"
+#endif
+#else
+#define LEN_AUX_SERIAL_MODES   "\015"
+#if defined(CLI) || defined(DEBUG)
+#define TR_AUX_SERIAL_MODES    "Debug\0       ""Telem Mirror\0""Telemetry In\0""SBUS Trainer\0""LUA\0         "
+#else
+#define TR_AUX_SERIAL_MODES    "OFF\0         ""Telem Mirror\0""Telemetry In\0""SBUS Trainer\0""LUA\0         "
+#endif
 #endif
 
 #define LEN_SWTYPES      "\006"
@@ -98,8 +107,17 @@
 #define LEN_COUNTRYCODES       TR("\002", "\007")
 #define TR_COUNTRYCODES        TR("US""JP""EU", "America""Japan\0 ""Europe\0")
 
+#if defined(PCBI6X)
+#define LEN_USBDETECTMODES             TR("\004", "\004")
+#define TR_USBDETECTMODES              TR("Auto""Once", "Auto""Once")
+#endif
+
 #define LEN_USBMODES           TR("\006", "\010")
+#if defined(PCBI6X)
+#define TR_USBMODES                    TR("Ask\0  ""Joyst\0""Storag", "Ask\0    ""Joystick""Storage\0")
+#else
 #define TR_USBMODES            TR("Ask\0  ""Joyst\0""Storag""Serial", "Ask\0    ""Joystick""Storage\0""Serial\0 ")
+#endif
 
 #define LEN_TARANIS_PROTOCOLS  "\004"
 #if defined(PCBI6X)
@@ -117,16 +135,13 @@
 #define LEN_DSM_PROTOCOLS      "\004"
 #define TR_DSM_PROTOCOLS       "LP45""DSM2""DSMX"
 
-#define LEN_I6X_PROTOCOLS      "\007"
-#define TR_I6X_PROTOCOLS       "OFF\0   ""AFHDS2A" // "AFHDS" some day?
+#define LEN_I6X_PROTOCOLS      "\004"
+#define TR_I6X_PROTOCOLS       "OFF\0""FS2A"
 
 #define LEN_MULTI_PROTOCOLS    "\006"
 #define TR_MULTI_PROTOCOLS     "FlySky""Hubsan""FrSky\0""Hisky\0""V2x2\0 ""DSM\0 ""Devo\0 ""YD717\0""KN\0 ""SymaX\0""SLT\0 ""CX10\0 ""CG023\0""Bayang""ESky\0 ""MT99XX""MJXq\0 ""Shenqi""FY326\0""SFHSS\0""J6 PRO""FQ777\0""Assan\0""Hontai""OpnLrs""FS 2A\0""Q2x2\0 ""Walk.\0""Q303\0 ""GW008\0""DM002\0""Cabell""Esy150""H8 3D\0""Corona""CFlie\0""Hitec\0""WFly\0 ""Bugs\0 ""BugMin""Traxas""NC1701""E01X\0 ""V911S\0""GD00X\0"
 
 #define TR_MULTI_CUSTOM        "Custom"
-
-#define LEN_SUBTYPE_FY326      "\005"
-#define TR_SUBTYPE_FY326       "FY326""FY319"
 
 #define LEN_VTRIMINC     "\006"
 #define TR_VTRIMINC      "Expo  ""ExFino""Fino  ""Medio ""Largo "
@@ -231,7 +246,7 @@
   #define TR_VVARIO        "[Vario]\0     "
 #endif
 
-#if defined(AUDIO)
+#if defined(AUDIO) || defined(BUZZER)
   #define TR_SOUND         "Tocar Audio\0 "
 #else
   #define TR_SOUND         "Beep\0        "
@@ -379,8 +394,8 @@
   #define TR_VARIOSRC          "Alti\0""Alti+""Vario""A1\0  ""A2\0"
 #endif
 
-#define LEN_VTELEMSCREENTYPE      "\004"
-#define TR_VTELEMSCREENTYPE       "Nums""Bars"
+#define LEN_VTELEMSCREENTYPE         "\006"
+#define TR_VTELEMSCREENTYPE          "None\0 ""Nums\0 ""Bars\0 ""Script"
 
 #define LEN_GPSFORMAT    "\004"
 #define TR_GPSFORMAT     "HMS NMEA"
@@ -536,12 +551,16 @@
 
 #if defined(PCBTARANIS)
   #define TR_ENTER             "[ENTER]"
+#elif defined(PCBI6X)
+  #define TR_ENTER                     "[ OK ]"
 #else
   #define TR_ENTER             "[MENU]"
 #endif
 
 #if defined(PCBHORUS)
   #define TR_EXIT              "[RTN]"
+#elif defined(PCBI6X)
+  #define TR_EXIT                      "[CANCEL]"
 #else
   #define TR_EXIT              "[EXIT]"
 #endif
@@ -943,6 +962,7 @@
 #define TR_MENUSENSOR          "SENSOR"
 #define TR_SENSOR              "SENSOR"
 #define TR_COUNTRYCODE         "Country Code"
+#define TR_USBDETECT           "USB Detect"
 #define TR_USBMODE             "USB Mode"
 #define TR_VOICELANG           "Voice Language"
 #define TR_UNITSSYSTEM         "Units"
@@ -961,9 +981,9 @@
 #define TR_RESET_TELEMETRY     "Reset Telemetry"
 #define TR_STATISTICS          "Statistics"
 #define TR_ABOUT_US            "About Us"
-#define TR_USB_JOYSTICK        "USB Joystick (HID)"
-#define TR_USB_MASS_STORAGE    "USB Storage (SD)"
-#define TR_USB_SERIAL          "USB Serial (Debug)"
+#define TR_USB_JOYSTICK        "USB Joystick"
+#define TR_USB_MASS_STORAGE    "USB Storage"
+#define TR_USB_SERIAL          "USB Serial"
 #define TR_SETUP_SCREENS       "Setup screens"
 #define TR_MONITOR_SCREENS     "Monitors"
 #define TR_AND_SWITCH          "AND Switch"
@@ -1030,9 +1050,9 @@
 #define TR_SCRIPT              "Script"
 #define TR_INPUTS              "Inputs"
 #define TR_OUTPUTS             "Outputs"
-#define TR_EEBACKUP            "\004[ENTER Long] to backup the EEPROM"
-#define TR_FACTORYRESET        "\012[MENU Long]: Factory reset"
-#define TR_CONFIRMRESET        "Erase ALL models and settings?"
+#define TR_EEBACKUP            "EEPROM backup"
+#define TR_FACTORYRESET        "Factory reset"
+#define TR_CONFIRMRESET        TR("Erase ALL", "Erase ALL models and settings?")
 #define TR_TO_MANY_LUA_SCRIPTS "Too many Lua scripts!"
 
 
@@ -1227,6 +1247,7 @@
 #define ZSTR_CURR              "Curr"
 #define ZSTR_CAPACITY          "Capa"
 #define ZSTR_VFAS              "VFAS"
+#define ZSTR_BATT_PERCENT      "Bat%"
 #define ZSTR_ASPD              "ASpd"
 #define ZSTR_GSPD              "GSpd"
 #define ZSTR_HDG               "Hdg"

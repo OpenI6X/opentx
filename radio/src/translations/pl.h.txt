@@ -401,8 +401,13 @@
   #define TR_VARIOSRC          "Wys\0""Wys+""VSpd""A1\0 ""A2\0"
 #endif
 
+#if defined(PCBI6X)
+  #define LEN_VTELEMSCREENTYPE     "\005"
+  #define TR_VTELEMSCREENTYPE      "Brak\0""Liczb""Paski"
+#else
   #define LEN_VTELEMSCREENTYPE "\006"
   #define TR_VTELEMSCREENTYPE  "Brak\0 ""Liczb\0""Paski\0""Skrypt"
+#endif
 
 #define LEN_GPSFORMAT          "\004"
 #define TR_GPSFORMAT           "DMS\0""NMEA"
