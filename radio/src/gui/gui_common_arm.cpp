@@ -411,6 +411,9 @@ bool isAssignableFunctionAvailable(int function) {
 #else
       return false;
 #endif
+#if defined(PCBI6X) // volume function unsupported
+    case FUNC_VOLUME:
+#endif
 #if !defined(HAPTIC)
     case FUNC_HAPTIC:
 #endif

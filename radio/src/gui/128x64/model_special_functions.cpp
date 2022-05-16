@@ -69,7 +69,7 @@ void onCustomFunctionsFileSelectionMenu(const char * result)
 }
 #endif // SDCARD
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBI6X)
 
 void onAdjustGvarSourceLongEnterPress(const char * result)
 {
@@ -136,13 +136,15 @@ void onCustomFunctionsMenu(const char * result)
     memset(cfn, 0, sizeof(CustomFunctionData));
     storageDirty(eeFlags);
   }
+#if !defined(PCBI6X)
   else if (result == STR_DELETE) {
     memmove(cfn, cfn+1, (MAX_SPECIAL_FUNCTIONS-sub-1)*sizeof(CustomFunctionData));
     memset(&g_model.customFn[MAX_SPECIAL_FUNCTIONS-1], 0, sizeof(CustomFunctionData));
     storageDirty(eeFlags);
   }
+#endif
 }
-#endif // PCBTARANIS
+#endif // PCBTARANIS, PCBI6X
 
 void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomFunctionsContext * functionsContext)
 {
@@ -150,18 +152,24 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
 
   uint8_t eeFlags = (functions == g_model.customFn) ? EE_MODEL : EE_GENERAL;
 
-#if defined(PCBTARANIS)
-#if defined(PCBXLITE)
+#if defined(PCBTARANIS) || defined(PCBI6X)
+#if defined(PCBXLITE) || defined(PCBI6X)
   if (menuHorizontalPosition==0 && event==EVT_KEY_LONG(KEY_ENTER) && !READ_ONLY()) {
+#if !defined(PCBI6X)
     killEvents(KEY_ENTER);
-    if (IS_SHIFT_PRESSED()) { // ENT LONG on xlite brings up switch type menu, so this menu is activated with SHIT + ENT LONG
+   if (IS_SHIFT_PRESSED()) { // ENT LONG on xlite brings up switch type menu, so this menu is activated with SHIT + ENT LONG
+#else
+  s_editMode = 0;
+#endif // PCBI6X
 #else
   if (menuHorizontalPosition<0 && event==EVT_KEY_LONG(KEY_ENTER) && !READ_ONLY()) {
 #endif
     killEvents(event);
     CustomFunctionData *cfn = &functions[sub];
     if (!CFN_EMPTY(cfn))
+#if !defined(PCBI6X)
       POPUP_MENU_ADD_ITEM(STR_COPY);
+#endif // PCBI6X
 #if defined(SDCARD)
     if (clipboard.type == CLIPBOARD_TYPE_CUSTOM_FUNCTION && isAssignableFunctionAvailable(clipboard.data.cfn.func))
       POPUP_MENU_ADD_ITEM(STR_PASTE);
@@ -170,18 +178,20 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
       POPUP_MENU_ADD_ITEM(STR_INSERT);
     if (!CFN_EMPTY(cfn))
       POPUP_MENU_ADD_ITEM(STR_CLEAR);
+#if !defined(PCBI6X)
     for (int i=sub+1; i<MAX_SPECIAL_FUNCTIONS; i++) {
       if (!CFN_EMPTY(&functions[i])) {
         POPUP_MENU_ADD_ITEM(STR_DELETE);
         break;
       }
     }
+#endif
     POPUP_MENU_START(onCustomFunctionsMenu);
   }
 #if defined(PCBXLITE)
   }
 #endif
-#endif // PCBTARANIS
+#endif // PCBTARANIS, PCBI6X
 
   for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
@@ -301,7 +311,7 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
             lcdDrawNumber(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, val_displayed, attr|LEFT);
           }
 #endif
-#if defined(SDCARD)
+#if defined(SDCARD) && !defined(PCBI6X)
           else if (func == FUNC_PLAY_TRACK || func == FUNC_BACKGND_MUSIC || func == FUNC_PLAY_SCRIPT) {
             if (ZEXIST(cfn->play.name))
               lcdDrawSizedText(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, cfn->play.name, sizeof(cfn->play.name), attr);
@@ -335,6 +345,7 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
             }
           }
 #endif // SDCARD
+#if !defined(PCBI6X)
           else if (func == FUNC_VOLUME) {
             val_max = MIXSRC_LAST_CH;
             drawSource(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, val_displayed, attr);
@@ -351,6 +362,7 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
               INCDEC_ENABLE_CHECK(isSourceAvailable);
             }
           }
+#endif // PCBI6X
 #if defined(SDCARD)
           else if (func == FUNC_LOGS) {
             if (val_displayed) {
