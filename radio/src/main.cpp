@@ -432,8 +432,9 @@ void perMain()
 #if defined(PCBSKY9X) && !defined(REVA)
   calcConsumption();
 #endif
-
+#if !defined(PCBI6X)
   checkSpeakerVolume();
+#endif
 
   if (!usbPlugged()) {
     checkEeprom();
