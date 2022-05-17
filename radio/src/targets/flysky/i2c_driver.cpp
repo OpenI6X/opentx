@@ -117,13 +117,13 @@ void eepromReadBlock(uint8_t * buffer, size_t address, size_t size)
   uint8_t round = 0;
   while (size > maxSize) {
     size -= maxSize;
-    while (!I2C_EE_ReadBlock(buffer + (round * maxSize), address, maxSize)) {
+    while (!I2C_EE_ReadBlock(buffer + (round * maxSize), address + (round * maxSize), maxSize)) {
       i2cInit();
     }
     round++;
   }
   if (size) {
-    while (!I2C_EE_ReadBlock(buffer + (round * maxSize), address, size)) {
+    while (!I2C_EE_ReadBlock(buffer + (round * maxSize), address + (round * maxSize), size)) {
       i2cInit();
     }
   }
@@ -219,7 +219,19 @@ void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrit
   */
 bool I2C_EE_WaitEepromStandbyState(void)
 {
-  RTOS_WAIT_MS(5);
+  __IO uint32_t trials = 0;
+  I2C_TransferHandling(I2C, I2C_ADDRESS_EEPROM, 0, I2C_AutoEnd_Mode, I2C_No_StartStop);
+  do {
+    I2C_ClearFlag(I2C, I2C_ICR_NACKCF | I2C_ICR_STOPCF);
+    I2C_GenerateSTART(I2C, ENABLE);
+    delay_ms(1);
+    if (trials++ == I2C_TIMEOUT_MAX) {
+      return false;
+    }
+  } while (I2C_GetFlagStatus(I2C, I2C_ISR_NACKF) != RESET);
+
+  I2C_ClearFlag(I2C, I2C_FLAG_STOPF);
+
   return true;
 }
 
