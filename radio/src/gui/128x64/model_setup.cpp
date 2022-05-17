@@ -833,6 +833,7 @@ void menuModelSetup(event_t event)
       case ITEM_MODEL_EXTERNAL_MODULE_MODE:
         lcdDrawTextAlignedLeft(y, INDENT TR_MODE);
         lcdDrawTextAtIndex(MODEL_SETUP_2ND_COLUMN, y, STR_TARANIS_PROTOCOLS, g_model.moduleData[EXTERNAL_MODULE].type, menuHorizontalPosition==0 ? attr : 0);
+#if !defined(PCBI6X)
         if (isModuleXJT(EXTERNAL_MODULE))
           lcdDrawTextAtIndex(MODEL_SETUP_2ND_COLUMN+5*FW, y, STR_XJT_PROTOCOLS, 1+g_model.moduleData[EXTERNAL_MODULE].rfProtocol, menuHorizontalPosition==1 ? attr : 0);
         else if (isModuleDSM2(EXTERNAL_MODULE))
@@ -840,6 +841,7 @@ void menuModelSetup(event_t event)
         else if (isModuleR9M(EXTERNAL_MODULE)){
           lcdDrawTextAtIndex(MODEL_SETUP_2ND_COLUMN+5*FW, y, STR_R9M_REGION, g_model.moduleData[EXTERNAL_MODULE].subType, (menuHorizontalPosition==1 ? attr : 0));
         }
+#endif
 #if defined(MULTIMODULE)
         else if (isModuleMultimodule(EXTERNAL_MODULE)) {
           int multi_rfProto = g_model.moduleData[EXTERNAL_MODULE].getMultiProtocol(false);
@@ -1325,7 +1327,7 @@ void menuModelSetup(event_t event)
         }
         break;
       }
-
+#if !defined(PCBI6X)
       case ITEM_MODEL_EXTERNAL_MODULE_POWER:
       {
         uint8_t moduleIdx = CURRENT_MODULE_EDITED(k);
@@ -1364,7 +1366,7 @@ void menuModelSetup(event_t event)
 #endif
       }
       break;
-
+#endif // PCBI6X
 #if defined(MULTIMODULE)
       case ITEM_MODEL_EXTERNAL_MODULE_AUTOBIND:
         if (g_model.moduleData[EXTERNAL_MODULE].getMultiProtocol(true) == MM_RF_PROTO_DSM2)

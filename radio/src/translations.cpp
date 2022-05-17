@@ -66,8 +66,10 @@ const char STR_OPEN9X[]  =
     ISTR(VALARM)
     ISTR(VALARMFN)
     ISTR(VTELPROTO)
+#if !defined(PCBI6X)
     ISTR(GPSFORMAT)
     ISTR(AMPSRC)
+#endif
     ISTR(VARIOSRC)
     ISTR(VTELEMSCREENTYPE)
 #if defined(HELI)
@@ -86,18 +88,24 @@ const char STR_OPEN9X[]  =
     ISTR(VUNITSSYSTEM)
     ISTR(VBEEPCOUNTDOWN)
     ISTR(VVARIOCENTER)
+#if !defined(PCBI6X)
     ISTR(COUNTRYCODES)
+#endif
     ISTR(USBDETECTMODES)
     ISTR(USBMODES)
     ISTR(VFAILSAFE)
     ISTR(VTRAINERMODES)
     ISTR(TARANIS_PROTOCOLS)
+#if !defined(PCBI6X)
     ISTR(R9M_REGION)
     ISTR(R9M_FCC_POWER_VALUES)
     ISTR(R9M_LBT_POWER_VALUES)
+#endif
     ISTR(TELEMETRY_PROTOCOLS)
+#if !defined(PCBI6X)
     ISTR(XJT_PROTOCOLS)
     ISTR(DSM_PROTOCOLS)
+#endif
     ISTR(I6X_PROTOCOLS)
 #if defined(MULTIMODULE)
     ISTR(MULTI_PROTOCOLS)
@@ -111,7 +119,9 @@ const char STR_OPEN9X[]  =
 #if defined(BLUETOOTH)
     ISTR(BLUETOOTH_MODES)
 #endif
+#if !defined(PCBI6X)
     ISTR(VANTENNATYPES)
+#endif
     ;
 
 // The 0-terminated-strings
