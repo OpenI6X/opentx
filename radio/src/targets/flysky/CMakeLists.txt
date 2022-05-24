@@ -2,7 +2,7 @@ option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
 option(LCD_DUAL_BUFFER "Dual LCD Buffer" OFF)
 option(TARANIS_INTERNAL_PPM "Taranis internal module hack to output PPM" OFF)
 option(PCBI6X_ELRSV2 "Enable ExpressLRS v2 configuration tool" NO) # ~4kB
-option(PCBI6X_USB_VBUS "Enable USB VBUS pin" NO)
+option(PCBI6X_USB_VBUS "Remove manual USB connection, just auto using VBUS, requires wiring USB VBUS to PA15 pad" NO)
 option(PCBI6X_BACKLIGHT_MOD "Enable adjustable backlight, requires wiring BL pad to PC9 pad" NO)
 
 if(PCB STREQUAL I6X)
@@ -48,6 +48,7 @@ endif()
 
 if(PCBI6X_ELRSV2 STREQUAL YES)
   add_definitions(-DPCBI6X_ELRSV2)
+  add_definitions(-DPCBI6X_ELRSV2_DEVICES)
 else() # features disabled for ELRSV2
   add_definitions(-DPCBI6X_USB_MSD) # 3620B
 endif()
@@ -68,7 +69,7 @@ set(PULSES_SRC
   )
 
 set(HSE_VALUE 8000000)
-set(SDCARD NO) # ~24kB FLASH
+set(SDCARD NO) # ~24kB
 set(EEPROM EEPROM_RLC)
 set(TARGET_DIR flysky)
 set(PPM_LIMITS_SYMETRICAL YES)
