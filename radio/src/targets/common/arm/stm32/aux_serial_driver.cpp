@@ -162,7 +162,7 @@ void auxSerialPutc(char c)
   int n = 0;
   while (auxSerialTxFifo.isFull()) {
     delay_ms(1);
-    if (++n > 10) return;
+    if (++n > 5) return;
   }
   auxSerialTxFifo.push(c);
   USART_ITConfig(AUX_SERIAL_USART, USART_IT_TXE, ENABLE);

@@ -112,18 +112,17 @@ bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRea
 
 void eepromReadBlock(uint8_t * buffer, size_t address, size_t size)
 {
-  // I2C_TransferHandling can handle up to 255 bytes at once
-  const uint8_t maxSize = 255;
-  uint8_t round = 0;
+  const uint8_t maxSize = 255; // I2C_TransferHandling can handle up to 255 bytes at once
+  uint32_t offset = 0;
   while (size > maxSize) {
     size -= maxSize;
-    while (!I2C_EE_ReadBlock(buffer + (round * maxSize), address + (round * maxSize), maxSize)) {
+    while (!I2C_EE_ReadBlock(buffer + offset, address + offset, maxSize)) {
       i2cInit();
     }
-    round++;
+    offset += maxSize;
   }
   if (size) {
-    while (!I2C_EE_ReadBlock(buffer + (round * maxSize), address + (round * maxSize), size)) {
+    while (!I2C_EE_ReadBlock(buffer + offset, address + offset, size)) {
       i2cInit();
     }
   }
@@ -217,6 +216,7 @@ void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrit
   * @param  None
   * @retval None
   */
+#define I2C_STANDBY_WAIT_MAX 100
 bool I2C_EE_WaitEepromStandbyState(void)
 {
   __IO uint32_t trials = 0;
@@ -225,7 +225,7 @@ bool I2C_EE_WaitEepromStandbyState(void)
     I2C_ClearFlag(I2C, I2C_ICR_NACKCF | I2C_ICR_STOPCF);
     I2C_GenerateSTART(I2C, ENABLE);
     delay_ms(1);
-    if (trials++ == I2C_TIMEOUT_MAX) {
+    if (trials++ == I2C_STANDBY_WAIT_MAX) {
       return false;
     }
   } while (I2C_GetFlagStatus(I2C, I2C_ISR_NACKF) != RESET);

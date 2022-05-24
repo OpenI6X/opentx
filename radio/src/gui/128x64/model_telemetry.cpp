@@ -133,7 +133,9 @@ enum SensorFields {
   SENSOR_FIELD_ONLYPOSITIVE,
   SENSOR_FIELD_FILTER,
   SENSOR_FIELD_PERSISTENT,
+#if defined(SDCARD)
   SENSOR_FIELD_LOGS,
+#endif
   SENSOR_FIELD_MAX
 };
 
@@ -362,14 +364,14 @@ void menuModelSensor(event_t event)
         }
         break;
 
+#if defined(SDCARD)
       case SENSOR_FIELD_LOGS:
         ON_OFF_MENU_ITEM(sensor->logs, SENSOR_2ND_COLUMN, y, STR_LOGS, attr, event);
         if (attr && checkIncDec_Ret) {
-#if defined(SDCARD)
           logsClose();
-#endif
         }
         break;
+#endif
 
     }
   }

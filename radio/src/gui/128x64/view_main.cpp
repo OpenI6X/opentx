@@ -268,7 +268,7 @@ void onMainViewMenu(const char *result)
     timerReset(2);
   }
 #endif
-#if !defined(PCBI6X)
+#if defined(SDCARD)
   else if (result == STR_VIEW_NOTES) {
     pushModelNotes();
   }

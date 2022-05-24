@@ -1422,11 +1422,7 @@ void doMixerPeriodicUpdates()
         s_cnt_1s -= 10;
         sessionTimer += 1;
         inactivity.counter++;
-#if defined(PCBI6X)
         if ((((uint8_t)inactivity.counter) & 0x07) == 0x01 && g_eeGeneral.inactivityTimer && inactivity.counter > ((uint16_t)g_eeGeneral.inactivityTimer * 60))
-#else
-        if ((((uint8_t)inactivity.counter) & 0x07) == 0x01 && g_eeGeneral.inactivityTimer && g_vbat100mV > 50 && inactivity.counter > ((uint16_t)g_eeGeneral.inactivityTimer * 60))
-#endif
           AUDIO_INACTIVITY();
 
 #if defined(AUDIO) || defined(PCBI6X)
