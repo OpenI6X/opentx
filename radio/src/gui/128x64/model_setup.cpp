@@ -332,8 +332,8 @@ void menuModelSetup(event_t event)
     INTERNAL_MODULE_CHANNELS_ROWS,
 #endif    
 #if defined(PCBI6X)    
-    IF_INTERNAL_MODULE_ON(1), // Subtype
-    IF_INTERNAL_MODULE_ON(1), // Servo Freq
+    IF_INTERNAL_MODULE_ON((g_model.moduleData[INTERNAL_MODULE].rfProtocol==PROTO_AFHDS2A_SPI)?1:HIDDEN_ROW), // Subtype
+    IF_INTERNAL_MODULE_ON((g_model.moduleData[INTERNAL_MODULE].rfProtocol==PROTO_AFHDS2A_SPI)?1:HIDDEN_ROW), // Servo Freq
 #endif
     IF_INTERNAL_MODULE_ON(HAS_RF_PROTOCOL_MODELINDEX(g_model.moduleData[INTERNAL_MODULE].rfProtocol) ? (uint8_t)2 : (uint8_t)1),
     IF_INTERNAL_MODULE_ON(FAILSAFE_ROWS(INTERNAL_MODULE)),
@@ -785,10 +785,16 @@ void menuModelSetup(event_t event)
                       EE_MODEL, 
                       isRfProtocolAvailable);
           if (checkIncDec_Ret) { // modified?
-            g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_AFHDS2A_SPI;
-            if (g_model.moduleData[INTERNAL_MODULE].rfProtocol == RF_PROTO_OFF){
+            if (g_model.moduleData[INTERNAL_MODULE].rfProtocol == RF_I6X_PROTO_OFF){
               g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_NONE;
+            }else if(g_model.moduleData[INTERNAL_MODULE].rfProtocol == RF_I6X_PROTO_AFHDS2A){
+              g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_AFHDS2A_SPI;
             }
+#if defined(AFHDS)
+            else{
+              g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_AFHDS_SPI;
+            }
+#endif            
           }
         }
         break;
@@ -859,7 +865,7 @@ void menuModelSetup(event_t event)
                 g_model.moduleData[EXTERNAL_MODULE].type, 
                 MODULE_TYPE_NONE, 
                 #if defined(PCBI6X)
-                  IS_TRAINER_EXTERNAL_MODULE() ? MODULE_TYPE_NONE : MODULE_TYPE_COUNT-2, // exclude AFHDS2A 
+                  IS_TRAINER_EXTERNAL_MODULE() ? MODULE_TYPE_NONE : MODULE_TYPE_CROSSFIRE, // exclude AFHDS2A and AFHDS
                 #else
                   IS_TRAINER_EXTERNAL_MODULE() ? MODULE_TYPE_NONE : MODULE_TYPE_COUNT-1,               
                 #endif

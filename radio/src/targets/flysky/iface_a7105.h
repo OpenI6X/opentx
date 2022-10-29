@@ -51,53 +51,17 @@ enum A7105_POWER
 #define CHANNEL_MAX_125	2047	//	125%
 #define CHANNEL_MIN_125	0		//	125%
 
-//Channel definitions
-//#define	CH1	0
-//#define	CH2	1
-//#define	CH3	2
-//#define	CH4	3
-//#define	CH5	4
-//#define	CH6	5
-//#define	CH7	6
-//#define	CH8	7
-//#define	CH9	8
-//#define	CH10	9
-//#define	CH11	10
-//#define	CH12	11
-//#define	CH13	12
-//#define	CH14	13
-//#define	CH15	14
-//#define	CH16	15
-
-extern uint8_t protocol_flags,protocol_flags2;
-extern uint8_t protocol;
+extern uint8_t protocol_flags;
 extern uint8_t prev_power; // unused power value
-
-#define RX_RSSI 0
-#define RX_Err  1
-#define RX_IntV 2
-#define RX_ExtV 3
-#define RX_Temp 4
-#define RX_RPM  5
-
-// extern int16_t telem_AFHDS2A[6];
-// extern uint8_t telem_status;
-
 extern uint8_t  packet[AFHDS2A_TXPACKET_SIZE];
 
-//#define NUM_CHN 16
-//// Servo data
-//extern uint16_t Channel_data[NUM_CHN];
-
 // Protocol variables
-
 typedef union {
 	uint32_t MProtocol_id; //tx id,
 	uint8_t rx_tx_addr[4];
 }ID_t;
 
 extern ID_t ID;
-
 
 //extern uint32_t MProtocol_id;//tx id,
 extern uint8_t  packet_count;

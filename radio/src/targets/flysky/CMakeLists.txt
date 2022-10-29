@@ -2,6 +2,7 @@ option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
 option(PCBI6X_ELRSV3 "Enable ExpressLRS v3 configuration tool" NO) # ~4kB
 option(PCBI6X_USB_VBUS "Remove manual USB connection, just auto using VBUS, requires wiring USB VBUS to PA15 pad" NO)
 option(PCBI6X_BACKLIGHT_MOD "Enable adjustable backlight, requires wiring BL pad to PC9 pad" NO)
+option(PCBI6X_AFHDS "AFHDS protocol support" YES)
 
 if(PCB STREQUAL I6X)
   set(PWR_BUTTON "SWITCH" CACHE STRING "Pwr button type (PRESS/SWITCH)")
@@ -53,11 +54,19 @@ endif()
 set(TARGET_SRC
   ${TARGET_SRC}
   A7105_SPI.cpp
-  AFHDS2A_a7105.cpp
+  AFHDS2A.cpp
   intmodule_pulses_driver.cpp
   trainer_driver.cpp
   ../common/arm/stm32/timers_driver.cpp
   )
+
+if(PCBI6X_AFHDS STREQUAL YES)
+  add_definitions(-DAFHDS)
+  set(TARGET_SRC
+  ${TARGET_SRC}
+  AFHDS.cpp
+  )
+endif()
 
 add_definitions(-DSBUS)
 set(PULSES_SRC

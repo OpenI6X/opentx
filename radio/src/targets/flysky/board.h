@@ -138,6 +138,7 @@ void delay_ms(uint32_t ms);
 #define LEN_CPU_UID                     (3*8+2)
 void getCPUUniqueID(char * s);
 
+
 // SD driver
 #define BLOCK_SIZE                      512 /* Block Size in Bytes */
 #if !defined(SIMU) || defined(SIMU_DISKIO)

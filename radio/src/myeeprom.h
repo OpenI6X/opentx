@@ -178,8 +178,8 @@ enum CurveRefType {
 #define GV1_LARGE 1024
 #define GV_RANGE_WEIGHT 500
 #define GV_RANGE_OFFSET 500
-#define DELAY_MAX       250 /* 25 seconds */
-#define SLOW_MAX        250 /* 25 seconds */
+#define DELAY_MAX 250 /* 25 seconds */
+#define SLOW_MAX 250  /* 25 seconds */
 
 #define MD_WEIGHT(md) (md->weight)
 #define MD_WEIGHT_TO_UNION(md, var) var.word = md->weight
@@ -343,6 +343,9 @@ enum Protocols {
 #endif
 #if defined(PCBI6X)
   PROTO_AFHDS2A_SPI,
+#if defined(AFHDS)
+  PROTO_AFHDS_SPI,
+#endif
 #endif
   PROTO_NONE
 };
@@ -366,7 +369,12 @@ enum XJTRFProtocols {
 enum I6XProtocols {
   RF_I6X_PROTO_OFF = -1,
   RF_I6X_PROTO_AFHDS2A,
+#if defined(AFHDS)
+  RF_I6X_PROTO_AFHDS,
+  RF_I6X_PROTO_LAST = RF_I6X_PROTO_AFHDS
+#else
   RF_I6X_PROTO_LAST = RF_I6X_PROTO_AFHDS2A
+#endif
 };
 
 enum R9MSubTypes {
@@ -472,6 +480,9 @@ enum ModuleTypes {
   MODULE_TYPE_SBUS,
 #endif
   MODULE_TYPE_AFHDS2A_SPI,
+#if defined(AFHDS)
+  MODULE_TYPE_AFHDS_SPI,
+#endif
   MODULE_TYPE_COUNT
 };
 

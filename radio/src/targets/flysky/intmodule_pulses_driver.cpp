@@ -22,7 +22,7 @@
 #include "mixer_scheduler.h"
 #include "opentx.h"
 
-static bool ahfds2aEnabled = false;
+static bool internalRFEnabled = false;
 /*----------------------PRT Timer----------------------------------------------*/
 inline void EnablePRTTim(void) {
   SET_BIT(TIM16->CR1, TIM_CR1_CEN);
@@ -31,18 +31,34 @@ inline void DisablePRTTim(void) {
   CLEAR_BIT(TIM16->CR1, TIM_CR1_CEN);
 }
 
+void SetPRTTimPeriod(uint8_t prot) {
+  TIM16->CNT = 0;
+  switch (prot) {
+    case PROTO_AFHDS2A_SPI:
+      WRITE_REG(TIM16->ARR, 61759);
+      break;
+#if defined(AFHDS)      
+    case PROTO_AFHDS_SPI:
+      WRITE_REG(TIM16->ARR, 23999 /*35999*/);
+      break;
+#endif      
+    default:
+      break;
+  }
+};
+
 void intmoduleStop() {
   TRACE("intmoduleStop: Stopping internal RF");
   DisablePRTTim();
-  if (ahfds2aEnabled) {
+  if (internalRFEnabled) {
     A7105_Sleep();
-    ahfds2aEnabled = false;
+    internalRFEnabled = false;
   }
 }
 
 void intmoduleNoneStart() {
   TRACE("intmoduleNoneStart: Init internal timer no pulses");
-    __IO uint32_t tmpreg;
+  __IO uint32_t tmpreg;
   SET_BIT(RCC->APB2ENR, RCC_APB2ENR_TIM16EN);
 
   /* Delay after an RCC peripheral clock enabling */
@@ -58,13 +74,13 @@ void intmoduleNoneStart() {
   NVIC_EnableIRQ(TIM16_IRQn);
 
   (void)tmpreg;
-  ahfds2aEnabled = false;
+  internalRFEnabled = false;
 
   EnablePRTTim();
 }
 
-void intmoduleAfhds2aStart() {
-  TRACE("intmoduleAfhds2aStart");
+void intRFmoduleStart() {
+  TRACE("intRFmoduleStart");
   // RF
   __IO uint32_t tmpreg;
   /* SPI1 clock enable */
@@ -147,11 +163,21 @@ void intmoduleAfhds2aStart() {
   NVIC_EnableIRQ(TIM16_IRQn);
 
   (void)tmpreg;
-  ahfds2aEnabled = true;
+  internalRFEnabled = true;
+}
+
+void intmoduleAfhds2aStart() {
+  intRFmoduleStart();
   initAFHDS2A();
   EnablePRTTim();
 }
-
+#if defined(AFHDS)
+void intmoduleAfhdsStart() {
+  intRFmoduleStart();
+  initAFHDS();
+  EnablePRTTim();
+}
+#endif
 /*-------------handler for RADIO GIO2 (FALLING AGE)---------------------------*/
 void EXTI2_3_IRQHandler(void) {
   if (EXTI->PR & RF_GIO2_PIN) {
@@ -165,8 +191,16 @@ void EXTI2_3_IRQHandler(void) {
 void TIM16_IRQHandler(void) {
   WRITE_REG(TIM16->SR, ~(TIM_SR_UIF));  // Clear the update interrupt flag (UIF)
   setupPulses(INTERNAL_MODULE);
-  if (ahfds2aEnabled) {
-    SETBIT(RadioState, CALLER, TIM_CALL);
-    ActionAFHDS2A();
+  if (internalRFEnabled) {
+    //  if(g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_AFHDS2A_SPI)
+    if (s_current_protocol[INTERNAL_MODULE] == PROTO_AFHDS2A_SPI) {
+      SETBIT(RadioState, CALLER, TIM_CALL);
+      ActionAFHDS2A();
+    } 
+#if defined(AFHDS)    
+    else if (s_current_protocol[INTERNAL_MODULE] == PROTO_AFHDS_SPI) {
+      ActionAFHDS();
+    }
+#endif    
   }
 }

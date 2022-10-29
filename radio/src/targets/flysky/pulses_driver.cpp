@@ -25,10 +25,19 @@ void extmoduleStop(void);
 
 void intmoduleNoneStart(void);
 void intmoduleAfhds2aStart(void);
-
+#if defined(AFHDS)
+void intmoduleAfhdsStart(void);
+#endif
 void extmodulePpmStart(void);
 void extmoduleTimerStart(uint32_t period, uint8_t state);
-
+#if defined(AFHDS)
+void init_afhds(uint32_t port) {
+  if (port == INTERNAL_MODULE) {
+    TRACE("init_afhds");
+    intmoduleAfhdsStart();
+  }
+}
+#endif
 void init_afhds2a(uint32_t port) {
   if (port == INTERNAL_MODULE) {
     TRACE("init_afhds2a");
@@ -36,9 +45,9 @@ void init_afhds2a(uint32_t port) {
   }
 }
 
-void disable_afhds2a(uint32_t port) {
+void disable_internal_rf(uint32_t port) {
   if (port == INTERNAL_MODULE) {
-    TRACE("disable_afhds2a");
+    TRACE("disable_internal_rf");
     intmoduleStop();
   }
 }
