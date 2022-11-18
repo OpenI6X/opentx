@@ -113,4 +113,4 @@ Wire `PC9` and `BL` pads together.
 * All the RF code was taken from the great KotelloRC's [erfly6: Er9X for i6 and i6x](https://bitbucket.org/KotelloRC/erfly6/src/master/).
 * ADC code taken from [OpenGround](https://github.com/fishpepper/OpenGround).
 * This work is based on Jakub's ([qba667](https://github.com/qba667)) work and is forked from his repo.
-* All the contributors of [OpenTX](https://github.com/opentx/opentx/). 
+* All the contributors of [OpenTX](https://github.com/opentx/opentx/) 
