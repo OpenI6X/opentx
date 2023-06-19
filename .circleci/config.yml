@@ -42,6 +42,26 @@ jobs:
       - store_artifacts:
           path: output
 
+  build-elrs:
+    docker:
+      - image: ajjjjjjjj/opentx-docker-i6x:1.2.0
+    steps:
+      - checkout
+      - run: |
+          python3 ./tools/build-flysky.py -bI6X_ELRS -tALL $PWD/
+      - store_artifacts:
+          path: output
+
+  build-elrs-backlight:
+    docker:
+      - image: ajjjjjjjj/opentx-docker-i6x:1.2.0
+    steps:
+      - checkout
+      - run: |
+          python3 ./tools/build-flysky.py -bI6X_ELRS_BACKLIGHT_MOD -tALL $PWD/
+      - store_artifacts:
+          path: output
+
   build-heli:
     docker:
       - image: ajjjjjjjj/opentx-docker-i6x:1.2.0
@@ -90,43 +110,41 @@ jobs:
 workflows:
   openi6x-release-workflow:
     jobs:
-#      - sonar-scan:
-#          context: SonarCloud
       - build-en:
           filters:
             branches:
               ignore:
                 - master
-#          requires:
-#            - sonar-scan
       - build-std:
           filters:
             branches:
               only:
                 - master
-#          requires:
-#            - sonar-scan
       - build-std-backlight:
           filters:
             branches:
               only:
                 - master
-#          requires:
-#            - sonar-scan
+      - build-elrs:
+          filters:
+            branches:
+              only:
+                - master
+      - build-elrs-backlight:
+          filters:
+            branches:
+              only:
+                - master
       - build-heli:
           filters:
             branches:
               only:
                 - master
-#          requires:
-#            - sonar-scan
       - build-heli-backlight:
           filters:
             branches:
               only:
                 - master
-#          requires:
-#            - sonar-scan
       - build-std:
           filters:
             branches:
@@ -137,8 +155,6 @@ workflows:
             branches:
               only:
                 - master
-#          requires:
-#            - sonar-scan
 #      - publish-github-release:
 ##          filters:
 ##            branches:

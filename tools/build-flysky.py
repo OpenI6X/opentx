@@ -11,11 +11,23 @@ import tempfile
 boards = {
     "I6X": {
         "HELI": "NO",
-        "PCBI6X_ELRS": "YES",
+        "PCBI6X_ELRS": "NO",
         "PCBI6X_INAV": "YES",
         "PCBI6X_BACKLIGHT_MOD": "NO",
     },
     "I6X_BACKLIGHT_MOD": {
+        "HELI": "NO",
+        "PCBI6X_ELRS": "NO",
+        "PCBI6X_INAV": "YES",
+        "PCBI6X_BACKLIGHT_MOD": "YES",
+    },
+    "I6X_ELRS": {
+        "HELI": "NO",
+        "PCBI6X_ELRS": "YES",
+        "PCBI6X_INAV": "YES",
+        "PCBI6X_BACKLIGHT_MOD": "NO",
+    },
+    "I6X_ELRS_BACKLIGHT_MOD": {
         "HELI": "NO",
         "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "YES",

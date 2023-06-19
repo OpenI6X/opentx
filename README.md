@@ -12,7 +12,7 @@ You can find instructions and videos contributed by fellow early adopters in the
 
 ## Table of Contents
 
-[How to install, upgrade or restore original FW](https://github.com/OpenI6X/opentx/wiki) <br>
+[How to install, upgrade or restore original firmware](https://github.com/OpenI6X/opentx/wiki) <br>
 [Developers guide, how to build](https://github.com/OpenI6X/opentx/wiki/Contribute) <br>
 [Features](#features)<br>
 [Navigation](#navigation)<br>
@@ -84,7 +84,7 @@ When to use "Save all" option:
 
 ## USB connection
 
-FlySky FS-i6X don't have a USB VBUS making it impossible to detect USB connection. To connect without modification, press OK on main screen and select "USB Connect" (In version 1.8.0 or earlier it's in: Radio Setup -> "USB Detect").<br>
+FlySky FS-i6X don't have a USB VBUS making it impossible to detect USB connection. To connect press OK on main screen and select "USB Connect" (In version 1.8.0 or earlier it's in: Radio Setup -> "USB Detect").<br>
 Automatic connection detection can be added by wiring `PA15` pad to USB VBUS preferably with a resistor (I have used 1K).
 
 ## Powering by 2S Li-Po/Li-ion/18650
@@ -97,14 +97,14 @@ With Mode 1 & Mode 3 radios you may experience inverted gimbal movement and swap
 
 ## All optional hardware connections
 
-| PCB Pad    | Function                                              |
-|------------|-------------------------------------------------------|
-| `TX2`      | S.Port (CRSF)                                         |
-| `PA9`      | AUX Serial port TX                                    |
-| `PA10`     | AUX Serial port RX                                    |
-| `PA15`     | USB VBUS (USB connection detection)                   |
-| `PC13`     | External module power control (it was `PC9` up to OpenI6X 1.5.0) |
-| `PC9`+`BL` | Wiring those together allows for adjustable backlight |
+| PCB Pad    | Function                                                      |
+|------------|---------------------------------------------------------------|
+| `TX2`      | S.Port (CRSF)                                                 |
+| `PA9`      | AUX Serial port TX                                            |
+| `PA10`     | AUX Serial port RX                                            |
+| `PA15`     | USB connection detection                                      |
+| `PC13`     | External module power control (was `PC9` up to OpenI6X 1.5.0) |
+| `PC9`+`BL` | Wiring those together allows for adjustable backlight         |
 
 ![hw](https://github.com/OpenI6X/opentx/raw/master/doc/flysky/openi6x_hardware.jpeg?raw=true)
 
