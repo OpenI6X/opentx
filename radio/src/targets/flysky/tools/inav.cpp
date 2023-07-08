@@ -77,15 +77,15 @@ static void inavDrawHome(uint8_t x, uint8_t y) {
   lcdDrawChar(x - 2, y - 3, HOME_ICON);
 }
 
-// point left / right, tip is (0,0) and is not rotated
+// points: left, right, tip is (0,0) and rotated
 static void inavDrawCraft(uint8_t x, uint8_t y) {
   constexpr int8_t pLX = -3;
   constexpr int8_t pLY = 10;
   constexpr int8_t pRX =  3;
   constexpr int8_t pRY = 10;
-  uint8_t angle = inavData.heading; // + inavData.homeHeading;
-  int8_t sinVal = sine[angle];
-  int8_t cosVal = sine[(angle + 8) & 0x1F];
+  uint8_t angle = inavData.heading;
+  int8_t sinVal = sine[(angle - 8) & 0x1F]; // rotate to north up (-90 deg)
+  int8_t cosVal = sine[angle];              // (+ 90 deg)
 
   // rotate
   int8_t rotatedPLX = (pLX * cosVal - pLY * sinVal) >> 7;
@@ -176,7 +176,7 @@ static void inavDraw() {
         lcdDrawSizedText(INAV_FM_X, INAV_FM_Y, telemetryItem.text, sizeof(telemetryItem.text), CENTERED);
       // } else if (sensor.id == TEMP2_ID) { // GPS lock status, accuracy, home reset trigger, and number of satellites.
 
-      } else if (strstr(sensor.label, ZSTR_DIST) || strstr(sensor.label, "0420")) { // Distance
+      } else if (strstr(sensor.label, ZSTR_DIST) || strstr(sensor.label, "0420")) { // Distance, "0420" for INAV and Betaflight
         dist = telemetryItem.value;
       } else if (strstr(sensor.label, ZSTR_HDG)) { // Heading
         // inavData.heading = ((telemetryItem.value / (10 ^ sensor.prec)) * 100) / 1125;
@@ -192,7 +192,6 @@ static void inavDraw() {
 #endif // INAVLITE_CRSF
     } else if (telemetryProtocol == PROTOCOL_FLYSKY_IBUS) {
 #if defined(INAVLITE_AFHDS2A)
-
       if (g_model.telemetrySensors[i].id == 0xfc) { // RX RSSI
         rssi = telemetryItem.value;
       }
@@ -200,8 +199,7 @@ static void inavDraw() {
       switch(g_model.telemetrySensors[i].instance) { // inav index - 1
         case 1: // voltage sensor
           rxBatt = telemetryItem.value / 10; // scale down to PREC1
-
-          // additionally draw in place of cell voltage
+          // draw in place of CRSF cell voltage
           drawValueWithUnit(INAV_CELLV_X, INAV_CELLV_Y, rxBatt, UNIT_VOLTS, PREC1 | DBLSIZE | RIGHT);
           break;
         case 2: // 3. GPS Status, truncated to just Fix in flysky_ibus.cpp
@@ -269,8 +267,6 @@ static void inavDraw() {
   lcdDrawNumber(INAV_SATS_X, INAV_SATS_Y, sats, MIDSIZE | RIGHT);
   drawValueWithUnit(INAV_GALT_X, INAV_GALT_Y, galt, UNIT_METERS, RIGHT);
 
-  // lcdDrawText(5, 45, "\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2");
-
   // lcdDrawNumber(70, 20, inavData.currentLat, SMLSIZE | RIGHT);
   // lcdDrawNumber(70, 30, inavData.currentLon, SMLSIZE | RIGHT);
 
@@ -310,7 +306,6 @@ static void inavDraw() {
     inavDrawHome(BBOX_CENTER_X + scaledHomeLon, BBOX_CENTER_Y + scaledHomeLat);
     inavDrawCraft(BBOX_CENTER_X + scaledCurrentLon, BBOX_CENTER_Y + scaledCurrentLat);
   } 
-  
 
   // draw VSpd line
   vspd = limit<int16_t>(-5, vspd / 4, 5);
