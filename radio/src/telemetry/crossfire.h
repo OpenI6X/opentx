@@ -108,14 +108,14 @@ bool isCrossfireOutputBufferAvailable();
 uint8_t createCrossfireModelIDFrame(uint8_t * frame);
 
 const uint32_t CROSSFIRE_BAUDRATES[] = {
-  115200,
   400000,
+  115200,
   921600,
   1870000,
 };
 const uint8_t CROSSFIRE_PERIODS[] = {
-  16,
   4,
+  16,
   4,
   4,
 };
