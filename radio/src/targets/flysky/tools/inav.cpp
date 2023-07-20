@@ -1,6 +1,6 @@
 /**
  * INAV Lite
- * Telemetry radar screen for CRSF and AFHDS2A (expects ibus_telemetry_type=7/8/135/136)
+ * Telemetry radar screen for CRSF and AFHDS2A (expects ibus_telemetry_type=7/8)
  *
  */
 #include "opentx.h"
@@ -84,8 +84,8 @@ static void inavDrawCraft(uint8_t x, uint8_t y) {
   constexpr int8_t pRX =  3;
   constexpr int8_t pRY = 10;
   uint8_t angle = inavData.heading;
-  int8_t sinVal = sine[(angle - 8) & 0x1F]; // rotate to north up (-90 deg)
-  int8_t cosVal = sine[angle];              // (+ 90 deg)
+  int8_t sinVal = sine[angle];
+  int8_t cosVal = sine[(angle + 8) & 0x1F];
 
   // rotate
   int8_t rotatedPLX = (pLX * cosVal - pLY * sinVal) >> 7;
@@ -221,10 +221,10 @@ static void inavDraw() {
           dist = telemetryItem.value;
           break;
         // case 9: // 10. Armed
-        //   break;     
+        //   break;
         case 10: // 11. Speed
           speed = telemetryItem.value;
-          break;        
+          break;
         case 11: // 12. GPS Lattitude
           inavData.currentLat = telemetryItem.value;
           break;
@@ -305,12 +305,12 @@ static void inavDraw() {
     // translate to LCD center space and draw
     inavDrawHome(BBOX_CENTER_X + scaledHomeLon, BBOX_CENTER_Y + scaledHomeLat);
     inavDrawCraft(BBOX_CENTER_X + scaledCurrentLon, BBOX_CENTER_Y + scaledCurrentLat);
-  } 
+  }
 
   // draw VSpd line
   vspd = limit<int16_t>(-5, vspd / 4, 5);
-  lcdDrawLine(LCD_W - 30, ((LCD_H / 2) + FH / 2) - 10 + vspd, LCD_W - 28, ((LCD_H / 2) + FH / 2) - 10 - vspd, SOLID, FORCE); 
-  lcdDrawLine(LCD_W - 30, ((LCD_H / 2) + FH / 2) -  9 + vspd, LCD_W - 28, ((LCD_H / 2) + FH / 2) -  9 - vspd, SOLID, FORCE); 
+  lcdDrawLine(LCD_W - 30, ((LCD_H / 2) + FH / 2) - 10 + vspd, LCD_W - 28, ((LCD_H / 2) + FH / 2) - 10 - vspd, SOLID, FORCE);
+  lcdDrawLine(LCD_W - 30, ((LCD_H / 2) + FH / 2) -  9 + vspd, LCD_W - 28, ((LCD_H / 2) + FH / 2) -  9 - vspd, SOLID, FORCE);
 }
 
 void inavRun(event_t event) {
@@ -325,6 +325,7 @@ void inavRun(event_t event) {
   } else if (event == EVT_KEY_LONG(KEY_ENTER)) { // set home on long press OK
     inavData.homeLat = inavData.currentLat;
     inavData.homeLon = inavData.currentLon;
+    buzzerEvent(AU_SPECIAL_SOUND_WARN1);
     // inavData.homeHeading = inavData.heading;
   }
 
