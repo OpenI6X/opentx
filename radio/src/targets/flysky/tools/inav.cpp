@@ -139,7 +139,7 @@ static void inavDraw() {
 //directions
   lcdDrawText(LCD_W - 37, LCD_H/2, "W", SMLSIZE); 
   lcdDrawText(36+2, LCD_H/2, "E", SMLSIZE); 
-  lcdDrawText(LCD_W/2-1 , 21, "S", SMLSIZE); 
+  lcdDrawText(LCD_W/2-1 , INAV_FM_X+10, "S", SMLSIZE); 
   lcdDrawText(LCD_W/2 , LCD_H-6, "N", SMLSIZE); 
 //
 
