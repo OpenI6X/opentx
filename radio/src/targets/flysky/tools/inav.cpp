@@ -277,7 +277,7 @@ static void inavDraw() {
   // lcdDrawNumber(70, 30, inavData.currentLon, SMLSIZE | RIGHT);
 
   drawValueWithUnit(LCD_W - 6, 0, rxBatt, UNIT_VOLTS, PREC1 | RIGHT);
-  //drawTelemetryTopBar(); // after rxBatt to add INVERS
+  drawTelemetryTopBar(); // after rxBatt to add INVERS
 
   int32_t h = inavData.homeLat - inavData.currentLat;
   int32_t w = inavData.homeLon - inavData.currentLon;
