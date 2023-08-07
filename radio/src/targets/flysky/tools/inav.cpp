@@ -137,10 +137,10 @@ static void inavDraw() {
   lcdDrawSolidVerticalLine(LCD_W - 31, FH, LCD_H - FH, FORCE);
 
 //directions
-  lcdDrawText(LCD_W - 37, LCD_H/2, "E", SMLSIZE|BLINK); 
-  lcdDrawText(36+2, LCD_H/2, "W", SMLSIZE|BLINK); 
+  lcdDrawText(LCD_W - 37, LCD_H/2, "E", SMLSIZE); 
+  lcdDrawText(36+2, LCD_H/2, "W", SMLSIZE); 
  // lcdDrawText(LCD_W/2-1 , INAV_FM_X+10, "N", SMLSIZE); 
-  lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE|BLINK); 
+  lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE); 
 //
 
   lcdDrawSolidVerticalLine(LCD_W - 27, FH, LCD_H - FH, FORCE);
@@ -277,7 +277,7 @@ static void inavDraw() {
   // lcdDrawNumber(70, 30, inavData.currentLon, SMLSIZE | RIGHT);
 
   drawValueWithUnit(LCD_W - 6, 0, rxBatt, UNIT_VOLTS, PREC1 | RIGHT);
-  drawTelemetryTopBar(); // after rxBatt to add INVERS
+  //drawTelemetryTopBar(); // after rxBatt to add INVERS
 
   int32_t h = inavData.homeLat - inavData.currentLat;
   int32_t w = inavData.homeLon - inavData.currentLon;
