@@ -591,7 +591,7 @@ void drawTelemetryTopBar()
   //putsVBat(10*FW-1,0,att);
   if (g_model.timers[0].mode) {
     att = (timersStates[0].val<0 ? BLINK : 0);
-    drawTimer(10*FW+5, 0, timersStates[0].val, att, att);
+    drawTimer(10*FW-6, 0, timersStates[0].val, att, att);
   }
   lcdInvertLine(0);
 }
