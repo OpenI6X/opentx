@@ -112,9 +112,6 @@ static void inavDrawCraft(uint8_t x, uint8_t y) {
   lcdDrawLine(x, y, tPRX, tPRY, SOLID, FORCE);
   lcdDrawLine(tPLX, tPLY, tPRX, tPRY, DOTTED, FORCE);
 
-  lcdDrawText(3, 35, "Sats", SMLSIZE);
-  
-
 }
 
 // Mode: 0 - Passthrough, 1-Armed(rate), 2-Horizon, 3-Angle, 4-Waypoint, 5-AltHold, 6-PosHold, 7-Rth, 8-Launch, 9-Failsafe
@@ -138,6 +135,13 @@ static void inavDrawAFHDS2AFM(uint8_t mode) {
 static void inavDraw() {
   lcdDrawSolidVerticalLine(36, FH, LCD_H - FH, FORCE);
   lcdDrawSolidVerticalLine(LCD_W - 31, FH, LCD_H - FH, FORCE);
+
+//directions
+  lcdDrawText(LCD_W - 35, LCD_H/2, "W", SMLSIZE); 
+  lcdDrawText(36+2, LCD_H/2, "E", SMLSIZE); 
+  lcdDrawText(LCD_W/2 , 20, "N", SMLSIZE); 
+  lcdDrawText(LCD_W/2 , LCD_H-4, "S", SMLSIZE); 
+
   lcdDrawSolidVerticalLine(LCD_W - 27, FH, LCD_H - FH, FORCE);
   lcdDrawSolidHorizontalLine(0, 55, 36, FORCE);
   lcdDrawSolidHorizontalLine(LCD_W - 26, 51, 32, FORCE);
