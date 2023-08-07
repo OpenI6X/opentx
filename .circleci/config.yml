@@ -115,46 +115,13 @@ workflows:
             branches:
               ignore:
                 - master
-      - build-std:
-          filters:
-            branches:
-              only:
-                - master
-      - build-std-backlight:
-          filters:
-            branches:
-              only:
-                - master
-      - build-elrs:
-          filters:
-            branches:
-              only:
-                - master
+
       - build-elrs-backlight:
           filters:
             branches:
               only:
                 - master
-      - build-heli:
-          filters:
-            branches:
-              only:
-                - master
-      - build-heli-backlight:
-          filters:
-            branches:
-              only:
-                - master
-      - build-std:
-          filters:
-            branches:
-              only:
-                - master
-      - build-std-backlight:
-          filters:
-            branches:
-              only:
-                - master
+
 #      - publish-github-release:
 ##          filters:
 ##            branches:
