@@ -2,6 +2,7 @@
  * INAV Lite
  * Telemetry radar screen for CRSF and AFHDS2A (expects ibus_telemetry_type=7/8)
  *
+ * @author Jan Kozak (ajjjjjjjj)
  */
 #include "opentx.h"
 
@@ -43,7 +44,7 @@ static const int8_t sine[32] = {
 #define BBOX_CENTER_Y  (36)
 #define BBOX_SIZE      (21)
 
-#define HOME_ICON '\xce'
+#define HOME_ICON '\xc7'
 #define SATS_ICON '\xd1'
 
 struct Point2D {
@@ -73,6 +74,13 @@ static Point2D rotate(Point2D *p, uint8_t angle) {
 }
 */
 
+static void inavSetHome() {
+  inavData.homeLat = inavData.currentLat;
+  inavData.homeLon = inavData.currentLon;
+  // inavData.homeHeading = inavData.heading;
+  buzzerEvent(AU_SPECIAL_SOUND_WARN1);
+}
+
 static void inavDrawHome(uint8_t x, uint8_t y) {
   lcdDrawChar(x - 2, y - 3, HOME_ICON);
 }
@@ -99,10 +107,10 @@ static void inavDrawCraft(uint8_t x, uint8_t y) {
   uint8_t tPRY = y + rotatedPRY;
 
   // translate and draw
+  // TODO y = LCD_H - y ?
   lcdDrawLine(x, y, tPLX, tPLY, SOLID, FORCE);
   lcdDrawLine(x, y, tPRX, tPRY, SOLID, FORCE);
   lcdDrawLine(tPLX, tPLY, tPRX, tPRY, DOTTED, FORCE);
-  // lcdDrawChar(x - 2, y - 3, '*', SMLSIZE);
 }
 
 // Mode: 0 - Passthrough, 1-Armed(rate), 2-Horizon, 3-Angle, 4-Waypoint, 5-AltHold, 6-PosHold, 7-Rth, 8-Launch, 9-Failsafe
@@ -124,22 +132,12 @@ static void inavDrawAFHDS2AFM(uint8_t mode) {
 }
 
 static void inavDraw() {
-  lcdDrawFilledRect(0, 0, LCD_W, FH, SOLID, 0);
   lcdDrawSolidVerticalLine(36, FH, LCD_H - FH, FORCE);
   lcdDrawSolidVerticalLine(LCD_W - 31, FH, LCD_H - FH, FORCE);
   lcdDrawSolidVerticalLine(LCD_W - 27, FH, LCD_H - FH, FORCE);
   lcdDrawSolidHorizontalLine(0, 55, 36, FORCE);
   lcdDrawSolidHorizontalLine(LCD_W - 26, 51, 32, FORCE);
   lcdDrawLine(LCD_W - 30, (LCD_H / 2) + FH / 2, LCD_W - 28, (LCD_H / 2) + FH / 2, DOTTED, FORCE);
-
-  // Model Name
-  putsModelName(0, 0, g_model.header.name, g_eeGeneral.currModel, INVERS);
-
-  // Main Voltage (or alarm if any)
-  putsVBat(LCD_W - 42, 1, (IS_TXBATT_WARNING() ? BLINK|INVERS : INVERS) | SMLSIZE);
-
-  // Timer 1
-  drawTimer(58, 1, timersStates[0].val, SMLSIZE | INVERS);
 
   uint8_t rxBatt = 0, sats = 0;
   int32_t dist = 0, alt = 0, galt = 0, speed = 0, current = 0;
@@ -225,7 +223,7 @@ static void inavDraw() {
         case 10: // 11. Speed
           speed = telemetryItem.value;
           break;
-        case 11: // 12. GPS Lattitude
+        case 11: // 12. GPS Latitude
           inavData.currentLat = telemetryItem.value;
           break;
         case 12: // 13. GPS Longitude
@@ -254,7 +252,6 @@ static void inavDraw() {
   // lcdDrawText(LCD_W, INAV_SATS_Y + 14, "HDOP", SMLSIZE | RIGHT);
   // lcdDrawNumber(LCD_W, INAV_SATS_Y + 21, (9 - (sats % 10)) * 5 + 8, PREC1 | MIDSIZE | RIGHT);
 
-  drawValueWithUnit(LCD_W - 6, 1, rxBatt, UNIT_VOLTS, PREC1 | SMLSIZE | INVERS | RIGHT);
   drawValueWithUnit(INAV_CURRENT_X, INAV_CURRENT_Y, current, UNIT_AMPS, PREC1 | MIDSIZE | RIGHT);
 
   drawValueWithUnit(LCD_W - 11, 53, rssi, UNIT_DB, MIDSIZE | RIGHT);
@@ -269,6 +266,9 @@ static void inavDraw() {
 
   // lcdDrawNumber(70, 20, inavData.currentLat, SMLSIZE | RIGHT);
   // lcdDrawNumber(70, 30, inavData.currentLon, SMLSIZE | RIGHT);
+
+  drawValueWithUnit(LCD_W - 6, 0, rxBatt, UNIT_VOLTS, PREC1 | RIGHT);
+  drawTelemetryTopBar(); // after rxBatt to add INVERS
 
   int32_t h = inavData.homeLat - inavData.currentLat;
   int32_t w = inavData.homeLon - inavData.currentLon;
@@ -295,17 +295,13 @@ static void inavDraw() {
   int8_t scaledCurrentLon = translatedCurrentLon / scaleFactor;
   int8_t scaledCurrentLat = translatedCurrentLat / scaleFactor;
 
-  if (sats >= 6) {
-    if (inavData.homeLat == 0) {
-      inavData.homeLat = inavData.currentLat;
-      inavData.homeLon = inavData.currentLon;
-      buzzerEvent(AU_SPECIAL_SOUND_WARN1);
-    }
-
-    // translate to LCD center space and draw
-    inavDrawHome(BBOX_CENTER_X + scaledHomeLon, BBOX_CENTER_Y + scaledHomeLat);
-    inavDrawCraft(BBOX_CENTER_X + scaledCurrentLon, BBOX_CENTER_Y + scaledCurrentLat);
+  if (sats >= 6 && inavData.homeLat == 0) {
+    inavSetHome();
   }
+
+  // translate to LCD center space and draw
+  inavDrawHome(BBOX_CENTER_X - scaledHomeLat, BBOX_CENTER_Y + scaledHomeLon);
+  inavDrawCraft(BBOX_CENTER_X - scaledCurrentLat, BBOX_CENTER_Y + scaledCurrentLon);
 
   // draw VSpd line
   vspd = limit<int16_t>(-5, vspd / 4, 5);
@@ -323,10 +319,7 @@ void inavRun(event_t event) {
     globalData.cToolRunning = 0;
     popMenu();
   } else if (event == EVT_KEY_LONG(KEY_ENTER)) { // set home on long press OK
-    inavData.homeLat = inavData.currentLat;
-    inavData.homeLon = inavData.currentLon;
-    buzzerEvent(AU_SPECIAL_SOUND_WARN1);
-    // inavData.homeHeading = inavData.heading;
+    inavSetHome();
   }
 
   inavDraw();

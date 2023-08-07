@@ -66,9 +66,9 @@ struct FieldFunctions {
   void (*display)(FieldProps*, uint8_t, uint8_t);
 };
 
-static constexpr uint16_t BUFFER_SIZE  = 486;
+static constexpr uint16_t BUFFER_SIZE  = 459 + 1;
 static uint8_t *buffer = &reusableBuffer.cToolData[0];
-uint16_t bufferOffset = 0;
+static uint16_t bufferOffset = 0;
 
 // last 25b are also used for popup messages
 static constexpr uint8_t FIELD_DATA_BUFFER_SIZE = 176; // 8 + 56 + 56 + 56 
@@ -77,17 +77,17 @@ static uint8_t *fieldData = &reusableBuffer.cToolData[BUFFER_SIZE];
 // Reuse tail of fieldData for popup messages
 static constexpr uint8_t POPUP_MSG_MAX_LEN = 24; // popup hard limit is 32
 static constexpr uint8_t POPUP_MSG_OFFSET = FIELD_DATA_BUFFER_SIZE - POPUP_MSG_MAX_LEN;
-uint8_t fieldDataLen = 0;
+static uint8_t fieldDataLen = 0;
 
-static constexpr uint8_t FIELDS_MAX_COUNT = 15;
+static constexpr uint8_t FIELDS_MAX_COUNT = 14;
 static constexpr uint8_t FIELDS_SIZE = FIELDS_MAX_COUNT * sizeof(FieldProps);
 static FieldProps *fields = (FieldProps *)&reusableBuffer.cToolData[BUFFER_SIZE + FIELD_DATA_BUFFER_SIZE];
-uint8_t allocatedFieldsCount = 0;
+static uint8_t allocatedFieldsCount = 0;
 
 static constexpr uint8_t DEVICES_MAX_COUNT = 4;
 static uint8_t *deviceIds = &reusableBuffer.cToolData[BUFFER_SIZE + FIELD_DATA_BUFFER_SIZE + FIELDS_SIZE];
 //static uint8_t deviceIds[DEVICES_MAX_COUNT];
-uint8_t devicesLen = 0;
+static uint8_t devicesLen = 0;
 
 static constexpr uint8_t backButtonId = 100;
 static constexpr uint8_t otherDevicesId = 101;
@@ -95,37 +95,37 @@ static constexpr uint8_t otherDevicesId = 101;
 #define BTN_NONE 0
 #define BTN_REQUESTED 1
 #define BTN_ADDED 2
-uint8_t otherDevicesState = BTN_NONE;
+static uint8_t otherDevicesState = BTN_NONE;
 
-uint8_t deviceId = 0xEE;
-uint8_t handsetId = 0xEF;
+static uint8_t deviceId = 0xEE;
+static uint8_t handsetId = 0xEF;
 
 static constexpr uint8_t DEVICE_NAME_MAX_LEN = 20;
 //static uint8_t *deviceName = &reusableBuffer.cToolData[BUFFER_SIZE + FIELD_DATA_BUFFER_SIZE + FIELDS_SIZE + DEVICES_MAX_COUNT];
 static char deviceName[DEVICE_NAME_MAX_LEN];
-uint8_t lineIndex = 1;
-uint8_t pageOffset = 0;
-uint8_t edit = 0;
+static uint8_t lineIndex = 1;
+static uint8_t pageOffset = 0;
+static uint8_t edit = 0;
 static FieldProps * fieldPopup = nullptr;
-tmr10ms_t fieldTimeout = 0;
-uint8_t fieldId = 1;
-uint8_t fieldChunk = 0;
+static tmr10ms_t fieldTimeout = 0;
+static uint8_t fieldId = 1;
+static uint8_t fieldChunk = 0;
 
 static char goodBadPkt[11] = "";
-uint8_t elrsFlags = 0;
+static uint8_t elrsFlags = 0;
 static constexpr uint8_t ELRS_FLAGS_INFO_MAX_LEN = 20;
 //static char *elrsFlagsInfo = (char *)&reusableBuffer.cToolData[BUFFER_SIZE + FIELD_DATA_BUFFER_SIZE + FIELDS_SIZE + DEVICES_MAX_COUNT + DEVICE_NAME_MAX_LEN];
 static char elrsFlagsInfo[ELRS_FLAGS_INFO_MAX_LEN] = "";
-uint8_t expectedFieldsCount = 0;
+static uint8_t expectedFieldsCount = 0;
 
-tmr10ms_t devicesRefreshTimeout = 50;
-uint8_t allParamsLoaded = 0;
-uint8_t folderAccess = 0; // folder id
-int8_t expectedChunks = -1;
-uint8_t deviceIsELRS_TX = 0;
-tmr10ms_t linkstatTimeout = 100;
-uint8_t titleShowWarn = 0;
-tmr10ms_t titleShowWarnTimeout = 100;
+static tmr10ms_t devicesRefreshTimeout = 50;
+static uint8_t allParamsLoaded = 0;
+static uint8_t folderAccess = 0; // folder id
+static int8_t expectedChunks = -1;
+static uint8_t deviceIsELRS_TX = 0;
+static tmr10ms_t linkstatTimeout = 100;
+static uint8_t titleShowWarn = 0;
+static tmr10ms_t titleShowWarnTimeout = 100;
 
 static constexpr uint8_t COL2          = 70;
 static constexpr uint8_t maxLineIndex  =  6;

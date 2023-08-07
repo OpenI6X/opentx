@@ -588,10 +588,10 @@ void drawTelemetryTopBar()
 {
   putsModelName(0, 0, g_model.header.name, g_eeGeneral.currModel, 0);
   uint8_t att = (IS_TXBATT_WARNING() ? BLINK : 0);
-  putsVBat(14*FW,0,att);
+  putsVBat(10*FW-1,0,att);
   if (g_model.timers[0].mode) {
     att = (timersStates[0].val<0 ? BLINK : 0);
-    drawTimer(17*FW+5*FWNUM+1, 0, timersStates[0].val, att, att);
+    drawTimer(13*FW+5, 0, timersStates[0].val, att, att);
   }
   lcdInvertLine(0);
 }
@@ -843,7 +843,7 @@ void drawValueWithUnit(coord_t x, coord_t y, int val, uint8_t unit, LcdFlags att
   // convertUnit(val, unit);
   lcdDrawNumber(x, y, val, att & (~NO_UNIT));
   if (!(att & NO_UNIT) && unit != UNIT_RAW) {
-    lcdDrawTextAtIndex(lcdLastRightPos/*+1*/, y, STR_VTELEMUNIT, unit, att & INVERS); // modified to support INVERS for unit
+    lcdDrawTextAtIndex(lcdLastRightPos/*+1*/, y, STR_VTELEMUNIT, unit, 0);
   }
 }
 

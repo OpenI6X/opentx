@@ -52,7 +52,7 @@ Comparison with original firmware:
   * CRSF with ExpressLRS and Crossfire modules:
     * CRSFshot
     * MEGA Bauds up to 1.8M
-    * ExpressLRS V3 configuration (ELRSV3.lua port)
+    * ExpressLRS V3 configuration built-in (no need to copy ELRSV3.lua)
 * Telemetry
 * Adjustable backlight brightness level (requires basic [modification](#adjustable-backlight-level-mod) & backlight_mod build)
 * Audio tones, alarms and vario sound custom implementation
@@ -99,9 +99,9 @@ With Mode 1 & Mode 3 radios you may experience inverted gimbal movement and swap
 
 | PCB Pad    | Function                                                      |
 |------------|---------------------------------------------------------------|
-| `TX2`      | S.Port (CRSF)                                                 |
-| `PA9`      | AUX Serial port TX                                            |
-| `PA10`     | AUX Serial port RX, SBUS Trainer                              |
+| `TX2`      | S.Port (CRSF) - required to connect ExpressLRS module         |
+| `PA9`      | AUX Serial port TX - Telemetry mirror                         |
+| `PA10`     | AUX Serial port RX - SBUS Trainer                             |
 | `PA15`     | USB connection detection                                      |
 | `PC13`     | External module power control (was `PC9` up to OpenI6X 1.5.0) |
 | `PC9`+`BL` | Wiring those together allows for adjustable backlight         |
