@@ -111,6 +111,10 @@ static void inavDrawCraft(uint8_t x, uint8_t y) {
   lcdDrawLine(x, y, tPLX, tPLY, SOLID, FORCE);
   lcdDrawLine(x, y, tPRX, tPRY, SOLID, FORCE);
   lcdDrawLine(tPLX, tPLY, tPRX, tPRY, DOTTED, FORCE);
+
+  lcdDrawText(3, 35, "Sats", SMLSIZE);
+  
+
 }
 
 // Mode: 0 - Passthrough, 1-Armed(rate), 2-Horizon, 3-Angle, 4-Waypoint, 5-AltHold, 6-PosHold, 7-Rth, 8-Launch, 9-Failsafe
