@@ -137,10 +137,11 @@ static void inavDraw() {
   lcdDrawSolidVerticalLine(LCD_W - 31, FH, LCD_H - FH, FORCE);
 
 //directions
-  lcdDrawText(LCD_W - 35, LCD_H/2, "W", SMLSIZE); 
+  lcdDrawText(LCD_W - 37, LCD_H/2, "W", SMLSIZE); 
   lcdDrawText(36+2, LCD_H/2, "E", SMLSIZE); 
-  lcdDrawText(LCD_W/2 , 20, "N", SMLSIZE); 
-  lcdDrawText(LCD_W/2 , LCD_H-4, "S", SMLSIZE); 
+  lcdDrawText(LCD_W/2-1 , 21, "S", SMLSIZE); 
+  lcdDrawText(LCD_W/2 , LCD_H-6, "N", SMLSIZE); 
+//
 
   lcdDrawSolidVerticalLine(LCD_W - 27, FH, LCD_H - FH, FORCE);
   lcdDrawSolidHorizontalLine(0, 55, 36, FORCE);
