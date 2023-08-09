@@ -425,6 +425,14 @@ extern void ISR_TIMER3_CAPT_vect(void);
 #define USB_GPIO                        GPIOA
 #define USB_GPIO_PIN_VBUS               GPIO_Pin_15  // PA.15
 
+// Flash (taken from f2)
+#define FLASH_CR_SER               ((uint32_t)0x00000002)
+#define FLASH_PSIZE_BYTE           ((uint32_t)0x00000000)
+#define FLASH_PSIZE_HALF_WORD      ((uint32_t)0x00000100)
+#define FLASH_PSIZE_WORD           ((uint32_t)0x00000200)
+#define FLASH_PSIZE_DOUBLE_WORD    ((uint32_t)0x00000300)
+#define CR_PSIZE_MASK              ((uint32_t)0xFFFFFCFF)
+
 // Serial Port
 
 #define TRAINER_BATTERY_COMPARTMENT
