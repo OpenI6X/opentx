@@ -425,19 +425,11 @@ extern void ISR_TIMER3_CAPT_vect(void);
 #define USB_GPIO                        GPIOA
 #define USB_GPIO_PIN_VBUS               GPIO_Pin_15  // PA.15
 
-// Flash (taken from f2)
-#define FLASH_CR_SER               ((uint32_t)0x00000002)
-#define FLASH_PSIZE_BYTE           ((uint32_t)0x00000000)
-#define FLASH_PSIZE_HALF_WORD      ((uint32_t)0x00000100)
-#define FLASH_PSIZE_WORD           ((uint32_t)0x00000200)
-#define FLASH_PSIZE_DOUBLE_WORD    ((uint32_t)0x00000300)
-#define CR_PSIZE_MASK              ((uint32_t)0xFFFFFCFF)
-
 // Serial Port
 
 #define TRAINER_BATTERY_COMPARTMENT
 
-// auxSerial
+// AUX Serial
 #define AUX_SERIAL_RCC_AHB1Periph         (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_DMA1)
 #define AUX_SERIAL_RCC_APB2Periph         RCC_APB2Periph_USART1
 #define AUX_SERIAL_GPIO                   GPIOA
@@ -450,6 +442,21 @@ extern void ISR_TIMER3_CAPT_vect(void);
 #define AUX_SERIAL_USART_IRQHandler       USART1_IRQHandler
 #define AUX_SERIAL_USART_IRQn             USART1_IRQn
 #define AUX_SERIAL_DMA_Channel_RX         DMA1_Channel3
+
+// AUX2 Serial
+#define AUX2_SERIAL_RCC_AHB1Periph         (RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_DMA1)
+#define AUX2_SERIAL_RCC_APB2Periph         RCC_APB2Periph_USART4
+#define AUX2_SERIAL_GPIO                   GPIOC
+#define AUX2_SERIAL_GPIO_PIN_TX            GPIO_Pin_10 // PC10
+#define AUX2_SERIAL_GPIO_PIN_RX            GPIO_Pin_11 // PC11
+#define AUX2_SERIAL_GPIO_PinSource_TX      GPIO_PinSource10
+#define AUX2_SERIAL_GPIO_PinSource_RX      GPIO_PinSource11
+#define AUX2_SERIAL_GPIO_AF                GPIO_AF_0
+#define AUX2_SERIAL_USART                  USART4
+#define AUX2_SERIAL_USART_IRQHandler       USART4_IRQHandler
+#define AUX2_SERIAL_USART_IRQn             USART4_IRQn
+#define AUX2_SERIAL_DMA_Channel_RX         DMA1_Channel5
+
 
 #define SPORT_MAX_BAUDRATE            400000
 
