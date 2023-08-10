@@ -453,7 +453,7 @@ extern void ISR_TIMER3_CAPT_vect(void);
 
 // AUX2 Serial
 #define AUX2_SERIAL_RCC_AHB1Periph         (RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_DMA1)
-#define AUX2_SERIAL_RCC_APB2Periph         RCC_APB2Periph_USART4
+#define AUX2_SERIAL_RCC_APB1Periph         RCC_APB1Periph_USART4
 #define AUX2_SERIAL_GPIO                   GPIOC
 #define AUX2_SERIAL_GPIO_PIN_TX            GPIO_Pin_10 // PC10
 #define AUX2_SERIAL_GPIO_PIN_RX            GPIO_Pin_11 // PC11
@@ -575,7 +575,7 @@ F072 IRQs
 
 //all used RCC goes here
 #define RCC_AHB1_LIST                   (I2C_RCC_AHB1Periph | BACKLIGHT_RCC_AHB1Periph | LCD_RCC_AHB1Periph | KEYS_RCC_AHB1Periph | BUZZER_RCC_AHBPeriph | EXTMODULE_RCC_AHBPeriph | CRC_RCC_AHB1Periph | TELEMETRY_RCC_AHB1Periph | AUX_SERIAL_RCC_AHB1Periph | AUX2_SERIAL_RCC_AHB1Periph)
-#define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph | TELEMETRY_RCC_APB1Periph | BACKLIGHT_RCC_APB1Periph | RCC_APB1Periph_USB)
-#define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB1Periph | PWM_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph | AUX_SERIAL_RCC_APB2Periph | AUX2_SERIAL_RCC_APB2Periph)
+#define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph | TELEMETRY_RCC_APB1Periph | BACKLIGHT_RCC_APB1Periph | RCC_APB1Periph_USB | AUX2_SERIAL_RCC_APB1Periph)
+#define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB1Periph | PWM_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph | AUX_SERIAL_RCC_APB2Periph)
 
 #endif // _HAL_H_
