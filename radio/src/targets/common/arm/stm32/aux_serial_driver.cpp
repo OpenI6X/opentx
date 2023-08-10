@@ -24,9 +24,7 @@
 uint8_t auxSerialMode = UART_MODE_COUNT;  // Prevent debug output before port is setup
 #if defined(PCBI6X)
 Fifo<uint8_t, 256> auxSerialTxFifo;
-#if defined(AUX_SERIAL_DMA_Channel_RX)
 DMAFifo<32> auxSerialRxFifo __DMA (AUX_SERIAL_DMA_Channel_RX);
-#endif
 #else
 Fifo<uint8_t, 512> auxSerialTxFifo;
 DMAFifo<32> auxSerialRxFifo __DMA (AUX_SERIAL_DMA_Stream_RX);
@@ -56,7 +54,6 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wor
   USART_Init(AUX_SERIAL_USART, &USART_InitStructure);
 
   if (dma) {
-#if defined(AUX_SERIAL_DMA_Channel_RX)
     auxSerialRxFifo.stream = AUX_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
     DMA_InitTypeDef DMA_InitStructure;
     auxSerialRxFifo.clear();
@@ -100,7 +97,6 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wor
     USART_Cmd(AUX_SERIAL_USART, ENABLE);
     DMA_Cmd(AUX_SERIAL_DMA_Stream_RX, ENABLE);
 #endif // STM32F0
-#endif // AUX_SERIAL_DMA_Channel_RX
   }
   else {
     USART_Cmd(AUX_SERIAL_USART, ENABLE);
@@ -175,13 +171,11 @@ void auxSerialSbusInit()
 
 void auxSerialStop()
 {
-#if defined(AUX_SERIAL_DMA_Channel_RX)
 #if defined(STM32F0)
   DMA_DeInit(AUX_SERIAL_DMA_Channel_RX);
 #else
   DMA_DeInit(AUX_SERIAL_DMA_Stream_RX);
 #endif // STM32F0
-#endif // AUX_SERIAL_DMA_Channel_RX
   USART_DeInit(AUX_SERIAL_USART);
 }
 
