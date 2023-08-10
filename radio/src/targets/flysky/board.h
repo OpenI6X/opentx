@@ -462,6 +462,9 @@ void hapticOff(void);
 #if defined(AUX_SERIAL_GPIO)
 #define DEBUG_BAUDRATE                  115200
 #define AUX_SERIAL
+#if defined(FLYSKY_GIMBAL)
+#define AUX2_SERIAL
+#endif
 extern uint8_t auxSerialMode;
 void auxSerialInit(unsigned int mode, unsigned int protocol);
 void auxSerialPutc(char c);
