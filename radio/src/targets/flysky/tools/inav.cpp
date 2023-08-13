@@ -309,7 +309,8 @@ static void inavDraw() {
   }
 
   // translate to LCD center space and draw
-  inavDrawHome(BBOX_CENTER_X - scaledHomeLat, BBOX_CENTER_Y + scaledHomeLon);
+  //+/- changed
+  inavDrawHome(BBOX_CENTER_X + scaledHomeLat, BBOX_CENTER_Y - scaledHomeLon);
 
   //+/- changed for correcting 180 deg 
   inavDrawCraft(BBOX_CENTER_X + scaledCurrentLat, BBOX_CENTER_Y - scaledCurrentLon);
