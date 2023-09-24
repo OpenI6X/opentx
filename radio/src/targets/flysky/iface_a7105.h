@@ -69,7 +69,7 @@ enum A7105_POWER
 //#define	CH15	14
 //#define	CH16	15
 
-extern uint8_t protocol_flags,protocol_flags2;
+extern uint8_t protocol_flags;
 extern uint8_t protocol;
 extern uint8_t prev_power; // unused power value
 
