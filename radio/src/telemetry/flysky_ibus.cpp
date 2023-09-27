@@ -228,10 +228,7 @@ void processFlySkySensor(const uint8_t *packet, uint8_t type) {
     return;
   }
 
-  // skip unknown, but report AFHDS2A_ID_S8* sensors
-  if (id >= AFHDS2A_ID_S84 && id <= AFHDS2A_ID_S8a) {
-    setTelemetryValue(TELEM_PROTO_FLYSKY_IBUS, id, 0, instance, value, UNIT_RAW, 0);
-  }
+  setTelemetryValue(TELEM_PROTO_FLYSKY_IBUS, id, 0, instance, value, UNIT_RAW, 0);
 }
 
 void processFlySkyPacket(const uint8_t *packet) {
