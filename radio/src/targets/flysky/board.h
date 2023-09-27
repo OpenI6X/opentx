@@ -107,8 +107,6 @@ extern "C" {
 
 extern uint16_t sessionTimer;
 
-extern volatile uint8_t a7105_spi_error_flag;
-
 // Board driver
 void boardInit(void);
 void boardOff(void);
