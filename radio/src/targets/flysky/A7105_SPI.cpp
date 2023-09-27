@@ -54,34 +54,12 @@ void SPI_Write(uint8_t command)
 {//working OK
 	while((SPI1->SR & SPI_SR_BSY));
 	*(__IO uint8_t *)&SPI1->DR = command;					//Write the first data item to be transmitted into the SPI_DR register (this clears the TXE flag).
-	// #ifdef DEBUG_SPI
-	// 	debug("%02X ",command);
-	// #endif
+	#ifdef DEBUG_SPI
+		debug("%02X ",command);
+	#endif
 	while (!(SPI1->SR & SPI_SR_RXNE));
 	command = (uint8_t)SPI1->DR;					// ... and read the last received data.
 }
-
-// uint8_t SPI_SDI_Read()
-// {	
-// 	uint8_t rx=0;
-// 	// cli();	//Fix Hubsan droputs??
-// 	while(!(SPI1->SR & SPI_SR_TXE));
-// 	while((SPI1->SR & SPI_SR_BSY));	
-// 	//	
-// 	SPI_DISABLE();
-// 	SPI_SET_BIDIRECTIONAL();
-// 	volatile uint8_t x = SPI1->DR;
-// 	(void)x;
-// 	SPI_ENABLE();
-// 	//
-// 	SPI_DISABLE();				  
-// 	while(!(SPI1->SR& SPI_SR_RXNE));
-// 	rx=(uint8_t)SPI1->DR;
-// 	SPI_SET_UNIDIRECTIONAL();
-// 	SPI_ENABLE();
-// 	// sei();//fix Hubsan dropouts??
-// 	return rx;
-// }
 
 uint8_t SPI_SDI_Read() 
 {
@@ -91,22 +69,12 @@ uint8_t SPI_SDI_Read()
     //   dummy = (uint8_t)(READ_REG(SPI1->DR));
     // }
     // (void)dummy;
-//	__disable_irq(); // cli();	//Fix Hubsan droputs??
 	while(!(SPI1->SR & SPI_SR_TXE));
 	while((SPI1->SR & SPI_SR_BSY));
-	// SPI_DISABLE();
-// 	SPI_SET_BIDIRECTIONAL();
-// 	volatile uint8_t x = SPI1->DR;
-// 	(void)x;
-	// SPI_ENABLE();
-	//
-	// SPI_DISABLE();
+
     *(__IO uint8_t *)&SPI1->DR = 0x00; // not present in multi
     while(!(SPI1->SR & SPI_SR_RXNE));
     rx=(uint8_t)SPI1->DR;
-// 	SPI_SET_UNIDIRECTIONAL();
-	// SPI_ENABLE();
-//	__enable_irq(); // sei();//fix Hubsan dropouts??
 	return rx;
 }
 
@@ -146,17 +114,6 @@ void SPI_ENABLE()
 void SPI_DISABLE()
 {
 	SPI1->CR1 &= ~SPI_CR1_SPE;
-}
-
-void SPI_SET_BIDIRECTIONAL()
-{
-	SPI1->CR1 |= SPI_CR1_BIDIMODE;
-	SPI1->CR1  &= ~ SPI_CR1_BIDIOE;//receive only
-}
-
-void SPI_SET_UNIDIRECTIONAL()
-{
-	SPI1->CR1 &= ~SPI_CR1_BIDIMODE;
 }
 
 /*---------------------------------------------------------------------------*/
