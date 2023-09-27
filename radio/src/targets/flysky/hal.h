@@ -185,12 +185,6 @@ void TIM16_IRQHandler(void);
 #define RF_RF1_SET_PIN GPIO_BSRR_BS_11
 #define RF_RF1_RESET_PIN GPIO_BSRR_BR_11
 
-void SPI_ENABLE(void);
-void SPI_DISABLE(void);
-void SPI_SET_BIDIRECTIONAL(void);
-void SPI_SET_UNIDIRECTIONAL(void);
-// void SPI_RADIO_SendBlock(uint8_t *BufferPtr, uint16_t Size);
-// void SPI_RADIO_ReceiveBlock(uint8_t *BufferPtr, uint16_t Size);
 void SPI_Write(uint8_t command);
 uint8_t SPI_SDI_Read(void);
 void a7105_csn_on(void); 

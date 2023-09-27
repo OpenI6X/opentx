@@ -20,9 +20,6 @@
 #include "stdint.h"
 #include "iface_a7105.h"
 #include "hal.h"
-
-#define NOP() __asm__ __volatile__("nop")
-
 volatile uint8_t RadioState;
 
 uint8_t protocol_flags=0;
@@ -77,45 +74,6 @@ uint8_t SPI_SDI_Read()
     rx=(uint8_t)SPI1->DR;
 	return rx;
 }
-
-// void SPI_RADIO_SendBlock(uint8_t *BufferPtr, uint16_t Size) {
-//   while (Size) {
-//     while ((SPI1->SR & SPI_SR_TXE) == 0);
-// //    while ((SPI1->SR & SPI_SR_BSY) != 0);
-//     *(__IO uint8_t *)&SPI1->DR = *BufferPtr++;
-//     Size--;
-//   }
-//   while (SPI1->SR & (SPI_SR_FTLVL | SPI_SR_BSY));
-// }
-/*---------------------------------------------------------------------------*/
-// void SPI_RADIO_ReceiveBlock(uint8_t *BufferPtr, uint16_t Size) {
-//   uint8_t dummy;
-//   while (Size) {
-//     while ((SPI1->SR & SPI_SR_FRLVL) != 0) {
-//       dummy = (uint8_t)(READ_REG(SPI1->DR));
-//     }
-//     (void)dummy;
-//     while ((SPI1->SR & SPI_SR_TXE) == 0);
-//     while ((SPI1->SR & SPI_SR_BSY) != 0);
-//     *(__IO uint8_t *)&SPI1->DR = 0x00;
-//     while ((SPI1->SR & SPI_SR_RXNE) == 0);
-
-//     *BufferPtr++ = (uint8_t)(READ_REG(SPI1->DR));
-//     Size--;
-//   }
-// //   while ((SPI1->SR & SPI_SR_BSY) != 0);
-// }
-
-void SPI_ENABLE()
-{
-	SPI1->CR1 |= SPI_CR1_SPE;
-}
-
-void SPI_DISABLE()
-{
-	SPI1->CR1 &= ~SPI_CR1_SPE;
-}
-
 /*---------------------------------------------------------------------------*/
 inline void a7105_csn_on(void) {RF_SCN_GPIO_PORT->BSRR = RF_SCN_SET_PIN;}
 inline void a7105_csn_off(void) {RF_SCN_GPIO_PORT->BSRR = RF_SCN_RESET_PIN;}
@@ -199,7 +157,7 @@ void A7105_ReadData(uint8_t len) {
 void A7105_WriteReg(uint8_t address, uint8_t data) {
 	A7105_CSN_off;
 	SPI_Write(address); 
-	NOP();
+//	NOP();
 	SPI_Write(data);  
 	A7105_CSN_on;
 }

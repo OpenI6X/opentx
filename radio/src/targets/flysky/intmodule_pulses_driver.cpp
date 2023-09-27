@@ -62,21 +62,21 @@ void intmoduleNoneStart() {
 
 void initSPI1()
 {
-	SPI_DISABLE(); // SPI_2.end();
+	SPI1->CR1 &= ~SPI_CR1_SPE; // SPI_DISABLE(); // SPI_2.end();
 
 	// SPI1->CR1 &= ~SPI_CR1_DFF_8_BIT;		//8 bits format, this bit should be written only when SPI is disabled (SPE = ?0?) for correct operation.
-
 	// SPI1->CR1 &= ~SPI_CR1_LSBFIRST;		// Set the SPI_1 bit order MSB first
 	// SPI1->CR1 &= ~(SPI_CR1_CPOL|SPI_CR1_CPHA);	// Set the SPI_1 data mode 0: Clock idles low, data captured on rising edge (first transition)
 	// SPI1->CR1 &= ~(SPI_CR1_BR);
-	// // SPI1->CR1 |= SPI_CR1_BR_PCLK_DIV_8;	// Set the speed (36 / 8 = 4.5 MHz SPI_1 speed) SPI_CR1_BR_PCLK_DIV_8
 	// SPI1->CR1 |= SPI_CR1_BR_1;	/*!< BaudRate control equal to fPCLK/8   */
 	// SPI1->CR1 = (SPI_CR1_BIDIMODE | SPI_CR1_BIDIOE); 
   SPI1->CR1 |= ((SPI_CR1_MSTR | SPI_CR1_SSI) | SPI_CR1_SSM | SPI_CR1_BR_1);	/*!< BaudRate control equal to fPCLK/8   */
 
   SPI1->CR2 |= (SPI_CR2_DS_2 | SPI_CR2_DS_1 | SPI_CR2_DS_0 | SPI_CR2_FRXTH); // Data length: 8-bit + FIFO reception threshold 1/4 (8-bit)
 
-  SPI_ENABLE(); //SPI_2.begin();								//Initialize the SPI_1 port.
+//  CLEAR_BIT(SPI1->CR2, SPI_CR2_NSSP); /* Disable NSS pulse management */
+
+  SPI1->CR1 |= SPI_CR1_SPE; // SPI_ENABLE(); //SPI_2.begin();								//Initialize the SPI_1 port.
 }
 
 void intmoduleAfhds2aStart() {
@@ -93,26 +93,6 @@ void intmoduleAfhds2aStart() {
   // GPIOE->PUPDR |= 0x00000000U;               // PULL_NO
   GPIOE->MODER |= (GPIO_MODER_MODER13_1 | GPIO_MODER_MODER14_1 | GPIO_MODER_MODER15_1);      // Select alternate function mode
   GPIOE->AFR[1] |= ((0x0000001U << (5 * 4)) | (0x0000001U << (6 * 4)) | (0x0000001U << (7 * 4)));  // Select alternate function 1
-
-  //  SPI1->CR1 = (SPI_CR1_BIDIMODE | SPI_CR1_BIDIOE);          /*!< Half-Duplex Tx mode. Tx transfer on 1 line */
-  // SPI1->CR1 |= (SPI_CR1_MSTR | SPI_CR1_SSI); /*!< Master configuration  */
-  // SPI1->CR1 |= 0x00000000U;                  /*!< SPI_POLARITY_LOW */
-  // SPI1->CR1 |= 0x00000000U;                  /*!< First clock transition is the first data capture edge  */
-  // SPI1->CR1 |= SPI_CR1_SSM;                  /*!< NSS managed internally. NSS pin not used and free */
-  // SPI1->CR1 |= SPI_CR1_BR_1;                 /*!< BaudRate control equal to fPCLK/8   */
-  // SPI1->CR1 |= 0x00000000U;                  /*!< Data is transmitted/received with the MSB first */
-  // SPI1->CR1 |= 0x00000000U;                  /*!< CRC calculation disabled */
-  // tmpreg = (SPI_CR1_MSTR | SPI_CR1_SSI) | SPI_CR1_SSM | SPI_CR1_BR_1 | SPI_CR1_BR_2;
-  // SPI1->CR1 = tmpreg;
-
-  // SPI1->CR2 |= (SPI_CR2_DS_2 | SPI_CR2_DS_1 | SPI_CR2_DS_0); /*!< Data length for SPI transfer:  8 bits */
-  // SPI1->CR2 |= 0x00000000U;                                  /*!< Motorola mode. Used as default value */
-  // SPI1->CR2 |= SPI_CR2_FRXTH; // FIFO reception threshold 1/4 (one byte)
-  // tmpreg = (SPI_CR2_DS_2 | SPI_CR2_DS_1 | SPI_CR2_DS_0) | SPI_CR2_FRXTH;
-  // SPI1->CR2 |= tmpreg;
-
-  // CLEAR_BIT(SPI1->CR2, SPI_CR2_NSSP); /* Disable NSS pulse management */
-  // SET_BIT(SPI1->CR1, SPI_CR1_SPE);    // SPI_ENABLE
 
   initSPI1();
 
