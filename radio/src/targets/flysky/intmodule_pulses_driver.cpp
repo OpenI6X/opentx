@@ -74,7 +74,7 @@ void initSPI1()
 	// SPI1->CR1 = (SPI_CR1_BIDIMODE | SPI_CR1_BIDIOE); 
   SPI1->CR1 |= ((SPI_CR1_MSTR | SPI_CR1_SSI) | SPI_CR1_SSM | SPI_CR1_BR_1);	/*!< BaudRate control equal to fPCLK/8   */
 
-  SPI1->CR2 |= (SPI_CR2_DS_2 | SPI_CR2_DS_1 | SPI_CR2_DS_0 | SPI_CR2_FRXTH /* | SPI_CR2_ERRIE*/); // Data length: 8-bit + FIFO reception threshold 1/4 (8-bit)
+  SPI1->CR2 |= (SPI_CR2_DS_2 | SPI_CR2_DS_1 | SPI_CR2_DS_0 | SPI_CR2_FRXTH); // Data length: 8-bit + FIFO reception threshold 1/4 (8-bit)
 
   SPI_ENABLE(); //SPI_2.begin();								//Initialize the SPI_1 port.
 }
