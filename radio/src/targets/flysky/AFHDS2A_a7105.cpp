@@ -315,12 +315,14 @@ EndSendBIND123_:  //-----------------------------------------------------------
   SETBIT(RadioState, SEND_RES, RES);
   return;
 ResBIND123_:  //-----------------------------------------------------------
-  A7105_ReadData(AFHDS2A_RXPACKET_SIZE);
-  if ((packet[0] == 0xbc) & (packet[9] == 0x01)) {
-    memcpy(&g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], &packet[5], 4);
-    RadioState = (RadioState & 0xF0) | AFHDS2A_BIND4;
-    bind_phase = 0;
-    SETBIT(RadioState, SEND_RES, SEND);
+  if (!(A7105_ReadReg(A7105_00_MODE) & (1<<5))) { // CRCF Ok
+    A7105_ReadData(AFHDS2A_RXPACKET_SIZE);
+    if ((packet[0] == 0xbc) & (packet[9] == 0x01)) {
+        memcpy(&g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], &packet[5], 4);
+        RadioState = (RadioState & 0xF0) | AFHDS2A_BIND4;
+        bind_phase = 0;
+        SETBIT(RadioState, SEND_RES, SEND);
+    }
   }
   return;
 SendData_:  //--------------------------------------------------------------
