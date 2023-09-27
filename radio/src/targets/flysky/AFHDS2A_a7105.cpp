@@ -345,18 +345,20 @@ EndSendData_:  //-----------------------------------------------------------
   SETBIT(RadioState, SEND_RES, RES);
   return;
 ResData_:  //-----------------------------------------------------------
-  A7105_ReadData(AFHDS2A_RXPACKET_SIZE);
-  if (packet[0] == 0xAA && packet[9] == 0xFC)  // RX is asking for settings
-    packet_type = AFHDS2A_PACKET_SETTINGS;
-  if (packet[0] == 0xAA && packet[9] == 0xFD)  // RX is asking for FailSafe
-    packet_type = AFHDS2A_PACKET_FAILSAFE;
-  if (packet[0] == 0xAA || packet[0] == 0xAC) {
-    if (!memcmp(&packet[1], ID.rx_tx_addr, 4) // Validate TX address
-       /* && !memcmp(&packet[5], &g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], 4)*/) {  // Validate RX address
-      AFHDS2A_update_telemetry();
+  if (!(A7105_ReadReg(A7105_00_MODE) & (1<<5))) { // CRCF Ok
+    A7105_ReadData(AFHDS2A_RXPACKET_SIZE);
+    if (packet[0] == 0xAA && packet[9] == 0xFC)  // RX is asking for settings
+        packet_type = AFHDS2A_PACKET_SETTINGS;
+    else if (packet[0] == 0xAA && packet[9] == 0xFD)  // RX is asking for FailSafe
+        packet_type = AFHDS2A_PACKET_FAILSAFE;
+    else if (packet[0] == 0xAA || packet[0] == 0xAC) {
+        if (!memcmp(&packet[1], ID.rx_tx_addr, 4) // Validate TX address
+        /* && !memcmp(&packet[5], &g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], 4)*/) {  // Validate RX address
+        AFHDS2A_update_telemetry();
+        }
     }
+    SETBIT(RadioState, SEND_RES, SEND);
   }
-  SETBIT(RadioState, SEND_RES, SEND);
   return;
 Send_:  //---------------------------------------------------------------
   A7105_AntSwitch();

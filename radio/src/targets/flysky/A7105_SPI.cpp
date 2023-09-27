@@ -28,8 +28,6 @@ volatile uint8_t RadioState;
 uint8_t protocol_flags=0;
 uint8_t prev_power=0xFD; // unused power value
 
-volatile uint8_t a7105_spi_error_flag = 0;
-
 // reuse telemetryRxBuffer for native AFHDS2A support
 uint8_t *packet = &telemetryRxBuffer[0];
 
@@ -88,7 +86,6 @@ void SPI_Write(uint8_t command)
 uint8_t SPI_SDI_Read() 
 {
 	uint8_t rx=0;
-	// a7105_spi_error_flag |= 2;
 	// uint8_t dummy;
     // while ((SPI1->SR & SPI_SR_FRLVL) != 0) { // not present in multi
     //   dummy = (uint8_t)(READ_REG(SPI1->DR));
@@ -106,10 +103,6 @@ uint8_t SPI_SDI_Read()
 	// SPI_DISABLE();
     *(__IO uint8_t *)&SPI1->DR = 0x00; // not present in multi
     while(!(SPI1->SR & SPI_SR_RXNE));
-	  a7105_spi_error_flag = SPI1->SR & ( SPI_SR_OVR | SPI_SR_MODF);
-    if (SPI1->SR & ( SPI_SR_OVR | SPI_SR_MODF)) {
-      auxSerialPutc("E");
-    }
     rx=(uint8_t)SPI1->DR;
 // 	SPI_SET_UNIDIRECTIONAL();
 	// SPI_ENABLE();
