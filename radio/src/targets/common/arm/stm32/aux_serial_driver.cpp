@@ -35,8 +35,8 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wor
   USART_InitTypeDef USART_InitStructure;
   GPIO_InitTypeDef GPIO_InitStructure;
 
-  GPIO_PinAFConfig(AUX_SERIAL_GPIO, AUX_SERIAL_GPIO_PinSource_RX, AUX_SERIAL_GPIO_AF);
-  GPIO_PinAFConfig(AUX_SERIAL_GPIO, AUX_SERIAL_GPIO_PinSource_TX, AUX_SERIAL_GPIO_AF);
+  GPIO_PinAFConfig(AUX_SERIAL_GPIO, AUX_SERIAL_GPIO_PinSource_TX | AUX_SERIAL_GPIO_PinSource_RX, AUX_SERIAL_GPIO_AF);
+  // GPIO_PinAFConfig(AUX_SERIAL_GPIO, AUX_SERIAL_GPIO_PinSource_TX, AUX_SERIAL_GPIO_AF);
 
   GPIO_InitStructure.GPIO_Pin = AUX_SERIAL_GPIO_PIN_TX | AUX_SERIAL_GPIO_PIN_RX;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
@@ -256,17 +256,17 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
 */
 #if defined(AUX2_SERIAL)
 DMAFifo<32> aux2SerialRxFifo __DMA (AUX2_SERIAL_DMA_Channel_RX);
-void (*aux2RxCallback)(void);
+void (*aux2SerialIdleCb)(void);
 
 void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1)
 {
   USART_InitTypeDef USART_InitStructure;
   GPIO_InitTypeDef GPIO_InitStructure;
 
-  GPIO_PinAFConfig(AUX2_SERIAL_GPIO, AUX2_SERIAL_GPIO_PinSource_RX, AUX2_SERIAL_GPIO_AF);
-  // GPIO_PinAFConfig(AUX2_SERIAL_GPIO, AUX2_SERIAL_GPIO_PinSource_TX, AUX2_SERIAL_GPIO_AF);
+  GPIO_PinAFConfig(AUX2_SERIAL_GPIO, AUX2_SERIAL_GPIO_PinSource_TX | AUX2_SERIAL_GPIO_PinSource_RX, AUX2_SERIAL_GPIO_AF);
+  //  GPIO_PinAFConfig(AUX2_SERIAL_GPIO, AUX2_SERIAL_GPIO_PinSource_TX, AUX2_SERIAL_GPIO_AF);
 
-  GPIO_InitStructure.GPIO_Pin = /*AUX2_SERIAL_GPIO_PIN_TX |*/ AUX2_SERIAL_GPIO_PIN_RX;
+  GPIO_InitStructure.GPIO_Pin = AUX2_SERIAL_GPIO_PIN_TX | AUX2_SERIAL_GPIO_PIN_RX;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
@@ -278,7 +278,7 @@ void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
   USART_InitStructure.USART_StopBits = stop;
   USART_InitStructure.USART_Parity = parity;
   USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-  USART_InitStructure.USART_Mode = /*USART_Mode_Tx |*/ USART_Mode_Rx;
+  USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
   USART_Init(AUX2_SERIAL_USART, &USART_InitStructure);
 
   // if (dma) {
@@ -303,6 +303,9 @@ void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
     USART_DMACmd(AUX2_SERIAL_USART, USART_DMAReq_Rx, ENABLE);
     USART_Cmd(AUX2_SERIAL_USART, ENABLE);
     DMA_Cmd(AUX2_SERIAL_DMA_Channel_RX, ENABLE);
+
+    USART_ITConfig(AUX2_SERIAL_USART, USART_IT_IDLE, ENABLE); // enable ilde interrupt
+
   // else {
   //   USART_Cmd(AUX2_SERIAL_USART, ENABLE);
   //   USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, ENABLE);
@@ -337,8 +340,8 @@ void aux2SerialStop()
   USART_DeInit(AUX2_SERIAL_USART);
 }
 
-void aux2SerialRegisterRxCb(void (*cb)()) {
-  aux2RxCallback = cb;
+void aux2SerialSetIdleCb(void (*cb)()) {
+  aux2SerialIdleCb = cb;
 }
 
 #if !defined(SIMU)
@@ -346,15 +349,23 @@ extern "C" void AUX2_SERIAL_USART_IRQHandler(void)
 {
   // Receive
   uint32_t status = AUX2_SERIAL_USART->ISR;
-  while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
-    uint8_t data = AUX2_SERIAL_USART->RDR;
-    UNUSED(data);
+  // while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
+  //   uint8_t data = AUX2_SERIAL_USART->RDR;
+  //   UNUSED(data);
+  //   if (!(status & USART_FLAG_ERRORS)) {
+  //     if (aux2SerialIdleCb != nullptr) {
+  //       aux2SerialIdleCb();
+  //     }
+  //   }
+  //   status = AUX2_SERIAL_USART->ISR;
+  // }
+
+  if (status & USART_FLAG_IDLE) {
     if (!(status & USART_FLAG_ERRORS)) {
-      if (aux2RxCallback != nullptr) {
-        aux2RxCallback();
+      if (aux2SerialIdleCb != nullptr) {
+        aux2SerialIdleCb();
       }
     }
-    status = AUX2_SERIAL_USART->ISR;
   }
 }
 #endif // SIMU
