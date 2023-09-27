@@ -28,7 +28,7 @@ volatile uint8_t RadioState;
 uint8_t protocol_flags=0;
 uint8_t prev_power=0xFD; // unused power value
 
-uint8_t a7105_spi_error_flag = 0;
+volatile uint8_t a7105_spi_error_flag = 0;
 
 // reuse telemetryRxBuffer for native AFHDS2A support
 uint8_t *packet = &telemetryRxBuffer[0];
@@ -53,8 +53,8 @@ const uint8_t AFHDS2A_A7105_regs[] = {
 };
 
 void SPI_Write(uint8_t command)
-{//working OK	
-	// while((SPI1->SR & SPI_SR_BSY));
+{//working OK
+	while((SPI1->SR & SPI_SR_BSY));
 	*(__IO uint8_t *)&SPI1->DR = command;					//Write the first data item to be transmitted into the SPI_DR register (this clears the TXE flag).
 	// #ifdef DEBUG_SPI
 	// 	debug("%02X ",command);
@@ -88,12 +88,13 @@ void SPI_Write(uint8_t command)
 uint8_t SPI_SDI_Read() 
 {
 	uint8_t rx=0;
+	// a7105_spi_error_flag |= 2;
 	// uint8_t dummy;
     // while ((SPI1->SR & SPI_SR_FRLVL) != 0) { // not present in multi
     //   dummy = (uint8_t)(READ_REG(SPI1->DR));
     // }
     // (void)dummy;
-	// cli();	//Fix Hubsan droputs??
+//	__disable_irq(); // cli();	//Fix Hubsan droputs??
 	while(!(SPI1->SR & SPI_SR_TXE));
 	while((SPI1->SR & SPI_SR_BSY));
 	// SPI_DISABLE();
@@ -105,10 +106,14 @@ uint8_t SPI_SDI_Read()
 	// SPI_DISABLE();
     *(__IO uint8_t *)&SPI1->DR = 0x00; // not present in multi
     while(!(SPI1->SR & SPI_SR_RXNE));
+	  a7105_spi_error_flag = SPI1->SR & ( SPI_SR_OVR | SPI_SR_MODF);
+    if (SPI1->SR & ( SPI_SR_OVR | SPI_SR_MODF)) {
+      auxSerialPutc("E");
+    }
     rx=(uint8_t)SPI1->DR;
 // 	SPI_SET_UNIDIRECTIONAL();
 	// SPI_ENABLE();
-// 	// sei();//fix Hubsan dropouts??
+//	__enable_irq(); // sei();//fix Hubsan dropouts??
 	return rx;
 }
 
