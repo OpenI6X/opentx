@@ -307,15 +307,18 @@ void A7105_Sleep(void) {
 	A7105_WriteReg(A7105_0C_GPIO2_PIN_II, 0x33);
 }
 
+#define ID_NORMAL  0x55201041 // used by Multiprotocol Module
+#define ID_NORMAL2 0x5475C52A // used by DeviationTX & erFly6
 void A7105_Init(void)
 {
 	uint8_t *A7105_Regs = 0;
 //	uint8_t vco_calibration0, vco_calibration1;
-/*****************************************************************************/
-	A7105_Reset();
-    delay_ms(1);
-/*****************************************************************************/
-	A7105_WriteID(0x5475c52A); //0x2Ac57554
+
+  A7105_Reset();
+  delay_ms(1);
+
+	A7105_WriteID(ID_NORMAL2);
+
 	A7105_Regs = (uint8_t*) AFHDS2A_A7105_regs;
 
 	for (uint8_t i = 0; i < 0x32; i++) {
@@ -323,30 +326,34 @@ void A7105_Init(void)
 		if (val != 0xFF)
 			A7105_WriteReg(i, val);
 	}
-/*****************************************************************************/
-	while (A7105_ReadReg(A7105_10_PLL_II) != 0x9E) {
-	}
-/*********************************Calibration************************************/
+
+	while (A7105_ReadReg(A7105_10_PLL_II) != 0x9E);
+
+  // Calibration
 	A7105_Strobe(A7105_PLL);
+
 	//IF Filter Bank Calibration
 	A7105_WriteReg(A7105_02_CALC, 1);
-	while (A7105_ReadReg(A7105_02_CALC)) {
-	}			// Wait for calibration to end
+	while (A7105_ReadReg(A7105_02_CALC));       // Wait for calibration to end
 	//VCO Current Calibration
-	A7105_WriteReg(A7105_24_VCO_CURCAL, 0x13);//Recommended calibration from A7105 Datasheet
+	A7105_WriteReg(A7105_24_VCO_CURCAL, 0x13);  //Recommended calibration from A7105 Datasheet
 	//VCO Bank Calibration
 	A7105_WriteReg(A7105_26_VCO_SBCAL_II, 0x3b);//Recommended calibration from A7105 Datasheet
+
 	//VCO Bank Calibrate channel 0
 	A7105_WriteReg(A7105_0F_CHANNEL, 0);
 	A7105_WriteReg(A7105_02_CALC, 2);
-	while (A7105_ReadReg(A7105_02_CALC)) {
-	}	// Wait for calibration to end
+	while (A7105_ReadReg(A7105_02_CALC));       // Wait for calibration to end
+
+    //VCO Bank Calibrate channel A0
 	A7105_WriteReg(A7105_0F_CHANNEL, 0xa0);
 	A7105_WriteReg(A7105_02_CALC, 2);
-	while (A7105_ReadReg(A7105_02_CALC)) {
-	}	// Wait for calibration to end
+	while (A7105_ReadReg(A7105_02_CALC));       // Wait for calibration to end
+
 	A7105_WriteReg(A7105_25_VCO_SBCAL_I, 0x0A);	//Reset VCO Band calibration
+
 	A7105_SetTxRxMode(TX_EN);
 	A7105_SetPower();
+
 	A7105_Strobe(A7105_STANDBY);
 }
