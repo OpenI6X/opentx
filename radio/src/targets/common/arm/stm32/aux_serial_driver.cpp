@@ -284,14 +284,14 @@ void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
   // if (dma) {
     aux2SerialRxFifo.stream = AUX2_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
     DMA_InitTypeDef DMA_InitStructure;
-    auxSerialRxFifo.clear();
+    aux2SerialRxFifo.clear();
     USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, DISABLE);
     USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, DISABLE);
 
     DMA_InitStructure.DMA_PeripheralBaseAddr = CONVERT_PTR_UINT(&AUX2_SERIAL_USART->RDR);
     DMA_InitStructure.DMA_MemoryBaseAddr = CONVERT_PTR_UINT(aux2SerialRxFifo.buffer());
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-    DMA_InitStructure.DMA_BufferSize = auxSerialRxFifo.size();
+    DMA_InitStructure.DMA_BufferSize = aux2SerialRxFifo.size();
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
