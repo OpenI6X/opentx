@@ -847,7 +847,7 @@ void drawValueWithUnit(coord_t x, coord_t y, int val, uint8_t unit, LcdFlags att
   }
 }
 
-void drawGPSCoord(coord_t x, coord_t y, int32_t value, const char * direction, LcdFlags att, bool seconds)
+void drawGPSCoord(coord_t x, coord_t y, int32_t value, const char * direction, LcdFlags att, bool seconds=true)
 {
   att &= ~RIGHT & ~BOLD;
   uint32_t absvalue = abs(value);

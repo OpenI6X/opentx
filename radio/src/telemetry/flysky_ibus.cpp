@@ -186,6 +186,7 @@ void processFlySkySensor(const uint8_t *packet, uint8_t type) {
   else if (id == AFHDS2A_ID_GPS_FULL) {
     //(AC FRAME)[ID][inst][size][fix][sats][LAT]x4[LON]x4[ALT]x4
     setTelemetryValue(TELEM_PROTO_FLYSKY_IBUS, AFHDS2A_ID_GPS_STATUS, 0, instance, packet[4], UNIT_RAW, 0);
+    
     for (uint8_t sensorID = AFHDS2A_ID_GPS_LAT; sensorID <= AFHDS2A_ID_GPS_ALT; sensorID++) {
       int index = 5 + (sensorID - AFHDS2A_ID_GPS_LAT) * 4;
       buffer[0] = sensorID;
@@ -195,8 +196,20 @@ void processFlySkySensor(const uint8_t *packet, uint8_t type) {
       processFlySkySensor(buffer, 0xAC);
     }
     return;
-  }
-  else if (id == AFHDS2A_ID_VOLT_FULL) {
+  } else if (id == AFHDS2A_ID_GPS_LAT) {
+    uint8_t instance2 = 0;  // Assume one instance, RX would only have one GPS
+    value = value / 10;
+    setTelemetryValue(TELEM_PROTO_FLYSKY_IBUS, AFHDS2A_ID_GPS_LAT, 0,
+                      instance2, value, UNIT_GPS_LATITUDE, 0);
+    return;
+  } else if (id == AFHDS2A_ID_GPS_LON) {  // Remapped to single GPS sensor:
+                                          // AFHDS2A_ID_GPS_LAT
+    uint8_t instance2 = 0;
+    value = value / 10;
+    setTelemetryValue(TELEM_PROTO_FLYSKY_IBUS, AFHDS2A_ID_GPS_LAT, 0,
+                      instance2, value, UNIT_GPS_LONGITUDE, 0);
+    return;
+  } else if (id == AFHDS2A_ID_VOLT_FULL) {
     //(AC FRAME)[ID][inst][size][ACC_X]x2[ACC_Y]x2[ACC_Z]x2[ROLL]x2[PITCH]x2[YAW]x2
     for (uint8_t sensorID = AFHDS2A_ID_EXTV; sensorID <= AFHDS2A_ID_RPM; sensorID++) {
       int index = 3 + (sensorID - AFHDS2A_ID_EXTV) * 2;
@@ -207,8 +220,7 @@ void processFlySkySensor(const uint8_t *packet, uint8_t type) {
       processFlySkySensor(buffer, 0xAA);
     }
     return;
-  }
-  else if (id == AFHDS2A_ID_ACC_FULL) {
+  } else if (id == AFHDS2A_ID_ACC_FULL) {
     //(AC FRAME)[ID][inst][size]
     for (uint8_t sensorID = AFHDS2A_ID_ACC_X; sensorID <= AFHDS2A_ID_YAW; sensorID++) {
       int index = 3 + (sensorID - AFHDS2A_ID_ACC_X) * 2;
