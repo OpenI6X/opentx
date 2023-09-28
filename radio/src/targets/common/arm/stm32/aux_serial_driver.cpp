@@ -304,7 +304,7 @@ void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
     USART_Cmd(AUX2_SERIAL_USART, ENABLE);
     DMA_Cmd(AUX2_SERIAL_DMA_Channel_RX, ENABLE);
 
-    USART_ITConfig(AUX2_SERIAL_USART, USART_IT_IDLE, ENABLE); // enable ilde interrupt
+    USART_ITConfig(AUX2_SERIAL_USART, USART_IT_IDLE, ENABLE); // enable idle interrupt
 
   // else {
   //   USART_Cmd(AUX2_SERIAL_USART, ENABLE);
