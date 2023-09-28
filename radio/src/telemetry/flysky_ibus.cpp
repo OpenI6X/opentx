@@ -127,7 +127,7 @@ const FlySkySensor flySkySensors[] = {
   {AFHDS2A_ID_SPE,             ZSTR_ASPD,        UNIT_KMH,               2},  // 2 bytes Speed km/h -- some magic with 330 needed
   {AFHDS2A_ID_TX_V,            ZSTR_TXV,         UNIT_VOLTS,             2},  // TX Voltage
   {AFHDS2A_ID_GPS_LAT,         ZSTR_GPS,         UNIT_GPS,               0},  // 4 bytes signed WGS84 in degrees * 1E7
-  {AFHDS2A_ID_GPS_LON,         ZSTR_GPS,         UNIT_GPS,               0},  // 4 bytes signed WGS84 in degrees * 1E7
+//   {AFHDS2A_ID_GPS_LON,         ZSTR_GPS,         UNIT_GPS,               0},  // 4 bytes signed WGS84 in degrees * 1E7
   {AFHDS2A_ID_GPS_ALT,         ZSTR_GPSALT,      UNIT_METERS,            2},  // 4 bytes signed GPS alt m*100
   {AFHDS2A_ID_ALT,             ZSTR_ALT,         UNIT_METERS,            2},  // 4 bytes signed Alt m*100
 //  {AFHDS2A_ID_RX_SIG_AFHDS3,    ZSTR_RX_QUALITY,        UNIT_PERCENT,                    0},  // RX error rate
