@@ -48,17 +48,7 @@ boards = {
 }
 
 translations = [
-    "EN",
-    "PL",
-    "CZ",
-    "DE",
-    "ES",
-    "PT",
-    "NL",
-    "SE",
-    "FI",
-    "IT",
-    "FR"
+    "EN"
 ]
 
 common_options = {
