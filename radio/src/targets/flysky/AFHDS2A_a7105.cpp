@@ -355,7 +355,7 @@ ResData_:  //-----------------------------------------------------------
         packet_type = AFHDS2A_PACKET_FAILSAFE;
     else if (packet[0] == 0xAA || packet[0] == 0xAC) {
         if (!memcmp(&packet[1], ID.rx_tx_addr, 4) // Validate TX address
-        /* && !memcmp(&packet[5], &g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], 4)*/) {  // Validate RX address
+          && !memcmp(&packet[5], &g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], 4)) {  // Validate RX address
         AFHDS2A_update_telemetry();
         }
     }
