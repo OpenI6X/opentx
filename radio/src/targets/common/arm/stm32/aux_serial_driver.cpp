@@ -304,6 +304,7 @@ void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
     USART_Cmd(AUX2_SERIAL_USART, ENABLE);
     DMA_Cmd(AUX2_SERIAL_DMA_Channel_RX, ENABLE);
 
+    USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, ENABLE);
     USART_ITConfig(AUX2_SERIAL_USART, USART_IT_IDLE, ENABLE); // enable idle interrupt
 
   // else {
@@ -327,7 +328,12 @@ void aux2SerialInit(unsigned int mode, unsigned int protocol)
 
 void aux2SerialPutc(char c)
 {
+#if !defined(SIMU)
+  if (aux2SerialTxFifo.isFull()) return;
 
+  aux2SerialTxFifo.push(c);
+  USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, ENABLE);
+#endif
 }
 
 void aux2SerialStop()
@@ -361,11 +367,12 @@ extern "C" void AUX2_SERIAL_USART_IRQHandler(void)
   // }
 
   if (status & USART_FLAG_IDLE) {
-    if (!(status & USART_FLAG_ERRORS)) {
+    AUX2_SERIAL_USART->ICR = USART_ICR_IDLECF;
+    // if (!(status & USART_FLAG_ERRORS)) {
       if (aux2SerialIdleCb != nullptr) {
         aux2SerialIdleCb();
       }
-    }
+    // }
   }
 }
 #endif // SIMU
