@@ -252,7 +252,7 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
 
 /**
  * AUX2 Serial
- * reduced implementation to use only for FlySky Gimball
+ * reduced implementation to use IDLE irq
 */
 #if defined(AUX2_SERIAL)
 DMAFifo<32> aux2SerialRxFifo __DMA (AUX2_SERIAL_DMA_Channel_RX);
@@ -304,7 +304,7 @@ void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
     USART_Cmd(AUX2_SERIAL_USART, ENABLE);
     DMA_Cmd(AUX2_SERIAL_DMA_Channel_RX, ENABLE);
 
-    USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, ENABLE);
+    AUX2_SERIAL_USART->CR1 |= USART_CR1_RXNEIE; // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, ENABLE);
     // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_IDLE, ENABLE); // enable idle interrupt
 
   // else {
@@ -347,12 +347,14 @@ void aux2SerialStop()
 }
 
 void aux2SerialSetIdleCb(void (*cb)()) {
-  if (cb == nullptr) {
-    USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, DISABLE);
-  } else {
-    USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, ENABLE);
-  }
   aux2SerialIdleCb = cb;
+  if (cb == nullptr) {
+    AUX2_SERIAL_USART->CR1 |= USART_CR1_IDLEIE;
+    // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_IDLE, DISABLE);
+  } else {
+    AUX2_SERIAL_USART->CR1 &= ~USART_CR1_IDLEIE;
+    // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_IDLE, ENABLE);
+  }
 }
 
 #if !defined(SIMU)
