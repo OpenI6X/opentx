@@ -13,7 +13,7 @@ You can find instructions and videos contributed by fellow early adopters in the
 ## Table of Contents
 
 [How to install, upgrade or restore original firmware](https://github.com/OpenI6X/opentx/wiki) <br>
-[Developers guide, how to build](https://github.com/OpenI6X/opentx/wiki/Contribute) <br>
+[Developers guide, how to build](https://github.com/OpenI6X/opentx/wiki/Development) <br>
 [Features](#features)<br>
 [Navigation](#navigation)<br>
 [Proper shutdown (I see square icon)](#shutdown)<br>

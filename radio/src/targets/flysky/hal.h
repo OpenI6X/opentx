@@ -185,8 +185,8 @@ void TIM16_IRQHandler(void);
 #define RF_RF1_SET_PIN GPIO_BSRR_BS_11
 #define RF_RF1_RESET_PIN GPIO_BSRR_BR_11
 
-void SPI_RADIO_SendBlock(uint8_t *BufferPtr, uint16_t Size);
-void SPI_RADIO_ReceiveBlock(uint8_t *BufferPtr, uint16_t Size);
+void SPI_Write(uint8_t command);
+uint8_t SPI_SDI_Read(void);
 void a7105_csn_on(void); 
 void a7105_csn_off(void);
 void RF0_SetVal(void);
@@ -200,8 +200,8 @@ void initAFHDS2A();
 void ActionAFHDS2A();
 void init_afhds2a(uint32_t port);
 void disable_afhds2a(uint32_t port);
-#define A7105_CSN_ON a7105_csn_on()  
-#define A7105_CSN_OFF a7105_csn_off()
+#define A7105_CSN_on a7105_csn_on()
+#define A7105_CSN_off a7105_csn_off()
 
 /******************************************************************************/
 /*                                                                            */
@@ -365,6 +365,7 @@ void disable_afhds2a(uint32_t port);
   #define INTMODULE_DMA_FLAG_TC         DMA_IT_TCIF5
   #define INTMODULE_TIMER_FREQ          (PERI2_FREQUENCY * TIMER_MULT_APB2)
 */
+#define INTMODULE_RCC_APB2Periph      (RCC_APB2Periph_TIM16 | RCC_APB2Periph_SPI1)
 
 // External Module
 #define EXTMODULE_PWR_GPIO            GPIOC
@@ -567,7 +568,7 @@ F072 IRQs
 #define TIMER_2MHz_TIMER                TIM7
 
 // Mixer scheduler timer
-#define MIXER_SCHEDULER_TIMER_RCC_APB1Periph RCC_APB2Periph_TIM17
+#define MIXER_SCHEDULER_TIMER_RCC_APB2Periph RCC_APB2Periph_TIM17
 #define MIXER_SCHEDULER_TIMER                TIM17
 #define MIXER_SCHEDULER_TIMER_FREQ           (PERI1_FREQUENCY * TIMER_MULT_APB1)
 #define MIXER_SCHEDULER_TIMER_IRQn           TIM17_IRQn
@@ -576,6 +577,6 @@ F072 IRQs
 //all used RCC goes here
 #define RCC_AHB1_LIST                   (I2C_RCC_AHB1Periph | BACKLIGHT_RCC_AHB1Periph | LCD_RCC_AHB1Periph | KEYS_RCC_AHB1Periph | BUZZER_RCC_AHBPeriph | EXTMODULE_RCC_AHBPeriph | CRC_RCC_AHB1Periph | TELEMETRY_RCC_AHB1Periph | AUX_SERIAL_RCC_AHB1Periph | AUX2_SERIAL_RCC_AHB1Periph)
 #define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph | TELEMETRY_RCC_APB1Periph | BACKLIGHT_RCC_APB1Periph | RCC_APB1Periph_USB | AUX2_SERIAL_RCC_APB1Periph)
-#define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB1Periph | PWM_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph | AUX_SERIAL_RCC_APB2Periph)
+#define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB2Periph | PWM_RCC_APB2Periph | INTMODULE_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph | AUX_SERIAL_RCC_APB2Periph)
 
 #endif // _HAL_H_

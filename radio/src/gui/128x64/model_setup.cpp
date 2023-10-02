@@ -616,7 +616,7 @@ void menuModelSetup(event_t event)
             }
             states >>= 2;
           }
-          if (attr && ((menuHorizontalPosition < 0) || menuHorizontalPosition >= NUM_SWITCHES)) {
+          if (attr && (/*(menuHorizontalPosition < 0) ||*/ menuHorizontalPosition >= NUM_SWITCHES)) {
             lcdDrawFilledRect(MODEL_SETUP_2ND_COLUMN-1, y-1, 8*(2*FW+1), 1+FH*((current+4)/5));
           }
 #else //PCBTARANIS

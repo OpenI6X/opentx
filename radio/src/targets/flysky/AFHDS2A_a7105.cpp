@@ -80,9 +80,6 @@ packet[5-8] - rx_id
 0xff - AFHDS2A_ID_END
 */
 void AFHDS2A_update_telemetry() {
-  if (packet[0] == 0xAA && packet[9] == 0xFD)
-    return;  // ignore packets which contain the RX configuration: FD FF 32 00 01 00 FF FF FF 05 DC 05 DE FA FF FF FF FF FF FF FF FF FF FF FF FF FF FF
-
   if (packet[0] == 0xAA) {
     int16_t tx_rssi = 256 - (A7105_ReadReg(A7105_1D_RSSI_THOLD) * 8) / 5;  // value from A7105 is between 8 for maximum signal strength to 160 or less
     tx_rssi = limit<int16_t>(0, tx_rssi, 255);
@@ -100,7 +97,7 @@ void AFHDS2A_update_telemetry() {
     // header
     auxSerialPutc('M');
     auxSerialPutc('P');
-    auxSerialPutc((packet[0] == 0xAA) ? 0x06 : 0x0c); // Multiprotocol module telemetry type for AFHDS2A
+    auxSerialPutc((packet[0] == 0xAA) ? 0x06 : 0x0C); // Multiprotocol module telemetry type for AFHDS2A
     auxSerialPutc(AFHDS2A_RXPACKET_SIZE - 8);
     // data
     for (uint8_t c = 8; c < AFHDS2A_RXPACKET_SIZE; c++) { // RSSI value followed by 4*7 bytes of telemetry data, skip rx and tx id
@@ -215,9 +212,10 @@ void AFHDS2A_build_packet(const uint8_t type) {
 void ActionAFHDS2A(void) {
   uint8_t Channel;
   static uint8_t packet_type;
-  // static uint16_t telem_counter;
   static uint16_t packet_counter = 0;
+#if defined(AFHDS2A_FREQ_TUNING)
   A7105_AdjustLOBaseFreq();
+#endif
 
   if (moduleState[INTERNAL_MODULE].mode == MODULE_MODE_BIND) {
     if (IS_BIND_DONE && IS_BIND_STOP) {
@@ -317,12 +315,14 @@ EndSendBIND123_:  //-----------------------------------------------------------
   SETBIT(RadioState, SEND_RES, RES);
   return;
 ResBIND123_:  //-----------------------------------------------------------
-  A7105_ReadData(AFHDS2A_RXPACKET_SIZE);
-  if ((packet[0] == 0xbc) & (packet[9] == 0x01)) {
-    memcpy(&g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], &packet[5], 4);
-    RadioState = (RadioState & 0xF0) | AFHDS2A_BIND4;
-    bind_phase = 0;
-    SETBIT(RadioState, SEND_RES, SEND);
+  if (!(A7105_ReadReg(A7105_00_MODE) & (1<<5))) { // CRCF Ok
+    A7105_ReadData(AFHDS2A_RXPACKET_SIZE);
+    if ((packet[0] == 0xbc) & (packet[9] == 0x01)) {
+        memcpy(&g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], &packet[5], 4);
+        RadioState = (RadioState & 0xF0) | AFHDS2A_BIND4;
+        bind_phase = 0;
+        SETBIT(RadioState, SEND_RES, SEND);
+    }
   }
   return;
 SendData_:  //--------------------------------------------------------------
@@ -347,18 +347,20 @@ EndSendData_:  //-----------------------------------------------------------
   SETBIT(RadioState, SEND_RES, RES);
   return;
 ResData_:  //-----------------------------------------------------------
-  A7105_ReadData(AFHDS2A_RXPACKET_SIZE);
-  if (packet[0] == 0xAA && packet[9] == 0xFC)  // RX is asking for settings
-    packet_type = AFHDS2A_PACKET_SETTINGS;
-  if (packet[0] == 0xAA && packet[9] == 0xFD)  // RX is asking for FailSafe
-    packet_type = AFHDS2A_PACKET_FAILSAFE;
-  if (packet[0] == 0xAA || packet[0] == 0xAC) {
-    if (!memcmp(&packet[1], ID.rx_tx_addr, 4)) {  // Validate TX address
-      AFHDS2A_update_telemetry();
-      // telem_counter = 0;
+  if (!(A7105_ReadReg(A7105_00_MODE) & (1<<5))) { // CRCF Ok
+    A7105_ReadData(AFHDS2A_RXPACKET_SIZE);
+    if (packet[0] == 0xAA && packet[9] == 0xFC)  // RX is asking for settings
+        packet_type = AFHDS2A_PACKET_SETTINGS;
+    else if (packet[0] == 0xAA && packet[9] == 0xFD)  // RX is asking for FailSafe
+        packet_type = AFHDS2A_PACKET_FAILSAFE;
+    else if (packet[0] == 0xAA || packet[0] == 0xAC) {
+        if (!memcmp(&packet[1], ID.rx_tx_addr, 4) // Validate TX address
+          && !memcmp(&packet[5], &g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], 4)) {  // Validate RX address
+        AFHDS2A_update_telemetry();
+        }
     }
+    SETBIT(RadioState, SEND_RES, SEND);
   }
-  SETBIT(RadioState, SEND_RES, SEND);
   return;
 Send_:  //---------------------------------------------------------------
   A7105_AntSwitch();

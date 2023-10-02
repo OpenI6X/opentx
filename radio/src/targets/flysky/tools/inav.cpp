@@ -10,7 +10,8 @@
 #define INAVLITE_CRSF
 
 static const int8_t sine[32] = {
-  0,24,48,70,90,106,117,125,127,125,117,106,90,70,48,24,0,-25,-49,-71,-91,-107,-118,-126,-128,-126,-118,-107,-91,-71,-49,-25
+  0, 24, 48, 70, 90, 106, 117, 125, 127, 125, 117, 106, 90, 70, 48, 24,
+  0,-25,-49,-71,-91,-107,-118,-126,-128,-126,-118,-107,-91,-71,-49,-25
 };
 
 #define INAV_BATTP_X   30
@@ -47,10 +48,10 @@ static const int8_t sine[32] = {
 #define HOME_ICON '\xc7'
 #define SATS_ICON '\xd1'
 
-struct Point2D {
-  int8_t x;
-  int8_t y;
-};
+//struct Point2D {
+//  int8_t x;
+//  int8_t y;
+//};
 
 struct InavData {
   int32_t homeLat;
@@ -107,7 +108,6 @@ static void inavDrawCraft(uint8_t x, uint8_t y) {
   uint8_t tPRY = y + rotatedPRY;
 
   // translate and draw
-  // TODO y = LCD_H - y ?
   lcdDrawLine(x, y, tPLX, tPLY, SOLID, FORCE);
   lcdDrawLine(x, y, tPRX, tPRY, SOLID, FORCE);
   lcdDrawLine(tPLX, tPLY, tPRX, tPRY, DOTTED, FORCE);
@@ -274,7 +274,7 @@ static void inavDraw() {
   int32_t w = inavData.homeLon - inavData.currentLon;
   int32_t d = isqrt32((w * w) + (h * h));
 
-  int32_t scaleFactor = limit<int32_t>(1, (d / BBOX_SIZE), INT16_MAX); // TODO: while h || w > BBOX_SIZE do h /= 2; w /=2 ?
+  int32_t scaleFactor = limit<int32_t>(1, (d / BBOX_SIZE), INT16_MAX);
 
   // calculate center
   int32_t centerLon = (inavData.homeLon + inavData.currentLon) / 2;
@@ -300,8 +300,8 @@ static void inavDraw() {
   }
 
   // translate to LCD center space and draw
-  inavDrawHome(BBOX_CENTER_X - scaledHomeLat, BBOX_CENTER_Y + scaledHomeLon);
-  inavDrawCraft(BBOX_CENTER_X - scaledCurrentLat, BBOX_CENTER_Y + scaledCurrentLon);
+  inavDrawHome(BBOX_CENTER_X + scaledHomeLat, BBOX_CENTER_Y - scaledHomeLon);
+  inavDrawCraft(BBOX_CENTER_X + scaledCurrentLat, BBOX_CENTER_Y - scaledCurrentLon);
 
   // draw VSpd line
   vspd = limit<int16_t>(-5, vspd / 4, 5);

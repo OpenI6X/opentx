@@ -414,7 +414,6 @@ void i2cInit(void);
 void eepromReadBlock(uint8_t * buffer, size_t address, size_t size);
 void eepromWriteBlock(uint8_t * buffer, size_t address, size_t size);
 uint8_t eepromIsTransferComplete();
-void i2c_test();
 
 // Debug driver
 void debugPutc(const char c);
