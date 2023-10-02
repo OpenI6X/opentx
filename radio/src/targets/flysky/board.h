@@ -462,7 +462,6 @@ void hapticOff(void);
 #define DEBUG_BAUDRATE                  115200
 #define AUX_SERIAL
 #if defined(FLYSKY_GIMBAL) || defined(DFPLAYER)
-#define DFPLAYER_BAUDRATE   9600
 #define AUX2_SERIAL
 #endif
 extern uint8_t auxSerialMode;
