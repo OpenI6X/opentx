@@ -1819,6 +1819,10 @@ void opentxInit()
   auxSerialInit(g_eeGeneral.auxSerialMode, modelTelemetryProtocol());
 #endif
 
+#if defined(AUX2_SERIAL)
+  aux2SerialInit();
+#endif
+
 #if MENUS_LOCK == 1
   getMovedSwitch();
   if (TRIMS_PRESSED() && g_eeGeneral.switchUnlockStates == switches_states) {

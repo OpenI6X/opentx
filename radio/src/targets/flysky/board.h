@@ -462,6 +462,7 @@ void hapticOff(void);
 #define DEBUG_BAUDRATE                  115200
 #define AUX_SERIAL
 #if defined(FLYSKY_GIMBAL) || defined(DFPLAYER)
+#define DFPLAYER_BAUDRATE   9600
 #define AUX2_SERIAL
 #endif
 extern uint8_t auxSerialMode;
@@ -471,6 +472,19 @@ void auxSerialPutc(char c);
 void auxSerialSbusInit(void);
 void auxSerialStop(void);
 #endif
+
+// Aux2 serial port driver
+#if defined(AUX2_SERIAL)
+// extern uint8_t aux2SerialMode;
+// #if defined __cplusplus
+// void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t length = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1);
+// #endif
+void aux2SerialInit(void);
+void aux2SerialPutc(char c);
+void aux2SerialStop();
+void aux2SerialSetIdleCb(void (*cb)());
+#endif
+
 #define USART_FLAG_ERRORS (USART_FLAG_ORE | USART_FLAG_PE) // | USART_FLAG_FE, USART_FLAG_NE
 
 // LCD driver

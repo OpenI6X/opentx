@@ -255,6 +255,7 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
  * reduced implementation to use IDLE irq
 */
 #if defined(AUX2_SERIAL)
+Fifo<uint8_t, 16> aux2SerialTxFifo;
 DMAFifo<32> aux2SerialRxFifo __DMA (AUX2_SERIAL_DMA_Channel_RX);
 void (*aux2SerialIdleCb)(void);
 
@@ -304,26 +305,30 @@ void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
     USART_Cmd(AUX2_SERIAL_USART, ENABLE);
     DMA_Cmd(AUX2_SERIAL_DMA_Channel_RX, ENABLE);
 
-    AUX2_SERIAL_USART->CR1 |= USART_CR1_RXNEIE; // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, ENABLE);
+    // AUX2_SERIAL_USART->CR1 |= USART_CR1_RXNEIE; // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, ENABLE);
     // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_IDLE, ENABLE); // enable idle interrupt
 
   // else {
   //   USART_Cmd(AUX2_SERIAL_USART, ENABLE);
   //   USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, ENABLE);
-  //   USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, DISABLE);
-  //   NVIC_SetPriority(AUX2_SERIAL_USART_IRQn, 7);
-  //   NVIC_EnableIRQ(AUX2_SERIAL_USART_IRQn);
+    USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, DISABLE);
+    NVIC_SetPriority(AUX2_SERIAL_USART_IRQn, 7);
+    NVIC_EnableIRQ(AUX2_SERIAL_USART_IRQn);
   // }
 }
 
-// use aux2SerialSetup directly
-void aux2SerialInit(unsigned int mode, unsigned int protocol)
+void aux2SerialInit()
 {
-  // aux2SerialStop();
+//   aux2SerialStop();
 
-  // aux2SerialMode = mode;
-
-  // aux2SerialSetup(FLYSKY_HALL_BAUDRATE, true);
+//   aux2SerialMode = mode;
+#if defined (DFPLAYER)
+  aux2SerialSetup(115200, true);
+#elif defined(FLYSKY_GIMBAL)
+    //aux2SerialSetup(115200, true);
+#else
+  #error No AUX2 mode specified
+#endif
 }
 
 void aux2SerialPutc(char c)
@@ -349,17 +354,27 @@ void aux2SerialStop()
 void aux2SerialSetIdleCb(void (*cb)()) {
   aux2SerialIdleCb = cb;
   if (cb == nullptr) {
-    AUX2_SERIAL_USART->CR1 |= USART_CR1_IDLEIE;
-    // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_IDLE, DISABLE);
-  } else {
     AUX2_SERIAL_USART->CR1 &= ~USART_CR1_IDLEIE;
-    // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_IDLE, ENABLE);
+  } else {
+    AUX2_SERIAL_USART->CR1 |= USART_CR1_IDLEIE;
   }
 }
 
 #if !defined(SIMU)
 extern "C" void AUX2_SERIAL_USART_IRQHandler(void)
 {
+  // Send
+  if (USART_GetITStatus(AUX2_SERIAL_USART, USART_IT_TXE) != RESET) {
+    uint8_t txchar;
+    if (aux2SerialTxFifo.pop(txchar)) {
+      /* Write one byte to the transmit data register */
+      USART_SendData(AUX2_SERIAL_USART, txchar);
+    }
+    else {
+      USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, DISABLE);
+    }
+  }
+
   // Receive
   uint32_t status = AUX2_SERIAL_USART->ISR;
   // while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
@@ -375,11 +390,7 @@ extern "C" void AUX2_SERIAL_USART_IRQHandler(void)
 
   if (status & USART_FLAG_IDLE) {
     AUX2_SERIAL_USART->ICR = USART_ICR_IDLECF;
-    // if (!(status & USART_FLAG_ERRORS)) {
-    //   if (aux2SerialIdleCb != nullptr) {
-        aux2SerialIdleCb();
-    //   }
-    // }
+    aux2SerialIdleCb();
   }
 }
 #endif // SIMU

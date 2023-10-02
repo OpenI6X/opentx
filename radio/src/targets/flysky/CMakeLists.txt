@@ -45,6 +45,14 @@ if(PCBI6X_USB_VBUS STREQUAL YES)
   add_definitions(-DPCBI6X_USB_VBUS)
 endif()
 
+if(FLYSKY_GIMBAL STREQUAL YES)
+  add_definitions(-DFLYSKY_GIMBAL)
+endif()
+
+if(DFPLAYER STREQUAL YES)
+  add_definitions(-DDFPLAYER)
+endif()
+
 if(PCBI6X_BACKLIGHT_MOD STREQUAL YES)
   add_definitions(-DPCBI6X_BACKLIGHT_MOD)
 endif()
