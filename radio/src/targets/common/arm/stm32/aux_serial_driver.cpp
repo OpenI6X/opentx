@@ -323,11 +323,11 @@ void aux2SerialInit()
 
 //   aux2SerialMode = mode;
 #if defined (DFPLAYER)
-  aux2SerialSetup(115200, true);
+  aux2SerialSetup(DFPLAYER_BAUDRATE, true);
 #elif defined(FLYSKY_GIMBAL)
-    //aux2SerialSetup(115200, true);
+    aux2SerialSetup(FLYSKY_GIMBAL_BAUDRATE, true);
 #else
-  #error No AUX2 mode specified
+  #error Invalid AUX2 mode
 #endif
 }
 
