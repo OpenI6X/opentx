@@ -23,7 +23,13 @@
 #if defined(AUX_SERIAL)
 uint8_t auxSerialMode = UART_MODE_COUNT;  // Prevent debug output before port is setup
 #if defined(PCBI6X)
+#if defined(DEBUG)
 Fifo<uint8_t, 256> auxSerialTxFifo;
+#elif defined(FLYSKY_GIMBAL)
+Fifo<uint8_t, 64> auxSerialTxFifo;
+#else
+Fifo<uint8_t, 128> auxSerialTxFifo;
+#endif
 DMAFifo<32> auxSerialRxFifo __DMA (AUX_SERIAL_DMA_Channel_RX);
 #else
 Fifo<uint8_t, 512> auxSerialTxFifo;
@@ -256,7 +262,11 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
 */
 #if defined(AUX2_SERIAL)
 Fifo<uint8_t, 16> aux2SerialTxFifo;
-DMAFifo<32> aux2SerialRxFifo __DMA (AUX2_SERIAL_DMA_Channel_RX);
+#if defined(FLYSKY_GIMBAL)
+DMAFifo<256> aux2SerialRxFifo __DMA (AUX2_SERIAL_DMA_Channel_RX);
+#else // DFPLAYER
+DMAFifo<16> aux2SerialRxFifo __DMA (AUX2_SERIAL_DMA_Channel_RX);
+#endif
 void (*aux2SerialIdleCb)(void);
 
 void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1)
@@ -323,7 +333,7 @@ void aux2SerialInit()
 
 //   aux2SerialMode = mode;
 #if defined (DFPLAYER)
-  aux2SerialSetup(DFPLAYER_BAUDRATE, true);
+  aux2SerialSetup(9600 /*DFPLAYER_BAUDRATE*/, true);
 #elif defined(FLYSKY_GIMBAL)
     aux2SerialSetup(FLYSKY_GIMBAL_BAUDRATE, true);
 #else
@@ -388,6 +398,7 @@ extern "C" void AUX2_SERIAL_USART_IRQHandler(void)
   //   status = AUX2_SERIAL_USART->ISR;
   // }
 
+  // Idle
   if (status & USART_FLAG_IDLE) {
     AUX2_SERIAL_USART->ICR = USART_ICR_IDLECF;
     aux2SerialIdleCb();
