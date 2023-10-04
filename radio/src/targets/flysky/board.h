@@ -461,9 +461,6 @@ void hapticOff(void);
 #if defined(AUX_SERIAL_GPIO)
 #define DEBUG_BAUDRATE                  115200
 #define AUX_SERIAL
-#if defined(FLYSKY_GIMBAL) || defined(DFPLAYER)
-#define AUX2_SERIAL
-#endif
 extern uint8_t auxSerialMode;
 void auxSerialInit(unsigned int mode, unsigned int protocol);
 void auxSerialPutc(char c);
@@ -473,6 +470,15 @@ void auxSerialStop(void);
 #endif
 
 // Aux2 serial port driver
+#if defined(FLYSKY_GIMBAL)
+#define AUX2_SERIAL
+#define AUX2_SERIAL_BAUDRATE FLYSKY_GIMBAL_BAUDRATE
+#define AUX2_SERIAL_RXFIFO_SIZE 256
+#elif defined(DFPLAYER)
+#define AUX2_SERIAL
+#define AUX2_SERIAL_BAUDRATE 9600 //DFPLAYER_BAUDRATE
+#define AUX2_SERIAL_RXFIFO_SIZE 16
+#endif
 #if defined(AUX2_SERIAL)
 // extern uint8_t aux2SerialMode;
 // #if defined __cplusplus
@@ -517,12 +523,9 @@ void checkTrainerSettings(void);
 
 // extern Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
 extern DMAFifo<32> auxSerialRxFifo;
-#if defined(FLYSKY_GIMBAL)
-extern DMAFifo<256> aux2SerialRxFifo;
-#else // DFPLAYER
-extern DMAFifo<16> aux2SerialRxFifo;
+#if defined(AUX2_SERIAL)
+extern DMAFifo<AUX2_SERIAL_RXFIFO_SIZE> aux2SerialRxFifo;
 #endif
 #endif
-
 
 #endif // _BOARD_H_

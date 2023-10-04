@@ -262,11 +262,7 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
 */
 #if defined(AUX2_SERIAL)
 Fifo<uint8_t, 16> aux2SerialTxFifo;
-#if defined(FLYSKY_GIMBAL)
-DMAFifo<256> aux2SerialRxFifo __DMA (AUX2_SERIAL_DMA_Channel_RX);
-#else // DFPLAYER
-DMAFifo<16> aux2SerialRxFifo __DMA (AUX2_SERIAL_DMA_Channel_RX);
-#endif
+DMAFifo<AUX2_SERIAL_RXFIFO_SIZE> aux2SerialRxFifo __DMA (AUX2_SERIAL_DMA_Channel_RX);
 void (*aux2SerialIdleCb)(void);
 
 void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1)
@@ -321,7 +317,7 @@ void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
   // else {
   //   USART_Cmd(AUX2_SERIAL_USART, ENABLE);
   //   USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, ENABLE);
-    USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, DISABLE);
+    // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, DISABLE);
     NVIC_SetPriority(AUX2_SERIAL_USART_IRQn, 7);
     NVIC_EnableIRQ(AUX2_SERIAL_USART_IRQn);
   // }
@@ -332,13 +328,8 @@ void aux2SerialInit()
 //   aux2SerialStop();
 
 //   aux2SerialMode = mode;
-#if defined (DFPLAYER)
-  aux2SerialSetup(9600 /*DFPLAYER_BAUDRATE*/, true);
-#elif defined(FLYSKY_GIMBAL)
-    aux2SerialSetup(FLYSKY_GIMBAL_BAUDRATE, true);
-#else
-  #error Invalid AUX2 mode
-#endif
+
+  aux2SerialSetup(AUX2_SERIAL_BAUDRATE, true);
 }
 
 void aux2SerialPutc(char c)
