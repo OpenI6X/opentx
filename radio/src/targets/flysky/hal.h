@@ -464,7 +464,7 @@ extern void ISR_TIMER3_CAPT_vect(void);
 #define AUX2_SERIAL_USART                  USART4
 #define AUX2_SERIAL_USART_IRQHandler       USART3_4_IRQHandler
 #define AUX2_SERIAL_USART_IRQn             USART3_4_IRQn
-#define AUX2_SERIAL_DMA_Channel_RX         DMA1_Channel5
+#define AUX2_SERIAL_DMA_Channel_RX         DMA1_Channel6
 
 
 #define SPORT_MAX_BAUDRATE            400000

@@ -517,6 +517,11 @@ void checkTrainerSettings(void);
 
 // extern Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
 extern DMAFifo<32> auxSerialRxFifo;
+#if defined(FLYSKY_GIMBAL)
+extern DMAFifo<256> aux2SerialRxFifo;
+#else // DFPLAYER
+extern DMAFifo<16> aux2SerialRxFifo;
+#endif
 #endif
 
 
