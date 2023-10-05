@@ -312,7 +312,6 @@ void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
     DMA_Cmd(AUX2_SERIAL_DMA_Channel_RX, ENABLE);
 
     // AUX2_SERIAL_USART->CR1 |= USART_CR1_RXNEIE; // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, ENABLE);
-    // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_IDLE, ENABLE); // enable idle interrupt
 
   // else {
   //   USART_Cmd(AUX2_SERIAL_USART, ENABLE);
@@ -353,12 +352,12 @@ void aux2SerialStop()
 }
 
 void aux2SerialSetIdleCb(void (*cb)()) {
-  aux2SerialIdleCb = cb;
   if (cb == nullptr) {
     AUX2_SERIAL_USART->CR1 &= ~USART_CR1_IDLEIE;
   } else {
     AUX2_SERIAL_USART->CR1 |= USART_CR1_IDLEIE;
   }
+  aux2SerialIdleCb = cb;
 }
 
 #if !defined(SIMU)
