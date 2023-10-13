@@ -101,6 +101,7 @@
 #define ADC_RCC_AHB1Periph            (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_GPIOB | RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_DMA1)
 #define ADC_RCC_APB1Periph            0
 #define ADC_RCC_APB2Periph            RCC_APB2Periph_ADC1
+#if !defined(FLYSKY_GIMBAL)
 #define ADC_GPIO_PIN_STICK_RV         GPIO_Pin_0  // PA.00
 #define ADC_GPIO_PIN_STICK_RH         GPIO_Pin_1  // PA.01
 #define ADC_GPIO_PIN_STICK_LV         GPIO_Pin_2  // PA.02
@@ -109,10 +110,15 @@
 #define ADC_CHANNEL_STICK_RH          ADC_Channel_1  // ADC1_IN1
 #define ADC_CHANNEL_STICK_LV          ADC_Channel_2  // ADC1_IN2
 #define ADC_CHANNEL_STICK_LH          ADC_Channel_3  // ADC1_IN3
+#endif // FLYSKY_GIMBAL
 #define ADC_GPIO_PIN_POT1             GPIO_Pin_6  // PA.06
 #define ADC_GPIO_PIN_POT2             GPIO_Pin_0  // PB.00
 #define ADC_GPIO_PIN_BATT             GPIO_Pin_0  // PC.00
+#if !defined(FLYSKY_GIMBAL)
 #define ADC_GPIOA_PINS                (ADC_GPIO_PIN_STICK_RV | ADC_GPIO_PIN_STICK_RH | ADC_GPIO_PIN_STICK_LH | ADC_GPIO_PIN_STICK_LV | ADC_GPIO_PIN_POT1)
+#else
+#define ADC_GPIOA_PINS                ADC_GPIO_PIN_POT1
+#endif // FLYSKY_GIMBAL
 #define ADC_GPIOB_PINS                ADC_GPIO_PIN_POT2
 #define ADC_GPIOC_PINS                ADC_GPIO_PIN_BATT
 #define ADC_CHANNEL_POT1              ADC_Channel_6

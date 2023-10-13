@@ -580,7 +580,6 @@ PACK(struct GlobalData {
   uint8_t unexpectedShutdown;
   uint8_t usbConnect;
   uint8_t cToolRunning;
-uint8_t flyskygimbals;
 #else
   uint8_t unexpectedShutdown:1;
   uint8_t spare:7;

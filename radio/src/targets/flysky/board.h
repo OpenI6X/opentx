@@ -363,7 +363,7 @@ void adcInit(void);
 void adcRead(void);
 extern uint16_t adcValues[NUM_ANALOGS];
 uint16_t getAnalogValue(uint8_t index);
-//uint16_t* getAnalogValues();
+uint16_t* getAnalogValues();
 uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
 
 #define BATT_SCALE                    150
@@ -474,8 +474,8 @@ void auxSerialStop(void);
 // Aux2 serial port driver
 #if defined(FLYSKY_GIMBAL)
 #define AUX2_SERIAL
-#define AUX2_SERIAL_BAUDRATE FLYSKY_HALL_BAUDRATE //921600 //FLYSKY_HALL_BAUDRATE
-#define AUX2_SERIAL_RXFIFO_SIZE HALLSTICK_BUFF_SIZE //128 //HALLSTICK_BUFF_SIZE
+#define AUX2_SERIAL_BAUDRATE FLYSKY_HALL_BAUDRATE // 921600
+#define AUX2_SERIAL_RXFIFO_SIZE HALLSTICK_BUFF_SIZE // 128
 #elif defined(DFPLAYER)
 #define AUX2_SERIAL
 #define AUX2_SERIAL_BAUDRATE 9600 //DFPLAYER_BAUDRATE

@@ -117,6 +117,3 @@ enum TRANSFER_DIR_E {
   TRANSFER_DIR_HOSTPC,
   TRANSFER_DIR_RFMODULE,
 };
-
-//extern uint16_t hall_adc_values[FLYSKY_HALL_CHANNEL_COUNT];
-extern unsigned short hall_adc_values[FLYSKY_HALL_CHANNEL_COUNT];
