@@ -186,4 +186,10 @@ uint16_t getAnalogValue(uint8_t index)
   else
     return adcValues[index];
 }
+/*
+uint16_t* getAnalogValues()
+{
+  return adcValues;
+}
+*/
 #endif // #if !defined(SIMU)

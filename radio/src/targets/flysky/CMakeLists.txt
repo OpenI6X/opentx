@@ -47,6 +47,10 @@ endif()
 
 if(FLYSKY_GIMBAL STREQUAL YES)
   add_definitions(-DFLYSKY_GIMBAL)
+  set(TARGET_SRC
+    ${TARGET_SRC}
+    ../common/arm/stm32/flysky_gimbal_driver.cpp
+    )
 endif()
 
 if(DFPLAYER STREQUAL YES)
@@ -136,7 +140,6 @@ set(TARGET_SRC
   i2c_driver.cpp
   crc_driver.cpp
   ../common/arm/stm32/mixer_scheduler_driver.cpp
-  ../common/arm/stm32/flysky_gimbal_driver.cpp
   )
 
 set(FIRMWARE_TARGET_SRC

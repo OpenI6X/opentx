@@ -140,6 +140,7 @@ static void Parse_Character(STRUCT_HALL *hallBuffer, unsigned char ch)
     case CHECKSUM:
       if (hallBuffer->checkSum ==
           calc_crc16((void *)&hallBuffer->head, hallBuffer->length + 3)) {
+          //crc8_hw(&hallBuffer->head, hallBuffer->length + 3)) {
         hallBuffer->msg_OK = 1;
       }
       hallBuffer->status = GET_START;
@@ -166,7 +167,9 @@ void flysky_gimbal_loop(void)
         case TRANSFER_DIR_TXMCU:
           if (HallProtocol.hallID.hall_Id.packetID == FLYSKY_HALL_RESP_TYPE_VALUES) {
             int16_t* p_values = (int16_t*)HallProtocol.data;
+            //uint16_t* adcValues = getAnalogValues();
             for (uint8_t i = 0; i < 4; i++) {
+              //adcValues[i] = FLYSKY_OFFSET_VALUE - (p_values[i] >> 1);
               hall_adc_values[i] = FLYSKY_OFFSET_VALUE - (p_values[i] >> 1);
             }
           }
@@ -177,6 +180,9 @@ void flysky_gimbal_loop(void)
   }
 }
 
+/*
+*  This one causes trouble, it is best to leave the idle callback function directly in board.cpp
+*
 static void flysky_gimbal_deinit()
 {
   aux2SerialStop();
@@ -194,3 +200,4 @@ bool flysky_gimbal_init(void)
   flysky_gimbal_deinit();
   return false;
 }
+*/

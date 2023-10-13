@@ -1185,6 +1185,7 @@ void getADC() {
 
   for (uint8_t x = 0; x < NUM_ANALOGS; x++) {
     uint16_t v;
+
 #if defined(FLYSKY_GIMBAL)
     if (globalData.flyskygimbals)
     {
@@ -1196,6 +1197,7 @@ void getADC() {
     }
     else
 #endif
+
     {
         v = getAnalogValue(x) >> (1 - ANALOG_SCALE);
 }
