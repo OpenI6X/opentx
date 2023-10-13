@@ -47,9 +47,6 @@ const uint8_t ana_mapping[NUM_ANALOGS] = {3, 2, 1, 0, 6, 7, 4, 5, 8, 9, 10};
 #endif
 
 uint16_t adcValues[NUM_ANALOGS] __DMA;
-#if defined(FLYSKY_GIMBAL)
-uint16_t* adcMemoryValueAddr = &adcValues[4];
-#endif
 
 #define ADC_DMA_CHANNEL DMA1_Channel1
 #define ADC_DMA_TC_FLAG DMA1_FLAG_TC1
@@ -114,12 +111,12 @@ void adcInit()
   ADC_Init(ADC1, &adc_init);
 
   // configure each channel
-  #if defined(FLYSKY_GIMBAL)
-  ADC_ChannelConfig(ADC1, ADC_Channel_4 | ADC_Channel_5 |
+  #if !defined(FLYSKY_GIMBAL)
+  ADC_ChannelConfig(ADC1, ADC_Channel_0 | ADC_Channel_1 | ADC_Channel_2 | ADC_Channel_3 |
   #else
-  ADC_ChannelConfig(ADC1, ADC_Channel_0 | ADC_Channel_1 | ADC_Channel_2 | ADC_Channel_3 | ADC_Channel_4 | ADC_Channel_5 |
+  ADC_ChannelConfig(ADC1,
   #endif
-    ADC_Channel_6 | ADC_Channel_7 | ADC_Channel_8 | ADC_Channel_9 | ADC_Channel_10, ADC_SampleTime_41_5Cycles);
+    ADC_Channel_4 | ADC_Channel_5 | ADC_Channel_6 | ADC_Channel_7 | ADC_Channel_8 | ADC_Channel_9 | ADC_Channel_10, ADC_SampleTime_41_5Cycles);
 
 
   // enable ADC
@@ -156,11 +153,7 @@ void adcInit()
   dma_init.DMA_BufferSize = NUM_ANALOGS;
   // source and destination start addresses
   dma_init.DMA_PeripheralBaseAddr = (uint32_t)&ADC1->DR;
-  #if defined(FLYSKY_GIMBAL)
-  dma_init.DMA_MemoryBaseAddr = (uint32_t)adcMemoryValueAddr;
-  #else
-  dma_init.DMA_MemoryBaseAddr = (uint32_t)adcValues;
-  #endif
+  dma_init.DMA_MemoryBaseAddr = (uint32_t)&adcValues[FIRST_ANALOG_ADC];
   // send values to DMA registers
   DMA_Init(ADC_DMA_CHANNEL, &dma_init);
 

@@ -216,7 +216,7 @@ void boardInit()
   // TRACE("RCC->CSR = %08x", RCC->CSR);
 #endif
 
-  crcInit();
+  //crcInit();
   adcInit();
   delaysInit();
   lcdInit(); // delaysInit() must be called before

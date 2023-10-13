@@ -6,7 +6,7 @@
 #define CRC8_POL_BA   0xBABABABA
 #define CRC8_INIT_VAL 0x00
 
-void crcInit(void);
+//void crcInit(void);
 uint8_t crc8_hw(const uint8_t * ptr, uint32_t len);
 uint8_t crc8_BA_hw(const uint8_t * ptr, uint32_t len);
 uint16_t crc16_hw(const uint8_t * ptr, uint32_t len);
