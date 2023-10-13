@@ -271,7 +271,7 @@ void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
   GPIO_InitTypeDef GPIO_InitStructure;
 
   GPIO_PinAFConfig(AUX2_SERIAL_GPIO, AUX2_SERIAL_GPIO_PinSource_TX | AUX2_SERIAL_GPIO_PinSource_RX, AUX2_SERIAL_GPIO_AF);
-  //  GPIO_PinAFConfig(AUX2_SERIAL_GPIO, AUX2_SERIAL_GPIO_PinSource_TX, AUX2_SERIAL_GPIO_AF);
+  //GPIO_PinAFConfig(AUX2_SERIAL_GPIO, AUX2_SERIAL_GPIO_PinSource_TX, AUX2_SERIAL_GPIO_AF);
 
   GPIO_InitStructure.GPIO_Pin = AUX2_SERIAL_GPIO_PIN_TX | AUX2_SERIAL_GPIO_PIN_RX;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
@@ -322,7 +322,7 @@ void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
   // }
 }
 
-void aux2SerialInit()
+void aux2SerialInit(void)
 {
 //   aux2SerialStop();
 
@@ -341,7 +341,7 @@ void aux2SerialPutc(char c)
 #endif
 }
 
-void aux2SerialStop()
+void aux2SerialStop(void)
 {
 #if defined(STM32F0)
   DMA_DeInit(AUX2_SERIAL_DMA_Channel_RX);

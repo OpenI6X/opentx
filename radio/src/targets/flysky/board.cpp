@@ -224,6 +224,7 @@ void boardInit()
   init2MhzTimer();
   init5msTimer();
   __enable_irq();
+  aux2SerialSetIdleCb(flysky_gimbal_loop);
   buzzerInit();
   i2cInit();
   usbInit();

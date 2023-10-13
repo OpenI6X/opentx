@@ -136,6 +136,7 @@ set(TARGET_SRC
   i2c_driver.cpp
   crc_driver.cpp
   ../common/arm/stm32/mixer_scheduler_driver.cpp
+  ../common/arm/stm32/flysky_gimbal_driver.cpp
   )
 
 set(FIRMWARE_TARGET_SRC

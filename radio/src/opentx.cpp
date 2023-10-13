@@ -1169,6 +1169,8 @@ uint16_t anaIn(uint8_t chan) {
   return ANA_FILT(chan);
 }
 
+extern uint16_t get_flysky_hall_adc_value(uint8_t ch);
+
 void getADC() {
 #if defined(JITTER_MEASURE)
   if (JITTER_MEASURE_ACTIVE() && jitterResetTime < get_tmr10ms()) {
@@ -1182,7 +1184,21 @@ void getADC() {
 #endif
 
   for (uint8_t x = 0; x < NUM_ANALOGS; x++) {
-    uint16_t v = getAnalogValue(x) >> (1 - ANALOG_SCALE);
+    uint16_t v;
+#if defined(FLYSKY_GIMBAL)
+    if (globalData.flyskygimbals)
+    {
+        if (x < 4) {
+          v = get_flysky_hall_adc_value(x) >> (1 - ANALOG_SCALE);
+        } else {
+        v = getAnalogValue(x) >> (1 - ANALOG_SCALE);
+        }
+    }
+    else
+#endif
+    {
+        v = getAnalogValue(x) >> (1 - ANALOG_SCALE);
+}
 
     // Jitter filter:
     //    * pass trough any big change directly
