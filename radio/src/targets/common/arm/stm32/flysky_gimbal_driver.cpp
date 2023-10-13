@@ -26,6 +26,7 @@ unsigned short hall_adc_values[FLYSKY_HALL_CHANNEL_COUNT];
 
 
 /* crc16 implementation according to CCITT standards */
+/*
 const unsigned short CRC16Table[256]= {
   0x0000,0x1021,0x2042,0x3063,0x4084,0x50a5,0x60c6,0x70e7,
   0x8108,0x9129,0xa14a,0xb16b,0xc18c,0xd1ad,0xe1ce,0xf1ef,
@@ -73,6 +74,7 @@ unsigned short calc_crc16(void *pBuffer,unsigned char BufferSize)
   }
   return crc16;
 }
+*/
 
 uint16_t get_flysky_hall_adc_value(uint8_t ch)
 {
@@ -139,8 +141,8 @@ static void Parse_Character(STRUCT_HALL *hallBuffer, unsigned char ch)
     
     case CHECKSUM:
       if (hallBuffer->checkSum ==
-          calc_crc16((void *)&hallBuffer->head, hallBuffer->length + 3)) {
-          //crc8_hw(&hallBuffer->head, hallBuffer->length + 3)) {
+          //calc_crc16((void *)&hallBuffer->head, hallBuffer->length + 3)) {
+          crc16_hw(&hallBuffer->head, hallBuffer->length + 3)) {
         hallBuffer->msg_OK = 1;
       }
       hallBuffer->status = GET_START;
