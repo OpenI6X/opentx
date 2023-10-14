@@ -332,6 +332,13 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
             }
             break;
           }
+          else 
+#endif // SDCARD
+#if defined(DFPLAYER)
+          if (func == FUNC_PLAY_TRACK) {
+            val_max = 50;
+            lcdDrawNumber(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, 400 + val_displayed, RIGHT | attr);
+          }
           else if (func == FUNC_PLAY_VALUE) {
             val_max = MIXSRC_LAST_TELEM;
             drawSource(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, val_displayed, attr);
@@ -340,7 +347,7 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
               INCDEC_ENABLE_CHECK(functionsContext == &globalFunctionsContext ? isSourceAvailableInGlobalFunctions : isSourceAvailable);
             }
           }
-#endif // SDCARD
+#endif // SDCARD || DFPLAYER
 #if !defined(PCBI6X)
           else if (func == FUNC_VOLUME) {
             val_max = MIXSRC_LAST_CH;

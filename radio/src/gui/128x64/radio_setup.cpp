@@ -59,7 +59,7 @@ enum MenuRadioSetupItems {
   ITEM_SETUP_BEEP_VOLUME,
   ITEM_SETUP_BEEP_LENGTH,
   ITEM_SETUP_SPEAKER_PITCH,
-  // ITEM_SETUP_WAV_VOLUME,
+  ITEM_SETUP_WAV_VOLUME,
   // ITEM_SETUP_BACKGROUND_VOLUME,
   CASE_VARIO(ITEM_SETUP_VARIO_LABEL)
   CASE_VARIO(ITEM_SETUP_VARIO_VOLUME)
@@ -142,7 +142,7 @@ void menuRadioSetup(event_t event)
     HEADER_LINE_COLUMNS CASE_RTCLOCK(2) CASE_RTCLOCK(2) CASE_BATTGRAPH(1) 
     LABEL(SOUND), CASE_AUDIO(0)
     CASE_BUZZER(0)
-    /*0,*/ 0, 0, 0, /*0,*/ CASE_AUDIO(0)
+    /*0,*/ 0, 0, 0, CASE_DFPLAYER(0) CASE_AUDIO(0)
     CASE_VARIO(LABEL(VARIO))
     CASE_VARIO(0)
     CASE_VARIO(0)
@@ -307,9 +307,11 @@ void menuRadioSetup(event_t event)
       case ITEM_SETUP_BEEP_VOLUME:
         SLIDER_5POS(y, g_eeGeneral.beepVolume, STR_BEEP_VOLUME, event, attr);
         break;
-      // case ITEM_SETUP_WAV_VOLUME:
-      //   SLIDER_5POS(y, g_eeGeneral.wavVolume, STR_WAV_VOLUME, event, attr);
-      //   break;
+#if defined(DFPLAYER)
+      case ITEM_SETUP_WAV_VOLUME:
+        SLIDER_5POS(y, g_eeGeneral.wavVolume, STR_WAV_VOLUME, event, attr);
+        break;
+#endif
       // case ITEM_SETUP_BACKGROUND_VOLUME:
       //   SLIDER_5POS(y, g_eeGeneral.backgroundVolume, STR_BG_VOLUME, event, attr);
       //   break;

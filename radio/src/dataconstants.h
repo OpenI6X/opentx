@@ -758,8 +758,8 @@ enum Functions {
   // then the other functions
   FUNC_FIRST_WITHOUT_ENABLE,
   FUNC_PLAY_SOUND = FUNC_FIRST_WITHOUT_ENABLE,
-//  FUNC_PLAY_TRACK,
-//  FUNC_PLAY_VALUE,
+  FUNC_PLAY_TRACK,
+  FUNC_PLAY_VALUE,
   FUNC_RESERVE4,
   FUNC_PLAY_SCRIPT,
   FUNC_RESERVE5,
@@ -790,7 +790,7 @@ enum TimerModes {
 enum CountDownModes {
   COUNTDOWN_SILENT,
   COUNTDOWN_BEEPS,
-#if defined(VOICE)
+#if defined(VOICE) || defined(DFPLAYER)
   COUNTDOWN_VOICE,
 #endif
 #if defined(HAPTIC)

@@ -523,6 +523,7 @@ F072 IRQs
   // #define HEARTBEAT_DMA_Stream          DMA2_Stream1
   // #define HEARTBEAT_DMA_Channel         DMA_Channel_5
 
+// Backlight
 #if defined(PCBI6X_BACKLIGHT_MOD) // requires wiring BL pad to PC9 pad
   #define BACKLIGHT_RCC_APB1Periph      RCC_APB1Periph_TIM3
   #define BACKLIGHT_RCC_AHB1Periph      RCC_AHBPeriph_GPIOC
@@ -555,15 +556,22 @@ F072 IRQs
 //#define AUDIO_TIMER                     TIM6
 //#define AUDIO_DMA                       DMA1
 
-// Buzzer on TIMER 1
-#define BUZZER_GPIO_PORT GPIOA
-#define BUZZER_GPIO_PIN GPIO_Pin_8
-#define BUZZER_GPIO_PinSource GPIO_PinSource8
-#define BUZZER_RCC_AHBPeriph RCC_AHBPeriph_GPIOA
+// Buzzer
+#define BUZZER_GPIO_PORT                GPIOA
+#define BUZZER_GPIO_PIN                 GPIO_Pin_8
+#define BUZZER_GPIO_PinSource           GPIO_PinSource8
+#define BUZZER_RCC_AHBPeriph            RCC_AHBPeriph_GPIOA
 #define PWM_RCC_APB2Periph              RCC_APB2Periph_TIM1
 #define PWM_TIMER                       TIM1
 
-// Xms Interrupt TIMER 14
+// DFPlayer
+#if defined(DFPLAYER)
+#define DFPLAYER_GPIO_PORT              GPIOC
+#define DFPLAYER_GPIO_PIN_BUSY          GPIO_Pin_14
+#define DFPLAYER_BAUDRATE               9600
+#endif
+
+// Xms Interrupt
 #define INTERRUPT_xMS_RCC_APB1Periph    RCC_APB1Periph_TIM14
 #define INTERRUPT_xMS_TIMER             TIM14
 #define INTERRUPT_xMS_IRQn              TIM14_IRQn

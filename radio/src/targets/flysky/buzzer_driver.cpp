@@ -24,6 +24,11 @@
 volatile BuzzerState buzzerState;
 BuzzerToneFifo buzzerFifo = BuzzerToneFifo();
 
+#if defined(DFPLAYER)
+extern Fifo<uint16_t, 16> dfplayerFifo;
+extern void dfplayerPlayFile(uint16_t number);
+#endif
+
 void audioKeyPress()
 {
   if (g_eeGeneral.beepMode == e_mode_all) {
@@ -49,6 +54,16 @@ void audioTrimPress(int value)
 
 void audioTimerCountdown(uint8_t timer, int value)
 {
+#if defined(DFPLAYER)
+  if (g_model.timers[timer].countdownBeep == COUNTDOWN_VOICE) {
+    if (value >= 0 && value <= TIMER_COUNTDOWN_START(timer)) {
+      playNumber(value, 0, 0, 0);
+    }
+    else if (value == 30 || value == 20) {
+      playDuration(value, 0, 0);
+    }
+  } else
+#endif // DFPLAYER
   if (g_model.timers[timer].countdownBeep == COUNTDOWN_BEEPS) {
     if (value == 0) {
       playTone(BEEP_DEFAULT_FREQ + 150, 300, 20, PLAY_NOW);
@@ -78,6 +93,13 @@ void buzzerEvent(unsigned int index)
   }
 
   if (g_eeGeneral.beepMode >= e_mode_nokeys || (g_eeGeneral.beepMode >= e_mode_alarms && index <= AU_ERROR)) {
+#if defined(DFPLAYER)
+    if (index < AU_SPECIAL_SOUND_FIRST/* && isAudioFileReferenced(index, filename)*/) {
+      dfPlayerQueueStopPlay(/*ID_PLAY_PROMPT_BASE +*/ index);
+      dfPlayerQueuePlayFile(/*ID_PLAY_PROMPT_BASE + */index);
+      return;
+    }
+#endif
     switch (index) {
       case AU_INACTIVITY:
         playTone(2250, 80, 20, PLAY_REPEAT(2));
@@ -322,6 +344,15 @@ void playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t flags, int8_t
 
 void buzzerHeartbeat()
 {
+#if defined(DFPLAYER)
+  if (!dfplayerFifo.isEmpty() && !isPlaying()) {
+    uint16_t index;
+    if (dfplayerFifo.pop(index)) {
+      dfplayerPlayFile(index);
+    }
+  }
+#endif
+
   if (buzzerState.duration) {
 
     if (buzzerState.duration > 10) {

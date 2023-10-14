@@ -474,12 +474,14 @@ void auxSerialStop(void);
 // Aux2 serial port driver
 #if defined(FLYSKY_GIMBAL)
 #define AUX2_SERIAL
+#define AUX2_SERIAL_RX
+#define AUX2_SERIAL_IDLE
 #define AUX2_SERIAL_BAUDRATE FLYSKY_HALL_BAUDRATE // 921600
 #define AUX2_SERIAL_RXFIFO_SIZE HALLSTICK_BUFF_SIZE // 128
 #elif defined(DFPLAYER)
 #define AUX2_SERIAL
-#define AUX2_SERIAL_BAUDRATE 9600 //DFPLAYER_BAUDRATE
-#define AUX2_SERIAL_RXFIFO_SIZE 16
+#define AUX2_SERIAL_TX
+#define AUX2_SERIAL_BAUDRATE DFPLAYER_BAUDRATE
 #endif
 #if defined(AUX2_SERIAL)
 // extern uint8_t aux2SerialMode;
@@ -492,6 +494,11 @@ void aux2SerialStop(void);
 void aux2SerialSetIdleCb(void (*cb)());
 void flysky_gimbal_init();
 void flysky_gimbal_loop(void);
+#endif
+
+#if defined(DFPLAYER)
+void dfplayerEvent(unsigned int index);
+void dfplayerInit(void);
 #endif
 
 #define USART_FLAG_ERRORS (USART_FLAG_ORE | USART_FLAG_PE) // | USART_FLAG_FE, USART_FLAG_NE
@@ -527,7 +534,7 @@ void checkTrainerSettings(void);
 
 // extern Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
 extern DMAFifo<32> auxSerialRxFifo;
-#if defined(AUX2_SERIAL)
+#if defined(AUX2_SERIAL_RX)
 extern DMAFifo<AUX2_SERIAL_RXFIFO_SIZE> aux2SerialRxFifo;
 #endif
 #endif
