@@ -54,13 +54,13 @@ if(FLYSKY_GIMBAL STREQUAL YES)
     )
 endif()
 
-# if(DFPLAYER STREQUAL YES)
-#   add_definitions(-DDFPLAYER)
-#   set(TARGET_SRC
-#   ${TARGET_SRC}
-#   dfplayer_driver.cpp
-#   )
-# endif()
+if(DFPLAYER STREQUAL YES)
+  add_definitions(-DDFPLAYER)
+  set(TARGET_SRC
+  ${TARGET_SRC}
+  dfplayer_driver.cpp
+  )
+endif()
 
 if(PCBI6X_BACKLIGHT_MOD STREQUAL YES)
   add_definitions(-DPCBI6X_BACKLIGHT_MOD)
@@ -90,7 +90,9 @@ set(TARGET_SRC
   )
 endif()
 
+if((DFPLAYER STREQUAL YES) AND (NOT PCBI6X_ELRS STREQUAL YES))
 add_definitions(-DPCBI6X_USB_MSD) # 3620B
+endif()
 
 set(TARGET_SRC
   ${TARGET_SRC}
