@@ -81,6 +81,12 @@
   #define CASE_AUDIO(x)
 #endif
 
+#if defined(DFPLAYER)
+  #define CASE_DFPLAYER(x) x,
+#else
+  #define CASE_DFPLAYER(x)
+#endif
+
 #if defined(PWM_BACKLIGHT)
   #define CASE_PWM_BACKLIGHT(x) x,
 #else
