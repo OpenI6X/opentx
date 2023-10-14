@@ -490,7 +490,7 @@ void aux2SerialInit(void);
 void aux2SerialPutc(char c);
 void aux2SerialStop(void);
 void aux2SerialSetIdleCb(void (*cb)());
-bool flysky_gimbal_init(void);
+void flysky_gimbal_init();
 void flysky_gimbal_loop(void);
 #endif
 

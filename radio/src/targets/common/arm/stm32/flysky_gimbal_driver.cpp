@@ -118,24 +118,9 @@ void flysky_gimbal_loop(void)
   }
 }
 
-/*
-*  This one causes trouble, it is best to leave the idle callback function directly in board.cpp
-*
-static void flysky_gimbal_deinit()
+// EdgeTX implements this into a bool function but the idle-callback in this code does not work with it
+// A simple void function did the trick
+void flysky_gimbal_init()
 {
-  aux2SerialStop();
+  aux2SerialSetIdleCb(flysky_gimbal_loop);
 }
-
-bool flysky_gimbal_init(void)
-{ 
-  // Wait 70ms for FlySky gimbals to respond. According to LA trace, minimally 23ms is required
-  for (uint8_t i = 0; i < 70; i++) {
-    delay_ms(1);
-    if (globalData.flyskygimbals) {
-      return true;
-    }
-  }
-  flysky_gimbal_deinit();
-  return false;
-}
-*/
