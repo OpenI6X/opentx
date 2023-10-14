@@ -22,7 +22,7 @@
 #include "buzzer_driver.h"
 
 volatile BuzzerState buzzerState;
-BuzzerToneFifo buzzerFifo = BuzzerToneFifo();
+Fifo<BuzzerTone, 4> buzzerFifo;
 
 #if defined(DFPLAYER)
 extern Fifo<uint16_t, 16> dfplayerFifo;
