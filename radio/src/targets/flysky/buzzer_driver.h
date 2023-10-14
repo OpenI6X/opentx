@@ -21,8 +21,7 @@
 #ifndef _BUZZER_DRIVER_H_
 #define _BUZZER_DRIVER_H_
 
-#define BUZZER_BUFFER_DURATION  (10)
-#define BUZZER_QUEUE_LENGTH (4) // must be power of 2
+#define BUZZER_BUFFER_DURATION  (10) // ms
 
 #define BEEP_MIN_FREQ           (250)
 #define BEEP_MAX_FREQ           (14000)
@@ -66,7 +65,7 @@ struct BuzzerState {
     tone(tone)
   {};
 };
-
+/*
 class BuzzerToneFifo
 {
   private:
@@ -116,7 +115,7 @@ class BuzzerToneFifo
       }
     }
 };
-
+*/
 void playTone(uint16_t freq, uint16_t len, uint16_t pause = 0, uint8_t flags = 0, int8_t freqIncr = 0);
 void buzzerEvent(unsigned int index);
 void buzzerOn();

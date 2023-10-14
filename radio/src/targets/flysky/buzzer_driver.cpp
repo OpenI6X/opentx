@@ -70,7 +70,6 @@ void audioTimerCountdown(uint8_t timer, int value)
 
 void buzzerEvent(unsigned int index)
 {
-  // TRACE("buzzerEvent %u", index);
   if (index == AU_NONE)
     return;
 
@@ -84,10 +83,6 @@ void buzzerEvent(unsigned int index)
         playTone(2250, 80, 20, PLAY_REPEAT(2));
         break;
       case AU_TX_BATTERY_LOW:
-#if defined(PCBSKY9X)
-      case AU_TX_MAH_HIGH:
-      case AU_TX_TEMP_HIGH:
-#endif
         playTone(1950, 160, 20, PLAY_REPEAT(2), 1);
         playTone(2550, 160, 20, PLAY_REPEAT(2), -1);
         break;
@@ -281,14 +276,14 @@ void playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t flags, int8_t
     flags &= ~PLAY_NOW;
   }
 
-  if ((flags & PLAY_BACKGROUND) && !(flags & PLAY_NOW) && (buzzerState.duration || (buzzerState.repeat > 0) || !buzzerFifo.empty())) return;
+  if ((flags & PLAY_BACKGROUND) && !(flags & PLAY_NOW) && (buzzerState.duration || (buzzerState.repeat > 0) || !buzzerFifo.isEmpty())) return;
 
   if (!(flags & PLAY_NOW) && !(buzzerState.tone.flags & PLAY_BACKGROUND) && buzzerState.duration) {
-    if (!(flags & PLAY_BACKGROUND) && !buzzerFifo.full())
+    if (!(flags & PLAY_BACKGROUND) && !buzzerFifo.isFull())
       buzzerFifo.push(BuzzerTone(freq, len, pause, flags, freqIncr));
     return;
   } else if ((flags & PLAY_NOW) && (buzzerState.repeat > 0)) { // push current back to queue
-    if (!buzzerFifo.full()) {
+    if (!buzzerFifo.isFull()) {
     //  if (buzzerState.duration - len < buzzerState.tone.duration / 2) {
         buzzerState.repeat--;
     //  }
@@ -359,14 +354,10 @@ void buzzerHeartbeat()
         buzzerOn();
       }
     }
-  } else if (!buzzerFifo.empty()) {
-    uint8_t nextIdx = buzzerFifo.get();
-    playTone(
-      buzzerFifo.tones[nextIdx].freq, 
-      buzzerFifo.tones[nextIdx].duration, 
-      buzzerFifo.tones[nextIdx].pause, 
-      buzzerFifo.tones[nextIdx].flags, 
-      buzzerFifo.tones[nextIdx].freqIncr
-      );
+  } else {
+    BuzzerTone tone;
+    if (buzzerFifo.pop(tone)) {
+        playTone(tone.freq, tone.duration, tone.pause, tone.flags, tone.freqIncr);
+    }
   }
 }
