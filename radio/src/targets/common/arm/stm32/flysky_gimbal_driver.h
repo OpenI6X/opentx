@@ -19,7 +19,7 @@
  * GNU General Public License for more details.
  */
 
-#define HALLSTICK_BUFF_SIZE             ( 128 ) // This is the absolute minimum for the gimbals to function properly, any lower values causes the controller to reboot constantly
+#define HALLSTICK_BUFF_SIZE             ( 32 ) // Since hardware optimizations, this low buffer is now working perfectly
 #define FLYSKY_HALL_BAUDRATE            ( 921600 )
 #define FLYSKY_HALL_CHANNEL_COUNT       ( 4 )
 
