@@ -458,20 +458,27 @@ extern void ISR_TIMER3_CAPT_vect(void);
 #define AUX_SERIAL_USART_IRQn             USART1_IRQn
 #define AUX_SERIAL_DMA_Channel_RX         DMA1_Channel3
 
-// AUX2 Serial
-#define AUX2_SERIAL_RCC_AHB1Periph         (RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_DMA1)
-#define AUX2_SERIAL_RCC_APB1Periph         RCC_APB1Periph_USART4
-#define AUX2_SERIAL_GPIO                   GPIOC
-#define AUX2_SERIAL_GPIO_PIN_TX            GPIO_Pin_10 // PC10
-#define AUX2_SERIAL_GPIO_PIN_RX            GPIO_Pin_11 // PC11
-#define AUX2_SERIAL_GPIO_PinSource_TX      GPIO_PinSource10
-#define AUX2_SERIAL_GPIO_PinSource_RX      GPIO_PinSource11
-#define AUX2_SERIAL_GPIO_AF                GPIO_AF_0
-#define AUX2_SERIAL_USART                  USART4
-#define AUX2_SERIAL_USART_IRQHandler       USART3_4_IRQHandler
-#define AUX2_SERIAL_USART_IRQn             USART3_4_IRQn
-#define AUX2_SERIAL_DMA_Channel_RX         DMA1_Channel6
+// AUX3 Serial, only TX for DFPLAYER
+#define AUX3_SERIAL_RCC_AHB1Periph         RCC_AHBPeriph_GPIOC
+#define AUX3_SERIAL_RCC_APB1Periph         RCC_APB1Periph_USART3
+#define AUX3_SERIAL_GPIO                   GPIOC
+#define AUX3_SERIAL_GPIO_PIN_TX            GPIO_Pin_10 // PC10
+#define AUX3_SERIAL_GPIO_PinSource_TX      GPIO_PinSource10
+#define AUX3_SERIAL_GPIO_AF                GPIO_AF_1
+#define AUX3_SERIAL_USART                  USART3
 
+// AUX4 Serial, only RX for FLYSKY_GIMBAL
+#define AUX4_SERIAL_RCC_AHB1Periph         (RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_DMA1)
+#define AUX4_SERIAL_RCC_APB1Periph         RCC_APB1Periph_USART4
+#define AUX4_SERIAL_GPIO                   GPIOC
+#define AUX4_SERIAL_GPIO_PIN_RX            GPIO_Pin_11 // PC11
+#define AUX4_SERIAL_GPIO_PinSource_RX      GPIO_PinSource11
+#define AUX4_SERIAL_GPIO_AF                GPIO_AF_0
+#define AUX4_SERIAL_USART                  USART4
+#define AUX4_SERIAL_DMA_Channel_RX         DMA1_Channel6
+
+#define AUX34_SERIAL_USART_IRQHandler       USART3_4_IRQHandler
+#define AUX34_SERIAL_USART_IRQn             USART3_4_IRQn
 
 #define SPORT_MAX_BAUDRATE            400000
 
@@ -589,8 +596,12 @@ F072 IRQs
 #define MIXER_SCHEDULER_TIMER_IRQHandler     TIM17_IRQHandler
 
 //all used RCC goes here
-#define RCC_AHB1_LIST                   (I2C_RCC_AHB1Periph | BACKLIGHT_RCC_AHB1Periph | LCD_RCC_AHB1Periph | KEYS_RCC_AHB1Periph | BUZZER_RCC_AHBPeriph | EXTMODULE_RCC_AHBPeriph | CRC_RCC_AHB1Periph | TELEMETRY_RCC_AHB1Periph | AUX_SERIAL_RCC_AHB1Periph | AUX2_SERIAL_RCC_AHB1Periph)
-#define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph | TELEMETRY_RCC_APB1Periph | BACKLIGHT_RCC_APB1Periph | RCC_APB1Periph_USB | AUX2_SERIAL_RCC_APB1Periph)
-#define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB2Periph | PWM_RCC_APB2Periph | INTMODULE_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph | AUX_SERIAL_RCC_APB2Periph)
+#define RCC_AHB1_LIST                   (I2C_RCC_AHB1Periph | BACKLIGHT_RCC_AHB1Periph | LCD_RCC_AHB1Periph | KEYS_RCC_AHB1Periph | BUZZER_RCC_AHBPeriph \
+                                         | EXTMODULE_RCC_AHBPeriph | CRC_RCC_AHB1Periph | TELEMETRY_RCC_AHB1Periph | AUX_SERIAL_RCC_AHB1Periph \
+                                         | AUX3_SERIAL_RCC_AHB1Periph | AUX4_SERIAL_RCC_AHB1Periph)
+#define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph | TELEMETRY_RCC_APB1Periph \
+                                         | BACKLIGHT_RCC_APB1Periph | RCC_APB1Periph_USB | AUX3_SERIAL_RCC_APB1Periph | AUX4_SERIAL_RCC_APB1Periph)
+#define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB2Periph | PWM_RCC_APB2Periph | INTMODULE_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph \
+                                         | AUX_SERIAL_RCC_APB2Periph)
 
 #endif // _HAL_H_

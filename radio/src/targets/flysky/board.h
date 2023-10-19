@@ -473,27 +473,29 @@ void auxSerialStop(void);
 
 // Aux2 serial port driver
 #if defined(FLYSKY_GIMBAL)
-#define AUX2_SERIAL
-#define AUX2_SERIAL_RX
-#define AUX2_SERIAL_IDLE
-#define AUX2_SERIAL_BAUDRATE FLYSKY_HALL_BAUDRATE // 921600
-#define AUX2_SERIAL_RXFIFO_SIZE HALLSTICK_BUFF_SIZE // 128
-#elif defined(DFPLAYER)
-#define AUX2_SERIAL
-#define AUX2_SERIAL_TX
-#define AUX2_SERIAL_BAUDRATE DFPLAYER_BAUDRATE
+#define AUX4_SERIAL
+#define AUX4_SERIAL_BAUDRATE FLYSKY_HALL_BAUDRATE // 921600
+#define AUX4_SERIAL_RXFIFO_SIZE HALLSTICK_BUFF_SIZE // 128
+void flysky_gimbal_init();
+void flysky_gimbal_loop(void);
 #endif
-#if defined(AUX2_SERIAL)
+#if defined(DFPLAYER)
+#define AUX3_SERIAL
+#endif
+
+#if defined(AUX3_SERIAL)
 // extern uint8_t aux2SerialMode;
 // #if defined __cplusplus
 // void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t length = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1);
 // #endif
-void aux2SerialInit(void);
-void aux2SerialPutc(char c);
-void aux2SerialStop(void);
-void aux2SerialSetIdleCb(void (*cb)());
-void flysky_gimbal_init();
-void flysky_gimbal_loop(void);
+void aux3SerialInit(void);
+void aux3SerialPutc(char c);
+#endif
+
+#if defined(AUX4_SERIAL)
+void aux4SerialInit(void);
+void aux4SerialStop(void);
+void aux4SerialSetIdleCb(void (*cb)());
 #endif
 
 #if defined(DFPLAYER)
@@ -534,8 +536,8 @@ void checkTrainerSettings(void);
 
 // extern Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
 extern DMAFifo<32> auxSerialRxFifo;
-#if defined(AUX2_SERIAL_RX)
-extern DMAFifo<AUX2_SERIAL_RXFIFO_SIZE> aux2SerialRxFifo;
+#if defined(AUX4_SERIAL)
+extern DMAFifo<AUX4_SERIAL_RXFIFO_SIZE> aux4SerialRxFifo;
 #endif
 #endif
 

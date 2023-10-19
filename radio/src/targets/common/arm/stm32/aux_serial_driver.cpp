@@ -231,53 +231,98 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
 #endif // AUX_SERIAL
 
 /**
- * AUX2 Serial
- * reduced implementation to use IDLE irq
+ * AUX3 Serial
+ * reduced implementation to only TX
 */
-#if defined(AUX2_SERIAL)
-#if defined(AUX2_SERIAL_TX)
-Fifo<uint8_t, 16> aux2SerialTxFifo;
-#endif
-#if defined(AUX2_SERIAL_RX) || defined(AUX2_SERIAL_IDLE)
-DMAFifo<AUX2_SERIAL_RXFIFO_SIZE> aux2SerialRxFifo __DMA (AUX2_SERIAL_DMA_Channel_RX);
-#endif
-void (*aux2SerialIdleCb)(void);
+#if defined(AUX3_SERIAL)
+Fifo<uint8_t, 16> aux3SerialTxFifo;
 
-void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1)
+void aux3SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1)
 {
   USART_InitTypeDef USART_InitStructure;
   GPIO_InitTypeDef GPIO_InitStructure;
 
-  GPIO_PinAFConfig(AUX2_SERIAL_GPIO, AUX2_SERIAL_GPIO_PinSource_TX | AUX2_SERIAL_GPIO_PinSource_RX, AUX2_SERIAL_GPIO_AF);
+  GPIO_PinAFConfig(AUX3_SERIAL_GPIO, AUX3_SERIAL_GPIO_PinSource_TX, AUX3_SERIAL_GPIO_AF);
 
-  GPIO_InitStructure.GPIO_Pin = AUX2_SERIAL_GPIO_PIN_TX | AUX2_SERIAL_GPIO_PIN_RX;
+  GPIO_InitStructure.GPIO_Pin = AUX3_SERIAL_GPIO_PIN_TX;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_Init(AUX2_SERIAL_GPIO, &GPIO_InitStructure);
+  GPIO_Init(AUX3_SERIAL_GPIO, &GPIO_InitStructure);
 
   USART_InitStructure.USART_BaudRate = baudrate;
   USART_InitStructure.USART_WordLength = lenght;
   USART_InitStructure.USART_StopBits = stop;
   USART_InitStructure.USART_Parity = parity;
   USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-  USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
-  USART_Init(AUX2_SERIAL_USART, &USART_InitStructure);
+  USART_InitStructure.USART_Mode = USART_Mode_Tx;
+  USART_Init(AUX3_SERIAL_USART, &USART_InitStructure);
 
-#if defined(AUX2_SERIAL_RX) || defined(AUX2_SERIAL_IDLE)
+  USART_Cmd(AUX3_SERIAL_USART, ENABLE);
+
+  NVIC_SetPriority(AUX34_SERIAL_USART_IRQn, 7);
+  NVIC_EnableIRQ(AUX34_SERIAL_USART_IRQn);
+}
+
+void aux3SerialInit(void)
+{
+  aux3SerialSetup(DFPLAYER_BAUDRATE, true);
+}
+
+void aux3SerialPutc(char c)
+{
+#if !defined(SIMU)
+  if (aux3SerialTxFifo.isFull()) return;
+
+  aux3SerialTxFifo.push(c);
+  USART_ITConfig(AUX3_SERIAL_USART, USART_IT_TXE, ENABLE);
+#endif
+}
+#endif // AUX3_SERIAL
+
+/**
+ * AUX4 Serial
+ * Reduced implementation to use IDLE irq, only RX
+*/
+#if defined(AUX4_SERIAL)
+DMAFifo<AUX4_SERIAL_RXFIFO_SIZE> aux4SerialRxFifo __DMA (AUX4_SERIAL_DMA_Channel_RX);
+void (*aux4SerialIdleCb)(void);
+
+void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1)
+{
+  USART_InitTypeDef USART_InitStructure;
+  GPIO_InitTypeDef GPIO_InitStructure;
+
+  GPIO_PinAFConfig(AUX4_SERIAL_GPIO, AUX4_SERIAL_GPIO_PinSource_RX, AUX4_SERIAL_GPIO_AF);
+
+  GPIO_InitStructure.GPIO_Pin = AUX4_SERIAL_GPIO_PIN_RX;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_Init(AUX4_SERIAL_GPIO, &GPIO_InitStructure);
+
+  USART_InitStructure.USART_BaudRate = baudrate;
+  USART_InitStructure.USART_WordLength = lenght;
+  USART_InitStructure.USART_StopBits = stop;
+  USART_InitStructure.USART_Parity = parity;
+  USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  USART_InitStructure.USART_Mode = USART_Mode_Rx;
+  USART_Init(AUX4_SERIAL_USART, &USART_InitStructure);
+
   // if (dma) {
-    aux2SerialRxFifo.stream = AUX2_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
+    aux4SerialRxFifo.stream = AUX4_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
     DMA_InitTypeDef DMA_InitStructure;
-    aux2SerialRxFifo.clear();
-    // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, DISABLE);
-    // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, DISABLE);
-    AUX2_SERIAL_USART->CR1 &= ~(USART_CR1_RXNEIE | USART_CR1_TXEIE);
+    aux4SerialRxFifo.clear();
+    // USART_ITConfig(AUX4_SERIAL_USART, USART_IT_RXNE, DISABLE);
+    // USART_ITConfig(AUX4_SERIAL_USART, USART_IT_TXE, DISABLE);
+    AUX4_SERIAL_USART->CR1 &= ~(USART_CR1_RXNEIE | USART_CR1_TXEIE);
 
-    DMA_InitStructure.DMA_PeripheralBaseAddr = CONVERT_PTR_UINT(&AUX2_SERIAL_USART->RDR);
-    DMA_InitStructure.DMA_MemoryBaseAddr = CONVERT_PTR_UINT(aux2SerialRxFifo.buffer());
+    DMA_InitStructure.DMA_PeripheralBaseAddr = CONVERT_PTR_UINT(&AUX4_SERIAL_USART->RDR);
+    DMA_InitStructure.DMA_MemoryBaseAddr = CONVERT_PTR_UINT(aux4SerialRxFifo.buffer());
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-    DMA_InitStructure.DMA_BufferSize = aux2SerialRxFifo.size();
+    DMA_InitStructure.DMA_BufferSize = aux4SerialRxFifo.size();
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
     DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
@@ -285,91 +330,70 @@ void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
     DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
     DMA_InitStructure.DMA_Priority = DMA_Priority_Low;
     DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
-    DMA_Init(AUX2_SERIAL_DMA_Channel_RX, &DMA_InitStructure);
-    USART_DMACmd(AUX2_SERIAL_USART, USART_DMAReq_Rx, ENABLE);
-    USART_Cmd(AUX2_SERIAL_USART, ENABLE);
-    DMA_Cmd(AUX2_SERIAL_DMA_Channel_RX, ENABLE);
-#else
-    USART_Cmd(AUX2_SERIAL_USART, ENABLE);
-#endif
-    // AUX2_SERIAL_USART->CR1 |= USART_CR1_RXNEIE; // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, ENABLE);
+    DMA_Init(AUX4_SERIAL_DMA_Channel_RX, &DMA_InitStructure);
+    USART_DMACmd(AUX4_SERIAL_USART, USART_DMAReq_Rx, ENABLE);
+    USART_Cmd(AUX4_SERIAL_USART, ENABLE);
+    DMA_Cmd(AUX4_SERIAL_DMA_Channel_RX, ENABLE);
 
-  // else {
-  //   USART_Cmd(AUX2_SERIAL_USART, ENABLE);
-  //   USART_ITConfig(AUX2_SERIAL_USART, USART_IT_RXNE, ENABLE);
-    // USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, DISABLE);
-    NVIC_SetPriority(AUX2_SERIAL_USART_IRQn, 7);
-    NVIC_EnableIRQ(AUX2_SERIAL_USART_IRQn);
-  // }
+    NVIC_SetPriority(AUX34_SERIAL_USART_IRQn, 7);
+    NVIC_EnableIRQ(AUX34_SERIAL_USART_IRQn);
 }
 
-void aux2SerialInit(void)
+void aux4SerialInit(void)
 {
-//   aux2SerialStop();
-
-//   aux2SerialMode = mode;
-
-  aux2SerialSetup(AUX2_SERIAL_BAUDRATE, true);
+  aux4SerialSetup(FLYSKY_GIMBAL_BAUDRATE, true);
 }
 
-void aux2SerialPutc(char c)
+void aux4SerialStop(void)
 {
+  DMA_DeInit(AUX4_SERIAL_DMA_Channel_RX);
+  USART_DeInit(AUX4_SERIAL_USART);
+}
+
+void aux4SerialSetIdleCb(void (*cb)()) {
+  aux4SerialIdleCb = cb;
+  AUX4_SERIAL_USART->CR1 |= USART_CR1_IDLEIE;
+}
+#endif // AUX4_SERIAL
+
+#if defined(AUX3_SERIAL) || defined(AUX4_SERIAL)
 #if !defined(SIMU)
-  if (aux2SerialTxFifo.isFull()) return;
-
-  aux2SerialTxFifo.push(c);
-  USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, ENABLE);
-#endif
-}
-
-void aux2SerialStop(void)
-{
-  DMA_DeInit(AUX2_SERIAL_DMA_Channel_RX);
-  USART_DeInit(AUX2_SERIAL_USART);
-}
-
-void aux2SerialSetIdleCb(void (*cb)()) {
-  aux2SerialIdleCb = cb;
-  AUX2_SERIAL_USART->CR1 |= USART_CR1_IDLEIE;
-}
-
-#if !defined(SIMU)
-extern "C" void AUX2_SERIAL_USART_IRQHandler(void)
+extern "C" void AUX34_SERIAL_USART_IRQHandler(void)
 {
   // Send
-#if defined(AUX2_SERIAL_TX)
-  if (USART_GetITStatus(AUX2_SERIAL_USART, USART_IT_TXE) != RESET) {
+#if defined(AUX3_SERIAL_TX)
+  if (USART_GetITStatus(AUX3_SERIAL_USART, USART_IT_TXE) != RESET) {
     uint8_t txchar;
-    if (aux2SerialTxFifo.pop(txchar)) {
+    if (aux3SerialTxFifo.pop(txchar)) {
       /* Write one byte to the transmit data register */
-      USART_SendData(AUX2_SERIAL_USART, txchar);
+      USART_SendData(AUX3_SERIAL_USART, txchar);
     }
     else {
-      USART_ITConfig(AUX2_SERIAL_USART, USART_IT_TXE, DISABLE);
+      USART_ITConfig(AUX3_SERIAL_USART, USART_IT_TXE, DISABLE);
     }
   }
 #endif
 
   // Receive
-  // uint32_t status = AUX2_SERIAL_USART->ISR;
+  // uint32_t status = AUX4_SERIAL_USART->ISR;
   // while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
-  //   uint8_t data = AUX2_SERIAL_USART->RDR;
+  //   uint8_t data = AUX4_SERIAL_USART->RDR;
   //   UNUSED(data);
   //   if (!(status & USART_FLAG_ERRORS)) {
   //
   //     }
   //   }
-  //   status = AUX2_SERIAL_USART->ISR;
+  //   status = AUX4_SERIAL_USART->ISR;
   // }
 
   // Idle
-#if defined(AUX2_SERIAL_IDLE)
-  uint32_t status = AUX2_SERIAL_USART->ISR;
+#if defined(AUX4_SERIAL)
+  uint32_t status = AUX4_SERIAL_USART->ISR;
   if (status & USART_FLAG_IDLE) {
-    AUX2_SERIAL_USART->ICR = USART_ICR_IDLECF;
-    aux2SerialIdleCb();
+    AUX4_SERIAL_USART->ICR = USART_ICR_IDLECF;
+    aux4SerialIdleCb();
   }
 #endif
 }
 #endif // SIMU
-#endif // AUX2_SERIAL
+#endif // AUX3 || AUX4
