@@ -235,7 +235,7 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
  * reduced implementation to only TX
 */
 #if defined(AUX3_SERIAL)
-Fifo<uint8_t, 16> aux3SerialTxFifo;
+Fifo<uint8_t, 8> aux3SerialTxFifo;
 
 void aux3SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1)
 {
