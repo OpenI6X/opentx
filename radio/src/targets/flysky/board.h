@@ -477,10 +477,10 @@ void auxSerialStop(void);
 #define AUX4_SERIAL_BAUDRATE FLYSKY_HALL_BAUDRATE // 921600
 #define AUX4_SERIAL_RXFIFO_SIZE HALLSTICK_BUFF_SIZE // 128
 void flysky_gimbal_init();
-void flysky_gimbal_loop(void);
 #endif
 #if defined(DFPLAYER)
 #define AUX3_SERIAL
+#define AUX3_SERIAL_BAUDRATE DFPLAYER_BAUDRATE
 #endif
 
 #if defined(AUX3_SERIAL)

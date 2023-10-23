@@ -267,7 +267,7 @@ void aux3SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
 
 void aux3SerialInit(void)
 {
-  aux3SerialSetup(DFPLAYER_BAUDRATE, true);
+  aux3SerialSetup(AUX3_SERIAL_BAUDRATE, true);
 }
 
 void aux3SerialPutc(char c)
@@ -341,7 +341,7 @@ void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
 
 void aux4SerialInit(void)
 {
-  aux4SerialSetup(FLYSKY_GIMBAL_BAUDRATE, true);
+  aux4SerialSetup(AUX4_SERIAL_BAUDRATE, true);
 }
 
 void aux4SerialStop(void)

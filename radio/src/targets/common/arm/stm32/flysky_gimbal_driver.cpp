@@ -25,7 +25,7 @@ STRUCT_HALL HallProtocol = { 0 };
 
 uint8_t HallGetByte(uint8_t * byte)
 {
-  return aux2SerialRxFifo.pop(*byte);
+  return aux4SerialRxFifo.pop(*byte);
 }
 
 static void Parse_Character(STRUCT_HALL *hallBuffer, unsigned char ch)
@@ -122,5 +122,5 @@ void flysky_gimbal_loop(void)
 // A simple void function did the trick
 void flysky_gimbal_init()
 {
-  aux2SerialSetIdleCb(flysky_gimbal_loop);
+  aux4SerialSetIdleCb(flysky_gimbal_loop);
 }
