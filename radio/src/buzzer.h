@@ -29,7 +29,7 @@ extern void audioEvent(unsigned int index);
 extern uint8_t hapticTick;
 #endif /* HAPTIC */
 
-void buzzerEvent(unsigned int index);
+void audioEvent(unsigned int index);
 
 #if defined(DFPLAYER)
 #define AUDIO_ERROR_MESSAGE(e)   audioEvent(e)
@@ -142,7 +142,7 @@ void playModelEvent(uint8_t category, uint8_t index, event_t event=0);
 extern void pushPrompt(uint16_t prompt);
 extern void pushUnit(uint8_t unit, uint8_t idx, uint8_t id);
 
-#define AUDIO_ERROR_MESSAGE(e)   buzzerEvent(e)
+#define AUDIO_ERROR_MESSAGE(e)   audioEvent(e)
 #define AUDIO_TIMER_MINUTE(t)    
 
 #define AUDIO_KEY_PRESS()        audioKeyPress()
@@ -150,28 +150,28 @@ extern void pushUnit(uint8_t unit, uint8_t idx, uint8_t id);
 
 #define AUDIO_HELLO()            PUSH_SYSTEM_PROMPT(AUDIO_HELLO)
 #define AUDIO_BYE()              
-#define AUDIO_WARNING1()         buzzerEvent(AU_WARNING1)
-#define AUDIO_WARNING2()         buzzerEvent(AU_WARNING2)
-#define AUDIO_TX_BATTERY_LOW()   buzzerEvent(AU_TX_BATTERY_LOW)
-#define AUDIO_ERROR()            buzzerEvent(AU_ERROR)
+#define AUDIO_WARNING1()         audioEvent(AU_WARNING1)
+#define AUDIO_WARNING2()         audioEvent(AU_WARNING2)
+#define AUDIO_TX_BATTERY_LOW()   audioEvent(AU_TX_BATTERY_LOW)
+#define AUDIO_ERROR()            audioEvent(AU_ERROR)
 #define AUDIO_TIMER_COUNTDOWN(idx, val) audioTimerCountdown(idx, val)
-#define AUDIO_TIMER_ELAPSED(idx) buzzerEvent(AU_TIMER1_ELAPSED+idx)
-#define AUDIO_INACTIVITY()       buzzerEvent(AU_INACTIVITY)
-#define AUDIO_MIX_WARNING(x)     buzzerEvent(AU_MIX_WARNING_1+x-1)
-#define AUDIO_POT_MIDDLE(x)      buzzerEvent(AU_STICK1_MIDDLE+x)
-#define AUDIO_TRIM_MIDDLE()      buzzerEvent(AU_TRIM_MIDDLE)
-#define AUDIO_TRIM_MIN()         buzzerEvent(AU_TRIM_MIN)
-#define AUDIO_TRIM_MAX()         buzzerEvent(AU_TRIM_MAX)
+#define AUDIO_TIMER_ELAPSED(idx) audioEvent(AU_TIMER1_ELAPSED+idx)
+#define AUDIO_INACTIVITY()       audioEvent(AU_INACTIVITY)
+#define AUDIO_MIX_WARNING(x)     audioEvent(AU_MIX_WARNING_1+x-1)
+#define AUDIO_POT_MIDDLE(x)      audioEvent(AU_STICK1_MIDDLE+x)
+#define AUDIO_TRIM_MIDDLE()      audioEvent(AU_TRIM_MIDDLE)
+#define AUDIO_TRIM_MIN()         audioEvent(AU_TRIM_MIN)
+#define AUDIO_TRIM_MAX()         audioEvent(AU_TRIM_MAX)
 #define AUDIO_TRIM_PRESS(val)    audioTrimPress(val)
-#define AUDIO_PLAY(p)            buzzerEvent(p)
+#define AUDIO_PLAY(p)            audioEvent(p)
 #define AUDIO_VARIO(fq, t, p, f) playTone(fq, t, p, f)
-#define AUDIO_RSSI_ORANGE()      buzzerEvent(AU_RSSI_ORANGE)
-#define AUDIO_RSSI_RED()         buzzerEvent(AU_RSSI_RED)
-#define AUDIO_RAS_RED()          buzzerEvent(AU_RAS_RED)
-#define AUDIO_TELEMETRY_LOST()   buzzerEvent(AU_TELEMETRY_LOST)
-#define AUDIO_TELEMETRY_BACK()   buzzerEvent(AU_TELEMETRY_BACK)
-#define AUDIO_TRAINER_LOST()     //buzzerEvent(AU_TRAINER_LOST)
-#define AUDIO_TRAINER_BACK()     //buzzerEvent(AU_TRAINER_BACK)
+#define AUDIO_RSSI_ORANGE()      audioEvent(AU_RSSI_ORANGE)
+#define AUDIO_RSSI_RED()         audioEvent(AU_RSSI_RED)
+#define AUDIO_RAS_RED()          audioEvent(AU_RAS_RED)
+#define AUDIO_TELEMETRY_LOST()   audioEvent(AU_TELEMETRY_LOST)
+#define AUDIO_TELEMETRY_BACK()   audioEvent(AU_TELEMETRY_BACK)
+#define AUDIO_TRAINER_LOST()     //audioEvent(AU_TRAINER_LOST)
+#define AUDIO_TRAINER_BACK()     //audioEvent(AU_TRAINER_BACK)
 
 #define AUDIO_RESET()
 #define AUDIO_FLUSH()

@@ -40,7 +40,7 @@ void audioKeyError()
 {
   if (g_eeGeneral.beepMode >= e_mode_nokeys) {
 //    playTone(BEEP_DEFAULT_FREQ, 160, 20, PLAY_NOW);
-    buzzerEvent(AU_WARNING2);
+    audioEvent(AU_WARNING2);
   }
 }
 
@@ -83,7 +83,7 @@ void audioTimerCountdown(uint8_t timer, int value)
   }
 }
 
-void buzzerEvent(unsigned int index)
+void audioEvent(unsigned int index)
 {
   if (index == AU_NONE)
     return;

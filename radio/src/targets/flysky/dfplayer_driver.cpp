@@ -24,7 +24,7 @@
 #include "opentx.h"
 #include "board.h"
 
-tmr10ms_t dfplayerLastPlayTime = 0;
+static tmr10ms_t dfplayerLastCmdTime = 0;
 Fifo<uint16_t, 16> dfplayerFifo;
 
 static constexpr uint8_t DFP_PLAY         = 0x03; // root,         file: 0-2999, plays by filesystem order, fastest
@@ -37,7 +37,11 @@ static constexpr uint8_t DFP_STANDBY      = 0x0A;
 static constexpr uint8_t DFP_WAKEUP       = 0x0B;
 static constexpr uint8_t DFP_RESET        = 0x0C;
 
+// #define IS_MIN_CMD_DELAY_ELAPSED() (get_tmr10ms() - dfplayerLastCmdTime > 20) // 200 ms
+#define IS_MIN_PLAY_DELAY_ELAPSED() (get_tmr10ms() - dfplayerLastCmdTime > 80) // 800 ms
+
 static void dfplayerCommand(uint8_t cmd, uint16_t param = 0) {
+    dfplayerLastCmdTime = get_tmr10ms();
     uint8_t packet[8];
     packet[0] = 0x7E;         // start
     packet[1] = 0xFF;         // version
@@ -54,7 +58,6 @@ static void dfplayerCommand(uint8_t cmd, uint16_t param = 0) {
 
 // Use folder because files in root are not handled by name, but order in filesystem
 void dfplayerPlayFile(uint16_t number) {
-    dfplayerLastPlayTime = get_tmr10ms();
     // const uint8_t folder = 1;
     dfplayerCommand(DFP_PLAY, number + 1); // +1 because first file is "zero"
 }
@@ -67,14 +70,6 @@ static void dfplayerSetVolume(uint8_t volume) {
 static void dfplayerStopPlay(void) {
     dfplayerCommand(DFP_PAUSE);
 }
-
-// static void dfplayerStandby(void) {
-//     dfplayerCommand(DFP_STANDBY);
-// }
-
-// static void dfplayerWakeup(void) {
-//     dfplayerCommand(DFP_WAKEUP);
-// }
 
 void dfplayerInit() {
     // setup BUSY pin
@@ -93,10 +88,8 @@ void dfplayerInit() {
     dfplayerSetVolume(g_eeGeneral.wavVolume);
 }
 
-#define IS_MIN_DELAY_PERIOD_ELAPSED() (get_tmr10ms() - dfplayerLastPlayTime > 80) // 800 ms
-
 bool isPlaying() {
-    return (!IS_MIN_DELAY_PERIOD_ELAPSED()) || !GPIO_ReadInputDataBit(DFPLAYER_GPIO_PORT, DFPLAYER_GPIO_PIN_BUSY); // low == playing
+    return (!IS_MIN_PLAY_DELAY_ELAPSED()) || !GPIO_ReadInputDataBit(DFPLAYER_GPIO_PORT, DFPLAYER_GPIO_PIN_BUSY); // low == playing
 }
 
 char hex(uint8_t b) {
@@ -159,14 +152,6 @@ void audioPlay(unsigned int index, uint8_t id)
 //     }
   }
     
-}
-
-// order from AUDIO_SOUNDS
-// offset must be added in buzzerSound, not here
-void audioEvent(unsigned int index)
-{
-    debugAudioCall('a', 'E', index);
-    buzzerEvent(index); // rename to audioEvent
 }
 
 /*

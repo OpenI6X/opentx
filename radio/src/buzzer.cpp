@@ -25,10 +25,6 @@
 #define pushCustomPrompt(value)
 #define pushNumberPrompt(value)
 
-void audioEvent(unsigned int index){
-//  TRACE("audioEvent %u", index);
-}
-
 bool isPlaying(){
 	return false;
 }

@@ -1050,6 +1050,8 @@ void audioTimerCountdown(uint8_t timer, int value)
 
 void audioEvent(unsigned int index)
 {
+  debugAudioCall('a', 'E', index);
+
   if (index == AU_NONE)
     return;
 
