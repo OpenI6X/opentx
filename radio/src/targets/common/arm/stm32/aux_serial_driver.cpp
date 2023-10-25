@@ -311,13 +311,11 @@ void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
   USART_InitStructure.USART_Mode = USART_Mode_Rx;
   USART_Init(AUX4_SERIAL_USART, &USART_InitStructure);
 
-  // if (dma) {
     aux4SerialRxFifo.stream = AUX4_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
     DMA_InitTypeDef DMA_InitStructure;
     aux4SerialRxFifo.clear();
     // USART_ITConfig(AUX4_SERIAL_USART, USART_IT_RXNE, DISABLE);
-    // USART_ITConfig(AUX4_SERIAL_USART, USART_IT_TXE, DISABLE);
-    AUX4_SERIAL_USART->CR1 &= ~(USART_CR1_RXNEIE | USART_CR1_TXEIE);
+    AUX4_SERIAL_USART->CR1 &= ~(USART_CR1_RXNEIE /*| USART_CR1_TXEIE*/);
 
     DMA_InitStructure.DMA_PeripheralBaseAddr = CONVERT_PTR_UINT(&AUX4_SERIAL_USART->RDR);
     DMA_InitStructure.DMA_MemoryBaseAddr = CONVERT_PTR_UINT(aux4SerialRxFifo.buffer());
@@ -361,7 +359,7 @@ void aux4SerialSetIdleCb(void (*cb)()) {
 extern "C" void AUX34_SERIAL_USART_IRQHandler(void)
 {
   // Send
-#if defined(AUX3_SERIAL_TX)
+#if defined(AUX3_SERIAL)
   if (USART_GetITStatus(AUX3_SERIAL_USART, USART_IT_TXE) != RESET) {
     uint8_t txchar;
     if (aux3SerialTxFifo.pop(txchar)) {
