@@ -84,6 +84,7 @@ enum {
   ID_PLAY_FROM_SD_MANAGER = 255,
 };
 
+void debugAudioCall(char, char, uint16_t);
 void dfPlayerQueuePlayFile(uint16_t);
 void dfPlayerQueueStopPlay(uint16_t);
 void pushPrompt(uint16_t prompt, uint8_t id=0);
