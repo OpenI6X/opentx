@@ -1826,10 +1826,6 @@ void opentxInit()
   aux3SerialInit();
 #endif
 
-#if defined(AUX4_SERIAL)
-  aux4SerialInit();
-#endif
-
 #if MENUS_LOCK == 1
   getMovedSwitch();
   if (TRIMS_PRESSED() && g_eeGeneral.switchUnlockStates == switches_states) {

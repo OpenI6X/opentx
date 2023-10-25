@@ -122,5 +122,6 @@ void flysky_gimbal_loop(void)
 // A simple void function did the trick
 void flysky_gimbal_init()
 {
+  aux4SerialInit();
   aux4SerialSetIdleCb(flysky_gimbal_loop);
 }
