@@ -85,7 +85,9 @@ void audioTimerCountdown(uint8_t timer, int value)
 
 void audioEvent(unsigned int index)
 {
+#if defined(DFPLAYER)
   debugAudioCall('a', 'E', index);
+#endif
 
   if (index == AU_NONE)
     return;
