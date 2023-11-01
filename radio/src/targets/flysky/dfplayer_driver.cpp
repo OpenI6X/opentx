@@ -62,8 +62,9 @@ void dfplayerPlayFile(uint16_t number) {
     dfplayerCommand(DFP_PLAY, number + 1); // +1 because first file is "zero"
 }
 
-static void dfplayerSetVolume(uint8_t volume) {
+void dfplayerSetVolume(uint8_t volume) {
 //    uint8_t volumes[5] = { 0, 6, 12, 18, 24 }; // allowed range: 0-30
+    //RTOS_WAIT_MS(200);
     dfplayerCommand(DFP_SET_VOLUME, ((2 + volume) * 6)/*volumes[2 + volume]*/);
 }
 
@@ -81,8 +82,8 @@ void dfplayerInit() {
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
     GPIO_Init(DFPLAYER_GPIO_PORT, &GPIO_InitStructure);
 
-    // wait for module to init 1.5s
-    RTOS_WAIT_MS(1500);
+    // wait for module to init, max 1.5s
+    //RTOS_WAIT_MS(1500 - 200);
     // wait for openTX init for this value to be ready, now it is 0
     // -> call init after eeprom data is ready
     dfplayerSetVolume(g_eeGeneral.wavVolume);

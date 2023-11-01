@@ -310,6 +310,7 @@ void menuRadioSetup(event_t event)
 #if defined(DFPLAYER)
       case ITEM_SETUP_WAV_VOLUME:
         SLIDER_5POS(y, g_eeGeneral.wavVolume, STR_WAV_VOLUME, event, attr);
+        dfplayerSetVolume(g_eeGeneral.wavVolume);
         break;
 #endif
       // case ITEM_SETUP_BACKGROUND_VOLUME:
