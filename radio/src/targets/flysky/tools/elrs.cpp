@@ -148,7 +148,7 @@ static void clearFields();
 static void addBackButton();
 static void reloadAllField();
 static FieldProps * getField(uint8_t line);
-static void UIbackExec(FieldProps * field);
+static void fieldBackExec(FieldProps * field);
 static void parseDeviceInfoMessage(uint8_t* data);
 static void parseParameterInfoMessage(uint8_t* data, uint8_t length);
 static void parseElrsInfoMessage(uint8_t* data);
@@ -157,7 +157,6 @@ static void runDevicePage(event_t event);
 static void lcd_title();
 static void lcd_warn();
 static void handleDevicePageEvent(event_t event);
-static void fieldTextSelectionSave(FieldProps * field);
 
 static void luaLcdDrawGauge(coord_t x, coord_t y, coord_t w, coord_t h, int32_t val, int32_t max) {
   uint8_t len = limit<uint8_t>(1, w*val/max, w);
@@ -171,7 +170,7 @@ static void bufferPush(char * data, uint8_t len) {
 
 static void crossfireTelemetryPush4(const uint8_t cmd, const uint8_t third, const uint8_t fourth) {
 //  TRACE("crsf push %x  %x  %x", cmd, third, fourth);
-  uint8_t crsfPushData[4] { deviceId, handsetId, third, fourth };
+  uint8_t crsfPushData[4] = { deviceId, handsetId, third, fourth };
   crossfireTelemetryPush(cmd, crsfPushData, 4);
 }
 
@@ -311,8 +310,8 @@ static void fieldUint8Load(FieldProps * field, uint8_t * data, uint8_t offset) {
   unitLoad(field, data, offset + 4);
 }
 
-static void fieldUint8Save(FieldProps * field) {
-  fieldTextSelectionSave(field);
+static void fieldIntSave(FieldProps * field) {
+  crossfireTelemetryPush4(CRSF_FRAMETYPE_PARAMETER_WRITE, field->id, field->value);
 }
 
 // TEXT SELECTION
@@ -329,10 +328,6 @@ static void fieldTextSelectionLoad(FieldProps * field, uint8_t * data, uint8_t o
     field->valuesLength = len;
   }
   unitLoad(field, data, offset + len + 5);
-}
-
-static void fieldTextSelectionSave(FieldProps * field) {
-  crossfireTelemetryPush4(CRSF_FRAMETYPE_PARAMETER_WRITE, field->id, field->value);
 }
 
 static uint8_t semicolonPos(const char * str, uint8_t last) {
@@ -398,8 +393,8 @@ static void fieldCommandLoad(FieldProps * field, uint8_t * data, uint8_t offset)
 
 static void fieldCommandSave(FieldProps * field) {
   if (field->status < 4) {
-    field->status = 1;
-    fieldTextSelectionSave(field); //crossfireTelemetryPush4(CRSF_FRAMETYPE_PARAMETER_WRITE, field->id, field->status);
+    field->status = STEP_CLICK;
+    fieldIntSave(field); //crossfireTelemetryPush4(CRSF_FRAMETYPE_PARAMETER_WRITE, field->id, field->status);
     fieldPopup = field;
     fieldPopup->lastStatus = 0;
     fieldTimeout = getTime() + field->timeout;
@@ -429,7 +424,7 @@ static void fieldUnifiedDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
   lcdDrawText(textIndent, y, (char *)&stringTmp, attr | BOLD);
 }
 
-static void UIbackExec(FieldProps * field = 0) {
+static void fieldBackExec(FieldProps * field = 0) {
   currentFolderId = 0;
   clearFields();
   reloadAllField();
@@ -506,7 +501,7 @@ static void parseDeviceInfoMessage(uint8_t* data) {
 static const FieldFunctions noopFunctions = { .load=noopLoad, .save=noopSave, .display=noopDisplay };
 
 static const FieldFunctions functions[] = {
-  { .load=fieldUint8Load, .save=fieldUint8Save, .display=fieldIntegerDisplay }, // 1 UINT8(0)
+  { .load=fieldUint8Load, .save=fieldIntSave, .display=fieldIntegerDisplay }, // 1 UINT8(0)
   // { .load=noopLoad, .save=noopSave, .display=fieldIntegerDisplay }, // 2 INT8(1)
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 3 UINT16(2)
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 4 INT16(3)
@@ -515,12 +510,12 @@ static const FieldFunctions functions[] = {
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 7 UINT64(6)
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8 INT64(7)
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 9 FLOAT(8)
-  { .load=fieldTextSelectionLoad, .save=fieldTextSelectionSave, .display=fieldTextSelectionDisplay }, // 10 TEXT SELECTION(9)
+  { .load=fieldTextSelectionLoad, .save=fieldIntSave, .display=fieldTextSelectionDisplay }, // 10 TEXT SELECTION(9)
   { .load=noopLoad, .save=noopSave, .display=fieldStringDisplay }, // 11 STRING(10)editing NOTIMPL
   { .load=noopLoad, .save=fieldFolderOpen, .display=fieldUnifiedDisplay }, // 12 FOLDER(11)
   { .load=fieldTextSelectionLoad, .save=noopSave, .display=fieldStringDisplay }, // 13 INFO(12)
   { .load=fieldCommandLoad, .save=fieldCommandSave, .display=fieldUnifiedDisplay }, // 14 COMMAND(13)
-  { .load=noopLoad, .save=UIbackExec, .display=fieldUnifiedDisplay }, // 15 back(14)
+  { .load=noopLoad, .save=fieldBackExec, .display=fieldUnifiedDisplay }, // 15 back(14)
   { .load=noopLoad, .save=fieldDeviceIdSelect, .display=fieldUnifiedDisplay }, // 16 device(15)
   { .load=noopLoad, .save=fieldFolderDeviceOpen, .display=fieldUnifiedDisplay }, // 17 deviceFOLDER(16)
 };
@@ -744,11 +739,11 @@ static void handleDevicePageEvent(event_t event) {
         if (deviceId != 0xEE) {
           changeDeviceId(0xEE); // change device id clear expectedFieldsCount, therefore the next ping will do reloadAllField()
         } else {
-//          reloadAllField(); // UIBackExec does it
+//          reloadAllField(); // fieldBackExec does it
         }
         crossfireTelemetryPing();
       }
-      UIbackExec();
+      fieldBackExec();
     }
   } else if (event == EVT_VIRTUAL_ENTER) {
     if (elrsFlags > 0x1F) {
@@ -872,7 +867,7 @@ static void runPopupPage(event_t event) {
 void elrsStop() {
   registerCrossfireTelemetryCallback(nullptr);
   // reloadAllField();
-  UIbackExec();
+  fieldBackExec();
   fieldPopup = nullptr;
   deviceId = 0xEE;
   handsetId = 0xEF;

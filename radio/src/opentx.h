@@ -51,12 +51,6 @@
   #define CASE_STM32(x)
 #endif
 
-#if defined(VARIO)
-  #define CASE_VARIO(x) x,
-#else
-  #define CASE_VARIO(x)
-#endif
-
 #if defined(LUA)
   #define CASE_LUA(x) x,
 #else

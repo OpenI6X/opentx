@@ -91,12 +91,11 @@
 
 // ADC
 #define ADC_MAIN                        ADC1
-#define ADC_DMA                         DMA2
-#define ADC_DMA_SxCR_CHSEL              0
-#define ADC_DMA_Stream                  DMA2_Stream4
-#define ADC_SET_DMA_FLAGS()             ADC_DMA->HIFCR = (DMA_HIFCR_CTCIF4 | DMA_HIFCR_CHTIF4 | DMA_HIFCR_CTEIF4 | DMA_HIFCR_CDMEIF4 | DMA_HIFCR_CFEIF4)
-#define ADC_TRANSFER_COMPLETE()         (ADC_DMA->HISR & DMA_HISR_TCIF4)
-#define ADC_SAMPTIME                    2   // sample time = 28 cycles
+#define ADC_DMA_Channel                 DMA1_Channel1
+// #define ADC_SET_DMA_FLAGS()             ADC_DMA->HIFCR = (DMA_HIFCR_CTCIF4 | DMA_HIFCR_CHTIF4 | DMA_HIFCR_CTEIF4 | DMA_HIFCR_CDMEIF4 | DMA_HIFCR_CFEIF4)
+// #define ADC_TRANSFER_COMPLETE()         (ADC_DMA->HISR & DMA_HISR_TCIF4)
+#define ADC_DMA_TC_FLAG               DMA1_FLAG_TC1
+#define ADC_SAMPTIME                    ADC_SampleTime_41_5Cycles
 
 #define ADC_RCC_AHB1Periph            (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_GPIOB | RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_DMA1)
 #define ADC_RCC_APB1Periph            0
@@ -598,10 +597,10 @@ F072 IRQs
 //all used RCC goes here
 #define RCC_AHB1_LIST                   (I2C_RCC_AHB1Periph | BACKLIGHT_RCC_AHB1Periph | LCD_RCC_AHB1Periph | KEYS_RCC_AHB1Periph | BUZZER_RCC_AHBPeriph \
                                          | EXTMODULE_RCC_AHBPeriph | CRC_RCC_AHB1Periph | TELEMETRY_RCC_AHB1Periph | AUX_SERIAL_RCC_AHB1Periph \
-                                         | AUX3_SERIAL_RCC_AHB1Periph | AUX4_SERIAL_RCC_AHB1Periph)
+                                         | AUX3_SERIAL_RCC_AHB1Periph | AUX4_SERIAL_RCC_AHB1Periph | ADC_RCC_AHB1Periph)
 #define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph | TELEMETRY_RCC_APB1Periph \
                                          | BACKLIGHT_RCC_APB1Periph | RCC_APB1Periph_USB | AUX3_SERIAL_RCC_APB1Periph | AUX4_SERIAL_RCC_APB1Periph)
 #define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB2Periph | PWM_RCC_APB2Periph | INTMODULE_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph \
-                                         | AUX_SERIAL_RCC_APB2Periph)
+                                         | AUX_SERIAL_RCC_APB2Periph | ADC_RCC_APB2Periph)
 
 #endif // _HAL_H_

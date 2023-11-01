@@ -62,9 +62,9 @@ void init_no_pulses(uint32_t port) {
   if (port == INTERNAL_MODULE) {
     intmoduleNoneStart();
   }
-//  else {
+  else {
     extmoduleTimerStart(18000, false);
-//  }
+  }
 }
 
 void disable_no_pulses(uint32_t port) {
@@ -88,7 +88,7 @@ void disable_serial(uint32_t port) {
 
 void init_module_timer(uint32_t port, uint32_t period, uint8_t state) {
   if (port == EXTERNAL_MODULE) {
-    TRACE("init_module_timer period %d", period);
+    TRACE("init_module_timer period %d, %d", period, state);
     extmoduleTimerStart(period, state);
   }
 }

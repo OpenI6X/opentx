@@ -121,27 +121,19 @@ const static unsigned char lcdInitSequence[] =
 
 static void lcdSendCtl(uint8_t data) {
     LCD_RS_LO(); //command
-	LCD_RW_LO();
-	LCD_CS_LO();
     LCD_DATA_SET(data);
     LCD_RD_HI();
     LCD_RD_LO();
-    LCD_CS_HI();
 }
 
 static void lcdSendGFX(uint8_t data) {
-    LCD_RS_HI(); //gfx
-	LCD_RW_LO();
-	LCD_CS_LO();
+//    LCD_RS_HI(); //gfx, done on transaction start
     LCD_DATA_SET(data);
     LCD_RD_HI();
     LCD_RD_LO();
-    LCD_CS_HI();
 }
 
 void lcdInit() {
-  //RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOE | RCC_AHBPeriph_GPIOD | RCC_AHBPeriph_GPIOB, ENABLE);
-  //RCC_AHBPeriphClockCmd(LCD_RCC_AHB1Periph, ENABLE);
   GPIO_InitTypeDef gpio_init;
   // set all gpio directions to output
   gpio_init.GPIO_Mode  = GPIO_Mode_OUT;
@@ -159,8 +151,8 @@ void lcdInit() {
   GPIO_Init(LCD_RD_CS_GPIO, &gpio_init);
 
   LCD_RST_LO();
-  LCD_CS_HI();
-  LCD_RW_LO();
+  LCD_CS_LO(); // Enable access to LCD
+  LCD_RW_LO(); // Enable write mode
   LCD_RD_HI();
   LCD_RS_HI();
   lcdReset();
@@ -169,18 +161,19 @@ void lcdInit() {
 }
 
 void lcdRefresh() {
-    uint8_t *p = displayBuf;
-    int page = 0xB0;
-	do {
+  uint8_t *p = displayBuf;
+  int page = 0xB0;
+  do {
     uint8_t line = LCD_W;
     lcdSendCtl(page); // page selection
     lcdSendCtl(4);    // start at line 4 -> controller is 132 lines while lcd 128
     lcdSendCtl(0x10u);// column address 0
-		do {
-			lcdSendGFX(*p++);
-		} while (--line);
-		++page;
-	} while (page < 0xB8);
+    LCD_RS_HI(); // start gfx data
+    do {
+      lcdSendGFX(*p++);
+    } while (--line);
+    ++page;
+  } while (page < 0xB8);
 }
 
 void lcdOff() {

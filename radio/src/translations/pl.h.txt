@@ -590,10 +590,10 @@
 #define TR_MOVINGMODEL         "Przenieś model."
 #define TR_LOADINGMODEL        "Załaduj model.."
 #define TR_NAME                "Nazwa"
-#define TR_MODELNAME           "Nazwa modelu"
-#define TR_PHASENAME           "Nazwa Fazy"
-#define TR_MIXNAME             "Nazwa Mix"
-#define TR_INPUTNAME           "Wpisz Nazw"
+#define TR_MODELNAME           "Nazw. modelu"
+#define TR_PHASENAME           "Nazwa fazy"
+#define TR_MIXNAME             "Nazwa mix"
+#define TR_INPUTNAME           "Wpisz nazw"
   #define TR_EXPONAME          "LiniaNazw"
 #define TR_BITMAP              "Obrazek    "
 #define TR_TIMER               TR("Timer", "Timer ")
@@ -664,14 +664,14 @@
 #define TR_SOUND_LABEL         "Dźwięk"
 #define TR_LENGTH              INDENT"Długość"
 #define TR_BEEP_LENGTH         INDENT "Dług. Beepa"
-#define TR_SPKRPITCH           INDENT"Dźwięk"
+#define TR_SPKRPITCH           INDENT"Wysokość"
 #define TR_HAPTIC_LABEL        "Wibracja"
 #define TR_HAPTICSTRENGTH      INDENT"Siła"
 #define TR_CONTRAST            "Kontrast"
 #define TR_ALARMS_LABEL        "Alarmy"
-#define TR_BATTERY_RANGE       TR("PokażPasBat.", "Pokaż pasek bateri")
-#define TR_BATTERYWARNING      INDENT"Bateria rozładowana"
-#define TR_INACTIVITYALARM     INDENT"Alarm bezczynności"
+#define TR_BATTERY_RANGE       TR("Zakres bat.", "Zakres baterii")
+#define TR_BATTERYWARNING      INDENT"Bateria rozł."
+#define TR_INACTIVITYALARM     INDENT"Alarm bezczyn."
 #define TR_MEMORYWARNING       INDENT"Pełna pamięć"
 #define TR_ALARMWARNING        INDENT"Wyłącz dźwięk"
 #define TR_RSSISHUTDOWNALARM   TR(INDENT "Rssi Shutdown", INDENT "Check Rssi on Shutdown")
@@ -686,7 +686,7 @@
 #define TR_BEEPCOUNTDOWN       INDENT "Odliczanie"
 #define TR_PERSISTENT          TR(INDENT "Dokł.", INDENT "Dokładny")
 #define TR_BACKLIGHT_LABEL     "Podświetlenie"
-#define TR_BLDELAY             INDENT"Czas trwania"
+#define TR_BLDELAY             INDENT"Czas"
 #define TR_BLONBRIGHTNESS      INDENT"Jasność wł."
 #define TR_BLOFFBRIGHTNESS     INDENT"Jasność wył."
 #define TR_BLCOLOR             INDENT "Color"
@@ -734,10 +734,10 @@
 #define TR_TMR1LATMINUS        "Tmr1Lat min\037\124us"
 #define TR_TMR1JITTERUS        "Tmr1 Jitter\037\124us"
 
-  #define TR_TMIXMAXMS         "TmixMaks"
+  #define TR_TMIXMAXMS         "Tmix max"
   #define TR_FREESTACKMINB     "Wolny stos"
 
-#define TR_MENUTORESET         CENTER TR_ENTER " >> Reset"
+#define TR_MENUTORESET         CENTER TR_ENTER " Zresetuj"
 #define TR_PPM_TRAINER         "TR"
 #define TR_CH                  "KN"
 #define TR_MODEL               "MODEL"
@@ -956,8 +956,8 @@
 #define TR_FIRMWARE_UPDATE_ERROR TR("FW update Error","Firmware update error")
 #define TR_WRITING             "\032Zapis...  "
 #define TR_CONFIRM_FORMAT      "Zatwierdź format?"
-#define TR_INTERNALRF          "Wewn.Moduł RF"
-#define TR_EXTERNALRF          "Zewn.Moduł RF"
+#define TR_INTERNALRF          "Wewn. moduł"
+#define TR_EXTERNALRF          "Zewn. moduł"
 #define TR_FAILSAFE            TR(INDENT"Failsafe",INDENT"Tryb Failsafe")
 #define TR_FAILSAFESET         "USTAWIENIE FAILSAFE"
 #define TR_HOLD                "HOLD"

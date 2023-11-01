@@ -34,10 +34,6 @@ const uint8_t ana_mapping[NUM_ANALOGS] = {3, 2, 1, 0, 6, 7, 4, 5, 8, 9, 10};
 #if NUM_PWMANALOGS > 0
 #define FIRST_ANALOG_ADC (ANALOGS_PWM_ENABLED() ? NUM_PWMANALOGS : 0)
 #define NUM_ANALOGS_ADC (ANALOGS_PWM_ENABLED() ? (NUM_ANALOGS - NUM_PWMANALOGS) : NUM_ANALOGS)
-#elif defined(PCBX9E)
-#define FIRST_ANALOG_ADC 0
-#define NUM_ANALOGS_ADC 10
-#define NUM_ANALOGS_ADC_EXT (NUM_ANALOGS - 10)
 #elif defined (FLYSKY_GIMBAL)
 #define FIRST_ANALOG_ADC 4
 #define NUM_ANALOGS_ADC (NUM_ANALOGS - 4)
@@ -48,12 +44,9 @@ const uint8_t ana_mapping[NUM_ANALOGS] = {3, 2, 1, 0, 6, 7, 4, 5, 8, 9, 10};
 
 uint16_t adcValues[NUM_ANALOGS] __DMA;
 
-#define ADC_DMA_CHANNEL DMA1_Channel1
-#define ADC_DMA_TC_FLAG DMA1_FLAG_TC1
-
 static void adc_dma_arm(void)
 {
-  ADC_StartOfConversion(ADC1);
+  ADC_StartOfConversion(ADC_MAIN);
 }
 
 void adcInit()
@@ -61,15 +54,6 @@ void adcInit()
   // -- init rcc --
   // ADC CLOCK = 24 / 4 = 6MHz
   RCC_ADCCLKConfig(RCC_ADCCLK_PCLK_Div2);
-
-  // enable ADC clock
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
-
-  // enable dma clock
-  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
-
-  // periph clock enable for port
-  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOD, ENABLE);
 
   // init gpio
   GPIO_InitTypeDef gpio_init;
@@ -108,22 +92,21 @@ void adcInit()
   adc_init.ADC_ScanDirection = ADC_ScanDirection_Upward;
 
   // load structure values to control and status registers
-  ADC_Init(ADC1, &adc_init);
+  ADC_Init(ADC_MAIN, &adc_init);
 
   // configure each channel
+  ADC_ChannelConfig(ADC_MAIN,
   #if !defined(FLYSKY_GIMBAL)
-  ADC_ChannelConfig(ADC1, ADC_Channel_0 | ADC_Channel_1 | ADC_Channel_2 | ADC_Channel_3 |
-  #else
-  ADC_ChannelConfig(ADC1,
+    ADC_Channel_0 | ADC_Channel_1 | ADC_Channel_2 | ADC_Channel_3 |
   #endif
-    ADC_Channel_4 | ADC_Channel_5 | ADC_Channel_6 | ADC_Channel_7 | ADC_Channel_8 | ADC_Channel_9 | ADC_Channel_10, ADC_SampleTime_41_5Cycles);
+    ADC_Channel_4 | ADC_Channel_5 | ADC_Channel_6 | ADC_Channel_7 | ADC_Channel_8 | ADC_Channel_9 | ADC_Channel_10, ADC_SAMPTIME);
 
 
   // enable ADC
-  ADC_Cmd(ADC1, ENABLE);
+  ADC_Cmd(ADC_MAIN, ENABLE);
 
   // enable DMA for ADC
-  ADC_DMACmd(ADC1, ENABLE);
+  ADC_DMACmd(ADC_MAIN, ENABLE);
 
   // -- init dma --
 
@@ -131,7 +114,7 @@ void adcInit()
   DMA_StructInit(&dma_init);
 
   // reset DMA1 channe1 to default values
-  DMA_DeInit(ADC_DMA_CHANNEL);
+  DMA_DeInit(ADC_DMA_Channel);
 
   // set up dma to convert 2 adc channels to two mem locations:
   // channel will be used for memory to memory transfer
@@ -152,13 +135,13 @@ void adcInit()
   // chunk of data to be transfered
   dma_init.DMA_BufferSize = NUM_ANALOGS;
   // source and destination start addresses
-  dma_init.DMA_PeripheralBaseAddr = (uint32_t)&ADC1->DR;
+  dma_init.DMA_PeripheralBaseAddr = (uint32_t)&ADC_MAIN->DR;
   dma_init.DMA_MemoryBaseAddr = (uint32_t)&adcValues[FIRST_ANALOG_ADC];
   // send values to DMA registers
-  DMA_Init(ADC_DMA_CHANNEL, &dma_init);
+  DMA_Init(ADC_DMA_Channel, &dma_init);
 
   // enable the DMA1 - Channel1
-  DMA_Cmd(ADC_DMA_CHANNEL, ENABLE);
+  DMA_Cmd(ADC_DMA_Channel, ENABLE);
 
   // start conversion:
   adc_dma_arm();

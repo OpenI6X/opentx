@@ -428,13 +428,6 @@ void sportSendBuffer(const uint8_t* buffer, unsigned long count);
 uint8_t telemetryGetByte(uint8_t * byte);
 extern uint32_t telemetryErrors;
 
-#define HAS_SPORT_UPDATE_CONNECTOR()  false
-
-// Sport update driver
-#define sportUpdateInit()
-#define SPORT_UPDATE_POWER_ON()         EXTERNAL_MODULE_ON()
-#define SPORT_UPDATE_POWER_OFF()        EXTERNAL_MODULE_OFF()
-
 // Audio driver
 void initBuzzerTimer(void);
 void audioInit(void);
