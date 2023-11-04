@@ -147,7 +147,7 @@
 
 #if defined(PCBI6X)
   #define LEN_VBEEPCOUNTDOWN     "\005"
-  #define TR_VBEEPCOUNTDOWN      "CichyPik\0 "
+  #define TR_VBEEPCOUNTDOWN      "CichyPik\0 Głos\0"
 #else
   #define LEN_VBEEPCOUNTDOWN     "\006"
   #define TR_VBEEPCOUNTDOWN      "Cichy Pik  \0DźwiękWibrac"
