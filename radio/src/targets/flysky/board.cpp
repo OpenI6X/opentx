@@ -217,7 +217,7 @@ void boardInit()
 #endif
 
   adcInit();
-  delaysInit();
+//   delaysInit();
   lcdInit(); // delaysInit() must be called before
   initBuzzerTimer();
   init2MhzTimer();

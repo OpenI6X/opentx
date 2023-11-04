@@ -79,7 +79,7 @@ static void inavSetHome() {
   inavData.homeLat = inavData.currentLat;
   inavData.homeLon = inavData.currentLon;
   // inavData.homeHeading = inavData.heading;
-  audioEvent(AU_SPECIAL_SOUND_WARN1); // TODO custom voice for DFPLAYER
+  audioEvent(AU_SPECIAL_SOUND_WARN1);
 }
 
 static void inavDrawHome(uint8_t x, uint8_t y) {

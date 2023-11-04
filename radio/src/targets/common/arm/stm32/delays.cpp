@@ -28,10 +28,10 @@
 #define SYSTEM_TICKS_01US   ((CFG_CPU_FREQ + 5000000) / 10000000)     // number of system ticks in 0.1us (rounding needed for sys frequencies that are not multiple of 10MHz)
 
 #if defined(STM32F0)
-void delaysInit(void)
-{
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
-}
+// void delaysInit(void)
+// {
+//     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
+// }
 
 void delay_01us(uint16_t nb)
 {

@@ -56,21 +56,19 @@ static void dfplayerCommand(uint8_t cmd, uint16_t param = 0) {
     }
 }
 
-// Use folder because files in root are not handled by name, but order in filesystem
 void dfplayerPlayFile(uint16_t number) {
-    // const uint8_t folder = 1;
-    dfplayerCommand(DFP_PLAY, number + 1); // +1 because first file is "zero"
+    dfplayerCommand(DFP_PLAY, number + 1); // +1 because first file is "zero" and dfplayer uses filesystem index, not filename
 }
 
 void dfplayerSetVolume(uint8_t volume) {
-//    uint8_t volumes[5] = { 0, 6, 12, 18, 24 }; // allowed range: 0-30
+//    uint8_t volumes[5] = { 0, 8, 14, 17, 20 }; // allowed range: 0-30
     //RTOS_WAIT_MS(200);
     dfplayerCommand(DFP_SET_VOLUME, ((2 + volume) * 6)/*volumes[2 + volume]*/);
 }
 
-static void dfplayerStopPlay(void) {
-    dfplayerCommand(DFP_PAUSE);
-}
+// static void dfplayerStopPlay(void) {
+//     dfplayerCommand(DFP_PAUSE);
+// }
 
 void dfplayerInit() {
     // setup BUSY pin
@@ -82,11 +80,8 @@ void dfplayerInit() {
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
     GPIO_Init(DFPLAYER_GPIO_PORT, &GPIO_InitStructure);
 
-    // wait for module to init, max 1.5s
-    //RTOS_WAIT_MS(1500 - 200);
-    // wait for openTX init for this value to be ready, now it is 0
-    // -> call init after eeprom data is ready
-    dfplayerSetVolume(g_eeGeneral.wavVolume);
+    aux3SerialInit();
+    dfplayerSetVolume(0);
 }
 
 bool isPlaying() {
@@ -98,11 +93,13 @@ char hex(uint8_t b) {
 }
 
 void debugAudioCall(char a, char b, uint16_t value) {
-    // aux2SerialPutc(a);
-    // aux2SerialPutc(b);
-    // aux2SerialPutc(hex((value >> 4) & 0xf));
-    // aux2SerialPutc(hex(value & 0xf));
-    // aux2SerialPutc('\n');
+#if 0
+    aux3SerialPutc(a);
+    aux3SerialPutc(b);
+    aux3SerialPutc(hex((value >> 4) & 0xf));
+    aux3SerialPutc(hex(value & 0xf));
+    aux3SerialPutc('\n');
+#endif
 }
 
 void dfPlayerQueuePlayFile(uint16_t index) {
@@ -110,26 +107,15 @@ void dfPlayerQueuePlayFile(uint16_t index) {
     dfplayerFifo.push(index);
 }
 
-void dfPlayerQueueStopPlay(uint16_t index) {
-    debugAudioCall('q', 'S', index);
-    // todo remove from queue by prompt
-    // if playing prompt is the same then stop
-    if (isPlaying()) {
-        dfplayerStopPlay();
-    }
-}
+// void dfPlayerQueueStopPlay(uint16_t index) {
+//     debugAudioCall('q', 'S', index);
+//     dfplayerFifo.remove(index);
+// }
 
-// Wysyłany indeks jest niestety bez form pojedynczych/mnogich z TelemetryUnit
-// wszystkie jednostki maja takie wersje wiec wystarczy robić * 2 dla plural i tak stworzyc index plików
 void pushUnit(uint8_t unit, uint8_t idx, uint8_t id)
 {
     // unit - unit
     // idx - plural / singular
-    if (idx == 0) debugAudioCall('p', 'u', unit);
-    else debugAudioCall('p', 'U', unit);
-
-    // EN_PROMPT_UNITS_BASE + (TelemetryUnit[x]*2) , idx (singular/plural)
-    // EN_PROMPT_UNITS_BASE) * 2 + idx
     dfPlayerQueuePlayFile(unit + idx);
 }
 
@@ -139,30 +125,35 @@ void pushPrompt(uint16_t prompt, uint8_t id)
     dfPlayerQueuePlayFile(prompt);
 }
 
-#define DFPLAYER_LAST_FILE_INDEX 500
-bool isAudioFileReferenced(uint32_t i) { // check if index in valid range
-    return i < DFPLAYER_LAST_FILE_INDEX;
+#define DFPLAYER_CUSTOM_FILE_INDEX 179
+#define DFPLAYER_LAST_FILE_INDEX 300 // 267 + 34 user custom ones
+uint32_t getAudioFileIndex(uint32_t i) 
+{
+    if ((i <= AU_MODEL_STILL_POWERED) || (i >= AU_TRIM_MIDDLE && i <= AU_TRIM_MAX) || (i >= AU_TIMER1_ELAPSED && i <= DFPLAYER_LAST_FILE_INDEX)) {
+        return DFPLAYER_CUSTOM_FILE_INDEX + i;
+    }
+    return 0;
 }
 
-void audioPlay(unsigned int index, uint8_t id)
+bool isAudioFileReferenced(uint32_t i) 
+{
+    return (getAudioFileIndex(i) != 0);
+}
+
+void audioPlay(unsigned int index)
 {
     debugAudioCall('a', 'P', index);
-  if (g_eeGeneral.beepMode >= -1) {
-    // if (isAudioFileReferenced(index)) {
-        dfPlayerQueuePlayFile(index); // + audio filenames offset
-//     }
+    if (g_eeGeneral.beepMode >= -1) {
+    if (isAudioFileReferenced(index)) {
+        dfPlayerQueuePlayFile(getAudioFileIndex(index));
+    }
   }
-    
 }
 
-/*
- - 
- - 3x = SWITCH_AUDIO_CATEGORY + 0-1
-*/
 void playModelEvent(uint8_t category, uint8_t index, event_t event)
 {
     debugAudioCall('p', 'M', (category << 8) + index);
-    if (IS_SILENCE_PERIOD_ELAPSED() && isAudioFileReferenced((category << 24) + (index << 16) + event)) {
-      dfPlayerQueuePlayFile(index); // + audio filenames offset
+    if (IS_SILENCE_PERIOD_ELAPSED() && isAudioFileReferenced(index + event)) {
+        dfPlayerQueuePlayFile(index);
     }
 }

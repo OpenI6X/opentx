@@ -379,6 +379,7 @@ void drawGauge(coord_t x, coord_t y, coord_t w, coord_t h, int32_t val, int32_t 
 void drawAlertBox(const char * title, const char * text, const char * action);
 #endif
 
+void drawAlertBox(const char * title, const char * text, const char * action);
 void showAlertBox(const char * title, const char * text, const char * action , uint8_t sound);
 
 #define SET_SCROLLBAR_X(x)

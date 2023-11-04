@@ -120,7 +120,7 @@ void init5msTimer();
 #ifdef __cplusplus
 extern "C" {
 #endif
-void delaysInit(void);
+// void delaysInit(void);
 void delay_01us(uint16_t nb);
 void delay_us(uint16_t nb);
 void delay_ms(uint32_t ms);
@@ -492,7 +492,6 @@ void aux4SerialSetIdleCb(void (*cb)());
 #endif
 
 #if defined(DFPLAYER)
-void dfplayerEvent(unsigned int index);
 void dfplayerInit(void);
 void dfplayerSetVolume(uint8_t);
 #endif

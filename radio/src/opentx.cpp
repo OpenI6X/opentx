@@ -1822,10 +1822,6 @@ void opentxInit()
   auxSerialInit(g_eeGeneral.auxSerialMode, modelTelemetryProtocol());
 #endif
 
-#if defined(AUX3_SERIAL)
-  aux3SerialInit();
-#endif
-
 #if MENUS_LOCK == 1
   getMovedSwitch();
   if (TRIMS_PRESSED() && g_eeGeneral.switchUnlockStates == switches_states) {
@@ -1841,6 +1837,13 @@ void opentxInit()
 
   referenceSystemAudioFiles();
   audioQueue.start();
+#endif
+
+#if defined(DFPLAYER)
+  dfplayerSetVolume(g_eeGeneral.wavVolume);
+  if (!globalData.unexpectedShutdown) {
+    AUDIO_HELLO();
+  }
 #endif
 
   BACKLIGHT_ENABLE();

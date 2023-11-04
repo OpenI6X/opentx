@@ -24,11 +24,6 @@
 volatile BuzzerState buzzerState;
 Fifo<BuzzerTone, 4> buzzerFifo;
 
-#if defined(DFPLAYER)
-extern Fifo<uint16_t, 16> dfplayerFifo;
-extern void dfplayerPlayFile(uint16_t number);
-#endif
-
 void audioKeyPress()
 {
   if (g_eeGeneral.beepMode == e_mode_all) {
@@ -85,10 +80,6 @@ void audioTimerCountdown(uint8_t timer, int value)
 
 void audioEvent(unsigned int index)
 {
-#if defined(DFPLAYER)
-  debugAudioCall('a', 'E', index);
-#endif
-
   if (index == AU_NONE)
     return;
 
@@ -98,9 +89,9 @@ void audioEvent(unsigned int index)
 
   if (g_eeGeneral.beepMode >= e_mode_nokeys || (g_eeGeneral.beepMode >= e_mode_alarms && index <= AU_ERROR)) {
 #if defined(DFPLAYER)
-    if (index < AU_SPECIAL_SOUND_FIRST/* && isAudioFileReferenced(index, filename)*/) {
-      dfPlayerQueueStopPlay(/*ID_PLAY_PROMPT_BASE +*/ index);
-      dfPlayerQueuePlayFile(/*ID_PLAY_PROMPT_BASE + */index);
+    if (index < AU_SPECIAL_SOUND_FIRST && isAudioFileReferenced(index)) {
+    //   dfPlayerQueueStopPlay(getAudioFileIndex(index));
+      dfPlayerQueuePlayFile(getAudioFileIndex(index));
       return;
     }
 #endif
@@ -135,7 +126,6 @@ void audioEvent(unsigned int index)
       case AU_WARNING3:
         playTone(BEEP_DEFAULT_FREQ, 200, 20, PLAY_NOW);
         break;
-        // TO.DO remove all these ones
       case AU_STICK1_MIDDLE:
       case AU_STICK2_MIDDLE:
       case AU_STICK3_MIDDLE:
@@ -349,12 +339,10 @@ void playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t flags, int8_t
 void buzzerHeartbeat()
 {
 #if defined(DFPLAYER)
-  if (!dfplayerFifo.isEmpty() && !isPlaying()) {
     uint16_t index;
-    if (dfplayerFifo.pop(index)) {
-      dfplayerPlayFile(index);
+    if (!isPlaying() && dfplayerFifo.pop(index)) {
+        dfplayerPlayFile(index);
     }
-  }
 #endif
 
   if (buzzerState.duration) {

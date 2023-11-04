@@ -53,7 +53,11 @@
 #define IS_TRAINER_EXTERNAL_MODULE() false
 #endif
 
-#define IS_PLAY_FUNC(func) ((func) == FUNC_PLAY_SOUND /* && func <= FUNC_PLAY_VALUE*/)
+#if defined(DFPLAYER)
+#define IS_PLAY_FUNC(func) ((func) >= FUNC_PLAY_SOUND && func <= FUNC_PLAY_VALUE)
+#else
+#define IS_PLAY_FUNC(func) ((func) == FUNC_PLAY_SOUND)
+#endif
 
 #define IS_PLAY_BOTH_FUNC(func) (0)
 #define IS_VOLUME_FUNC(func) ((func) == FUNC_VOLUME)

@@ -336,8 +336,10 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
 #endif // SDCARD
 #if defined(DFPLAYER)
           if (func == FUNC_PLAY_TRACK) {
-            val_max = 50;
-            lcdDrawNumber(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, 400 + val_displayed, RIGHT | attr);
+            val_min = 216;
+            val_max = 300;
+            if (val_displayed < val_min) val_displayed = val_min;
+            lcdDrawNumber(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, val_displayed, attr|LEFT);
           }
           else if (func == FUNC_PLAY_VALUE) {
             val_max = MIXSRC_LAST_TELEM;
