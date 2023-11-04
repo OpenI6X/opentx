@@ -60,10 +60,10 @@ void dfplayerPlayFile(uint16_t number) {
     dfplayerCommand(DFP_PLAY, number + 1); // +1 because first file is "zero" and dfplayer uses filesystem index, not filename
 }
 
-void dfplayerSetVolume(uint8_t volume) {
-//    uint8_t volumes[5] = { 0, 8, 14, 17, 20 }; // allowed range: 0-30
+void dfplayerSetVolume(int8_t volume) {
+   uint8_t volumes[5] = { 0, 10, 15, 18, 21 }; // allowed range: 0-30
     //RTOS_WAIT_MS(200);
-    dfplayerCommand(DFP_SET_VOLUME, ((2 + volume) * 6)/*volumes[2 + volume]*/);
+    dfplayerCommand(DFP_SET_VOLUME, /*((2 + volume) * 6)*/volumes[2 + volume]);
 }
 
 // static void dfplayerStopPlay(void) {

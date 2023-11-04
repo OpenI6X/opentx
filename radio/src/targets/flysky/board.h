@@ -493,7 +493,7 @@ void aux4SerialSetIdleCb(void (*cb)());
 
 #if defined(DFPLAYER)
 void dfplayerInit(void);
-void dfplayerSetVolume(uint8_t);
+void dfplayerSetVolume(int8_t);
 #endif
 
 #define USART_FLAG_ERRORS (USART_FLAG_ORE | USART_FLAG_PE) // | USART_FLAG_FE, USART_FLAG_NE
