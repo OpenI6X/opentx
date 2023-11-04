@@ -25,7 +25,7 @@
 #define pushCustomPrompt(value)
 #define pushNumberPrompt(value)
 
-bool isPlaying(){
+bool isPlaying(uint8_t id){
 	return false;
 }
 #endif
