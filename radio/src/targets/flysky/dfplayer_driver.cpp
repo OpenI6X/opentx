@@ -84,7 +84,10 @@ void dfplayerInit() {
     dfplayerSetVolume(0);
 }
 
-bool isPlaying() {
+bool isPlaying(uint8_t id) {
+    if (id) {
+        return false;
+    }
     return (!IS_MIN_PLAY_DELAY_ELAPSED()) || !GPIO_ReadInputDataBit(DFPLAYER_GPIO_PORT, DFPLAYER_GPIO_PIN_BUSY); // low == playing
 }
 

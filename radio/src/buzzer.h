@@ -22,7 +22,7 @@
 #define _BUZZER_H_
 
 
-extern bool isPlaying();
+extern bool isPlaying(uint8_t id = 0);
 
 #if defined(HAPTIC)
 extern uint8_t hapticTick;
@@ -82,12 +82,12 @@ void audioPlay(unsigned int index);
 //   AUDIO_EVENT_MID,
 // };
 
-// enum {
-//   // IDs for special functions [0:64]
-//   // IDs for global functions [64:128]
-//   ID_PLAY_PROMPT_BASE = 179,
-//   ID_PLAY_FROM_SD_MANAGER = 255,
-// };
+ enum {
+   // IDs for special functions [0:64]
+   // IDs for global functions [64:128]
+   ID_PLAY_PROMPT_BASE = 179,
+   ID_PLAY_FROM_SD_MANAGER = 255,
+ };
 
 void dfPlayerQueuePlayFile(uint16_t);
 extern void dfPlayerQueueStopPlay(uint16_t);
@@ -118,7 +118,7 @@ extern void playModelEvent(uint8_t category, uint8_t index, event_t event=0);
 #define PLAY_DURATION(d, att)           playDuration((d), (att), id) 		
 #define PLAY_TIME                       1
 #define IS_PLAY_TIME()                  (flags&PLAY_TIME)
-#define IS_PLAYING(id)                  isPlaying()
+#define IS_PLAYING(id)                  isPlaying(id)
 #define PLAY_VALUE(v, id)        		playValue((v), (id))
 #define PLAY_FILE(f)                    dfPlayerQueuePlayFile((f))
 // #define STOP_PLAY(id)            audioQueue.stopPlay((id))
