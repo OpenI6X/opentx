@@ -1559,9 +1559,11 @@ void opentxClose(uint8_t shutdown) {
 
   saveAllData();
 
+#if !defined(PCBI6X)
   while (IS_PLAYING(ID_PLAY_PROMPT_BASE + AU_BYE)) {
     RTOS_WAIT_MS(10);
   }
+#endif
 
   RTOS_WAIT_MS(100);
 
