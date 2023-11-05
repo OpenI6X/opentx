@@ -110,7 +110,7 @@ void debugAudioCall(char a, char b, uint16_t value) {
 #endif
 }
 
-void dfPlayerQueuePlayFile(uint16_t index) {
+void dfPlayerQueuePlayFile(uint16_t index, uint8_t id) {
     debugAudioCall('q', 'P', index);
     dfplayerFifo.push(index);
 }

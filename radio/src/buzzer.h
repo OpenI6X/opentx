@@ -90,7 +90,7 @@ void audioPlay(unsigned int index);
  };
 
 extern bool dfPlayerBusy(void);
-extern void dfPlayerQueuePlayFile(uint16_t);
+extern void dfPlayerQueuePlayFile(uint16_t, uint8_t id=0);
 extern void dfPlayerQueueStopPlay(uint8_t id);
 extern void pushPrompt(uint16_t prompt, uint8_t id=0);
 extern void pushUnit(uint8_t unit, uint8_t idx, uint8_t id);
@@ -121,7 +121,7 @@ extern void playModelEvent(uint8_t category, uint8_t index, event_t event=0);
 #define IS_PLAY_TIME()                  (flags&PLAY_TIME)
 #define IS_PLAYING(id)                  isPlaying((id))
 #define PLAY_VALUE(v, id)        		    playValue((v), (id))
-#define PLAY_FILE(f, id)                dfPlayerQueuePlayFile((f))
+#define PLAY_FILE(f, id)                dfPlayerQueuePlayFile((f), (id))
 #define AUDIO_FLUSH()               //audioQueue.flush()
 
 #define setScaledVolume(v)
