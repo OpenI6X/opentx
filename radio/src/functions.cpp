@@ -323,7 +323,7 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
 #endif
                 else {
 #if defined(DFPLAYER)
-                  PLAY_FILE(CFN_PARAM(cfn));
+                  PLAY_FILE(CFN_PARAM(cfn), PLAY_INDEX);
 #elif !defined(PCBI6X)
                   playCustomFunctionFile(cfn, PLAY_INDEX);
 #endif

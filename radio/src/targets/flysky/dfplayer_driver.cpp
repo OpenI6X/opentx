@@ -61,7 +61,7 @@ void dfplayerPlayFile(uint16_t number) {
 }
 
 void dfplayerSetVolume(int8_t volume) {
-   uint8_t volumes[5] = { 0, 10, 15, 18, 21 }; // allowed range: 0-30
+    uint8_t volumes[5] = { 0, 10, 15, 18, 21 }; // allowed range: 0-30
     //RTOS_WAIT_MS(200);
     dfplayerCommand(DFP_SET_VOLUME, /*((2 + volume) * 6)*/volumes[2 + volume]);
 }
@@ -82,13 +82,18 @@ void dfplayerInit() {
 
     aux3SerialInit();
     dfplayerSetVolume(0);
+    
+    if (!globalData.unexpectedShutdown) {
+        AUDIO_HELLO();
+    }
+}
+
+bool dfPlayerBusy() {
+    return (!IS_MIN_PLAY_DELAY_ELAPSED()) || !GPIO_ReadInputDataBit(DFPLAYER_GPIO_PORT, DFPLAYER_GPIO_PIN_BUSY); // low == playing
 }
 
 bool isPlaying(uint8_t id) {
-    if (id) {
-        return false;
-    }
-    return (!IS_MIN_PLAY_DELAY_ELAPSED()) || !GPIO_ReadInputDataBit(DFPLAYER_GPIO_PORT, DFPLAYER_GPIO_PIN_BUSY); // low == playing
+    return false; // (id == dfPlayerCurrentId);
 }
 
 char hex(uint8_t b) {

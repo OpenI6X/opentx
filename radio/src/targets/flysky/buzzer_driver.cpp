@@ -90,7 +90,7 @@ void audioEvent(unsigned int index)
   if (g_eeGeneral.beepMode >= e_mode_nokeys || (g_eeGeneral.beepMode >= e_mode_alarms && index <= AU_ERROR)) {
 #if defined(DFPLAYER)
     if (index < AU_SPECIAL_SOUND_FIRST && isAudioFileReferenced(index)) {
-    //   dfPlayerQueueStopPlay(getAudioFileIndex(index));
+//      dfPlayerQueueStopPlay(index);
       dfPlayerQueuePlayFile(getAudioFileIndex(index));
       return;
     }
@@ -340,7 +340,7 @@ void buzzerHeartbeat()
 {
 #if defined(DFPLAYER)
     uint16_t index;
-    if (!isPlaying() && dfplayerFifo.pop(index)) {
+    if (!dfPlayerBusy() && dfplayerFifo.pop(index)) {
         dfplayerPlayFile(index);
     }
 #endif

@@ -89,8 +89,9 @@ void audioPlay(unsigned int index);
    ID_PLAY_FROM_SD_MANAGER = 255,
  };
 
-void dfPlayerQueuePlayFile(uint16_t);
-extern void dfPlayerQueueStopPlay(uint16_t);
+extern bool dfPlayerBusy(void);
+extern void dfPlayerQueuePlayFile(uint16_t);
+extern void dfPlayerQueueStopPlay(uint8_t id);
 extern void pushPrompt(uint16_t prompt, uint8_t id=0);
 extern void pushUnit(uint8_t unit, uint8_t idx, uint8_t id);
 extern void playModelName();
@@ -118,11 +119,9 @@ extern void playModelEvent(uint8_t category, uint8_t index, event_t event=0);
 #define PLAY_DURATION(d, att)           playDuration((d), (att), id) 		
 #define PLAY_TIME                       1
 #define IS_PLAY_TIME()                  (flags&PLAY_TIME)
-#define IS_PLAYING(id)                  isPlaying(id)
-#define PLAY_VALUE(v, id)        		playValue((v), (id))
-#define PLAY_FILE(f)                    dfPlayerQueuePlayFile((f))
-// #define STOP_PLAY(id)            audioQueue.stopPlay((id))
-// #define AUDIO_RESET()            audioQueue.stopAll()
+#define IS_PLAYING(id)                  isPlaying((id))
+#define PLAY_VALUE(v, id)        		    playValue((v), (id))
+#define PLAY_FILE(f, id)                dfPlayerQueuePlayFile((f))
 #define AUDIO_FLUSH()               //audioQueue.flush()
 
 #define setScaledVolume(v)
@@ -189,7 +188,7 @@ extern void pushUnit(uint8_t unit, uint8_t idx, uint8_t id);
 #define PLAY_DURATION(d, att)    		{}
 #define PLAY_TIME
 #define IS_PLAY_TIME()                  (0)
-#define IS_PLAYING(id)                  isPlaying()
+#define IS_PLAYING(id)                  isPlaying((id))
 #define PLAY_VALUE(v, id)        		playValue((v), (id))
 
 #define setScaledVolume(v)

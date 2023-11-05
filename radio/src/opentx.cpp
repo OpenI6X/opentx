@@ -1841,9 +1841,6 @@ void opentxInit()
 
 #if defined(DFPLAYER)
   dfplayerSetVolume(g_eeGeneral.wavVolume);
-  if (!globalData.unexpectedShutdown) {
-    AUDIO_HELLO();
-  }
 #endif
 
   BACKLIGHT_ENABLE();
