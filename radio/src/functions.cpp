@@ -135,6 +135,8 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
 #if defined(DFPLAYER)
   uint8_t playFirstIndex = (functions == g_model.customFn ? 1 : 1+MAX_SPECIAL_FUNCTIONS);
   #define PLAY_INDEX   (i+playFirstIndex)
+#else
+  #define PLAY_INDEX   0
 #endif
 
 #if defined(ROTARY_ENCODERS) && defined(GVARS)
