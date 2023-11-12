@@ -25,7 +25,8 @@
 #include "board.h"
 
 static tmr10ms_t dfplayerLastCmdTime = 0;
-Fifo<uint16_t, 16> dfplayerFifo;
+Fifo<DfPlayerFragment, 16> dfplayerFifo;
+static uint16_t dfPlayerCurrentId = 0;
 
 static constexpr uint8_t DFP_PLAY         = 0x03; // root,         file: 0-2999, plays by filesystem order, fastest
 static constexpr uint8_t DFP_PLAY_MP3     = 0x12; // folder: mp3,  file: 0-2999, plays by filename, too slow
@@ -56,7 +57,8 @@ static void dfplayerCommand(uint8_t cmd, uint16_t param = 0) {
     }
 }
 
-void dfplayerPlayFile(uint16_t number) {
+void dfplayerPlayFile(uint16_t number, uint8_t id) {
+    dfPlayerCurrentId = id;
     dfplayerCommand(DFP_PLAY, number + 1); // +1 because first file is "zero" and dfplayer uses filesystem index, not filename
 }
 
@@ -93,7 +95,7 @@ bool dfPlayerBusy() {
 }
 
 bool isPlaying(uint8_t id) {
-    return false; // (id == dfPlayerCurrentId);
+    return (id == dfPlayerCurrentId);
 }
 
 char hex(uint8_t b) {
@@ -112,33 +114,33 @@ void debugAudioCall(char a, char b, uint16_t value) {
 
 void dfPlayerQueuePlayFile(uint16_t index, uint8_t id) {
     debugAudioCall('q', 'P', index);
-    dfplayerFifo.push(index);
+    dfplayerFifo.push(DfPlayerFragment(index, id));
 }
 
-// void dfPlayerQueueStopPlay(uint16_t index) {
-//     debugAudioCall('q', 'S', index);
-//     dfplayerFifo.remove(index);
-// }
+void dfPlayerQueueStopPlay(uint8_t id) {
+    debugAudioCall('q', 'S', id);
+    for (uint8_t i = 0; i < 16; i++) {
+        DfPlayerFragment & fragment = dfplayerFifo.fifo[i];
+        if (fragment.id == id) fragment.index = FRAGMENT_EMPTY;
+    }
+}
 
 void pushUnit(uint8_t unit, uint8_t idx, uint8_t id)
 {
-    // unit - unit
     // idx - plural / singular
-    dfPlayerQueuePlayFile(unit + idx);
+    dfPlayerQueuePlayFile(unit + idx, id);
 }
 
 void pushPrompt(uint16_t prompt, uint8_t id)
 {
     debugAudioCall('p', 'P', prompt);
-    dfPlayerQueuePlayFile(prompt);
+    dfPlayerQueuePlayFile(prompt, id);
 }
 
-#define DFPLAYER_CUSTOM_FILE_INDEX 179
-#define DFPLAYER_LAST_FILE_INDEX 300 // 267 + 34 user custom ones
 uint32_t getAudioFileIndex(uint32_t i) 
 {
     if ((i <= AU_MODEL_STILL_POWERED) || (i >= AU_TRIM_MIDDLE && i <= AU_TRIM_MAX) || (i >= AU_TIMER1_ELAPSED && i <= DFPLAYER_LAST_FILE_INDEX)) {
-        return DFPLAYER_CUSTOM_FILE_INDEX + i;
+        return DFPLAYER_SOUNDS_FILE_INDEX + i;
     }
     return 0;
 }

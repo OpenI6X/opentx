@@ -98,8 +98,9 @@ class Fifo
       }
     }
 
-  protected:
     T fifo[N];
+
+  protected:
     volatile uint32_t widx;
     volatile uint32_t ridx;
 

@@ -29,8 +29,6 @@
 #define BEEP_KEY_UP_FREQ        (BEEP_DEFAULT_FREQ+150)
 #define BEEP_KEY_DOWN_FREQ      (BEEP_DEFAULT_FREQ-150)
 
-#define IS_SILENCE_PERIOD_ELAPSED()   (true)
-
 #if defined(__cplusplus)
 
 struct BuzzerTone {

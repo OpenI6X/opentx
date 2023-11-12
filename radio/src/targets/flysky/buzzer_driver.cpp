@@ -90,7 +90,7 @@ void audioEvent(unsigned int index)
   if (g_eeGeneral.beepMode >= e_mode_nokeys || (g_eeGeneral.beepMode >= e_mode_alarms && index <= AU_ERROR)) {
 #if defined(DFPLAYER)
     if (index < AU_SPECIAL_SOUND_FIRST && isAudioFileReferenced(index)) {
-//      dfPlayerQueueStopPlay(index);
+      dfPlayerQueueStopPlay(index); // really id until resolved by getAudioFileIndex
       dfPlayerQueuePlayFile(getAudioFileIndex(index));
       return;
     }
@@ -339,9 +339,11 @@ void playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t flags, int8_t
 void buzzerHeartbeat()
 {
 #if defined(DFPLAYER)
-    uint16_t index;
-    if (!dfPlayerBusy() && dfplayerFifo.pop(index)) {
-        dfplayerPlayFile(index);
+    DfPlayerFragment fragment;
+    if (!dfPlayerBusy() && dfplayerFifo.pop(fragment)) {
+      if (fragment.index) {
+        dfplayerPlayFile(fragment.index, fragment.id);
+      }
     }
 #endif
 

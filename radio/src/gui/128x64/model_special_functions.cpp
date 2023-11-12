@@ -336,8 +336,8 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
 #endif // SDCARD
 #if defined(DFPLAYER)
           if (func == FUNC_PLAY_TRACK) {
-            val_min = 216;
-            val_max = 300;
+            val_min = DFPLAYER_CUSTOM_FILE_INDEX;
+            val_max = DFPLAYER_LAST_FILE_INDEX;
             if (val_displayed < val_min) val_displayed = val_min;
             lcdDrawNumber(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, val_displayed, attr|LEFT);
           }

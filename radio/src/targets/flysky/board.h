@@ -175,6 +175,10 @@ uint32_t sdMounted(void);
 #define BUZZER_HEARTBEAT buzzerHeartbeat
 #endif
 
+#if defined(DFPLAYER)
+#include "dfplayer_driver.h"
+#endif
+
 // Flash Write driver
 #define FLASH_PAGESIZE 256
 void unlockFlash(void);
@@ -489,11 +493,6 @@ void aux3SerialPutc(char c);
 void aux4SerialInit(void);
 void aux4SerialStop(void);
 void aux4SerialSetIdleCb(void (*cb)());
-#endif
-
-#if defined(DFPLAYER)
-void dfplayerInit(void);
-void dfplayerSetVolume(int8_t);
 #endif
 
 #define USART_FLAG_ERRORS (USART_FLAG_ORE | USART_FLAG_PE) // | USART_FLAG_FE, USART_FLAG_NE

@@ -21,6 +21,11 @@
 #ifndef _BUZZER_H_
 #define _BUZZER_H_
 
+enum FragmentTypes {
+  FRAGMENT_EMPTY,
+  FRAGMENT_TONE,
+  FRAGMENT_FILE,
+};
 
 extern bool isPlaying(uint8_t id = 0);
 
@@ -31,8 +36,7 @@ extern uint8_t hapticTick;
 void audioEvent(unsigned int index);
 
 #if defined(DFPLAYER)
-extern Fifo<uint16_t, 16> dfplayerFifo;
-extern void dfplayerPlayFile(uint16_t number);
+extern Fifo<DfPlayerFragment, 16> dfplayerFifo;
 extern uint32_t getAudioFileIndex(uint32_t i);
 extern bool isAudioFileReferenced(uint32_t i);
 void audioPlay(unsigned int index);
@@ -89,9 +93,6 @@ void audioPlay(unsigned int index);
    ID_PLAY_FROM_SD_MANAGER = 255,
  };
 
-extern bool dfPlayerBusy(void);
-extern void dfPlayerQueuePlayFile(uint16_t, uint8_t id=0);
-extern void dfPlayerQueueStopPlay(uint8_t id);
 extern void pushPrompt(uint16_t prompt, uint8_t id=0);
 extern void pushUnit(uint8_t unit, uint8_t idx, uint8_t id);
 extern void playModelName();
@@ -104,6 +105,7 @@ extern void playModelEvent(uint8_t category, uint8_t index, event_t event=0);
 #define PLAY_LOGICAL_SWITCH_ON(sw)    //playModelEvent(LOGICAL_SWITCH_AUDIO_CATEGORY, sw, AUDIO_EVENT_ON)
 #define PLAY_MODEL_NAME()
 #define START_SILENCE_PERIOD()
+#define IS_SILENCE_PERIOD_ELAPSED()   (true)
 
 #define PROMPT_CUSTOM_BASE      0
 #define PROMPT_I18N_BASE        0
@@ -172,6 +174,7 @@ extern void pushUnit(uint8_t unit, uint8_t idx, uint8_t id);
 #define PLAY_LOGICAL_SWITCH_ON(sw)
 #define PLAY_MODEL_NAME()
 #define START_SILENCE_PERIOD()
+#define IS_SILENCE_PERIOD_ELAPSED()   (true)
 
 #define PROMPT_CUSTOM_BASE      0
 #define PROMPT_I18N_BASE        256
