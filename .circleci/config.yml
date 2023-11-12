@@ -24,7 +24,7 @@ jobs:
 
   build-std:
     docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.2.0
+      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
     steps:
       - checkout
       - run: |
@@ -34,7 +34,7 @@ jobs:
 
   build-std-backlight:
     docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.2.0
+      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
     steps:
       - checkout
       - run: |
@@ -44,7 +44,7 @@ jobs:
 
   build-elrs:
     docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.2.0
+      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
     steps:
       - checkout
       - run: |
@@ -54,7 +54,7 @@ jobs:
 
   build-elrs-backlight:
     docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.2.0
+      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
     steps:
       - checkout
       - run: |
@@ -64,7 +64,7 @@ jobs:
 
   build-heli:
     docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.2.0
+      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
     steps:
       - checkout
       - run: |
@@ -74,7 +74,7 @@ jobs:
 
   build-heli-backlight:
     docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.2.0
+      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
     steps:
       - checkout
       - run: |
@@ -84,7 +84,7 @@ jobs:
 
   build-en:
     docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.2.0
+      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
     steps:
       - checkout
       - run: |
