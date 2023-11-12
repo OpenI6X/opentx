@@ -36,7 +36,7 @@ extern uint8_t hapticTick;
 void audioEvent(unsigned int index);
 
 #if defined(DFPLAYER)
-extern Fifo<DfPlayerFragment, 16> dfplayerFifo;
+extern Fifo<uint16_t, 16> dfplayerFifo;
 extern uint32_t getAudioFileIndex(uint32_t i);
 extern bool isAudioFileReferenced(uint32_t i);
 void audioPlay(unsigned int index);
@@ -123,7 +123,7 @@ extern void playModelEvent(uint8_t category, uint8_t index, event_t event=0);
 #define IS_PLAY_TIME()                  (flags&PLAY_TIME)
 #define IS_PLAYING(id)                  isPlaying((id))
 #define PLAY_VALUE(v, id)        		    playValue((v), (id))
-#define PLAY_FILE(f, id)                dfPlayerQueuePlayFile((f), (id))
+#define PLAY_FILE(f, id)                dfPlayerQueuePlayFile((f))
 #define AUDIO_FLUSH()               //audioQueue.flush()
 
 #define setScaledVolume(v)

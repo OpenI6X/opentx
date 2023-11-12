@@ -348,7 +348,7 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
             newActiveFunctions |= (1 << FUNCTION_BACKGND_MUSIC_PAUSE);
             break;
 #endif
-#else // PCBI6X || SDCARD
+#else
           case FUNC_PLAY_SOUND:
           case FUNC_PLAY_TRACK:
           case FUNC_PLAY_VALUE:
@@ -378,7 +378,7 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
             }
             break;
           }
-#endif
+#endif // PCBI6X || SDCARD
 
 #if defined(TELEMETRY_FRSKY) && defined(VARIO)
           case FUNC_VARIO:

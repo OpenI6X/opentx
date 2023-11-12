@@ -27,19 +27,19 @@
 #define DFPLAYER_CUSTOM_FILE_INDEX  216 // 216 to 267 + 34 user custom ones
 #define DFPLAYER_LAST_FILE_INDEX    300 // 
 
-struct DfPlayerFragment {
+/* struct DfPlayerFragment {
     uint16_t index;
     uint8_t id;
     DfPlayerFragment(uint16_t index, uint8_t id) : index(index), id(id) {};
     DfPlayerFragment() {};
-};
+}; */
 
-void dfplayerPlayFile(uint16_t number, uint8_t id);
+void dfplayerPlayFile(uint16_t number);
 void dfplayerInit(void);
 void dfplayerSetVolume(int8_t);
 bool dfPlayerBusy(void);
-void dfPlayerQueuePlayFile(uint16_t, uint8_t id=0);
-void dfPlayerQueueStopPlay(uint8_t id);
+void dfPlayerQueuePlayFile(uint16_t);
+// void dfPlayerQueueStopPlay(uint8_t id);
 
 #endif // __cplusplus
 

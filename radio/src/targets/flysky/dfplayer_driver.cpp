@@ -25,8 +25,7 @@
 #include "board.h"
 
 static tmr10ms_t dfplayerLastCmdTime = 0;
-Fifo<DfPlayerFragment, 16> dfplayerFifo;
-static uint16_t dfPlayerCurrentId = 0;
+Fifo<uint16_t, 16> dfplayerFifo;
 
 static constexpr uint8_t DFP_PLAY         = 0x03; // root,         file: 0-2999, plays by filesystem order, fastest
 static constexpr uint8_t DFP_PLAY_MP3     = 0x12; // folder: mp3,  file: 0-2999, plays by filename, too slow
@@ -57,8 +56,8 @@ static void dfplayerCommand(uint8_t cmd, uint16_t param = 0) {
     }
 }
 
-void dfplayerPlayFile(uint16_t number, uint8_t id) {
-    dfPlayerCurrentId = id;
+void dfplayerPlayFile(uint16_t number) {
+    // dfPlayerCurrentId = id;
     dfplayerCommand(DFP_PLAY, number + 1); // +1 because first file is "zero" and dfplayer uses filesystem index, not filename
 }
 
@@ -94,8 +93,18 @@ bool dfPlayerBusy() {
     return (!IS_MIN_PLAY_DELAY_ELAPSED()) || !GPIO_ReadInputDataBit(DFPLAYER_GPIO_PORT, DFPLAYER_GPIO_PIN_BUSY); // low == playing
 }
 
+//bool dfplayerQueueHasPromptId(uint8_t id) {
+//    uint8_t i = dfplayerFifo.ridx;
+//    while (i != dfplayerFifo.widx) {
+//        DfPlayerFragment & fragment = dfplayerFifo.fifo[i];
+//        if (fragment.id == id) return true;
+//        i = dfplayerFifo.nextIdx(i);
+//    }
+//    return false;
+//}
+
 bool isPlaying(uint8_t id) {
-    return (id == dfPlayerCurrentId);
+    return false; // (id == dfPlayerCurrentId) || dfplayerQueueHasPromptId(id);
 }
 
 char hex(uint8_t b) {
@@ -112,29 +121,34 @@ void debugAudioCall(char a, char b, uint16_t value) {
 #endif
 }
 
-void dfPlayerQueuePlayFile(uint16_t index, uint8_t id) {
+void dfPlayerQueuePlayFile(uint16_t index) {
     debugAudioCall('q', 'P', index);
-    dfplayerFifo.push(DfPlayerFragment(index, id));
+    dfplayerFifo.push(index);
 }
 
-void dfPlayerQueueStopPlay(uint8_t id) {
-    debugAudioCall('q', 'S', id);
-    for (uint8_t i = 0; i < 16; i++) {
-        DfPlayerFragment & fragment = dfplayerFifo.fifo[i];
-        if (fragment.id == id) fragment.index = FRAGMENT_EMPTY;
-    }
-}
+//void dfPlayerQueueStopPlay(uint8_t id) {
+//    debugAudioCall('q', 'S', id);
+//    uint8_t i = dfplayerFifo.ridx;
+//    while (i != dfplayerFifo.widx) {
+//        DfPlayerFragment & fragment = dfplayerFifo.fifo[i];
+//        if (fragment.id == id) {
+//            fragment.index = 0;
+//            fragment.id = FRAGMENT_EMPTY;
+//        }
+//        i = dfplayerFifo.nextIdx(i);
+//    }
+//}
 
 void pushUnit(uint8_t unit, uint8_t idx, uint8_t id)
 {
     // idx - plural / singular
-    dfPlayerQueuePlayFile(unit + idx, id);
+    dfPlayerQueuePlayFile(unit + idx);
 }
 
 void pushPrompt(uint16_t prompt, uint8_t id)
 {
     debugAudioCall('p', 'P', prompt);
-    dfPlayerQueuePlayFile(prompt, id);
+    dfPlayerQueuePlayFile(prompt);
 }
 
 uint32_t getAudioFileIndex(uint32_t i) 
