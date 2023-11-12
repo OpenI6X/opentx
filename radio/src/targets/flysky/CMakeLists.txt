@@ -90,9 +90,7 @@ set(TARGET_SRC
   )
 endif()
 
-if(NOT((DFPLAYER STREQUAL YES) AND (PCBI6X_ELRS STREQUAL YES)))
 add_definitions(-DPCBI6X_USB_MSD) # 3.2kB
-endif()
 
 set(TARGET_SRC
   ${TARGET_SRC}
