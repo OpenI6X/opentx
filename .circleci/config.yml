@@ -52,7 +52,7 @@ jobs:
       - store_artifacts:
           path: output
 
-  build-heli-backlight:
+  build-heli-dfplayer:
     docker:
       - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
     steps:
