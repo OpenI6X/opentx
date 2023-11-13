@@ -85,9 +85,7 @@ enum MenuRadioSetupItems {
   ITEM_SETUP_BACKLIGHT_LABEL,
   ITEM_SETUP_BACKLIGHT_MODE,
   ITEM_SETUP_BACKLIGHT_DELAY,
-#if defined(PCBI6X_BACKLIGHT_MOD)
   ITEM_SETUP_BRIGHTNESS,
-#endif
   CASE_PWM_BACKLIGHT(ITEM_SETUP_BACKLIGHT_BRIGHTNESS_OFF)
   CASE_PWM_BACKLIGHT(ITEM_SETUP_BACKLIGHT_BRIGHTNESS_ON)
   ITEM_SETUP_FLASH_BEEP,
@@ -160,9 +158,7 @@ void menuRadioSetup(event_t event)
 #endif
     IF_ROTARY_ENCODERS(0)
     LABEL(BACKLIGHT), 0, 0,
-#if defined(PCBI6X_BACKLIGHT_MOD)
-    0,
-#endif
+    0, /* backlight */
     CASE_PWM_BACKLIGHT(0)
     CASE_PWM_BACKLIGHT(0)
     0, /* alarm */
@@ -464,7 +460,6 @@ void menuRadioSetup(event_t event)
         lcdDrawChar(lcdLastRightPos, y, 's');
         if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.lightAutoOff, 0, 600/5);
         break;
-#if defined(PCBI6X_BACKLIGHT_MOD)
       case ITEM_SETUP_BRIGHTNESS:
         lcdDrawTextAlignedLeft(y, STR_BRIGHTNESS);
         lcdDrawNumber(RADIO_SETUP_2ND_COLUMN, y, 100-g_eeGeneral.backlightBright, attr|LEFT) ;
@@ -474,7 +469,6 @@ void menuRadioSetup(event_t event)
           g_eeGeneral.backlightBright = 100 - b;
         }
         break;
-#endif
 #if defined(PWM_BACKLIGHT)
       case ITEM_SETUP_BACKLIGHT_BRIGHTNESS_OFF:
         lcdDrawTextAlignedLeft(y, STR_BLOFFBRIGHTNESS);
