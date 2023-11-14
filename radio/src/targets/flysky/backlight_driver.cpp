@@ -55,8 +55,10 @@ void backlightEnable(uint8_t level)
   BACKLIGHT_TIMER->CR1 = TIM_CR1_CEN;
 
   // std
-  if (level == 100) {
+  if (level == 0) { // inverted
     GPIO_SetBits(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
+  } else {
+    GPIO_ResetBits(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
   }
 }
 
