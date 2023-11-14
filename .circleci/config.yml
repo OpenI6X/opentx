@@ -32,33 +32,13 @@ jobs:
       - store_artifacts:
           path: output
 
-  build-std-backlight:
+  build-std-dfplayer:
     docker:
       - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
     steps:
       - checkout
       - run: |
-          python3 ./tools/build-flysky.py -bI6X_BACKLIGHT_MOD -tALL $PWD/
-      - store_artifacts:
-          path: output
-
-  build-elrs:
-    docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
-    steps:
-      - checkout
-      - run: |
-          python3 ./tools/build-flysky.py -bI6X_ELRS -tALL $PWD/
-      - store_artifacts:
-          path: output
-
-  build-elrs-backlight:
-    docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
-    steps:
-      - checkout
-      - run: |
-          python3 ./tools/build-flysky.py -bI6X_ELRS_BACKLIGHT_MOD -tALL $PWD/
+          python3 ./tools/build-flysky.py -bI6X_DFPLAYER -tALL $PWD/
       - store_artifacts:
           path: output
 
@@ -72,13 +52,13 @@ jobs:
       - store_artifacts:
           path: output
 
-  build-heli-backlight:
+  build-heli-dfplayer:
     docker:
       - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
     steps:
       - checkout
       - run: |
-          python3 ./tools/build-flysky.py -bI6X_HELI_BACKLIGHT_MOD -tALL $PWD/
+          python3 ./tools/build-flysky.py -bI6X_HELI_DFPLAYER -tALL $PWD/
       - store_artifacts:
           path: output
 
@@ -88,7 +68,7 @@ jobs:
     steps:
       - checkout
       - run: |
-          python3 ./tools/build-flysky.py -bI6X_BACKLIGHT_MOD -bI6X_HELI -bI6X -tEN $PWD/
+          python3 ./tools/build-flysky.py -bI6X_DFPLAYER -bI6X_HELI -bI6X -tEN $PWD/
       - store_artifacts:
           path: output
 
@@ -120,17 +100,7 @@ workflows:
             branches:
               only:
                 - master
-      - build-std-backlight:
-          filters:
-            branches:
-              only:
-                - master
-      - build-elrs:
-          filters:
-            branches:
-              only:
-                - master
-      - build-elrs-backlight:
+      - build-std-dfplayer:
           filters:
             branches:
               only:
@@ -140,17 +110,7 @@ workflows:
             branches:
               only:
                 - master
-      - build-heli-backlight:
-          filters:
-            branches:
-              only:
-                - master
-      - build-std:
-          filters:
-            branches:
-              only:
-                - master
-      - build-std-backlight:
+      - build-heli-dfplayer:
           filters:
             branches:
               only:

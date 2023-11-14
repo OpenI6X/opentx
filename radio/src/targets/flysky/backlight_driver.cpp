@@ -20,7 +20,6 @@
 
 #include "opentx.h"
 
-#if defined(PCBI6X_BACKLIGHT_MOD)
 void backlightInit()
 {
   GPIO_InitTypeDef GPIO_InitStructure;
@@ -31,6 +30,7 @@ void backlightInit()
   GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
   GPIO_Init(BACKLIGHT_GPIO, &GPIO_InitStructure);
   GPIO_PinAFConfig(BACKLIGHT_GPIO, BACKLIGHT_GPIO_PinSource, BACKLIGHT_GPIO_AF);
+
   BACKLIGHT_TIMER->ARR = 100;
   BACKLIGHT_TIMER->PSC = BACKLIGHT_TIMER_FREQ / 50000 - 1; // 20us * 100 = 2ms => 500Hz
   BACKLIGHT_TIMER->CCMR2 = BACKLIGHT_CCMR2; // PWM
@@ -38,48 +38,40 @@ void backlightInit()
   BACKLIGHT_COUNTER_REGISTER = 100;
   BACKLIGHT_TIMER->EGR = 0;
   BACKLIGHT_TIMER->CR1 = TIM_CR1_CEN;  // Counter enable
+
+  // std
+  GPIO_InitTypeDef gpio_init;
+  gpio_init.GPIO_Mode  = GPIO_Mode_OUT;
+  gpio_init.GPIO_OType = GPIO_OType_PP;
+  gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
+  gpio_init.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+  gpio_init.GPIO_Pin   = BACKLIGHT_STD_GPIO_PIN;
+  GPIO_Init(BACKLIGHT_STD_GPIO, &gpio_init);
 }
 
 void backlightEnable(uint8_t level)
 {
   BACKLIGHT_COUNTER_REGISTER = /*100 -*/ level;
   BACKLIGHT_TIMER->CR1 = TIM_CR1_CEN;
+
+  // std
+  if (level == 0) { // inverted
+    GPIO_SetBits(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
+  } else {
+    GPIO_ResetBits(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
+  }
 }
 
 void backlightDisable()
 {
   BACKLIGHT_COUNTER_REGISTER = 100;
   BACKLIGHT_TIMER->CR1 &= ~TIM_CR1_CEN;          // solves very dim light with backlight off
+
+  // std
+  GPIO_ResetBits(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
 }
 
 uint8_t isBacklightEnabled()
 {
-  return BACKLIGHT_COUNTER_REGISTER != 100;
+  return BACKLIGHT_COUNTER_REGISTER != 100 || GPIO_ReadInputDataBit(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN) != 0;
 }
-#else
-void backlightInit()
-{
-    GPIO_InitTypeDef gpio_init;
-    gpio_init.GPIO_Mode  = GPIO_Mode_OUT;
-    gpio_init.GPIO_OType = GPIO_OType_PP;
-    gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
-    gpio_init.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-    gpio_init.GPIO_Pin   = BACKLIGHT_GPIO_PIN;
-    GPIO_Init(BACKLIGHT_GPIO, &gpio_init);
-}
-
-void backlightEnable(uint8_t level)
-{
-    GPIO_SetBits(BACKLIGHT_GPIO, BACKLIGHT_GPIO_PIN);
-}
-
-void backlightDisable()
-{
-    GPIO_ResetBits(BACKLIGHT_GPIO, BACKLIGHT_GPIO_PIN);
-}
-
-uint8_t isBacklightEnabled()
-{
-	return GPIO_ReadInputDataBit(BACKLIGHT_GPIO, BACKLIGHT_GPIO_PIN) != 0;
-}
-#endif // PCBI6X_BACKLIGHT_MOD
