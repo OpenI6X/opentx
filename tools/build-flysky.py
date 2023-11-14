@@ -13,26 +13,25 @@ boards = {
         "HELI": "NO",
         "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "YES",
-        "PCBI6X_DFPLAYER": "NO",
+        "DFPLAYER": "NO",
     },
     "I6X_DFPLAYER": {
         "HELI": "NO",
         "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "YES",
         "DFPLAYER": "YES",
-        "PCBI6X_DFPLAYER": "YES",
     },
     "I6X_HELI": {
         "HELI": "YES",
         "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "NO",
-        "PCBI6X_DFPLAYER": "NO",
+        "DFPLAYER": "NO",
     },
     "I6X_HELI_DFPLAYER": {
         "HELI": "YES",
         "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "NO",
-        "PCBI6X_DFPLAYER": "YES",
+        "DFPLAYER": "YES",
     },
 }
 
