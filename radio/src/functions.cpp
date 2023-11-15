@@ -101,6 +101,14 @@ void playCustomFunctionFile(const CustomFunctionData * sd, uint8_t id)
     PLAY_FILE(filename, sd->func == FUNC_BACKGND_MUSIC ? PLAY_BACKGROUND : 0, id);
   }
 }
+#elif defined(DFPLAYER)
+void playCustomFunctionFile(const CustomFunctionData * sd, uint8_t id)
+{
+  uint16_t val = sd->all.val;
+ if (val != 0) { // Custom files start at DFPLAYER_CUSTOM_FILE_INDEX
+    PLAY_FILE(val, id);
+ }
+}
 #endif
 
 #if defined(VOICE) || defined(PCBI6X)
@@ -324,11 +332,7 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
                 }
 #endif
                 else {
-#if defined(DFPLAYER)
-                  PLAY_FILE(CFN_PARAM(cfn), PLAY_INDEX);
-#elif !defined(PCBI6X)
                   playCustomFunctionFile(cfn, PLAY_INDEX);
-#endif
                 }
               }
             }

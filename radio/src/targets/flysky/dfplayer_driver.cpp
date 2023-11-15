@@ -97,7 +97,16 @@ const char * audioNames =
   "trnoff"
   "trnon "
   "vrioff"
-  "vrion ";
+  "vrion "
+  "custm1"
+  "custm2"
+  "custm3"
+  "custm4"
+  "custm5"
+  "custm6"
+  "custm7"
+  "custm8"
+  "custm9";
 
 // #define IS_MIN_CMD_DELAY_ELAPSED() (get_tmr10ms() - dfplayerLastCmdTime > 20) // 200 ms
 #define IS_MIN_PLAY_DELAY_ELAPSED() (get_tmr10ms() - dfplayerLastCmdTime > 80) // 800 ms
