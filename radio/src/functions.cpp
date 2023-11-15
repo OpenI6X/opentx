@@ -332,7 +332,9 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
                 }
 #endif
                 else {
+#if defined(DFPLAYER)
                   playCustomFunctionFile(cfn, PLAY_INDEX);
+#endif
                 }
               }
             }
