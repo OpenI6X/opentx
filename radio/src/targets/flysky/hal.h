@@ -91,16 +91,16 @@
 
 // ADC
 #define ADC_MAIN                        ADC1
-#define ADC_DMA                         DMA2
-#define ADC_DMA_SxCR_CHSEL              0
-#define ADC_DMA_Stream                  DMA2_Stream4
-#define ADC_SET_DMA_FLAGS()             ADC_DMA->HIFCR = (DMA_HIFCR_CTCIF4 | DMA_HIFCR_CHTIF4 | DMA_HIFCR_CTEIF4 | DMA_HIFCR_CDMEIF4 | DMA_HIFCR_CFEIF4)
-#define ADC_TRANSFER_COMPLETE()         (ADC_DMA->HISR & DMA_HISR_TCIF4)
-#define ADC_SAMPTIME                    2   // sample time = 28 cycles
+#define ADC_DMA_Channel                 DMA1_Channel1
+// #define ADC_SET_DMA_FLAGS()             ADC_DMA->HIFCR = (DMA_HIFCR_CTCIF4 | DMA_HIFCR_CHTIF4 | DMA_HIFCR_CTEIF4 | DMA_HIFCR_CDMEIF4 | DMA_HIFCR_CFEIF4)
+// #define ADC_TRANSFER_COMPLETE()         (ADC_DMA->HISR & DMA_HISR_TCIF4)
+#define ADC_DMA_TC_FLAG               DMA1_FLAG_TC1
+#define ADC_SAMPTIME                    ADC_SampleTime_41_5Cycles
 
 #define ADC_RCC_AHB1Periph            (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_GPIOB | RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_DMA1)
 #define ADC_RCC_APB1Periph            0
 #define ADC_RCC_APB2Periph            RCC_APB2Periph_ADC1
+#if !defined(FLYSKY_GIMBAL)
 #define ADC_GPIO_PIN_STICK_RV         GPIO_Pin_0  // PA.00
 #define ADC_GPIO_PIN_STICK_RH         GPIO_Pin_1  // PA.01
 #define ADC_GPIO_PIN_STICK_LV         GPIO_Pin_2  // PA.02
@@ -109,10 +109,15 @@
 #define ADC_CHANNEL_STICK_RH          ADC_Channel_1  // ADC1_IN1
 #define ADC_CHANNEL_STICK_LV          ADC_Channel_2  // ADC1_IN2
 #define ADC_CHANNEL_STICK_LH          ADC_Channel_3  // ADC1_IN3
+#endif // FLYSKY_GIMBAL
 #define ADC_GPIO_PIN_POT1             GPIO_Pin_6  // PA.06
 #define ADC_GPIO_PIN_POT2             GPIO_Pin_0  // PB.00
 #define ADC_GPIO_PIN_BATT             GPIO_Pin_0  // PC.00
+#if !defined(FLYSKY_GIMBAL)
 #define ADC_GPIOA_PINS                (ADC_GPIO_PIN_STICK_RV | ADC_GPIO_PIN_STICK_RH | ADC_GPIO_PIN_STICK_LH | ADC_GPIO_PIN_STICK_LV | ADC_GPIO_PIN_POT1)
+#else
+#define ADC_GPIOA_PINS                ADC_GPIO_PIN_POT1
+#endif // FLYSKY_GIMBAL
 #define ADC_GPIOB_PINS                ADC_GPIO_PIN_POT2
 #define ADC_GPIOC_PINS                ADC_GPIO_PIN_BATT
 #define ADC_CHANNEL_POT1              ADC_Channel_6
@@ -185,8 +190,8 @@ void TIM16_IRQHandler(void);
 #define RF_RF1_SET_PIN GPIO_BSRR_BS_11
 #define RF_RF1_RESET_PIN GPIO_BSRR_BR_11
 
-void SPI_RADIO_SendBlock(uint8_t *BufferPtr, uint16_t Size);
-void SPI_RADIO_ReceiveBlock(uint8_t *BufferPtr, uint16_t Size);
+void SPI_Write(uint8_t command);
+uint8_t SPI_SDI_Read(void);
 void a7105_csn_on(void); 
 void a7105_csn_off(void);
 void RF0_SetVal(void);
@@ -200,8 +205,8 @@ void initAFHDS2A();
 void ActionAFHDS2A();
 void init_afhds2a(uint32_t port);
 void disable_afhds2a(uint32_t port);
-#define A7105_CSN_ON a7105_csn_on()  
-#define A7105_CSN_OFF a7105_csn_off()
+#define A7105_CSN_on a7105_csn_on()
+#define A7105_CSN_off a7105_csn_off()
 
 /******************************************************************************/
 /*                                                                            */
@@ -365,6 +370,7 @@ void disable_afhds2a(uint32_t port);
   #define INTMODULE_DMA_FLAG_TC         DMA_IT_TCIF5
   #define INTMODULE_TIMER_FREQ          (PERI2_FREQUENCY * TIMER_MULT_APB2)
 */
+#define INTMODULE_RCC_APB2Periph      (RCC_APB2Periph_TIM16 | RCC_APB2Periph_SPI1)
 
 // External Module
 #define EXTMODULE_PWR_GPIO            GPIOC
@@ -437,7 +443,7 @@ extern void ISR_TIMER3_CAPT_vect(void);
 
 #define TRAINER_BATTERY_COMPARTMENT
 
-// auxSerial
+// AUX Serial
 #define AUX_SERIAL_RCC_AHB1Periph         (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_DMA1)
 #define AUX_SERIAL_RCC_APB2Periph         RCC_APB2Periph_USART1
 #define AUX_SERIAL_GPIO                   GPIOA
@@ -450,6 +456,28 @@ extern void ISR_TIMER3_CAPT_vect(void);
 #define AUX_SERIAL_USART_IRQHandler       USART1_IRQHandler
 #define AUX_SERIAL_USART_IRQn             USART1_IRQn
 #define AUX_SERIAL_DMA_Channel_RX         DMA1_Channel3
+
+// AUX3 Serial, only TX for DFPLAYER
+#define AUX3_SERIAL_RCC_AHB1Periph         RCC_AHBPeriph_GPIOC
+#define AUX3_SERIAL_RCC_APB1Periph         RCC_APB1Periph_USART3
+#define AUX3_SERIAL_GPIO                   GPIOC
+#define AUX3_SERIAL_GPIO_PIN_TX            GPIO_Pin_10 // PC10
+#define AUX3_SERIAL_GPIO_PinSource_TX      GPIO_PinSource10
+#define AUX3_SERIAL_GPIO_AF                GPIO_AF_1
+#define AUX3_SERIAL_USART                  USART3
+
+// AUX4 Serial, only RX for FLYSKY_GIMBAL
+#define AUX4_SERIAL_RCC_AHB1Periph         (RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_DMA1)
+#define AUX4_SERIAL_RCC_APB1Periph         RCC_APB1Periph_USART4
+#define AUX4_SERIAL_GPIO                   GPIOC
+#define AUX4_SERIAL_GPIO_PIN_RX            GPIO_Pin_11 // PC11
+#define AUX4_SERIAL_GPIO_PinSource_RX      GPIO_PinSource11
+#define AUX4_SERIAL_GPIO_AF                GPIO_AF_0
+#define AUX4_SERIAL_USART                  USART4
+#define AUX4_SERIAL_DMA_Channel_RX         DMA1_Channel6
+
+#define AUX34_SERIAL_USART_IRQHandler       USART3_4_IRQHandler
+#define AUX34_SERIAL_USART_IRQn             USART3_4_IRQn
 
 #define SPORT_MAX_BAUDRATE            400000
 
@@ -501,7 +529,8 @@ F072 IRQs
   // #define HEARTBEAT_DMA_Stream          DMA2_Stream1
   // #define HEARTBEAT_DMA_Channel         DMA_Channel_5
 
-#if defined(PCBI6X_BACKLIGHT_MOD) // requires wiring BL pad to PC9 pad
+// Backlight
+// pwm, requires wiring BL pad to PC9 pad
   #define BACKLIGHT_RCC_APB1Periph      RCC_APB1Periph_TIM3
   #define BACKLIGHT_RCC_AHB1Periph      RCC_AHBPeriph_GPIOC
   #define BACKLIGHT_GPIO                GPIOC
@@ -513,12 +542,11 @@ F072 IRQs
   #define BACKLIGHT_CCMR2               TIM_CCMR2_OC4M_1 | TIM_CCMR2_OC4M_2 // Channel4, PWM
   #define BACKLIGHT_CCER                TIM_CCER_CC4P | TIM_CCER_CC4E
   #define BACKLIGHT_COUNTER_REGISTER    BACKLIGHT_TIMER->CCR4
-#else // stock, fixed brightness
-  #define BACKLIGHT_RCC_APB1Periph      0
-  #define BACKLIGHT_RCC_AHB1Periph      RCC_AHBPeriph_GPIOF
-  #define BACKLIGHT_GPIO                GPIOF
-  #define BACKLIGHT_GPIO_PIN            GPIO_Pin_3
-#endif // PCBI6X_BACKLIGHT_MOD
+  // std, fixed brightness
+  #define BACKLIGHT_STD_RCC_APB1Periph      0
+  #define BACKLIGHT_STD_RCC_AHB1Periph      RCC_AHBPeriph_GPIOF
+  #define BACKLIGHT_STD_GPIO                GPIOF
+  #define BACKLIGHT_STD_GPIO_PIN            GPIO_Pin_3
 
 // Audio
 //#define AUDIO_RCC_AHB1Periph            (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_DMA1)
@@ -533,15 +561,22 @@ F072 IRQs
 //#define AUDIO_TIMER                     TIM6
 //#define AUDIO_DMA                       DMA1
 
-// Buzzer on TIMER 1
-#define BUZZER_GPIO_PORT GPIOA
-#define BUZZER_GPIO_PIN GPIO_Pin_8
-#define BUZZER_GPIO_PinSource GPIO_PinSource8
-#define BUZZER_RCC_AHBPeriph RCC_AHBPeriph_GPIOA
+// Buzzer
+#define BUZZER_GPIO_PORT                GPIOA
+#define BUZZER_GPIO_PIN                 GPIO_Pin_8
+#define BUZZER_GPIO_PinSource           GPIO_PinSource8
+#define BUZZER_RCC_AHBPeriph            RCC_AHBPeriph_GPIOA
 #define PWM_RCC_APB2Periph              RCC_APB2Periph_TIM1
 #define PWM_TIMER                       TIM1
 
-// Xms Interrupt TIMER 14
+// DFPlayer
+#if defined(DFPLAYER)
+#define DFPLAYER_GPIO_PORT              GPIOC
+#define DFPLAYER_GPIO_PIN_BUSY          GPIO_Pin_14
+#define DFPLAYER_BAUDRATE               9600
+#endif
+
+// Xms Interrupt
 #define INTERRUPT_xMS_RCC_APB1Periph    RCC_APB1Periph_TIM14
 #define INTERRUPT_xMS_TIMER             TIM14
 #define INTERRUPT_xMS_IRQn              TIM14_IRQn
@@ -552,15 +587,20 @@ F072 IRQs
 #define TIMER_2MHz_TIMER                TIM7
 
 // Mixer scheduler timer
-#define MIXER_SCHEDULER_TIMER_RCC_APB1Periph RCC_APB2Periph_TIM17
+#define MIXER_SCHEDULER_TIMER_RCC_APB2Periph RCC_APB2Periph_TIM17
 #define MIXER_SCHEDULER_TIMER                TIM17
 #define MIXER_SCHEDULER_TIMER_FREQ           (PERI1_FREQUENCY * TIMER_MULT_APB1)
 #define MIXER_SCHEDULER_TIMER_IRQn           TIM17_IRQn
 #define MIXER_SCHEDULER_TIMER_IRQHandler     TIM17_IRQHandler
 
 //all used RCC goes here
-#define RCC_AHB1_LIST                   (I2C_RCC_AHB1Periph | BACKLIGHT_RCC_AHB1Periph | LCD_RCC_AHB1Periph | KEYS_RCC_AHB1Periph | BUZZER_RCC_AHBPeriph | EXTMODULE_RCC_AHBPeriph | CRC_RCC_AHB1Periph | TELEMETRY_RCC_AHB1Periph | AUX_SERIAL_RCC_AHB1Periph)
-#define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph | TELEMETRY_RCC_APB1Periph | BACKLIGHT_RCC_APB1Periph | RCC_APB1Periph_USB)
-#define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB1Periph | PWM_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph | AUX_SERIAL_RCC_APB2Periph)
+#define RCC_AHB1_LIST                   (I2C_RCC_AHB1Periph | BACKLIGHT_STD_RCC_APB1Periph | BACKLIGHT_RCC_AHB1Periph | LCD_RCC_AHB1Periph | KEYS_RCC_AHB1Periph | BUZZER_RCC_AHBPeriph \
+                                         | EXTMODULE_RCC_AHBPeriph | CRC_RCC_AHB1Periph | TELEMETRY_RCC_AHB1Periph | AUX_SERIAL_RCC_AHB1Periph \
+                                         | AUX3_SERIAL_RCC_AHB1Periph | AUX4_SERIAL_RCC_AHB1Periph | ADC_RCC_AHB1Periph)
+#define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | RCC_APB1Periph_TIM6 /*delays*/ | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph \
+                                         | TELEMETRY_RCC_APB1Periph | BACKLIGHT_STD_RCC_APB1Periph | BACKLIGHT_RCC_APB1Periph | RCC_APB1Periph_USB \
+                                         | AUX3_SERIAL_RCC_APB1Periph | AUX4_SERIAL_RCC_APB1Periph)
+#define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB2Periph | PWM_RCC_APB2Periph | INTMODULE_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph \
+                                         | AUX_SERIAL_RCC_APB2Periph | ADC_RCC_APB2Periph)
 
 #endif // _HAL_H_

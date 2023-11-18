@@ -22,7 +22,7 @@
 #include "buzzer_driver.h"
 
 volatile BuzzerState buzzerState;
-BuzzerToneFifo buzzerFifo = BuzzerToneFifo();
+Fifo<BuzzerTone, 4> buzzerFifo;
 
 void audioKeyPress()
 {
@@ -35,7 +35,7 @@ void audioKeyError()
 {
   if (g_eeGeneral.beepMode >= e_mode_nokeys) {
 //    playTone(BEEP_DEFAULT_FREQ, 160, 20, PLAY_NOW);
-    buzzerEvent(AU_WARNING2);
+    audioEvent(AU_WARNING2);
   }
 }
 
@@ -49,6 +49,16 @@ void audioTrimPress(int value)
 
 void audioTimerCountdown(uint8_t timer, int value)
 {
+#if defined(DFPLAYER)
+  if (g_model.timers[timer].countdownBeep == COUNTDOWN_VOICE) {
+    if (value >= 0 && value <= TIMER_COUNTDOWN_START(timer)) {
+      playNumber(value, 0, 0, 0);
+    }
+    else if (value == 30 || value == 20) {
+      playDuration(value, 0, 0);
+    }
+  } else
+#endif // DFPLAYER
   if (g_model.timers[timer].countdownBeep == COUNTDOWN_BEEPS) {
     if (value == 0) {
       playTone(BEEP_DEFAULT_FREQ + 150, 300, 20, PLAY_NOW);
@@ -68,9 +78,8 @@ void audioTimerCountdown(uint8_t timer, int value)
   }
 }
 
-void buzzerEvent(unsigned int index)
+void audioEvent(unsigned int index)
 {
-  // TRACE("buzzerEvent %u", index);
   if (index == AU_NONE)
     return;
 
@@ -79,15 +88,18 @@ void buzzerEvent(unsigned int index)
   }
 
   if (g_eeGeneral.beepMode >= e_mode_nokeys || (g_eeGeneral.beepMode >= e_mode_alarms && index <= AU_ERROR)) {
+#if defined(DFPLAYER)
+    if (index < AU_SPECIAL_SOUND_FIRST && isAudioFileReferenced(index)) {
+      // dfPlayerQueueStopPlay(index); // really id until resolved by getAudioFileIndex
+      dfPlayerQueuePlayFile(getAudioFileIndex(index));
+      return;
+    }
+#endif
     switch (index) {
       case AU_INACTIVITY:
         playTone(2250, 80, 20, PLAY_REPEAT(2));
         break;
       case AU_TX_BATTERY_LOW:
-#if defined(PCBSKY9X)
-      case AU_TX_MAH_HIGH:
-      case AU_TX_TEMP_HIGH:
-#endif
         playTone(1950, 160, 20, PLAY_REPEAT(2), 1);
         playTone(2550, 160, 20, PLAY_REPEAT(2), -1);
         break;
@@ -114,7 +126,6 @@ void buzzerEvent(unsigned int index)
       case AU_WARNING3:
         playTone(BEEP_DEFAULT_FREQ, 200, 20, PLAY_NOW);
         break;
-        // TO.DO remove all these ones
       case AU_STICK1_MIDDLE:
       case AU_STICK2_MIDDLE:
       case AU_STICK3_MIDDLE:
@@ -281,14 +292,14 @@ void playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t flags, int8_t
     flags &= ~PLAY_NOW;
   }
 
-  if ((flags & PLAY_BACKGROUND) && !(flags & PLAY_NOW) && (buzzerState.duration || (buzzerState.repeat > 0) || !buzzerFifo.empty())) return;
+  if ((flags & PLAY_BACKGROUND) && !(flags & PLAY_NOW) && (buzzerState.duration || (buzzerState.repeat > 0) || !buzzerFifo.isEmpty())) return;
 
   if (!(flags & PLAY_NOW) && !(buzzerState.tone.flags & PLAY_BACKGROUND) && buzzerState.duration) {
-    if (!(flags & PLAY_BACKGROUND) && !buzzerFifo.full())
+    if (!(flags & PLAY_BACKGROUND) && !buzzerFifo.isFull())
       buzzerFifo.push(BuzzerTone(freq, len, pause, flags, freqIncr));
     return;
   } else if ((flags & PLAY_NOW) && (buzzerState.repeat > 0)) { // push current back to queue
-    if (!buzzerFifo.full()) {
+    if (!buzzerFifo.isFull()) {
     //  if (buzzerState.duration - len < buzzerState.tone.duration / 2) {
         buzzerState.repeat--;
     //  }
@@ -327,6 +338,13 @@ void playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t flags, int8_t
 
 void buzzerHeartbeat()
 {
+#if defined(DFPLAYER)
+    uint16_t index;
+    if (!dfPlayerBusy() && dfplayerFifo.pop(index)) {
+      dfplayerPlayFile(index);
+    }
+#endif
+
   if (buzzerState.duration) {
 
     if (buzzerState.duration > 10) {
@@ -359,14 +377,10 @@ void buzzerHeartbeat()
         buzzerOn();
       }
     }
-  } else if (!buzzerFifo.empty()) {
-    uint8_t nextIdx = buzzerFifo.get();
-    playTone(
-      buzzerFifo.tones[nextIdx].freq, 
-      buzzerFifo.tones[nextIdx].duration, 
-      buzzerFifo.tones[nextIdx].pause, 
-      buzzerFifo.tones[nextIdx].flags, 
-      buzzerFifo.tones[nextIdx].freqIncr
-      );
+  } else {
+    BuzzerTone tone;
+    if (buzzerFifo.pop(tone)) {
+        playTone(tone.freq, tone.duration, tone.pause, tone.flags, tone.freqIncr);
+    }
   }
 }

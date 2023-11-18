@@ -23,6 +23,7 @@
 
 #include "stddef.h"
 #include "stdbool.h"
+#include "flysky_gimbal_driver.h"
 
 #if defined(__cplusplus) && !defined(SIMU)
 extern "C" {
@@ -119,7 +120,7 @@ void init5msTimer();
 #ifdef __cplusplus
 extern "C" {
 #endif
-void delaysInit(void);
+// void delaysInit(void);
 void delay_01us(uint16_t nb);
 void delay_us(uint16_t nb);
 void delay_ms(uint32_t ms);
@@ -172,6 +173,10 @@ uint32_t sdMounted(void);
 #if !defined(BOOT)
 #include "buzzer_driver.h"
 #define BUZZER_HEARTBEAT buzzerHeartbeat
+#endif
+
+#if defined(DFPLAYER)
+#include "dfplayer_driver.h"
 #endif
 
 // Flash Write driver
@@ -362,6 +367,7 @@ void adcInit(void);
 void adcRead(void);
 extern uint16_t adcValues[NUM_ANALOGS];
 uint16_t getAnalogValue(uint8_t index);
+uint16_t* getAnalogValues();
 uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
 
 #define BATT_SCALE                    150
@@ -426,13 +432,6 @@ void sportSendBuffer(const uint8_t* buffer, unsigned long count);
 uint8_t telemetryGetByte(uint8_t * byte);
 extern uint32_t telemetryErrors;
 
-#define HAS_SPORT_UPDATE_CONNECTOR()  false
-
-// Sport update driver
-#define sportUpdateInit()
-#define SPORT_UPDATE_POWER_ON()         EXTERNAL_MODULE_ON()
-#define SPORT_UPDATE_POWER_OFF()        EXTERNAL_MODULE_OFF()
-
 // Audio driver
 void initBuzzerTimer(void);
 void audioInit(void);
@@ -468,6 +467,34 @@ void auxSerialPutc(char c);
 void auxSerialSbusInit(void);
 void auxSerialStop(void);
 #endif
+
+// Aux2 serial port driver
+#if defined(FLYSKY_GIMBAL)
+#define AUX4_SERIAL
+#define AUX4_SERIAL_BAUDRATE FLYSKY_HALL_BAUDRATE // 921600
+#define AUX4_SERIAL_RXFIFO_SIZE HALLSTICK_BUFF_SIZE // 128
+void flysky_gimbal_init();
+#endif
+#if defined(DFPLAYER)
+#define AUX3_SERIAL
+#define AUX3_SERIAL_BAUDRATE DFPLAYER_BAUDRATE
+#endif
+
+#if defined(AUX3_SERIAL)
+// extern uint8_t aux2SerialMode;
+// #if defined __cplusplus
+// void aux2SerialSetup(unsigned int baudrate, bool dma, uint16_t length = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1);
+// #endif
+void aux3SerialInit(void);
+void aux3SerialPutc(char c);
+#endif
+
+#if defined(AUX4_SERIAL)
+void aux4SerialInit(void);
+void aux4SerialStop(void);
+void aux4SerialSetIdleCb(void (*cb)());
+#endif
+
 #define USART_FLAG_ERRORS (USART_FLAG_ORE | USART_FLAG_PE) // | USART_FLAG_FE, USART_FLAG_NE
 
 // LCD driver
@@ -491,9 +518,7 @@ void checkTrainerSettings(void);
 
 #if defined(__cplusplus)
 //#include "fifo.h"
-#if defined(AUX_SERIAL_DMA_Channel_RX)
 #include "dmafifo.h"
-#endif // AUX_SERIAL_DMA_Channel_RX
 
 #if defined(CROSSFIRE)
 #define TELEMETRY_FIFO_SIZE             128
@@ -502,10 +527,10 @@ void checkTrainerSettings(void);
 #endif
 
 // extern Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
-#if defined(AUX_SERIAL_DMA_Channel_RX)
 extern DMAFifo<32> auxSerialRxFifo;
-#endif // AUX_SERIAL_DMA_Channel_RX
+#if defined(AUX4_SERIAL)
+extern DMAFifo<AUX4_SERIAL_RXFIFO_SIZE> aux4SerialRxFifo;
 #endif
-
+#endif
 
 #endif // _BOARD_H_

@@ -11,39 +11,27 @@ import tempfile
 boards = {
     "I6X": {
         "HELI": "NO",
-        "PCBI6X_ELRS": "NO",
+        "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "YES",
-        "PCBI6X_BACKLIGHT_MOD": "NO",
+        "DFPLAYER": "NO",
     },
-    "I6X_BACKLIGHT_MOD": {
-        "HELI": "NO",
-        "PCBI6X_ELRS": "NO",
-        "PCBI6X_INAV": "YES",
-        "PCBI6X_BACKLIGHT_MOD": "YES",
-    },
-    "I6X_ELRS": {
+    "I6X_DFPLAYER": {
         "HELI": "NO",
         "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "YES",
-        "PCBI6X_BACKLIGHT_MOD": "NO",
-    },
-    "I6X_ELRS_BACKLIGHT_MOD": {
-        "HELI": "NO",
-        "PCBI6X_ELRS": "YES",
-        "PCBI6X_INAV": "YES",
-        "PCBI6X_BACKLIGHT_MOD": "YES",
+        "DFPLAYER": "YES",
     },
     "I6X_HELI": {
         "HELI": "YES",
         "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "NO",
-        "PCBI6X_BACKLIGHT_MOD": "NO",
+        "DFPLAYER": "NO",
     },
-    "I6X_HELI_BACKLIGHT_MOD": {
+    "I6X_HELI_DFPLAYER": {
         "HELI": "YES",
         "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "NO",
-        "PCBI6X_BACKLIGHT_MOD": "YES",
+        "DFPLAYER": "YES",
     },
 }
 
@@ -64,13 +52,12 @@ translations = [
 common_options = {
     "PCB": "I6X",
     "MULTIMODULE": "NO",
-    "CROSSFIRE": "YES",
+    # "CROSSFIRE": "YES",
     "GVARS": "YES",
     "LUA": "NO",
     "LUA_COMPILER": "NO",
     "DISABLE_COMPANION": "YES",
     "PPM_UNIT": "PERCENT_PREC0",
-    # "PCBI6X_BACKLIGHT_MOD": "YES",
     "PCBI6X_USB_VBUS": "NO",
 }
 

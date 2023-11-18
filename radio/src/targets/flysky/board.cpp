@@ -216,14 +216,16 @@ void boardInit()
   // TRACE("RCC->CSR = %08x", RCC->CSR);
 #endif
 
-  crcInit();
   adcInit();
-  delaysInit();
+//   delaysInit();
   lcdInit(); // delaysInit() must be called before
   initBuzzerTimer();
   init2MhzTimer();
   init5msTimer();
   __enable_irq();
+#if defined(FLYSKY_GIMBAL)
+  flysky_gimbal_init();
+#endif
   buzzerInit();
   i2cInit();
   usbInit();
@@ -238,6 +240,10 @@ void boardInit()
 #endif
 
   backlightInit();
+
+#if defined(DFPLAYER)
+  dfplayerInit();
+#endif
 
 #endif // !defined(SIMU)
 }

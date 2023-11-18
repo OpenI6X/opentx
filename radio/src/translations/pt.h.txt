@@ -146,7 +146,7 @@
 
 #define LEN_VBEEPCOUNTDOWN     "\006"
 #if defined(PCBI6X)
-  #define TR_VBEEPCOUNTDOWN              "SilentBeeps\0"
+  #define TR_VBEEPCOUNTDOWN              "SilentBeeps\0Voice\0"
 #else
   #define TR_VBEEPCOUNTDOWN              "SilentBeeps\0Voice\0Haptic"
 #endif

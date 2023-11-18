@@ -51,12 +51,6 @@
   #define CASE_STM32(x)
 #endif
 
-#if defined(VARIO)
-  #define CASE_VARIO(x) x,
-#else
-  #define CASE_VARIO(x)
-#endif
-
 #if defined(LUA)
   #define CASE_LUA(x) x,
 #else
@@ -79,6 +73,12 @@
   #define CASE_AUDIO(x) x,
 #else
   #define CASE_AUDIO(x)
+#endif
+
+#if defined(DFPLAYER)
+  #define CASE_DFPLAYER(x) x,
+#else
+  #define CASE_DFPLAYER(x)
 #endif
 
 #if defined(PWM_BACKLIGHT)
@@ -207,7 +207,7 @@
 #endif
 
 #if defined(PCBI6X_ELRS)
-#define CTOOL_DATA_SIZE (460 + 176 + 140 + 4) // 780
+#define CTOOL_DATA_SIZE (462 + 176 + 140 + 4) // 782
 #else
 #define CTOOL_DATA_SIZE 512 // minimize RAM usage for non PCBI6X_ELRS enabled builds, like DEBUG
 #endif
@@ -1027,6 +1027,9 @@ enum AUDIO_SOUNDS {
   AU_SLIDER3_MIDDLE,
   AU_SLIDER4_MIDDLE,
 #endif
+#elif defined(PCBI6X)
+  AU_POT1_MIDDLE,
+  AU_POT2_MIDDLE,
 #else
   AU_POT1_MIDDLE,
   AU_POT2_MIDDLE,

@@ -22,7 +22,7 @@
 #include "hal.h"
 volatile uint8_t RadioState;
 
-uint8_t protocol_flags=0,protocol_flags2=0;
+uint8_t protocol_flags=0;
 uint8_t prev_power=0xFD; // unused power value
 
 // reuse telemetryRxBuffer for native AFHDS2A support
@@ -47,36 +47,32 @@ const uint8_t AFHDS2A_A7105_regs[] = {
       0x01, 0x0f // 30 - 31
 };
 
-void SPI_RADIO_SendBlock(uint8_t *BufferPtr, uint16_t Size) {
-  __IO uint8_t *spidr = ((__IO uint8_t *)&SPI1->DR);
-  while (Size) {
-    while ((SPI1->SR & SPI_SR_TXE) == 0) {
-    }
-    *spidr = *BufferPtr++;
-    Size--;
-  }
-  while ((SPI1->SR & SPI_SR_BSY) != 0) {
-  }
+void SPI_Write(uint8_t command)
+{//working OK
+	while((SPI1->SR & SPI_SR_BSY));
+	*(__IO uint8_t *)&SPI1->DR = command;					//Write the first data item to be transmitted into the SPI_DR register (this clears the TXE flag).
+	#ifdef DEBUG_SPI
+		debug("%02X ",command);
+	#endif
+	while (!(SPI1->SR & SPI_SR_RXNE));
+	command = (uint8_t)SPI1->DR;					// ... and read the last received data.
 }
-/*---------------------------------------------------------------------------*/
-void SPI_RADIO_ReceiveBlock(uint8_t *BufferPtr, uint16_t Size) {
-  __IO uint8_t *spidr = ((__IO uint8_t *)&SPI1->DR);
-  uint8_t dummy;
-  while ((SPI1->SR & SPI_SR_FRLVL) != 0) {
-    dummy = (uint8_t)(READ_REG(SPI1->DR));
-  }
-  (void)dummy;
-  while (Size) {
-    while ((SPI1->SR & SPI_SR_TXE) == 0) {
-    }
-    *spidr = 0x00;
-    while ((SPI1->SR & SPI_SR_RXNE) == 0) {
-    }
-    *BufferPtr++ = (uint8_t)(READ_REG(SPI1->DR));
-    Size--;
-  }
-  while ((SPI1->SR & SPI_SR_BSY) != 0) {
-  }
+
+uint8_t SPI_SDI_Read() 
+{
+	uint8_t rx=0;
+	// uint8_t dummy;
+    // while ((SPI1->SR & SPI_SR_FRLVL) != 0) { // not present in multi
+    //   dummy = (uint8_t)(READ_REG(SPI1->DR));
+    // }
+    // (void)dummy;
+	while(!(SPI1->SR & SPI_SR_TXE));
+	while((SPI1->SR & SPI_SR_BSY));
+
+    *(__IO uint8_t *)&SPI1->DR = 0x00; // not present in multi
+    while(!(SPI1->SR & SPI_SR_RXNE));
+    rx=(uint8_t)SPI1->DR;
+	return rx;
 }
 /*---------------------------------------------------------------------------*/
 inline void a7105_csn_on(void) {RF_SCN_GPIO_PORT->BSRR = RF_SCN_SET_PIN;}
@@ -123,111 +119,78 @@ void A7105_SetTxRxMode(uint8_t mode) {
 }
 
 void A7105_Strobe(uint8_t address) {
-  A7105_CSN_OFF;
-  SPI_RADIO_SendBlock(&address, 1);
-  A7105_CSN_ON;
-}
-
-void A7105_WriteReg(uint8_t address, uint8_t data) {
-  uint8_t out[2];
-  out[0] = address;
-  out[1] = data;
-  A7105_CSN_OFF;
-  SPI_RADIO_SendBlock(out, 2);
-  A7105_CSN_ON;
+  A7105_CSN_off;
+  SPI_Write(address);
+  A7105_CSN_on;
 }
 
 void A7105_WriteData(uint8_t len, uint8_t channel) {
-  uint8_t i;
-  uint8_t out[AFHDS2A_TXPACKET_SIZE + 1];
-  A7105_Strobe(A7105_STANDBY);
-  A7105_Strobe(A7105_RST_WRPTR);
-
-  A7105_CSN_OFF;
-  out[0] = A7105_05_FIFO_DATA;
-  for (i = 0; i < len; i++)
-    out[i + 1] = packet[i];
-  SPI_RADIO_SendBlock(out, len + 1);
-  A7105_CSN_ON;
-  A7105_SetTxRxMode(TX_EN); //Switch to PA
-  A7105_WriteReg(A7105_0F_PLL_I, channel);
-  A7105_Strobe(A7105_TX);
+	uint8_t i;
+	A7105_CSN_off;
+	SPI_Write(A7105_RST_WRPTR);
+	SPI_Write(A7105_05_FIFO_DATA);
+	for (i = 0; i < len; i++)
+		SPI_Write(packet[i]);
+	A7105_CSN_on;
+	// if(protocol!=PROTO_WFLY2)
+	// {
+		// if(!(protocol==PROTO_FLYSKY || (protocol==PROTO_KYOSHO && sub_protocol==KYOSHO_HYPE)))
+		// {
+			A7105_Strobe(A7105_STANDBY);	//Force standby mode, ie cancel any TX or RX...
+			A7105_SetTxRxMode(TX_EN);		//Switch to PA
+		// }
+		A7105_WriteReg(A7105_0F_PLL_I, channel);
+		A7105_Strobe(A7105_TX);
+	// }
 }
 
 void A7105_ReadData(uint8_t len) {
-  uint8_t out;
-  A7105_Strobe(A7105_RST_RDPTR);
-  A7105_CSN_OFF;
-  out = 0x40 | A7105_05_FIFO_DATA;
-  SPI_RADIO_SendBlock(&out, 1);
-  //for (i = 0; i < len; i++) {
-  //  SPI_RADIO_ReceiveBlock(&packet[i], 1);
-  //}
-  SPI_RADIO_ReceiveBlock(packet, len);
+	uint8_t i;
+	A7105_Strobe(A7105_RST_RDPTR);
+	A7105_CSN_off;
+	SPI_Write(0x40 | A7105_05_FIFO_DATA);	//bit 6 =1 for reading
+	for (i=0;i<len;i++)
+		packet[i]=SPI_SDI_Read();
+	A7105_CSN_on;
+}
 
-  A7105_CSN_ON;
+void A7105_WriteReg(uint8_t address, uint8_t data) {
+	A7105_CSN_off;
+	SPI_Write(address); 
+//	NOP();
+	SPI_Write(data);  
+	A7105_CSN_on;
 }
 
 uint8_t A7105_ReadReg(uint8_t address) {
-  uint8_t out;
-  uint8_t in;
-  A7105_CSN_OFF;
-  out = address | 0x40;
-  SPI_RADIO_SendBlock(&out, 1);
-  SPI_RADIO_ReceiveBlock(&in, 1);
-  A7105_CSN_ON;
-  return in;
+	uint8_t result;
+	A7105_CSN_off;
+	SPI_Write(address |=0x40);				//bit 6 =1 for reading
+	result = SPI_SDI_Read();  
+	A7105_CSN_on;
+	return(result); 
 }
 
 uint8_t A7105_Reset() {
-  uint8_t result;
-  A7105_WriteReg(A7105_00_MODE, 0x00);
-//  mDelay(1);
-  A7105_SetTxRxMode(TXRX_OFF);                     //Set both GPIO as output and low
-  result = A7105_ReadReg(A7105_10_PLL_II) == 0x9E; //check if is reset.
-  A7105_Strobe(A7105_STANDBY);
-  return result;
+	uint8_t result;
+	
+	A7105_WriteReg(A7105_00_MODE, 0x00);
+	// delay_ms(1);
+	A7105_SetTxRxMode(TXRX_OFF);			             //Set both GPIO as output and low
+	result=A7105_ReadReg(A7105_10_PLL_II) == 0x9E; //check if is reset.
+	A7105_Strobe(A7105_STANDBY);
+	return result;
 }
 
 void A7105_WriteID(uint32_t ida) {
-	uint8_t out[5];
-	A7105_CSN_OFF;
-	out[0] = A7105_06_ID_DATA;
-	out[1] = (ida >> 24) & 0xff;
-	out[2] = (ida >> 16) & 0xff;
-	out[3] = (ida >> 8) & 0xff;
-	out[4] = (ida >> 0) & 0xff;
-	SPI_RADIO_SendBlock(out, 5);
-	A7105_CSN_ON;
+	A7105_CSN_off;
+	SPI_Write(A7105_06_ID_DATA);			//ex id=0x5475c52a ;txid3txid2txid1txid0
+	SPI_Write((ida>>24)&0xff);				//54 
+	SPI_Write((ida>>16)&0xff);				//75
+	SPI_Write((ida>>8)&0xff);				//c5
+	SPI_Write((ida>>0)&0xff);				//2a
+	A7105_CSN_on;
 }
-
-/*
-static void A7105_SetPower_Value(int power)
-{
-	//Power amp is ~+16dBm so:
-	//TXPOWER_100uW  = -23dBm == PAC=0 TBG=0
-	//TXPOWER_300uW  = -20dBm == PAC=0 TBG=1
-	//TXPOWER_1mW    = -16dBm == PAC=0 TBG=2
-	//TXPOWER_3mW    = -11dBm == PAC=0 TBG=4
-	//TXPOWER_10mW   = -6dBm  == PAC=1 TBG=5
-	//TXPOWER_30mW   = 0dBm   == PAC=2 TBG=7
-	//TXPOWER_100mW  = 1dBm   == PAC=3 TBG=7
-	//TXPOWER_150mW  = 1dBm   == PAC=3 TBG=7
-	uint8_t pac, tbg;
-	switch(power) {
-		case 0: pac = 0; tbg = 0; break;
-		case 1: pac = 0; tbg = 1; break;
-		case 2: pac = 0; tbg = 2; break;
-		case 3: pac = 0; tbg = 4; break;
-		case 4: pac = 1; tbg = 5; break;
-		case 5: pac = 2; tbg = 7; break;
-		case 6: pac = 3; tbg = 7; break;
-		case 7: pac = 3; tbg = 7; break;
-		default: pac = 0; tbg = 0; break;
-	};
-	A7105_WriteReg(0x28, (pac << 3) | tbg);
-}
-*/
 
 void A7105_SetPower()
 {
@@ -252,9 +215,8 @@ void A7105_SetPower()
 // this is required for some A7105 modules and/or RXs with inaccurate crystal oscillator
 void A7105_AdjustLOBaseFreq(void)
 {
-	static int16_t old_offset=300;
-	// no tuning for now
-	int16_t offset = old_offset; // g_model.FreqOffset;
+	static int16_t old_offset=2048;
+	int16_t offset = 0; // g_model.FreqOffset; -300 <-> 300
 	if(old_offset==offset)	// offset is the same as before...
 			return;
 	old_offset=offset;
@@ -345,17 +307,18 @@ void A7105_Sleep(void) {
 	A7105_WriteReg(A7105_0C_GPIO2_PIN_II, 0x33);
 }
 
-#define ID_NORMAL 0x55201041
-#define ID_PLUS   0xAA201041
+#define ID_NORMAL  0x55201041 // used by Multiprotocol Module
+#define ID_NORMAL2 0x5475C52A // used by DeviationTX & erFly6
 void A7105_Init(void)
 {
 	uint8_t *A7105_Regs = 0;
 //	uint8_t vco_calibration0, vco_calibration1;
-/*****************************************************************************/
-	A7105_Reset();
-    delay_ms(1);
-/*****************************************************************************/
-	A7105_WriteID(0x5475c52A); //0x2Ac57554
+
+  A7105_Reset();
+  delay_ms(1);
+
+	A7105_WriteID(ID_NORMAL2);
+
 	A7105_Regs = (uint8_t*) AFHDS2A_A7105_regs;
 
 	for (uint8_t i = 0; i < 0x32; i++) {
@@ -363,30 +326,34 @@ void A7105_Init(void)
 		if (val != 0xFF)
 			A7105_WriteReg(i, val);
 	}
-/*****************************************************************************/
-	while (A7105_ReadReg(A7105_10_PLL_II) != 0x9E) {
-	}
-/*********************************Calibration************************************/
+
+	while (A7105_ReadReg(A7105_10_PLL_II) != 0x9E);
+
+  // Calibration
 	A7105_Strobe(A7105_PLL);
+
 	//IF Filter Bank Calibration
 	A7105_WriteReg(A7105_02_CALC, 1);
-	while (A7105_ReadReg(A7105_02_CALC)) {
-	}			// Wait for calibration to end
+	while (A7105_ReadReg(A7105_02_CALC));       // Wait for calibration to end
 	//VCO Current Calibration
-	A7105_WriteReg(A7105_24_VCO_CURCAL, 0x13);//Recommended calibration from A7105 Datasheet
+	A7105_WriteReg(A7105_24_VCO_CURCAL, 0x13);  //Recommended calibration from A7105 Datasheet
 	//VCO Bank Calibration
 	A7105_WriteReg(A7105_26_VCO_SBCAL_II, 0x3b);//Recommended calibration from A7105 Datasheet
+
 	//VCO Bank Calibrate channel 0
 	A7105_WriteReg(A7105_0F_CHANNEL, 0);
 	A7105_WriteReg(A7105_02_CALC, 2);
-	while (A7105_ReadReg(A7105_02_CALC)) {
-	}	// Wait for calibration to end
+	while (A7105_ReadReg(A7105_02_CALC));       // Wait for calibration to end
+
+    //VCO Bank Calibrate channel A0
 	A7105_WriteReg(A7105_0F_CHANNEL, 0xa0);
 	A7105_WriteReg(A7105_02_CALC, 2);
-	while (A7105_ReadReg(A7105_02_CALC)) {
-	}	// Wait for calibration to end
+	while (A7105_ReadReg(A7105_02_CALC));       // Wait for calibration to end
+
 	A7105_WriteReg(A7105_25_VCO_SBCAL_I, 0x0A);	//Reset VCO Band calibration
+
 	A7105_SetTxRxMode(TX_EN);
 	A7105_SetPower();
+
 	A7105_Strobe(A7105_STANDBY);
 }

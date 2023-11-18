@@ -876,6 +876,9 @@ void checkAll() {
 
   // we don't check the throttle stick if the radio is not calibrated
   if (g_eeGeneral.chkSum == evalChkSum())
+#if defined(FLYSKY_GIMBAL) // delay necessary for the throttle check to successfully detect when serial flysky gimbal throttle is not at zero
+    RTOS_WAIT_MS(23);
+#endif    
     checkThrottleStick();
 
   checkSwitches();
@@ -1556,9 +1559,11 @@ void opentxClose(uint8_t shutdown) {
 
   saveAllData();
 
+#if !defined(PCBI6X)
   while (IS_PLAYING(ID_PLAY_PROMPT_BASE + AU_BYE)) {
     RTOS_WAIT_MS(10);
   }
+#endif
 
   RTOS_WAIT_MS(100);
 
@@ -1834,6 +1839,10 @@ void opentxInit()
 
   referenceSystemAudioFiles();
   audioQueue.start();
+#endif
+
+#if defined(DFPLAYER)
+  dfplayerSetVolume(g_eeGeneral.wavVolume);
 #endif
 
   BACKLIGHT_ENABLE();

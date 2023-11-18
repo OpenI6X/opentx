@@ -58,11 +58,7 @@ LogicalSwitchesFlightModeContext lswFm[MAX_FLIGHT_MODES];
 
 
 #if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
-#if defined(PCBX9E)
-tmr10ms_t switchesMidposStart[16];
-#else
-tmr10ms_t switchesMidposStart[6]; // TODO constant
-#endif
+tmr10ms_t switchesMidposStart[NUM_SWITCHES];
 uint64_t  switchesPos = 0;
 tmr10ms_t potsLastposStart[NUM_XPOTS];
 uint8_t   potsPos[NUM_XPOTS];
@@ -138,7 +134,7 @@ void getSwitchesPosition(bool startup){
   CHECK_3POS(1, SW_SB);
   CHECK_3POS(2, SW_SC);
   CHECK_3POS(3, SW_SD);
-#if !defined(PCBX7) && !defined(PCBXLITE) 
+#if !defined(PCBX7) && !defined(PCBXLITE)
   CHECK_3POS(4, SW_SE);
 #endif
 #if !defined(PCBXLITE)
@@ -556,7 +552,7 @@ void checkSwitches()
   uint8_t bad_pots = 0, last_bad_pots = 0xff;
 #endif
 
-  while (1) {
+  while (true) {
 
 #if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
   #define GETADC_COUNT 1
@@ -643,14 +639,10 @@ void checkSwitches()
     // first - display warning
 #if defined(PCBTARANIS) || defined(PCBHORUS)|| defined(PCBI6X)
     if ((last_bad_switches != switches_states) /*|| (last_bad_pots != bad_pots)*/) {
-#if defined(PCBI6X)
-      RAISE_ALERT(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP, last_bad_switches == 0xff ? AU_SWITCH_ALERT : AU_NONE);
-#else
       drawAlertBox(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP);
-      if (last_bad_switches == 0xff || last_bad_pots == 0xff) {
+      if (last_bad_switches == 0xff /*|| last_bad_pots == 0xff*/) {
         AUDIO_ERROR_MESSAGE(AU_SWITCH_ALERT);
       }
-#endif // PCBI6X
       int x = SWITCH_WARNING_LIST_X, y = SWITCH_WARNING_LIST_Y;
       int numWarnings = 0;
       for (int i=0; i<NUM_SWITCHES; ++i) {
@@ -739,7 +731,7 @@ void checkSwitches()
 #endif // PCBI6X
 #else
     if (last_bad_switches != switches_states) {
-      RAISE_ALERT(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP, last_bad_switches == 0xff ? AU_SWITCH_ALERT : AU_NONE);
+      RAISE_ALERT(STR_SWITCHWARN, nullptr, STR_PRESSANYKEYTOSKIP, last_bad_switches == 0xff ? AU_SWITCH_ALERT : AU_NONE);
       uint8_t x = 2;
       for (uint8_t i=0; i<NUM_SWITCHES-1; i++) {
         uint8_t attr;

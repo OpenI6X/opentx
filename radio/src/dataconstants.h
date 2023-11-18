@@ -76,11 +76,11 @@
   #define MAX_MIXERS                   32 
   #define MAX_EXPOS                    14
   #define MAX_LOGICAL_SWITCHES         12
-  #define MAX_SPECIAL_FUNCTIONS        18 // number of functions assigned to switches
+  #define MAX_SPECIAL_FUNCTIONS        18 // number of functions assigned to switches, 20B each
   #define MAX_TRAINER_CHANNELS         16
   #define MAX_INPUTS                   16
-  #define MAX_TELEMETRY_SENSORS        30 // 48b each
-  #define MAX_SCRIPTS				           0
+  #define MAX_TELEMETRY_SENSORS        30 // 48B each
+  #define MAX_SCRIPTS				   0
 #else
   #define MAX_MODELS                   16
   #define MAX_OUTPUT_CHANNELS          16 // number of real output channels CH1-CH16
@@ -758,8 +758,8 @@ enum Functions {
   // then the other functions
   FUNC_FIRST_WITHOUT_ENABLE,
   FUNC_PLAY_SOUND = FUNC_FIRST_WITHOUT_ENABLE,
-//  FUNC_PLAY_TRACK,
-//  FUNC_PLAY_VALUE,
+  FUNC_PLAY_TRACK,
+  FUNC_PLAY_VALUE,
   FUNC_RESERVE4,
   FUNC_PLAY_SCRIPT,
   FUNC_RESERVE5,
@@ -790,7 +790,7 @@ enum TimerModes {
 enum CountDownModes {
   COUNTDOWN_SILENT,
   COUNTDOWN_BEEPS,
-#if defined(VOICE)
+#if defined(VOICE) || defined(DFPLAYER)
   COUNTDOWN_VOICE,
 #endif
 #if defined(HAPTIC)

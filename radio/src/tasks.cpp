@@ -222,7 +222,9 @@ TASK_FUNCTION(menusTask) {
       RTOS_WAIT_TICKS(MENU_TASK_PERIOD_TICKS - runtime);
     }
 
+#if !defined(PCBI6X) // no software controlled power on i6X
     resetForcePowerOffRequest();
+#endif
   }
 
 #if defined(PCBX9E)

@@ -131,7 +131,8 @@ void menuStatisticsDebug(event_t event)
       break;
 
     case EVT_KEY_FIRST(KEY_ENTER):
-      maxMixerDuration  = 0;
+      telemetryErrors = 0;
+      maxMixerDuration = 0;
       break;
 
 
@@ -139,9 +140,10 @@ void menuStatisticsDebug(event_t event)
 #if defined(PCBX7)
     case EVT_KEY_BREAK(KEY_PAGE):
 #endif
+#if !defined(PCBI6X) // single debug screen
       chainMenu(menuStatisticsDebug2);
       return;
-
+#endif
 
     case EVT_KEY_FIRST(KEY_DOWN):
 #if defined(PCBX7)
@@ -155,6 +157,11 @@ void menuStatisticsDebug(event_t event)
       chainMenu(menuMainView);
       break;
   }
+
+#if defined(PCBI6X) // single debug screen
+  lcdDrawTextAlignedLeft(MENU_DEBUG_ROW1, "Tlm RX Err");
+  lcdDrawNumber(MENU_DEBUG_COL1_OFS + FW, MENU_DEBUG_ROW1, telemetryErrors, RIGHT);
+#endif
 
 #if defined(PCBSKY9X)
   if ((ResetReason&RSTC_SR_RSTTYP) == (2<<8)) {

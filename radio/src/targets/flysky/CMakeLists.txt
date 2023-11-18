@@ -1,10 +1,10 @@
 option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
-option(PCBI6X_ELRS "Enable ExpressLRS configuration tool" NO) # ~4kB
+option(PCBI6X_ELRS "Enable ExpressLRS configuration tool" NO) # ~4.3kB
 option(PCBI6X_HELLO "Enable Hello World example tool" NO)
 option(PCBI6X_INAV "Enable INAV Lite telemetry screen" NO) # ~2kB
 option(PCBI6X_USB_VBUS "Remove manual USB connection, just auto using VBUS, requires wiring USB VBUS to PA15 pad" NO)
-option(PCBI6X_BACKLIGHT_MOD "Enable adjustable backlight, requires wiring BL pad to PC9 pad" NO)
 option(AFHDS2A_LQI_CH "Send RSSI at channel 1-17" 17)
+option(DFPLAYER "Enables DFPlayer on AUX3 TX" NO) # ~1.7kB
 
 if(PCB STREQUAL I6X)
   set(PWR_BUTTON "SWITCH" CACHE STRING "Pwr button type (PRESS/SWITCH)")
@@ -45,8 +45,20 @@ if(PCBI6X_USB_VBUS STREQUAL YES)
   add_definitions(-DPCBI6X_USB_VBUS)
 endif()
 
-if(PCBI6X_BACKLIGHT_MOD STREQUAL YES)
-  add_definitions(-DPCBI6X_BACKLIGHT_MOD)
+if(FLYSKY_GIMBAL STREQUAL YES)
+  add_definitions(-DFLYSKY_GIMBAL)
+  set(TARGET_SRC
+    ${TARGET_SRC}
+    ../common/arm/stm32/flysky_gimbal_driver.cpp
+    )
+endif()
+
+if(DFPLAYER STREQUAL YES)
+  add_definitions(-DDFPLAYER)
+  set(TARGET_SRC
+  ${TARGET_SRC}
+  dfplayer_driver.cpp
+  )
 endif()
 
 if(PCBI6X_ELRS STREQUAL YES)
@@ -65,7 +77,7 @@ set(TARGET_SRC
   )
 endif()
 
-if((PCBI6X_INAV STREQUAL YES) AND ((TRANSLATIONS STREQUAL EN) OR (NOT PCBI6X_ELRS STREQUAL YES)))
+if((PCBI6X_INAV STREQUAL YES)) # AND ((TRANSLATIONS STREQUAL EN) OR (NOT PCBI6X_ELRS STREQUAL YES)))
   add_definitions(-DPCBI6X_INAV)
 set(TARGET_SRC
   ${TARGET_SRC}
@@ -73,7 +85,7 @@ set(TARGET_SRC
   )
 endif()
 
-add_definitions(-DPCBI6X_USB_MSD) # 3620B
+add_definitions(-DPCBI6X_USB_MSD) # 3.2kB
 
 set(TARGET_SRC
   ${TARGET_SRC}
