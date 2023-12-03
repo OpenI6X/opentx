@@ -133,14 +133,10 @@ void dfplayerPlayFile(uint16_t number) {
 }
 
 void dfplayerSetVolume(int8_t volume) {
-    uint8_t volumes[5] = { 0, 12, 18, 20, 22 }; // allowed range: 0-30
+    uint8_t volumes[5] = { 0, 12, 18, 24, 30 }; // allowed range: 0-30
     //RTOS_WAIT_MS(200);
     dfplayerCommand(DFP_SET_VOLUME, /*((2 + volume) * 6)*/volumes[2 + volume]);
 }
-
-// static void dfplayerStopPlay(void) {
-//     dfplayerCommand(DFP_PAUSE);
-// }
 
 void dfplayerInit() {
     // setup BUSY pin
@@ -151,6 +147,8 @@ void dfplayerInit() {
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
     GPIO_Init(DFPLAYER_GPIO_PORT, &GPIO_InitStructure);
+
+    delay_ms(150); // fix for MH2024K slow init
 
     aux3SerialInit();
     dfplayerSetVolume(0);
