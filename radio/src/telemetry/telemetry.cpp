@@ -31,6 +31,8 @@ TelemetryData telemetryData;
 
 uint8_t telemetryProtocol = 255;
 
+volatile bool pendingTelemetryPollFrame = false;
+
 #if defined(PCBSKY9X) && defined(REVX)
 uint8_t serialInversion = 0;
 #endif
@@ -78,7 +80,6 @@ void telemetryWakeup()
     telemetryInit(requiredTelemetryProtocol);
   }
 
-#if defined(STM32)
   uint8_t data;
   if (telemetryGetByte(&data)) {
     LOG_TELEMETRY_WRITE_START();
@@ -87,16 +88,12 @@ void telemetryWakeup()
       LOG_TELEMETRY_WRITE_BYTE(data);
     } while (telemetryGetByte(&data));
   }
-#elif defined(PCBSKY9X)
-  if (telemetryProtocol == PROTOCOL_FRSKY_D_SECONDARY) {
-    uint8_t data;
-    while (telemetrySecondPortReceive(data)) {
-      processTelemetryData(data);
-    }
-  }
-  else {
-    // Receive serial data here
-    rxPdcUsart(processTelemetryData);
+
+#if defined(AFHDS2A)
+  // AFHDS2A is handled per complete frame
+  if (pendingTelemetryPollFrame) { // assume AFHDS2A for now
+    pendingTelemetryPollFrame = false;
+    processFlySkyTelemetryFrame();
   }
 #endif
 

@@ -27,6 +27,10 @@
 void processFlySkyTelemetryData(uint8_t data);
 #endif
 
+#if defined(AFHDS2A)
+void processFlySkyTelemetryFrame();
+#endif
+
 void flySkySetDefault(int index, uint16_t id, uint8_t subId, uint8_t instance);
 
 // Used by multi protocol

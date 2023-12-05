@@ -38,6 +38,7 @@
   #include "multi.h"
 #endif
 #if defined(PCBI6X)
+  #include "iface_a7105.h"
   #include "flysky_ibus.h"
 #endif
 

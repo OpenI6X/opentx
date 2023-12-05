@@ -26,7 +26,8 @@ uint8_t protocol_flags=0;
 uint8_t prev_power=0xFD; // unused power value
 
 // reuse telemetryRxBuffer for native AFHDS2A support
-uint8_t *packet = &telemetryRxBuffer[0];
+uint8_t *packet_in = &telemetryRxBuffer[0]; // separated to prevent overwrite
+uint8_t *packet = &telemetryRxBuffer[64];
 
 //Protocol variables
 ID_t ID;
@@ -150,7 +151,7 @@ void A7105_ReadData(uint8_t len) {
 	A7105_CSN_off;
 	SPI_Write(0x40 | A7105_05_FIFO_DATA);	//bit 6 =1 for reading
 	for (i=0;i<len;i++)
-		packet[i]=SPI_SDI_Read();
+		packet_in[i]=SPI_SDI_Read();
 	A7105_CSN_on;
 }
 
