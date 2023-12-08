@@ -63,7 +63,11 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   GPIO_InitStructure.GPIO_Pin = TELEMETRY_TX_GPIO_PIN;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+#if defined(CRSF_UNINVERTED)
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+#else
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;  // was GPIO_PuPd_UP;
+#endif
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_Init(TELEMETRY_GPIO, &GPIO_InitStructure);
 
