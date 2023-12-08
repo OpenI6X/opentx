@@ -91,7 +91,9 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   USART_HalfDuplexCmd(TELEMETRY_USART, ENABLE);
 
   // Level inversion
+#if !defined(CRSF_UNINVERTED)
   USART_InvPinCmd(TELEMETRY_USART, USART_InvPin_Tx | USART_InvPin_Rx, ENABLE);
+#endif
 
   USART_Cmd(TELEMETRY_USART, ENABLE);
   USART_ITConfig(TELEMETRY_USART, USART_IT_RXNE, ENABLE);
