@@ -283,24 +283,24 @@ packet[1-4] - rx_tx_addr
 packet[5-8] - rx_id
 0xff - AFHDS2A_ID_END
 */
-void processFlySkyTelemetryFrame() {
-  if (telemetryRxBuffer[0] == 0xAA) {
-    processFlySkyPacket(telemetryRxBuffer + 8);
-  } else if (telemetryRxBuffer[0] == 0xAC) {
-    processFlySkyPacketAC(telemetryRxBuffer + 8);
+void processFlySkyTelemetryFrame(uint8_t * frame) {
+  if (frame[0] == 0xAA) {
+    processFlySkyPacket(frame + 8);
+  } else if (frame[0] == 0xAC) {
+    processFlySkyPacketAC(frame + 8);
   }
 
 #if defined(AUX_SERIAL)
   if (g_eeGeneral.auxSerialMode == UART_MODE_TELEMETRY_MIRROR) {
     // header, add to packet before packet data
     // MP[type][size][RSSI] followed by 4*7 bytes of telemetry data, skip rx and tx id
-    telemetryRxBuffer[4] = 'M';
-    telemetryRxBuffer[5] = 'P';
-    telemetryRxBuffer[6] = (telemetryRxBuffer[0] == 0xAA) ? 0x06 : 0x0C; // MPM telemetry types for AFHDS2A
-    telemetryRxBuffer[7] = AFHDS2A_RXPACKET_SIZE - 8;
+    frame[4] = 'M';
+    frame[5] = 'P';
+    frame[6] = (frame[0] == 0xAA) ? 0x06 : 0x0C; // MPM telemetry types for AFHDS2A
+    frame[7] = AFHDS2A_RXPACKET_SIZE - 8;
 
     for (uint8_t c = 4; c < AFHDS2A_RXPACKET_SIZE; c++) {
-      auxSerialPutc(telemetryRxBuffer[c]);
+      auxSerialPutc(frame[c]);
     }
   }
 #endif

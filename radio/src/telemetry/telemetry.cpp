@@ -93,7 +93,7 @@ void telemetryWakeup()
   // AFHDS2A is handled per complete frame
   if (pendingTelemetryPollFrame) { // only AFHDS2A for now
     pendingTelemetryPollFrame = false;
-    processFlySkyTelemetryFrame();
+    processFlySkyTelemetryFrame(telemetryRxBuffer);
   }
 #endif
 
