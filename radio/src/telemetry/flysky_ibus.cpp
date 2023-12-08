@@ -299,7 +299,6 @@ void processFlySkyTelemetryFrame() {
     telemetryRxBuffer[6] = (telemetryRxBuffer[0] == 0xAA) ? 0x06 : 0x0C; // MPM telemetry types for AFHDS2A
     telemetryRxBuffer[7] = AFHDS2A_RXPACKET_SIZE - 8;
 
-//    auxSerialSendBuffer(&telemetryRxBuffer[4], AFHDS2A_RXPACKET_SIZE);
     for (uint8_t c = 4; c < AFHDS2A_RXPACKET_SIZE; c++) {
       auxSerialPutc(telemetryRxBuffer[c]);
     }

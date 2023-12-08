@@ -91,7 +91,7 @@ void telemetryWakeup()
 
 #if defined(AFHDS2A)
   // AFHDS2A is handled per complete frame
-  if (pendingTelemetryPollFrame) { // assume AFHDS2A for now
+  if (pendingTelemetryPollFrame) { // only AFHDS2A for now
     pendingTelemetryPollFrame = false;
     processFlySkyTelemetryFrame();
   }

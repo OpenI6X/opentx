@@ -432,6 +432,8 @@ void sportSendBuffer(const uint8_t* buffer, unsigned long count);
 uint8_t telemetryGetByte(uint8_t * byte);
 extern uint32_t telemetryErrors;
 
+extern volatile bool pendingTelemetryPollFrame;
+
 // Audio driver
 void initBuzzerTimer(void);
 void audioInit(void);
