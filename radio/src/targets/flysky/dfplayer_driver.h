@@ -25,7 +25,7 @@
 
 #define DFPLAYER_SOUNDS_FILE_INDEX  179 // AUDIO_SOUNDS
 #define DFPLAYER_CUSTOM_FILE_INDEX  216 // 216 to 267 + 34 user custom ones
-#define DFPLAYER_LAST_FILE_INDEX    (274 + 9) // 274 + 9 custom placeholders 
+#define DFPLAYER_LAST_FILE_INDEX    (271 + 9) // 271 + 9 custom placeholders 
 
 /* struct DfPlayerFragment {
     uint16_t index;

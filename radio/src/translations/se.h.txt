@@ -928,7 +928,7 @@
 #define TR_FORMATTING          "Formaterar..."
 #define TR_TEMP_CALIB          "Temp. kalib."
 #define TR_TIME                "Tid "
-#define TR_MAXBAUDRATE         "Max bauds"
+#define TR_MAXBAUDRATE         "Baudrate"
 
 #define TR_BLUETOOTH            "Bluetooth"
 #define TR_BLUETOOTH_DISC       "Discover"
@@ -1024,7 +1024,7 @@
 #define TR_VALUE               "Värde"
 #define TR_TOPLCDTIMER         "Top LCD Timer"
 #define TR_UNIT                "Enhet"
-#define TR_TELEMETRY_NEWSENSOR INDENT "Lägg till sensor..."
+#define TR_TELEMETRY_NEWSENSOR INDENT "Lägg till"
 #define TR_CHANNELRANGE        INDENT "Kanalområde"
 #define TR_ANTENNASELECTION    TR(INDENT "Antenna", INDENT "Antenna selection")
 #define TR_ANTENNACONFIRM1     "Really switch?"
@@ -1204,9 +1204,9 @@
 //TODO: translation
 #define TR_INVERTED_SERIAL     INDENT "Invert"
 #define TR_IGNORE_INSTANCE     TR(INDENT "Inst.fel", INDENT "Hantera Instansfel")
-#define TR_DISCOVER_SENSORS    INDENT "Sök nya sensorer"
+#define TR_DISCOVER_SENSORS    INDENT "Sök nya"
 #define TR_STOP_DISCOVER_SENSORS INDENT "Avbryt sökning"
-#define TR_DELETE_ALL_SENSORS  INDENT "Ta bort alla sensorer"
+#define TR_DELETE_ALL_SENSORS  INDENT "Ta bort alla"
 #define TR_CONFIRMDELETE       "Ta bort alla?"
 #define TR_SELECT_WIDGET       "Select widget"
 #define TR_REMOVE_WIDGET       "Remove widget"

@@ -911,7 +911,7 @@
 #define TR_FORMATTING          "Formatting..."
 #define TR_TEMP_CALIB          "Temp. Calib"
 #define TR_TIME                "Time"
-#define TR_MAXBAUDRATE         "Max bauds"
+#define TR_MAXBAUDRATE         "Baudrate"
 
 #define TR_BLUETOOTH            "Bluetooth"
 #define TR_BLUETOOTH_DISC       "Discover"
@@ -1007,7 +1007,7 @@
 #define TR_VALUE               "Value"
 #define TR_TOPLCDTIMER         "Top LCD Timer"
 #define TR_UNIT                "Unit"
-#define TR_TELEMETRY_NEWSENSOR INDENT "Add a new sensor..."
+#define TR_TELEMETRY_NEWSENSOR INDENT "Add a new"
 #define TR_CHANNELRANGE        INDENT "Channel Range"
 #define TR_ANTENNASELECTION    TR(INDENT "Antenna", TR(INDENT "Antenna", INDENT "Antenna selection"))
 #define TR_ANTENNACONFIRM1     "Really switch?"
@@ -1186,9 +1186,9 @@
 #define TR_SERVOS_KO           "Servos KO"
 #define TR_INVERTED_SERIAL     INDENT "Invert"
 #define TR_IGNORE_INSTANCE     TR(INDENT "No inst.", INDENT "Ignore instances")
-#define TR_DISCOVER_SENSORS    INDENT "Discover new sensors"
+#define TR_DISCOVER_SENSORS    INDENT "Discover new"
 #define TR_STOP_DISCOVER_SENSORS INDENT "Stop discovery"
-#define TR_DELETE_ALL_SENSORS  INDENT "Delete all sensors"
+#define TR_DELETE_ALL_SENSORS  INDENT "Delete all"
 #define TR_CONFIRMDELETE       "Really " LCDW_128_480_LINEBREAK "delete all ?"
 #define TR_SELECT_WIDGET       "Select widget"
 #define TR_REMOVE_WIDGET       "Remove widget"

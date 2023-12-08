@@ -912,7 +912,7 @@
 #define TR_FORMATTING          "Formatteren..."
 #define TR_TEMP_CALIB          "Temp.  Calib."
 #define TR_TIME                "Tijd:"
-#define TR_MAXBAUDRATE         "Max bauds"
+#define TR_MAXBAUDRATE         "Baudrate"
 
 #define TR_BLUETOOTH            "Bluetooth"
 #define TR_BLUETOOTH_DISC       "Discover"
@@ -1193,9 +1193,9 @@
 //TODO: translation
 #define TR_INVERTED_SERIAL     INDENT "Invert"
 #define TR_IGNORE_INSTANCE     TR(INDENT "Neg. ID ","Negeer ID's")
-#define TR_DISCOVER_SENSORS    INDENT "Ontdek nieuwe sensors"
+#define TR_DISCOVER_SENSORS    INDENT "Ontdek nieuwe"
 #define TR_STOP_DISCOVER_SENSORS INDENT "Stop ontdekking"
-#define TR_DELETE_ALL_SENSORS  INDENT "Wis alle sensors"
+#define TR_DELETE_ALL_SENSORS  INDENT "Wis alle"
 #define TR_CONFIRMDELETE       "Echt alles wissen?"
 #define TR_SELECT_WIDGET       "Widget kiezen"
 #define TR_REMOVE_WIDGET       "Widget wissen"

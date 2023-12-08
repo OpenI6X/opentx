@@ -925,7 +925,7 @@
 #define TR_FORMATTING                  "Formatage..."
 #define TR_TEMP_CALIB                  "Calib. temp"
 #define TR_TIME                        "Heure"
-#define TR_MAXBAUDRATE                 "Max bauds"
+#define TR_MAXBAUDRATE                 "Baudrate"
 #define TR_BLUETOOTH                   "Bluetooth"
 #define TR_BLUETOOTH_DISC              "Discover"
 #define TR_BLUETOOTH_INIT              "Init"
