@@ -289,7 +289,7 @@ static void inavDraw() {
   // rotate to homeHeading
   // ...
 
-  // scale
+  // scale 
   int8_t scaledHomeLon = translatedHomeLon / scaleFactor;
   int8_t scaledHomeLat = translatedHomeLat / scaleFactor;
   int8_t scaledCurrentLon = translatedCurrentLon / scaleFactor;
