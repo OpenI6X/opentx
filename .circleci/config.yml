@@ -40,4 +40,4 @@ workflows:
           filters:
             branches:
               only:
-                - origin
+                - master
