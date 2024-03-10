@@ -139,6 +139,11 @@ static void inavDraw() {
   lcdDrawSolidHorizontalLine(LCD_W - 26, 51, 32, FORCE);
   lcdDrawLine(LCD_W - 30, (LCD_H / 2) + FH / 2, LCD_W - 28, (LCD_H / 2) + FH / 2, DOTTED, FORCE);
 
+//MAP-Direction-Legend
+  lcdDrawText(LCD_W - 37, LCD_H/2, "E", SMLSIZE);
+  lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE);
+//
+
   uint8_t rxBatt = 0, sats = 0;
   int32_t dist = 0, alt = 0, galt = 0, speed = 0, current = 0;
 
