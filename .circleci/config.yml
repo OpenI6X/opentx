@@ -3,6 +3,25 @@
 version: 2.1
 
 jobs:
+  sonar-scan:
+    docker:
+      - image: cimg/python:3.10.4
+    steps:
+      - checkout
+      - run:
+          name: Build
+          command: |
+            wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2 -P /tmp
+            tar -C /tmp -xjf /tmp/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
+            export PATH=$PATH:/tmp/gcc-arm-none-eabi-4_7-2013q3/bin
+            pip3 install pillow libclang-py3 pyqt5
+            sudo apt-get update -y
+            sudo apt-get install -y libclang-6.0-dev
+            curl -L -O https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+            unzip -o build-wrapper-linux-x86.zip
+            build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw_output ./tools/commit-tests.sh -Wno-error
+      - sonarcloud/scan
+
   build-std-dfplayer:
     docker:
       - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
@@ -12,6 +31,7 @@ jobs:
           python3 ./tools/build-flysky.py -bI6X_DFPLAYER -tALL $PWD/
       - store_artifacts:
           path: output
+
 
 workflows:
   openi6x-release-workflow:
