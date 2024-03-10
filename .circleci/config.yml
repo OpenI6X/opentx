@@ -60,24 +60,24 @@ workflows:
           filters:
             branches:
               ignore:
-                - master
+                - Origin
       - build-std:
           filters:
             branches:
               only:
-                - master
+                - Origin
       - build-std-dfplayer:
           filters:
             branches:
               only:
-                - master
+                - Origin
       - build-heli:
           filters:
             branches:
               only:
-                - master
+                - Origin
       - build-heli-dfplayer:
           filters:
             branches:
               only:
-                - master
+                - Origin
