@@ -42,3 +42,86 @@ workflows:
               only:
                 - master
 
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+jobs:
+  build-std:
+    docker:
+      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
+    steps:
+      - checkout
+      - run: |
+          python3 ./tools/build-flysky.py -bI6X -tALL $PWD/
+      - store_artifacts:
+          path: output
+
+  build-std-dfplayer:
+    docker:
+      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
+    steps:
+      - checkout
+      - run: |
+          python3 ./tools/build-flysky.py -bI6X_DFPLAYER -tALL $PWD/
+      - store_artifacts:
+          path: output
+
+  build-heli:
+    docker:
+      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
+    steps:
+      - checkout
+      - run: |
+          python3 ./tools/build-flysky.py -bI6X_HELI -tALL $PWD/
+      - store_artifacts:
+          path: output
+
+  build-heli-dfplayer:
+    docker:
+      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
+    steps:
+      - checkout
+      - run: |
+          python3 ./tools/build-flysky.py -bI6X_HELI_DFPLAYER -tALL $PWD/
+      - store_artifacts:
+          path: output
+
+  build-en:
+    docker:
+      - image: ajjjjjjjj/opentx-docker-i6x:1.3.0
+    steps:
+      - checkout
+      - run: |
+          python3 ./tools/build-flysky.py -bI6X_DFPLAYER -bI6X_HELI -bI6X -tEN $PWD/
+      - store_artifacts:
+          path: output
+
+workflows:
+  openi6x-release-workflow:
+    jobs:
+      - build-en:
+          filters:
+            branches:
+              ignore:
+                - master
+      - build-std:
+          filters:
+            branches:
+              only:
+                - master
+      - build-std-dfplayer:
+          filters:
+            branches:
+              only:
+                - master
+      - build-heli:
+          filters:
+            branches:
+              only:
+                - master
+      - build-heli-dfplayer:
+          filters:
+            branches:
+              only:
+                - master
