@@ -40,4 +40,16 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - origin
+      - build-heli:
+          filters:
+            branches:
+              only:
+                - origin
+      - build-heli-dfplayer:
+          filters:
+            branches:
+              only:
+                - origin
+
+
