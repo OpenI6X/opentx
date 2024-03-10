@@ -120,7 +120,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - master 
 
 #      - publish-github-release:
 ##          filters:
