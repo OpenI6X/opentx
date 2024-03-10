@@ -56,29 +56,8 @@ jobs:
 workflows:
   openi6x-release-workflow:
     jobs:
-      - build-en:
-          filters:
-            branches:
-              ignore:
-                - origin
-      - build-std:
-          filters:
-            branches:
-              only:
-                - origin
       - build-std-dfplayer:
           filters:
             branches:
               only:
                 - origin
-      - build-heli:
-          filters:
-            branches:
-              only:
-                - origin
-      - build-heli-dfplayer:
-          filters:
-            branches:
-              only:
-                - origin
- 
