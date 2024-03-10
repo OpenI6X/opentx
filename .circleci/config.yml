@@ -56,11 +56,6 @@ jobs:
 workflows:
   openi6x-release-workflow:
     jobs:
-      - build-en:
-          filters:
-            branches:
-              ignore:
-                - Origin
       - build-std:
           filters:
             branches:
