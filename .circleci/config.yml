@@ -113,7 +113,7 @@ workflows:
       - build-en:
           filters:
             branches:
-              ignore:
+              only:
                 - master
 
       - build-elrs-backlight:
