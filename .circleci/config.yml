@@ -71,13 +71,3 @@ workflows:
             branches:
               only:
                 - Origin
-      - build-heli:
-          filters:
-            branches:
-              only:
-                - Origin
-      - build-heli-dfplayer:
-          filters:
-            branches:
-              only:
-                - Origin
