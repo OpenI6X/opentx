@@ -497,15 +497,15 @@ void drawTelemetryTopBar()
 {
   putsModelName(0, 0, g_model.header.name, g_eeGeneral.currModel, 0);
   uint8_t att = (IS_TXBATT_WARNING() ? BLINK : 0);
-  putsVBat(12*FW, 0, att);
+  //putsVBat(12*FW, 0, att);
   if (g_model.timers[0].mode) {
     att = (timersStates[0].val<0 ? BLINK : 0);
-    drawTimer(22*FW, 0, timersStates[0].val, att, att);
+    drawTimer(12*FW, 0, timersStates[0].val, att, att);//changed
     lcdDrawText(22*FW, 0, "T1:", RIGHT);
   }
   if (g_model.timers[1].mode) {
     att = (timersStates[1].val<0 ? BLINK : 0);
-    drawTimer(31*FW, 0, timersStates[1].val, att, att);
+    drawTimer(12*FW, 0, timersStates[1].val, att, att);//changed
     lcdDrawText(31*FW, 0, "T2:", RIGHT);
   }
   lcdInvertLine(0);
