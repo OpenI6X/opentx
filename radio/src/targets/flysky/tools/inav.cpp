@@ -62,6 +62,9 @@ struct InavData {
   uint8_t heading;
 };
 
+static uint8_t armed = 1;
+static uint8_t lastMode = 0;
+
 static InavData inavData; // = (InavData *)&reusableBuffer.cToolData[0];
 
 /*
@@ -79,7 +82,8 @@ static void inavSetHome() {
   inavData.homeLat = inavData.currentLat;
   inavData.homeLon = inavData.currentLon;
   // inavData.homeHeading = inavData.heading;
-  audioEvent(AU_SPECIAL_SOUND_WARN1);
+  //audioEvent(AU_SPECIAL_SOUND_WARN1);
+  audioEvent(AU_SPECIAL_SOUND_TADA);
 }
 
 static void inavDrawHome(uint8_t x, uint8_t y) {
@@ -114,21 +118,40 @@ static void inavDrawCraft(uint8_t x, uint8_t y) {
 }
 
 // Mode: 0 - Passthrough, 1-Armed(rate), 2-Horizon, 3-Angle, 4-Waypoint, 5-AltHold, 6-PosHold, 7-Rth, 8-Launch, 9-Failsafe
+//FM2 5-MANUAL, 1-ACRO, 1-AIR, 0-ANGLE, 7-HRZN, 2-ALTHOLD, 8-POSHOLD, 6-RTH, 3-WP, 3-CRUISE, 4-LAUNCH, 9-FAILSAFE
 static void inavDrawAFHDS2AFM(uint8_t mode) {
-  static const char modeText[10][8] = {
-    {'P','A','S','S','T','H','R','U'},
-    {'A','R','M','E','D','\0',' ',' '},
-    {'H','O','R','I','Z','O','N','\0'},
-    {'A','N','G','L','E','\0',' ',' '},
-    {'W','A','Y','P','O','I','N','T'},
-    {'A','L','T',' ','H','O','L','D'},
-    {'P','O','S',' ','H','O','L','D'},
-    {'R','T','H','\0',' ',' ',' ',' '},
-    {'L','A','U','N','C','H','\0',' '},
-    {'F','A','I','L','S','A','F','E'},
+  // static const char modeText[10][8] = {
+  //   {'P','A','S','S','T','H','R','U'},
+  //   {'A','R','M','E','D','\0',' ',' '},
+  //   {'H','O','R','I','Z','O','N','\0'},
+  //   {'A','N','G','L','E','\0',' ',' '},
+  //   {'W','A','Y','P','O','I','N','T'},
+  //   {'A','L','T',' ','H','O','L','D'},
+  //   {'P','O','S',' ','H','O','L','D'},
+  //   {'R','T','H','\0',' ',' ',' ',' '},
+  //   {'L','A','U','N','C','H','\0',' '},
+  //   {'F','A','I','L','S','A','F','E'},
+  // };
+
+  static const char modeText[10][9] = {
+    {'A','N','G','L','E','\0',' ',' ',' '},
+    {'A','C','R','O',' ','A','I','R','\0'},
+    {'A','L','T',' ','H','O','L','D','\0'},
+    {'W','P',' ','C','R','U','I','S', 'E'},
+    {'L','A','U','N','C','H','\0',' ',' '},
+    {'M','A','N','U','E','L','\0',' ',' '},
+    {'R','T','H','\0',' ',' ',' ',' ',' '},
+    {'H','O','R','I','Z','O','N','\0',' '},
+    {'P','O','S',' ','H','O','L','D','\0'},
+    {'F','A','I','L','S','A','F','E','\0'},
   };
 
-  lcdDrawSizedText(INAV_FM_X, INAV_FM_Y, modeText[mode], 8, SMLSIZE | CENTERED);
+  lcdDrawSizedText(INAV_FM_X, INAV_FM_Y, modeText[mode], 9, SMLSIZE | CENTERED);
+
+  if(lastMode != mode) {
+    audioEvent(AU_SPECIAL_SOUND_WARN2);
+  }
+  lastMode = mode;
 }
 
 static void inavDraw() {
@@ -193,6 +216,11 @@ static void inavDraw() {
       if (g_model.telemetrySensors[i].id == 0xfc) { // RX RSSI
         rssi = telemetryItem.value;
       }
+      if (g_model.telemetrySensors[i].id == 0x80) { // GPS
+        inavData.currentLat = telemetryItem.gps.latitude;
+        inavData.currentLon = telemetryItem.gps.longitude;
+        //drawGPSSensorValue(INAV_SATS_X,INAV_SATS_Y + 14, telemetryItem, SMLSIZE | RIGHT);
+      }
 
       switch(g_model.telemetrySensors[i].instance) { // inav index - 1
         case 1: // voltage sensor
@@ -218,16 +246,25 @@ static void inavDraw() {
         case 8: // 9. Dist
           dist = telemetryItem.value;
           break;
-        // case 9: // 10. Armed
-        //   break;
+        case 9: // 10. Armed
+          if(telemetryItem.value != armed) {
+            if(telemetryItem.value == 0) {
+              inavData.homeLat = 0;
+              inavData.homeLon = 0;
+            } else {
+              audioEvent(AU_SPECIAL_SOUND_SIREN);
+            }
+          }
+          armed = telemetryItem.value;  
+        break;
         case 10: // 11. Speed
           speed = telemetryItem.value;
           break;
         case 11: // 12. GPS Latitude
-          inavData.currentLat = telemetryItem.value;
+          //inavData.currentLat = telemetryItem.value;
           break;
         case 12: // 13. GPS Longitude
-          inavData.currentLon = telemetryItem.value;
+          //inavData.currentLon = telemetryItem.value;
           break;
         case 13: // 14. GALT
           galt = (int16_t)(telemetryItem.value) / 10;
@@ -264,8 +301,15 @@ static void inavDraw() {
   lcdDrawNumber(INAV_SATS_X, INAV_SATS_Y, sats, MIDSIZE | RIGHT);
   drawValueWithUnit(INAV_GALT_X, INAV_GALT_Y, galt, UNIT_METERS, RIGHT);
 
-  // lcdDrawNumber(70, 20, inavData.currentLat, SMLSIZE | RIGHT);
-  // lcdDrawNumber(70, 30, inavData.currentLon, SMLSIZE | RIGHT);
+  lcdDrawNumber(INAV_SATS_X-8, INAV_SATS_Y + 18, vspd, SMLSIZE | RIGHT);
+
+  static const char armText[2][5] = {
+    {'A', 'R', 'M', 'E', 'D'},
+    {'O', 'F', 'F', '\0', ' '},
+  };  
+
+
+  lcdDrawSizedText(18, INAV_FM_Y, armText[armed], 5, SMLSIZE | CENTERED);
 
   drawValueWithUnit(LCD_W - 6, 0, rxBatt, UNIT_VOLTS, PREC1 | RIGHT);
   drawTelemetryTopBar(); // after rxBatt to add INVERS
