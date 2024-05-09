@@ -295,7 +295,7 @@ static void inavDraw() {
 //auto-set HOME Point
   if (sats >= 6 && galt<2 && current<1 && speed<5 && dist<2) {
     inavSetHome();    
-    lcdDrawText(LCD_W/2-2 , LCD_H-9, HOME_ICON, BLINK); 
+    lcdDrawText(LCD_W/2-1 , LCD_H-9, HOME_ICON); 
   }
 
   // translate to LCD center space and draw
