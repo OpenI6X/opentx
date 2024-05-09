@@ -57,22 +57,11 @@ struct InavData {
   int32_t homeLon;
   int32_t currentLat;
   int32_t currentLon;
-  // uint8_t homeHeading;
   uint8_t heading;
 };
 
 static InavData inavData; // = (InavData *)&reusableBuffer.cToolData[0];
 
-/*
-static Point2D rotate(Point2D *p, uint8_t angle) {
-  Point2D rotated;
-  int8_t sinVal = sine[angle];
-  int8_t cosVal = sine[(angle + 8) & 0x1F];
-  rotated.x = (p->x * cosVal - p->y * sinVal) >> 7;
-  rotated.y = (p->y * cosVal + p->x * sinVal) >> 7;
-  return rotated;
-}
-*/
 
 static void inavSetHome() {
   inavData.homeLat = inavData.currentLat;
@@ -166,7 +155,7 @@ static void inavDraw() {
       if (strstr(sensor.label, ZSTR_RX_RSSI1)) { // RSSI
         rssi = telemetryItem.value;
       } else if (strstr(sensor.label, ZSTR_ALT)) { // Altitude
-        alt = telemetryItem.value;
+        alt = telemetryItem.value;        
       } else if (strstr(sensor.label, ZSTR_GPSALT)) { // GPS altitude
         galt = telemetryItem.value;
       } else if (strstr(sensor.label, ZSTR_VSPD)) { // VSpd
@@ -304,8 +293,9 @@ static void inavDraw() {
   int8_t scaledCurrentLon = translatedCurrentLon / scaleFactor;
   int8_t scaledCurrentLat = translatedCurrentLat / scaleFactor;
 
-  if (sats >= 6 && inavData.homeLat == 0) {
-    inavSetHome();
+//auto-set HOME Point
+  if (sats >= 6 && galt < 2) {
+    inavSetHome();    
   }
 
   // translate to LCD center space and draw
