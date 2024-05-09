@@ -79,7 +79,6 @@ static void inavSetHome() {
   inavData.homeLat = inavData.currentLat;
   inavData.homeLon = inavData.currentLon;
   // inavData.homeHeading = inavData.heading;
-  audioEvent(AU_SPECIAL_SOUND_WARN1);
 }
 
 static void inavDrawHome(uint8_t x, uint8_t y) {
@@ -304,6 +303,11 @@ static void inavDraw() {
     inavSetHome();
   }
 
+  //auto-set HOME Point
+  if (sats >= 6 && galt<2 && current<1 && speed<5 && dist<2) {
+    inavSetHome();      
+  }
+
   // translate to LCD center space and draw
   inavDrawHome(BBOX_CENTER_X + scaledHomeLat, BBOX_CENTER_Y - scaledHomeLon);
   inavDrawCraft(BBOX_CENTER_X + scaledCurrentLat, BBOX_CENTER_Y - scaledCurrentLon);
@@ -325,6 +329,7 @@ void inavRun(event_t event) {
     popMenu();
   } else if (event == EVT_KEY_LONG(KEY_ENTER)) { // set home on long press OK
     inavSetHome();
+    audioEvent(AU_SPECIAL_SOUND_WARN2);
   }
 
   inavDraw();
