@@ -79,7 +79,7 @@ static void inavSetHome() {
   inavData.homeLat = inavData.currentLat;
   inavData.homeLon = inavData.currentLon;
   // inavData.homeHeading = inavData.heading;
-  lcdDrawText(LCD_W/2-1 , LCD_H-7, "***", SMLSIZE);///indicator
+  lcdDrawText(LCD_W/2-2 , LCD_H-7, "***", SMLSIZE);///indicator
 }
 
 static void inavDrawHome(uint8_t x, uint8_t y) {
