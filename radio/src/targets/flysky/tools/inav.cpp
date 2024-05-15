@@ -274,6 +274,15 @@ static void inavDraw() {
   drawValueWithUnit(LCD_W - 6, 0, rxBatt, UNIT_VOLTS, PREC1 | RIGHT);
   drawTelemetryTopBar(); // after rxBatt to add INVERS
 
+
+  if (sats >= 6 && inavData.homeLat == 0) {
+    inavSetHome();
+  }
+  //auto-set HOME Point
+  if (sats >= 6 && galt<2 && current<1 && speed<5 && dist<2) {
+    inavSetHome();      
+  }
+
   int32_t h = inavData.homeLat - inavData.currentLat;
   int32_t w = inavData.homeLon - inavData.currentLon;
   int32_t d = isqrt32((w * w) + (h * h));
@@ -299,14 +308,6 @@ static void inavDraw() {
   int8_t scaledCurrentLon = translatedCurrentLon / scaleFactor;
   int8_t scaledCurrentLat = translatedCurrentLat / scaleFactor;
 
-  if (sats >= 6 && inavData.homeLat == 0) {
-    inavSetHome();
-  }
-
-  //auto-set HOME Point
-  if (sats >= 6 && galt<2 && current<1 && speed<5 && dist<2) {
-    inavSetHome();      
-  }
 
   // translate to LCD center space and draw
   inavDrawHome(BBOX_CENTER_X + scaledHomeLat, BBOX_CENTER_Y - scaledHomeLon);
