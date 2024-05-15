@@ -277,10 +277,12 @@ static void inavDraw() {
 
   if (sats >= 6 && inavData.homeLat == 0) {
     inavSetHome();
+    lcdDrawText(LCD_W/2-1 , LCD_H-7, "-", SMLSIZE);
   }
   //auto-set HOME Point
   if (sats >= 6 && galt<2 && current<1 && speed<5 && dist<2) {
     inavSetHome();      
+    lcdDrawText(LCD_W/2-1 , LCD_H-7, "-", SMLSIZE);
   }
 
   int32_t h = inavData.homeLat - inavData.currentLat;
