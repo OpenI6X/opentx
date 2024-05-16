@@ -79,7 +79,7 @@ static void inavSetHome() {
   inavData.homeLat = inavData.currentLat;
   inavData.homeLon = inavData.currentLon;
   // inavData.homeHeading = inavData.heading;
-  lcdDrawText(LCD_W/2-2 , LCD_H-7, "***", SMLSIZE);///indicator
+  lcdDrawText(LCD_W/2-4 , LCD_H-10, "***", SMLSIZE);///indicator
 }
 
 static void inavDrawHome(uint8_t x, uint8_t y) {
@@ -280,7 +280,7 @@ static void inavDraw() {
     inavSetHome();    
   }
   //auto-set HOME Point
-  if (sats >= 6 && galt<2 && current<1 && speed<5 && dist<2) {
+  if (sats >= 6 && current<1 && speed<5 && dist<2) { //&& galt<2 
     inavSetHome();          
   }
 
