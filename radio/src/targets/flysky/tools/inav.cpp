@@ -275,22 +275,20 @@ static void inavDraw() {
   drawValueWithUnit(LCD_W - 6, 0, rxBatt, UNIT_VOLTS, PREC1 | RIGHT);
   drawTelemetryTopBar(); // after rxBatt to add INVERS
 
-
-
   if (sats >= 6 && inavData.homeLat == 0) {
     inavSetHome();   
     audioEvent(AU_SPECIAL_SOUND_RATATA); 
   }
   //auto-set HOME Point
-  if (sats >= 6 && current<20) { //current::mAh
+  if (sats >= 6 && current<10) { //current Value==10*Amp
     if(speed<5 && dist<5){
       inavSetHome();      
       audioEvent(AU_SPECIAL_SOUND_TICK);   
     } 
   }
   //test
-  lcdDrawNumber(70, 30, current, SMLSIZE | RIGHT);
-  lcdDrawNumber(70, 20, dist, SMLSIZE | RIGHT);
+  lcdDrawNumber(70, 30, speed, SMLSIZE | RIGHT);
+  lcdDrawNumber(70, 20, galt, SMLSIZE | RIGHT);
 
   int32_t h = inavData.homeLat - inavData.currentLat;
   int32_t w = inavData.homeLon - inavData.currentLon;
