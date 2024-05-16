@@ -281,14 +281,14 @@ static void inavDraw() {
   }
   //auto-set HOME Point
   if (sats >= 6 && current<10) { //current Value==10*Amp
-    if(speed<5 && dist<5){
+    if(speed<5 && dist<5 && galt<2){ //speed Value==10*KMH
       inavSetHome();      
-      audioEvent(AU_SPECIAL_SOUND_TICK);   
+      //audioEvent(AU_SPECIAL_SOUND_TICK);   
     } 
   }
   //test
-  lcdDrawNumber(70, 30, speed, SMLSIZE | RIGHT);
-  lcdDrawNumber(70, 20, galt, SMLSIZE | RIGHT);
+  //lcdDrawNumber(70, 30, speed, SMLSIZE | RIGHT);
+  //lcdDrawNumber(70, 20, galt, SMLSIZE | RIGHT);
 
   int32_t h = inavData.homeLat - inavData.currentLat;
   int32_t w = inavData.homeLon - inavData.currentLon;
