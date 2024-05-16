@@ -276,6 +276,7 @@ static void inavDraw() {
   drawTelemetryTopBar(); // after rxBatt to add INVERS
 
 
+
   if (sats >= 6 && inavData.homeLat == 0) {
     inavSetHome();   
     audioEvent(AU_SPECIAL_SOUND_RATATA); 
@@ -287,6 +288,9 @@ static void inavDraw() {
       audioEvent(AU_SPECIAL_SOUND_TICK);   
     } 
   }
+  //test
+  lcdDrawNumber(70, 30, current, SMLSIZE | RIGHT);
+  lcdDrawNumber(70, 20, dist, SMLSIZE | RIGHT);
 
   int32_t h = inavData.homeLat - inavData.currentLat;
   int32_t w = inavData.homeLon - inavData.currentLon;
