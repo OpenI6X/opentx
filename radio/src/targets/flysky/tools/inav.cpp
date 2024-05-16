@@ -277,10 +277,11 @@ static void inavDraw() {
 
 
   if (sats >= 6 && inavData.homeLat == 0) {
-    inavSetHome();    
+    inavSetHome();   
+    audioEvent(AU_SPECIAL_SOUND_RATATA); 
   }
   //auto-set HOME Point
-  if (sats >= 6 && current<1 && speed<2 ) { //&& dist<2 && galt<2 
+  if (sats >= 6 ) { //&& current<1 && speed<2 && dist<2 && galt<2 
     inavSetHome();      
     audioEvent(AU_SPECIAL_SOUND_TICK);    
   }
