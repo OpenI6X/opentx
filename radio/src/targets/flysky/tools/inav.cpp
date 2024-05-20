@@ -147,10 +147,10 @@ static void inavDraw() {
 //MAP-Direction-Legend
 if (inavData.MapPSign==1){ //positive N up
   lcdDrawText(LCD_W - 37, LCD_H/2, "E", SMLSIZE);
-  lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE);
+  lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE);//down
 }else{//negative north down: 180deg rotation
   lcdDrawText(LCD_W - 37, LCD_H/2, "W", SMLSIZE);
-  lcdDrawText(LCD_W/2-1 , LCD_H-6, "N", SMLSIZE);
+  lcdDrawText(LCD_W/2-1 , LCD_H-6, "N", SMLSIZE);//down
 }
 //
 
@@ -328,11 +328,11 @@ if (inavData.MapPSign==1){ //positive N up
   // rotate to homeHeading
   // ...
 
-  // scale 
-  int8_t scaledHomeLon = translatedHomeLon / scaleFactor;
-  int8_t scaledHomeLat = translatedHomeLat / scaleFactor;
-  int8_t scaledCurrentLon = translatedCurrentLon / scaleFactor;
-  int8_t scaledCurrentLat = translatedCurrentLat / scaleFactor;
+  // scale:: //considering the North Position::inavData.MapPSign
+  int8_t scaledHomeLon = inavData.MapPSign* translatedHomeLon / scaleFactor;
+  int8_t scaledHomeLat = inavData.MapPSign* translatedHomeLat / scaleFactor;
+  int8_t scaledCurrentLon = inavData.MapPSign* translatedCurrentLon / scaleFactor;
+  int8_t scaledCurrentLat = inavData.MapPSign* translatedCurrentLat / scaleFactor;
 
 
   // translate to LCD center space and draw
