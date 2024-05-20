@@ -60,7 +60,8 @@ struct InavData {
   int32_t currentLon;
   // uint8_t homeHeading;
   uint8_t heading;
-  constexpr int8_t MapSign=1;//(+):north up|(-):north down
+  constexpr int8_t MapPSign=1;//(+):north up|(-):north down
+  constexpr int8_t MapNSign=-1;
 };
 
 static InavData inavData; // = (InavData *)&reusableBuffer.cToolData[0];
@@ -350,7 +351,7 @@ void inavRun(event_t event) {
     audioEvent(AU_SPECIAL_SOUND_WARN2);
   } else if (event == EVT_KEY_LONG(KEY_DOWN)) { // set home on long press Down
     audioEvent(AU_SPECIAL_SOUND_TADA);
-    InavData.MapSign=InavData.MapSign*-1;//rotating the map 180 deg.
+    InavData.MapSign=InavData.MapPSign*InavData.MapNSign;//rotating the map 180 deg.
   }
 
   inavDraw();
