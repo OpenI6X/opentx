@@ -61,7 +61,7 @@ struct InavData {
   // uint8_t homeHeading;
   uint8_t heading;
   int8_t MapPSign=1;//(+):north up|(-):north down
-  int8_t MapNSign=1;
+  int8_t MapNSign=-1;
 };
 
 static InavData inavData; // = (InavData *)&reusableBuffer.cToolData[0];
