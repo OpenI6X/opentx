@@ -14,8 +14,8 @@ static const int8_t sine[32] = {
   0,-25,-49,-71,-91,-107,-118,-126,-128,-126,-118,-107,-91,-71,-49,-25
 };
 
-#define INAV_ARM_X      18
-#define INAV_ARM_Y      9
+//#define INAV_ARM_X      18
+//#define INAV_ARM_Y      9
 
 #define INAV_BATTP_X   30
 #define INAV_BATTP_Y    9
@@ -63,8 +63,7 @@ struct InavData {
   int32_t currentLon;
   // uint8_t homeHeading;
   uint8_t heading;
-  int8_t MapPSign;//default (+):north up|(-):north down
-    
+  int8_t MapPSign;//default (+):north up|(-):north down    
   uint8_t armed = 1;
   uint8_t lastMode = 0;
 };
@@ -319,11 +318,11 @@ if (inavData.MapPSign>0){ //positive N up
   // lcdDrawNumber(70, 30, inavData.currentLon, SMLSIZE | RIGHT);
   lcdDrawNumber(INAV_SATS_X-8, INAV_SATS_Y + 18, vspd, SMLSIZE | RIGHT);
 
-  static const char armText[2][5] = {
-    {'A', 'R', 'M', 'E', 'D'},
+  static const char armText[2][5] = {    
     {'O', 'F', 'F', '\0', ' '},
+    {'A', 'R', 'M', 'E', 'D'}
   };  
-  lcdDrawSizedText(INAV_ARM_X, INAV_ARM_Y, armText[inavData.armed], 5, SMLSIZE | CENTERED);
+  lcdDrawSizedText(INAV_DIST_X, INAV_DIST_Y, armText[inavData.armed], 5, SMLSIZE | CENTERED);
 
   drawValueWithUnit(LCD_W - 6, 0, rxBatt, UNIT_VOLTS, PREC1 | RIGHT);
   drawTelemetryTopBar(); // after rxBatt to add INVERS
