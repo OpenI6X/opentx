@@ -85,7 +85,7 @@ static void inavSetHome() {
 }
 
 static void inavSetMapN() {
-    InavData.MapPSign = sine[32];//InavData.MapPSign*InavData.MapNSign;//rotating the map 180 deg.
+   /// InavData.MapPSign = sine[32];//InavData.MapPSign*InavData.MapNSign;//rotating the map 180 deg.
 }
 
 static void inavDrawHome(uint8_t x, uint8_t y) {
