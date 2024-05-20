@@ -357,7 +357,7 @@ void inavRun(event_t event) {
   } else if (event == EVT_KEY_LONG(KEY_ENTER)) { // set home on long press OK
     inavSetHome();
     audioEvent(AU_SPECIAL_SOUND_WARN2);
-  } else if (event == EVT_KEY_LONG(KEY_PGUP)) { // set home on press menu    
+  } else if (event == EVT_KEY_LONG(KEY_RIGHT)) { // set home on press menu    
     inavSetMapN();
     audioEvent(AU_SPECIAL_SOUND_TADA);
   }
