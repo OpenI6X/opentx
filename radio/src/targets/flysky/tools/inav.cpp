@@ -14,6 +14,9 @@ static const int8_t sine[32] = {
   0,-25,-49,-71,-91,-107,-118,-126,-128,-126,-118,-107,-91,-71,-49,-25
 };
 
+#define INAV_ARM_X      18
+#define INAV_ARM_Y      9
+
 #define INAV_BATTP_X   30
 #define INAV_BATTP_Y    9
 #define INAV_VOLT_X    LCD_W
@@ -61,6 +64,9 @@ struct InavData {
   // uint8_t homeHeading;
   uint8_t heading;
   int8_t MapPSign;//default (+):north up|(-):north down
+    
+  uint8_t armed = 1;
+  uint8_t lastMode = 0;
 };
 
 static InavData inavData; // = (InavData *)&reusableBuffer.cToolData[0];
@@ -118,22 +124,27 @@ static void inavDrawCraft(uint8_t x, uint8_t y) {
   lcdDrawLine(tPLX, tPLY, tPRX, tPRY, DOTTED, FORCE);
 }
 
-// Mode: 0 - Passthrough, 1-Armed(rate), 2-Horizon, 3-Angle, 4-Waypoint, 5-AltHold, 6-PosHold, 7-Rth, 8-Launch, 9-Failsafe
+//FM2 5-MANUAL, 1-ACRO, 1-AIR, 0-ANGLE, 7-HRZN, 2-ALTHOLD, 8-POSHOLD, 6-RTH, 3-WP, 3-CRUISE, 4-LAUNCH, 9-FAILSAFE
 static void inavDrawAFHDS2AFM(uint8_t mode) {
-  static const char modeText[10][8] = {
-    {'P','A','S','S','T','H','R','U'},
-    {'A','R','M','E','D','\0',' ',' '},
-    {'H','O','R','I','Z','O','N','\0'},
-    {'A','N','G','L','E','\0',' ',' '},
-    {'W','A','Y','P','O','I','N','T'},
-    {'A','L','T',' ','H','O','L','D'},
-    {'P','O','S',' ','H','O','L','D'},
-    {'R','T','H','\0',' ',' ',' ',' '},
-    {'L','A','U','N','C','H','\0',' '},
-    {'F','A','I','L','S','A','F','E'},
+  static const char modeText[10][9] = {
+    {'A','N','G','L','E','\0',' ',' ',' '},
+    {'A','C','R','O',' ','A','I','R','\0'},
+    {'A','L','T',' ','H','O','L','D','\0'},
+    {'W','P',' ','C','R','U','I','S', 'E'},
+    {'L','A','U','N','C','H','\0',' ',' '},
+    {'M','A','N','U','E','L','\0',' ',' '},
+    {'R','T','H','\0',' ',' ',' ',' ',' '},
+    {'H','O','R','I','Z','O','N','\0',' '},
+    {'P','O','S',' ','H','O','L','D','\0'},
+    {'F','A','I','L','S','A','F','E','\0'},
   };
 
-  lcdDrawSizedText(INAV_FM_X, INAV_FM_Y, modeText[mode], 8, SMLSIZE | CENTERED);
+  lcdDrawSizedText(INAV_FM_X, INAV_FM_Y, modeText[mode], 9, SMLSIZE | CENTERED);
+
+  if(inavData.lastMode != mode) {
+    audioEvent(AU_SPECIAL_SOUND_WARN2);
+  }
+  inavData.lastMode = mode;
 }
 
 static void inavDraw() {
@@ -212,6 +223,11 @@ if (inavData.MapPSign>0){ //positive N up
       if (g_model.telemetrySensors[i].id == 0xfc) { // RX RSSI
         rssi = telemetryItem.value;
       }
+       
+      if (g_model.telemetrySensors[i].id == 0x80) { // GPS
+        inavData.currentLat = telemetryItem.gps.latitude;
+        inavData.currentLon = telemetryItem.gps.longitude;
+      }
 
       switch(g_model.telemetrySensors[i].instance) { // inav index - 1
         case 1: // voltage sensor
@@ -237,8 +253,17 @@ if (inavData.MapPSign>0){ //positive N up
         case 8: // 9. Dist
           dist = telemetryItem.value;
           break;
-        // case 9: // 10. Armed
-        //   break;
+        case 9: // 10. Armed
+          if(telemetryItem.value != inavData.armed) {
+            if(telemetryItem.value == 0) {
+              inavData.homeLat = 0;
+              inavData.homeLon = 0;
+            } else {
+              audioEvent(AU_SPECIAL_SOUND_SIREN);
+            }
+          }
+          inavData.armed = telemetryItem.value;  
+          break;
         case 10: // 11. Speed
           speed = telemetryItem.value;
           break;
@@ -292,6 +317,13 @@ if (inavData.MapPSign>0){ //positive N up
 
   // lcdDrawNumber(70, 20, inavData.currentLat, SMLSIZE | RIGHT);
   // lcdDrawNumber(70, 30, inavData.currentLon, SMLSIZE | RIGHT);
+  lcdDrawNumber(INAV_SATS_X-8, INAV_SATS_Y + 18, vspd, SMLSIZE | RIGHT);
+
+  static const char armText[2][5] = {
+    {'A', 'R', 'M', 'E', 'D'},
+    {'O', 'F', 'F', '\0', ' '},
+  };  
+  lcdDrawSizedText(INAV_ARM_X, INAV_ARM_Y, armText[inavData.armed], 5, SMLSIZE | CENTERED);
 
   drawValueWithUnit(LCD_W - 6, 0, rxBatt, UNIT_VOLTS, PREC1 | RIGHT);
   drawTelemetryTopBar(); // after rxBatt to add INVERS
