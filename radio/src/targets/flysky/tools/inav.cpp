@@ -319,13 +319,13 @@ if (inavData.MapPSign>0){ //positive N up
 
   // lcdDrawNumber(70, 20, inavData.currentLat, SMLSIZE | RIGHT);
   // lcdDrawNumber(70, 30, inavData.currentLon, SMLSIZE | RIGHT);
-  lcdDrawNumber(INAV_ALT_X, INAV_ALT_Y, vspd, SMLSIZE | RIGHT);
+  //lcdDrawNumber(INAV_ALT_X, INAV_ALT_Y, vspd, SMLSIZE | RIGHT);
 
   static const char armText[2][5] = {    
     {'O', 'F', 'F', '\0', ' '},
     {'A', 'R', 'M', 'E', 'D'}
   };  
-  lcdDrawSizedText(INAV_DIST_X+8, INAV_DIST_Y, armText[inavData.armed], 5, SMLSIZE | RIGHT);
+  lcdDrawSizedText(INAV_DIST_X+20, INAV_DIST_Y, armText[inavData.armed], 5, TINSIZE);
 
   drawValueWithUnit(LCD_W - 6, 0, rxBatt, UNIT_VOLTS, PREC1 | RIGHT);
   drawTelemetryTopBar(); // after rxBatt to add INVERS
