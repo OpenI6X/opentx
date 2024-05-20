@@ -273,7 +273,7 @@ static void inavDraw() {
 
 
   drawValueWithUnit(INAV_GALT_X, INAV_GALT_Y, alt, UNIT_METERS, RIGHT);
-  lcdDrawText(INAV_GALT_X-25, INAV_GALT_Y-11, "***", SMLSIZE);///indicator
+  lcdDrawText(INAV_GALT_X-25, INAV_GALT_Y-11, "ALT", SMLSIZE);///indicator
 
 
   drawValueWithUnit(INAV_GALT_X-5, INAV_GALT_Y-22, dist, UNIT_METERS, 0);
