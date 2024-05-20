@@ -272,7 +272,7 @@ static void inavDraw() {
   lcdDrawNumber(INAV_SATS_X, INAV_SATS_Y, sats, MIDSIZE | RIGHT);
   
   drawValueWithUnit(INAV_GALT_X, INAV_GALT_Y, alt, UNIT_METERS, RIGHT);
-  drawValueWithUnit(INAV_GALT_X, INAV_GALT_Y-11, dist, UNIT_METERS, 0);
+  drawValueWithUnit(INAV_GALT_X-5, INAV_GALT_Y-11, dist, UNIT_METERS, 0);
 
   // lcdDrawNumber(70, 20, inavData.currentLat, SMLSIZE | RIGHT);
   // lcdDrawNumber(70, 30, inavData.currentLon, SMLSIZE | RIGHT);
