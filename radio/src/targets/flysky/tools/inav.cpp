@@ -79,7 +79,7 @@ static void inavSetHome() {
   inavData.homeLat = inavData.currentLat;
   inavData.homeLon = inavData.currentLon;
   // inavData.homeHeading = inavData.heading;
-  lcdDrawText(LCD_W/2-4 , LCD_H-12, "***", SMLSIZE);///indicator
+  lcdDrawText(LCD_W/2-4 , LCD_H-14, "***", SMLSIZE);///indicator
 }
 
 static void inavDrawHome(uint8_t x, uint8_t y) {
@@ -145,7 +145,7 @@ static void inavDraw() {
 //
 
   uint8_t rxBatt = 0, sats = 0;
-  int32_t dist = 0, alt = 0, galt = 0, speed = 0, current = 0;
+  int32_t dist = 0, alt = 0, galt = 0, speed = 0, current = 0, TXPW = 0;
 
   int8_t rssi = 0;
   int16_t vspd = 0;
@@ -191,6 +191,8 @@ static void inavDraw() {
       } else if (strstr(sensor.label, ZSTR_GPS)) { // GPS coords
         inavData.currentLat = telemetryItem.gps.longitude;
         inavData.currentLon = telemetryItem.gps.latitude;
+      } else{  
+        TXPW=g_model.telemetrySensors[6];//[7-1]:ELRS TX Power
       }
 #endif // INAVLITE_CRSF
     } else if (telemetryProtocol == PROTOCOL_FLYSKY_IBUS) {
@@ -258,6 +260,9 @@ static void inavDraw() {
   // lcdDrawNumber(LCD_W, INAV_SATS_Y + 21, (9 - (sats % 10)) * 5 + 8, PREC1 | MIDSIZE | RIGHT);
 
   drawValueWithUnit(INAV_CURRENT_X, INAV_CURRENT_Y, current, UNIT_AMPS, PREC1 | MIDSIZE | RIGHT);
+
+  drawValueWithUnit(INAV_CURRENT_X, INAV_CURRENT_Y-10, TXPW, 'mW', MIDSIZE | RIGHT);
+
 
   drawValueWithUnit(LCD_W - 11, 53, rssi, UNIT_DB, MIDSIZE | RIGHT);
   drawValueWithUnit(INAV_GSPD_X, INAV_GSPD_Y, speed, UNIT_KMH, PREC1 | RIGHT);
