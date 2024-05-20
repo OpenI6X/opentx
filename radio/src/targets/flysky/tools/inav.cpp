@@ -272,10 +272,10 @@ static void inavDraw() {
   lcdDrawNumber(INAV_SATS_X, INAV_SATS_Y, sats, MIDSIZE | RIGHT);
 
   drawValueWithUnit(INAV_GALT_X, INAV_GALT_Y, alt, UNIT_METERS, RIGHT);
-  lcdDrawText(INAV_GALT_X-25, INAV_GALT_Y-11, "Alt.", SMLSIZE);///indicator
+  lcdDrawText(INAV_GALT_X-19, INAV_GALT_Y, "Alt.", SMLSIZE);///indicator
 
-  drawValueWithUnit(INAV_GALT_X-5, INAV_GALT_Y-22, dist, UNIT_METERS, 0);
-  lcdDrawText(INAV_GALT_X-25, INAV_GALT_Y-33, "Dist.", SMLSIZE);///indicator
+  drawValueWithUnit(INAV_GALT_X-5, INAV_GALT_Y-12, dist, UNIT_METERS, 0);
+  lcdDrawText(INAV_GALT_X-19, INAV_GALT_Y-23, "Dist.", SMLSIZE);///indicator
   //lcdDrawText(INAV_GALT_X-25, INAV_GALT_Y-33, 'Distance');
 
   // lcdDrawNumber(70, 20, inavData.currentLat, SMLSIZE | RIGHT);
