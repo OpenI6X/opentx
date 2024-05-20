@@ -60,6 +60,7 @@ struct InavData {
   int32_t currentLon;
   // uint8_t homeHeading;
   uint8_t heading;
+  uint8_t MapSign=1;//(+):north up|(-):north down
 };
 
 static InavData inavData; // = (InavData *)&reusableBuffer.cToolData[0];
