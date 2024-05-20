@@ -191,7 +191,7 @@ static void inavDraw() {
       } else if (strstr(sensor.label, ZSTR_GPS)) { // GPS coords
         inavData.currentLat = telemetryItem.gps.longitude;
         inavData.currentLon = telemetryItem.gps.latitude;
-      } elseif(i==6){  
+      } else if(i==6){  
         TXPW= telemetryItem.value;//[7-1]:ELRS TX Power
       }
 #endif // INAVLITE_CRSF
