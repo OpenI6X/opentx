@@ -265,12 +265,14 @@ static void inavDraw() {
   drawValueWithUnit(LCD_W - 11, 53, rssi, UNIT_DB, MIDSIZE | RIGHT);
   drawValueWithUnit(INAV_GSPD_X, INAV_GSPD_Y, speed, UNIT_KMH, PREC1 | RIGHT);
 
-  drawValueWithUnit(INAV_DIST_X, INAV_DIST_Y, dist, UNIT_METERS, 0);
-  drawValueWithUnit(INAV_ALT_X, INAV_ALT_Y, alt, UNIT_METERS, RIGHT);
+//  drawValueWithUnit(INAV_DIST_X, INAV_DIST_Y, dist, UNIT_METERS, 0);
+//  drawValueWithUnit(INAV_ALT_X, INAV_ALT_Y, galt, UNIT_METERS, RIGHT);
 
   lcdDrawChar(INAV_SATS_X - 25, INAV_SATS_Y + 4, SATS_ICON);
   lcdDrawNumber(INAV_SATS_X, INAV_SATS_Y, sats, MIDSIZE | RIGHT);
-  //drawValueWithUnit(INAV_GALT_X, INAV_GALT_Y, galt, UNIT_METERS, RIGHT);
+  
+  drawValueWithUnit(INAV_GALT_X, INAV_GALT_Y, alt, UNIT_METERS, RIGHT);
+  drawValueWithUnit(INAV_GALT_X, INAV_GALT_Y-11, dist, UNIT_METERS, 0);
 
   // lcdDrawNumber(70, 20, inavData.currentLat, SMLSIZE | RIGHT);
   // lcdDrawNumber(70, 30, inavData.currentLon, SMLSIZE | RIGHT);
