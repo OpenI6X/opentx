@@ -60,8 +60,8 @@ struct InavData {
   int32_t currentLon;
   // uint8_t homeHeading;
   uint8_t heading;
-  constexpr int8_t MapPSign=1;//(+):north up|(-):north down
-  constexpr int8_t MapNSign=-1;
+  int8_t MapPSign=1;//(+):north up|(-):north down
+  int8_t MapNSign=-1;
 };
 
 static InavData inavData; // = (InavData *)&reusableBuffer.cToolData[0];
