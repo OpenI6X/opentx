@@ -60,7 +60,7 @@ struct InavData {
   int32_t currentLon;
   // uint8_t homeHeading;
   uint8_t heading;
-  int8_t MapPSign=1;//(+):north up|(-):north down
+  int8_t MapPSign=1;//default (+):north up|(-):north down
 };
 
 static InavData inavData; // = (InavData *)&reusableBuffer.cToolData[0];
@@ -145,7 +145,7 @@ static void inavDraw() {
   lcdDrawLine(LCD_W - 30, (LCD_H / 2) + FH / 2, LCD_W - 28, (LCD_H / 2) + FH / 2, DOTTED, FORCE);
 
 //MAP-Direction-Legend
-if (inavData.MapPSign==1){ //positive N up
+if (inavData.MapPSign>0){ //positive N up
   lcdDrawText(LCD_W - 37, LCD_H/2, "E", SMLSIZE);
   lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE);//down
 }else{//negative north down: 180deg rotation
@@ -357,7 +357,7 @@ void inavRun(event_t event) {
   } else if (event == EVT_KEY_LONG(KEY_ENTER)) { // set home on long press OK
     inavSetHome();
     audioEvent(AU_SPECIAL_SOUND_WARN2);
-  } else if (event == EVT_KEY_LONG(KEY_DOWN)) { // set home on long press Down    
+  } else if (event == EVT_KEY_FIRST(KEY_MENU)) { // set home on press menu    
     inavSetMapN();
     audioEvent(AU_SPECIAL_SOUND_TADA);
   }
