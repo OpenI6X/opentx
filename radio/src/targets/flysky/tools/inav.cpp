@@ -148,7 +148,7 @@ static void inavDraw() {
 if (inavData.MapPSign>0){ //positive N up
   lcdDrawText(LCD_W - 37, LCD_H/2, "E", SMLSIZE);
   lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE);//down
-}elseif(inavData.MapPSign<0){//negative north down: 180deg rotation
+}else if(inavData.MapPSign<0){//negative north down: 180deg rotation
   lcdDrawText(LCD_W - 37, LCD_H/2, "W", SMLSIZE);
   lcdDrawText(LCD_W/2-1 , LCD_H-6, "N", SMLSIZE);//down
 }else{//inititial value
