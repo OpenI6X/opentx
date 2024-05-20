@@ -215,7 +215,9 @@ if (inavData.MapPSign>0){ //positive N up
         inavData.currentLon = telemetryItem.gps.latitude;
       } else if(i==6){  
         TXPW= telemetryItem.value;//[7-1]:ELRS TX Power
-      }
+      } else if(i==10){ //CRSF ARM
+        inavData.armed = telemetryItem.value; 
+      
 #endif // INAVLITE_CRSF
     } else if (telemetryProtocol == PROTOCOL_FLYSKY_IBUS) {
 #if defined(INAVLITE_AFHDS2A)
