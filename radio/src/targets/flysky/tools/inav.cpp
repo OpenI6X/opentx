@@ -60,8 +60,8 @@ struct InavData {
   int32_t currentLon;
   // uint8_t homeHeading;
   uint8_t heading;
-  uint8_t MapPSign=1;//(+):north up|(-):north down
-  uint8_t MapNSign=1;
+  int8_t MapPSign=1;//(+):north up|(-):north down
+  int8_t MapNSign=1;
 };
 
 static InavData inavData; // = (InavData *)&reusableBuffer.cToolData[0];
@@ -85,7 +85,7 @@ static void inavSetHome() {
 }
 
 static void inavSetMapN() {
-    InavData.MapPSign=1;//InavData.MapPSign*InavData.MapNSign;//rotating the map 180 deg.
+    InavData.MapPSign = sine[32];//InavData.MapPSign*InavData.MapNSign;//rotating the map 180 deg.
 }
 
 static void inavDrawHome(uint8_t x, uint8_t y) {
