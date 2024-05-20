@@ -85,7 +85,7 @@ static void inavSetHome() {
 }
 
 static void inavSetMapN() {
-    InavData.MapPSign=InavData.MapPSign*InavData.MapNSign;//rotating the map 180 deg.
+    InavData.MapPSign=1;//InavData.MapPSign*InavData.MapNSign;//rotating the map 180 deg.
 }
 
 static void inavDrawHome(uint8_t x, uint8_t y) {
@@ -353,9 +353,9 @@ void inavRun(event_t event) {
   } else if (event == EVT_KEY_LONG(KEY_ENTER)) { // set home on long press OK
     inavSetHome();
     audioEvent(AU_SPECIAL_SOUND_WARN2);
-  } else if (event == EVT_KEY_LONG(KEY_DOWN)) { // set home on long press Down
-    audioEvent(AU_SPECIAL_SOUND_TADA);
+  } else if (event == EVT_KEY_LONG(KEY_DOWN)) { // set home on long press Down    
     inavSetMapN();
+    audioEvent(AU_SPECIAL_SOUND_TADA);
   }
 
   inavDraw();
