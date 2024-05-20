@@ -84,6 +84,10 @@ static void inavSetHome() {
   lcdDrawText(LCD_W/2-4 , LCD_H-14, "***", SMLSIZE);///indicator
 }
 
+static void inavSetMapN() {
+    InavData.MapPSign=InavData.MapPSign*InavData.MapNSign;//rotating the map 180 deg.
+}
+
 static void inavDrawHome(uint8_t x, uint8_t y) {
   lcdDrawChar(x - 2, y - 3, HOME_ICON);
 }
@@ -351,7 +355,7 @@ void inavRun(event_t event) {
     audioEvent(AU_SPECIAL_SOUND_WARN2);
   } else if (event == EVT_KEY_LONG(KEY_DOWN)) { // set home on long press Down
     audioEvent(AU_SPECIAL_SOUND_TADA);
-    InavData.MapPSign=InavData.MapPSign*InavData.MapNSign;//rotating the map 180 deg.
+    inavSetMapN();
   }
 
   inavDraw();
