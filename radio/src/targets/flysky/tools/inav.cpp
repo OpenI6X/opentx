@@ -351,7 +351,7 @@ void inavRun(event_t event) {
     audioEvent(AU_SPECIAL_SOUND_WARN2);
   } else if (event == EVT_KEY_LONG(KEY_DOWN)) { // set home on long press Down
     audioEvent(AU_SPECIAL_SOUND_TADA);
-    InavData.MapSign=InavData.MapPSign*InavData.MapNSign;//rotating the map 180 deg.
+    InavData.MapPSign=InavData.MapPSign*InavData.MapNSign;//rotating the map 180 deg.
   }
 
   inavDraw();
