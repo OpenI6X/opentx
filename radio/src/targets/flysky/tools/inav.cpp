@@ -165,29 +165,29 @@ switch(inavData.MapOR) {
   case 0://positive N up
     lcdDrawText(LCD_W - 37, LCD_H/2, "E", SMLSIZE);//right
     lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE);//down
-    InavData.MapPSign_X=1;
-    InavData.MapPSign_Y=1;
+    inavData.MapPSign_X=1;
+    inavData.MapPSign_Y=1;
     break;
 
   case 1://negative north down: 180deg rotation
     lcdDrawText(LCD_W - 37, LCD_H/2, "S", SMLSIZE);//right
     lcdDrawText(LCD_W/2-1 , LCD_H-6, "E", SMLSIZE);//down
-    InavData.MapPSign_X=-1;
-    InavData.MapPSign_Y=1;   
+    inavData.MapPSign_X=-1;
+    inavData.MapPSign_Y=1;   
   break;
 
   case 2:
     lcdDrawText(LCD_W - 37, LCD_H/2, "W", SMLSIZE);//right
     lcdDrawText(LCD_W/2-1 , LCD_H-6, "N", SMLSIZE);//down
-    InavData.MapPSign_X=-1;
-    InavData.MapPSign_Y=-1;    
+    inavData.MapPSign_X=-1;
+    inavData.MapPSign_Y=-1;    
     break;
 
   case 3:
     lcdDrawText(LCD_W - 37, LCD_H/2, "N", SMLSIZE);//right
     lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE);//down  
-    InavData.MapPSign_X=1;
-    InavData.MapPSign_Y=-1;       
+    inavData.MapPSign_X=1;
+    inavData.MapPSign_Y=-1;       
   break;
 
 }
