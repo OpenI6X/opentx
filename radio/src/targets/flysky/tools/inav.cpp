@@ -93,8 +93,8 @@ static void inavSetHome() {
 
 static void inavSetMapN() {
    inavData.MapOR+=1;//rotating the map 180 deg.
-   if (MapOR>3){
-    MapOR=0;
+   if (inavData.MapOR>3){
+    inavData.MapOR=0;
     }   
 }
 
