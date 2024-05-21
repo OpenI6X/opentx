@@ -118,10 +118,10 @@ static void inavDrawCraft(uint8_t x, uint8_t y) {
   int8_t rotatedPRX = (pRX * cosVal - pRY * sinVal) >> 7;
   int8_t rotatedPRY = (pRY * cosVal + pRX * sinVal) >> 7;
 
-  uint8_t tPLX = x + rotatedPLX;
-  uint8_t tPLY = y + rotatedPLY;
-  uint8_t tPRX = x + rotatedPRX;
-  uint8_t tPRY = y + rotatedPRY;
+  uint8_t tPLX = x + inavData.MapPSign_X * rotatedPLX;
+  uint8_t tPLY = y + inavData.MapPSign_Y * rotatedPLY;
+  uint8_t tPRX = x + inavData.MapPSign_X * rotatedPRX;
+  uint8_t tPRY = y + inavData.MapPSign_Y * rotatedPRY;
 
   // translate and draw
   lcdDrawLine(x, y, tPLX, tPLY, SOLID, FORCE);
