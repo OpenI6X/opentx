@@ -161,7 +161,7 @@ static void inavDraw() {
   lcdDrawLine(LCD_W - 30, (LCD_H / 2) + FH / 2, LCD_W - 28, (LCD_H / 2) + FH / 2, DOTTED, FORCE);
 
 //MAP-Direction-Legend
-switch(inavData.MapOR) { 
+switch(inavData.MapOR) { //90-deg each rotation:clockiwse
   case 0://positive N up
     lcdDrawText(LCD_W - 37, LCD_H/2, "E", SMLSIZE);//right
     lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE);//down
