@@ -63,9 +63,12 @@ struct InavData {
   int32_t currentLon;
   // uint8_t homeHeading;
   uint8_t heading;
-  int8_t MapPSign;//default (+):north up|(-):north down    
   uint8_t armed = 1;
   uint8_t lastMode = 0;
+
+  int8_t MapPSign_X;//default (+):north up|(-):north down    
+  int8_t MapPSign_Y;
+  uint8_t MapOR;
 };
 
 static InavData inavData; // = (InavData *)&reusableBuffer.cToolData[0];
@@ -89,7 +92,10 @@ static void inavSetHome() {
 }
 
 static void inavSetMapN() {
-   inavData.MapPSign *= -1;//rotating the map 180 deg.
+   inavData.MapOR+=1;//rotating the map 180 deg.
+   if (MapOR>3){
+    MapOR=0;
+    }   
 }
 
 static void inavDrawHome(uint8_t x, uint8_t y) {
@@ -155,16 +161,36 @@ static void inavDraw() {
   lcdDrawLine(LCD_W - 30, (LCD_H / 2) + FH / 2, LCD_W - 28, (LCD_H / 2) + FH / 2, DOTTED, FORCE);
 
 //MAP-Direction-Legend
-if (inavData.MapPSign>0){ //positive N up
-  lcdDrawText(LCD_W - 37, LCD_H/2, "E", SMLSIZE);
-  lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE);//down
-}else if(inavData.MapPSign<0){//negative north down: 180deg rotation
-  lcdDrawText(LCD_W - 37, LCD_H/2, "W", SMLSIZE);
-  lcdDrawText(LCD_W/2-1 , LCD_H-6, "N", SMLSIZE);//down
-}else{//inititial value
-  inavData.MapPSign=1;
+switch(inavData.MapOR) { 
+  case 0://positive N up
+    lcdDrawText(LCD_W - 37, LCD_H/2, "E", SMLSIZE);//right
+    lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE);//down
+    InavData.MapPSign_X=1;
+    InavData.MapPSign_Y=1;
+    break;
+
+  case 1://negative north down: 180deg rotation
+    lcdDrawText(LCD_W - 37, LCD_H/2, "S", SMLSIZE);//right
+    lcdDrawText(LCD_W/2-1 , LCD_H-6, "E", SMLSIZE);//down
+    InavData.MapPSign_X=-1;
+    InavData.MapPSign_Y=1;   
+  break;
+
+  case 2:
+    lcdDrawText(LCD_W - 37, LCD_H/2, "W", SMLSIZE);//right
+    lcdDrawText(LCD_W/2-1 , LCD_H-6, "N", SMLSIZE);//down
+    InavData.MapPSign_X=-1;
+    InavData.MapPSign_Y=-1;    
+    break;
+
+  case 3:
+    lcdDrawText(LCD_W - 37, LCD_H/2, "N", SMLSIZE);//right
+    lcdDrawText(LCD_W/2-1 , LCD_H-6, "S", SMLSIZE);//down  
+    InavData.MapPSign_X=1;
+    InavData.MapPSign_Y=-1;       
+  break;
+
 }
-//
 
   uint8_t rxBatt = 0, sats = 0;
   int32_t dist = 0, alt = 0, galt = 0, speed = 0, current = 0, TXPW = 0;
@@ -362,14 +388,12 @@ if (inavData.MapPSign>0){ //positive N up
   int32_t translatedCurrentLat = inavData.currentLat - centerLat;
 
   // rotate to homeHeading
-  // ...
-
+  // ... 
   // scale:: //considering the North Position::inavData.MapPSign
-  int8_t scaledHomeLon = inavData.MapPSign* translatedHomeLon / scaleFactor;
-  int8_t scaledHomeLat = inavData.MapPSign* translatedHomeLat / scaleFactor;
-  int8_t scaledCurrentLon = inavData.MapPSign* translatedCurrentLon / scaleFactor;
-  int8_t scaledCurrentLat = inavData.MapPSign* translatedCurrentLat / scaleFactor;
-
+  int8_t scaledHomeLon = inavData.MapPSign_Y* translatedHomeLon / scaleFactor;
+  int8_t scaledHomeLat = inavData.MapPSign_X* translatedHomeLat / scaleFactor;
+  int8_t scaledCurrentLon = inavData.MapPSign_Y* translatedCurrentLon / scaleFactor;
+  int8_t scaledCurrentLat = inavData.MapPSign_X* translatedCurrentLat / scaleFactor;
 
   // translate to LCD center space and draw
   inavDrawHome(BBOX_CENTER_X + scaledHomeLat, BBOX_CENTER_Y - scaledHomeLon);
