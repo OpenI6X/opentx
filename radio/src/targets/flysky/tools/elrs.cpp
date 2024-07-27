@@ -530,8 +530,6 @@ static void parseDeviceInfoMessage(uint8_t* data) {
       bufferPush((char *)&data[3], deviceField.nameLength);
       storeField(&deviceField);
       if (devicesLen == expectedFieldsCount - 1) { // was it the last one?
-        // jeżeli urzadzenie zgłosiło sie później to ta liczba nie bedzie prawdziwa (Wim. CruiseControl)
-        // Jest to jedynie wada kosmetyczna
         allParamsLoaded = 1;
         fieldId = 1;
         addBackButton();
