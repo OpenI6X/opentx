@@ -290,7 +290,7 @@ void processFlySkyTelemetryFrame(uint8_t * frame) {
     processFlySkyPacketAC(frame + 8);
   }
 
-  uint8_t trss = frame[8]
+  uint8_t trss = frame[8];
   if (telemetryData.rssi.value == 0 && trss > 0) { // Create fake RSSI
     telemetryData.rssi.set(trss * 3);
     if (trss > 0) telemetryStreaming = TELEMETRY_TIMEOUT10ms;
