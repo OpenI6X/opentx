@@ -29,6 +29,9 @@ extern "C" {
 
 #include "opentx.h"
 #include "debug.h"
+#if defined(ADC_JOYSTICK)
+#include "board.h"
+#endif
 
 static bool usbDriverStarted = false;
 #if defined(BOOT)
@@ -179,6 +182,27 @@ void usbJoystickUpdate()
 #else
   if (USBD_HID_SendReport(&USB_OTG_dev, 0, 0) == USBD_OK) {
 #endif
+
+#if defined(ADC_JOYSTICK)
+    // 4 axes
+    HID_Buffer[0] = uint8_t(adcValues[STICK1] >> 4) - 0x7f;
+    HID_Buffer[1] = uint8_t(adcValues[STICK2] >> 4) - 0x7f;
+    HID_Buffer[2] = uint8_t(adcValues[STICK3] >> 4) - 0x7f;
+    HID_Buffer[3] = uint8_t(adcValues[STICK4] >> 4) - 0x7f;
+
+    // 2 pots
+    HID_Buffer[4] = uint8_t(adcValues[POT1] >> 4) - 0x7f;
+    HID_Buffer[5] = uint8_t(adcValues[POT2] >> 4) - 0x7f;
+
+    // 4 switches
+    // up:  10
+    // mid: 00
+    // dn:  01
+    HID_Buffer[6] = (~(uint8_t(adcValues[SW_A] >> 10) - 2) & 0x03)
+		  | (~(uint8_t(adcValues[SW_B] >> 10) - 2) & 0x03) << 2
+		  | (~(uint8_t(adcValues[SW_C] >> 10) - 2) & 0x03) << 4
+		  | (~(uint8_t(adcValues[SW_D] >> 10) - 2) & 0x03) << 6;
+#else
     //buttons
     HID_Buffer[0] = 0;
     HID_Buffer[1] = 0;
@@ -219,6 +243,7 @@ void usbJoystickUpdate()
     HID_Buffer[13] = HID_Buffer[9];
     HID_Buffer[8] = 0;
     HID_Buffer[9] = 0;
+#endif
 #endif
 
 #if defined(STM32F0)

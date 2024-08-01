@@ -19,5 +19,4 @@ radio/src/CmakeFiles/*
 .push.settings.jsonc
 build.sh
 firm.sh
-flash.sh
 *.patch

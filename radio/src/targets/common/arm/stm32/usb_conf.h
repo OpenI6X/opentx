@@ -55,9 +55,11 @@
 
 /* EP1, TX buffer base address */
 #define MSC_IN_TX_ADDRESS     (0x98)
+#define HID_IN_TX_ADDRESS     (0x98)
     
 /* EP2, Rx buffer base address */
 #define MSC_OUT_RX_ADDRESS    (0xD8)
+#define HID_OUT_RX_ADDRESS    (0xD8)
 
 /* EP2 Tx buffer base address */
 #define BULK_IN_TX_ADDRESS  (0xC0) 

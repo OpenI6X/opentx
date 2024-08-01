@@ -75,8 +75,6 @@ static uint8_t  USBD_HID_Setup (void  *pdev,
                                 USB_SETUP_REQ *req);
 
 static const uint8_t  *USBD_HID_GetCfgDesc (uint8_t speed, uint16_t *length);
-
-static uint8_t  USBD_HID_DataIn (void  *pdev, uint8_t epnum);
 /**
   * @}
   */ 
@@ -111,6 +109,32 @@ static uint8_t  USBD_HID_DataIn (void  *pdev, uint8_t epnum);
 */ 
 __ALIGN_BEGIN static const uint8_t HID_JOYSTICK_ReportDesc[] __ALIGN_END =
 {
+#if defined(ADC_JOYSTICK)
+    0x05, 0x01,                    //     USAGE_PAGE (Generic Desktop)
+    0x09, 0x04,                    //     USAGE (Joystick)
+    0xa1, 0x01,                    //     COLLECTION (Application)
+    0x05, 0x01,                    //         USAGE_PAGE (Generic Desktop)
+    0x09, 0x30,                    //         USAGE (X)
+    0x09, 0x31,                    //         USAGE (Y)
+    0x09, 0x32,                    //         USAGE (Z)
+    0x09, 0x33,                    //         USAGE (Rx)
+    0x09, 0x34,                    //         USAGE (Ry)
+    0x09, 0x35,                    //         USAGE (Rz)
+    0x15, 0x81,                    //         LOGICAL_MINIMUM (-127)
+    0x25, 0x7F,                    //         LOGICAL_MAXIMUM (127)
+    0x75, 0x08,                    //         REPORT_SIZE (8)
+    0x95, 0x06,                    //         REPORT_COUNT (6)
+    0x81, 0x02,                    //         INPUT (Data,Var,Abs)
+    0x05, 0x09,                    //         USAGE_PAGE (Button)
+    0x19, 0x01,                    //         USAGE_MINIMUM (Button 1)
+    0x29, 0x08,                    //         USAGE_MAXIMUM (Button 8)
+    0x15, 0x00,                    //         LOGICAL_MINIMUM (0)
+    0x25, 0x01,                    //         LOGICAL_MAXIMUM (1)
+    0x75, 0x01,                    //         REPORT_SIZE (1)
+    0x95, 0x08,                    //         REPORT_COUNT (8)
+    0x81, 0x02,                    //         INPUT (Data,Var,Abs)
+    0xc0,                          //     END_COLLECTION
+#else
     0x05, 0x01,                    //     USAGE_PAGE (Generic Desktop)
     0x09, 0x05,                    //     USAGE (Game Pad)
     0xa1, 0x01,                    //     COLLECTION (Application)
@@ -152,7 +176,8 @@ __ALIGN_BEGIN static const uint8_t HID_JOYSTICK_ReportDesc[] __ALIGN_END =
     0x95, 0x08,                    //         REPORT_COUNT (8)
     0x81, 0x02,                    //         INPUT (Data,Var,Abs)
     0xc0,                          //       END_COLLECTION
-    0xc0                           //     END_COLLECTION
+    0xc0,                          //     END_COLLECTION
+#endif
 };
 
 
@@ -168,7 +193,7 @@ const USBD_Class_cb_TypeDef  USBD_HID_cb =
   USBD_HID_Setup,
   NULL, /*EP0_TxSent*/  
   NULL, /*EP0_RxReady*/ /* STATUS STAGE IN */
-  USBD_HID_DataIn, /*DataIn*/
+  NULL, /*DataIn*/
   NULL, /*DataOut*/
   NULL, /*SOF */    
   USBD_HID_GetCfgDesc,
@@ -179,7 +204,7 @@ const USBD_Class_cb_TypeDef  USBD_HID_cb =
   USBD_HID_Setup,
   NULL, /*EP0_TxSent*/  
   NULL, /*EP0_RxReady*/
-  USBD_HID_DataIn, /*DataIn*/
+  NULL, /*DataIn*/
   NULL, /*DataOut*/
   NULL, /*SOF */
   NULL,
@@ -229,7 +254,7 @@ __ALIGN_BEGIN static const uint8_t USBD_HID_CfgDesc[USB_HID_CONFIG_DESC_SIZ] __A
   0x01,         /*bConfigurationValue: Configuration value*/
   0x00,         /*iConfiguration: Index of string descriptor describing
   the configuration*/
-  0xE0,         /*bmAttributes: bus powered and Support Remote Wake-up */
+  0xC0,         /*bmAttributes: bus powered */
   0x32,         /*MaxPower 100 mA: this current is used for detecting Vbus*/
   
   /************** Descriptor of Joystick Mouse interface ****************/
@@ -261,15 +286,11 @@ __ALIGN_BEGIN static const uint8_t USBD_HID_CfgDesc[USB_HID_CONFIG_DESC_SIZ] __A
   
   HID_IN_EP,     /*bEndpointAddress: Endpoint Address (IN)*/
   0x03,          /*bmAttributes: Interrupt endpoint*/
-  HID_IN_PACKET, /*wMaxPacketSize: 4 Byte max */
+  0x40,          /*wMaxPacketSize: 4 Byte max */
   0x00,
-  0x02,          /*bInterval: Polling Interval (2 ms)*/
+  0x04,          /*bInterval: Polling Interval (4 ms)*/
   /* 34 */
 } ;
-
-
-
-static uint8_t ReportSent;
 
 /**
   * @}
@@ -289,6 +310,7 @@ static uint8_t ReportSent;
 static uint8_t  USBD_HID_Init (void  *pdev, 
                                uint8_t cfgidx)
 {
+  DCD_PMA_Config(pdev, HID_IN_EP,USB_SNG_BUF, HID_IN_TX_ADDRESS);
   
   /* Open EP IN */
   DCD_EP_Open(pdev,
@@ -299,18 +321,7 @@ static uint8_t  USBD_HID_Init (void  *pdev,
 #else
               USB_OTG_EP_INT);
 #endif
-  
-  /* Open EP OUT */
-  DCD_EP_Open(pdev,
-              HID_OUT_EP,
-              HID_OUT_PACKET,
-#if defined(STM32F0)
-              USB_EP_INT);
-#else
-              USB_OTG_EP_INT);
-#endif
 
-  ReportSent = 1;
   return USBD_OK;
 }
 
@@ -326,9 +337,7 @@ static uint8_t  USBD_HID_DeInit (void  *pdev,
 {
   /* Close HID EPs */
   DCD_EP_Close (pdev , HID_IN_EP);
-  DCD_EP_Close (pdev , HID_OUT_EP);
   
-  ReportSent = 1;
   return USBD_OK;
 }
 
@@ -430,29 +439,16 @@ static uint8_t  USBD_HID_Setup (void  *pdev,
 uint8_t USBD_HID_SendReport(USB_CORE_HANDLE  *pdev, uint8_t * report, uint16_t len)
 {
   if (pdev->dev.device_status == USB_CONFIGURED) {
-    if (ReportSent) {
-      if (report) {
-        ReportSent = 0;
-        DCD_EP_Tx (pdev, HID_IN_EP, report, len);
-      }
-      return USBD_OK;
-    }
+    DCD_EP_Tx (pdev, HID_IN_EP, report, len);
   }
-  return USBD_FAIL;
+  return USBD_OK;
 }
 #else
 uint8_t USBD_HID_SendReport(USB_OTG_CORE_HANDLE  *pdev, uint8_t * report, uint16_t len)
 {
   if (pdev->dev.device_status == USB_OTG_CONFIGURED) {
-    if (ReportSent) {
-      if (report) {
-        ReportSent = 0;
-        DCD_EP_Tx (pdev, HID_IN_EP, report, len);
-      }
-      return USBD_OK;
-    }
-  }
-  return USBD_FAIL;
+    DCD_EP_Tx (pdev, HID_IN_EP, report, len);
+  return USBD_OK;
 }
 #endif
 
@@ -467,31 +463,6 @@ static const uint8_t  *USBD_HID_GetCfgDesc (uint8_t speed, uint16_t *length)
 {
   *length = sizeof (USBD_HID_CfgDesc);
   return USBD_HID_CfgDesc;
-}
-
-/**
-  * @brief  USBD_HID_DataIn
-  *         handle data IN Stage
-  * @param  pdev: device instance
-  * @param  epnum: endpoint index
-  * @retval status
-
-    This function is called when buffer has been sent over the USB.
-    The TX buffer is now empty and can be filled with new data.
-  */
-static uint8_t  USBD_HID_DataIn (void  *pdev, 
-                              uint8_t epnum)
-{
-  ReportSent = 1;
-#if defined(STM32F0)
-  // ((USBD_HID_HandleTypeDef *)pdev->pClassData)->state = HID_IDLE;
-  // if (epnum == 1) PrevXferDone = 1;
-#else
-  /* Ensure that the FIFO is empty before a new transfer, this condition could 
-  be caused by  a new transfer before the end of the previous transfer */
-  DCD_EP_Flush(pdev, HID_IN_EP);
-#endif
-  return USBD_OK;
 }
 
 /**
