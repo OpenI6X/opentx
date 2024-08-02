@@ -300,6 +300,7 @@ void processFlySkyTelemetryFrame(uint8_t * frame) {
     telemetryData.rssi.set(trss / 3);
     if (trss > 0) telemetryStreaming = TELEMETRY_TIMEOUT10ms;
   }
+  rssiSensorPresent = false;
 
 #if defined(AUX_SERIAL)
   if (g_eeGeneral.auxSerialMode == UART_MODE_TELEMETRY_MIRROR) {
