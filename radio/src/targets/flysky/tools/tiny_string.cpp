@@ -25,9 +25,9 @@ void tiny_sprintf(char *arr, char const *fmt, char argsLen, ...) {
           string_temp = va_arg(args, char *);
           arr = strAppend(arr, string_temp, int_temp);
           break;
-        case 'u':
+        case 'd':
           int_temp = va_arg(args, int);
-          arr = strAppendUnsigned(arr, int_temp);
+          arr = strAppendSigned(arr, int_temp);
           break;
       }
     } else {
