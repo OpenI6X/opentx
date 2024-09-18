@@ -19,18 +19,18 @@ enum COMMAND_STEP {
 };
 
 #define TYPE_UINT8				   0
-#define TYPE_INT8				     1
+#define TYPE_INT8				   1
 #define TYPE_UINT16				   2
 #define TYPE_INT16				   3
 #define TYPE_FLOAT				   8
-#define TYPE_SELECT          9
+#define TYPE_SELECT                9
 #define TYPE_STRING				  10
 #define TYPE_FOLDER				  11
-#define TYPE_INFO				    12
+#define TYPE_INFO				  12
 #define TYPE_COMMAND			  13
-#define TYPE_BACK           14
-#define TYPE_DEVICE         15
-#define TYPE_DEVICES_FOLDER 16
+#define TYPE_BACK                 14
+#define TYPE_DEVICE               15
+#define TYPE_DEVICES_FOLDER       16
 
 #define CRSF_FRAMETYPE_DEVICE_PING 0x28
 #define CRSF_FRAMETYPE_DEVICE_INFO 0x29
