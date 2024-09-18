@@ -74,7 +74,6 @@ static uint8_t *buffer = &reusableBuffer.cToolData[0];
 static uint16_t bufferOffset = 0;
 
 // last POPUP_MSG_MAX_LEN of FIELD_DATA_TAIL_SIZE are reused for popup message
-// no need for popup msg storage because no other parameter type packet should come?
 static constexpr uint8_t FIELD_DATA_TAIL_SIZE = 40; // max popup packet size
 static constexpr uint8_t POPUP_MSG_MAX_LEN = 32; // popup hard limit = 32
 static constexpr uint8_t POPUP_MSG_OFFSET = FIELD_DATA_TAIL_SIZE - POPUP_MSG_MAX_LEN;
