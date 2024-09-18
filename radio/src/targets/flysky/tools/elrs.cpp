@@ -574,11 +574,9 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
       }
     fieldChunk = 0;
     fieldId++;
-    
     return;
   }
 
- TRACE("chunk len %d", length); // max single chunk size: 49 - 5 => 44
   memcpy(&fieldData[fieldDataLen], &data[5], length - 5);
   fieldDataLen += length - 5;
 
