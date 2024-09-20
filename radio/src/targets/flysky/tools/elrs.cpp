@@ -562,16 +562,17 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
   }
   expectedChunks = chunksRemain - 1;
 
-  if (fieldDataLen == 0 && data[5] != currentFolderId) { // skip on first chunk
+  // skip on first chunk of not current folder
+  if (fieldDataLen == 0 && data[5] != currentFolderId) {
     if (fieldId == expectedFieldsCount) {
-        allParamsLoaded = 1;
-        fieldId = 1;
-      }
+      allParamsLoaded = 1;
+      fieldId = 1;
       if (currentFolderId == 0) {
         otherDevicesState = BTN_REQUESTED;
       } else {
         addBackButton();
       }
+    }
     fieldChunk = 0;
     fieldId++;
     return;
