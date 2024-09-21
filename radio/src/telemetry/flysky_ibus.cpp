@@ -143,7 +143,9 @@ const FlySkySensor flySkySensors[] = {
 
 int32_t getALT(uint32_t value);
 
+#if defined(FAKE_RSSI)
 static bool rssiSensorPresent = false;
+#endif
 
 void processFlySkySensor(const uint8_t *packet, uint8_t type) {
   uint8_t buffer[8];
@@ -163,7 +165,9 @@ void processFlySkySensor(const uint8_t *packet, uint8_t type) {
     value = 135 - value;
   }
   else if (id == AFHDS2A_ID_RX_ERR_RATE) {
+#if defined(FAKE_RSSI)
     rssiSensorPresent = true;
+#endif
     value = 100 - value;
     telemetryData.rssi.set(value);
     if (value > 0) telemetryStreaming = TELEMETRY_TIMEOUT10ms;
@@ -293,6 +297,7 @@ void processFlySkyTelemetryFrame(uint8_t * frame) {
     processFlySkyPacketAC(frame + 8);
   }
 
+#if defined(FAKE_RSSI)
   // If telemetry was received but without rssi then try to mimmic it to enable
   // telemetry connected/lost events and make TELEMETRY_STREAMING return true
   uint8_t trss = frame[8];
@@ -301,6 +306,7 @@ void processFlySkyTelemetryFrame(uint8_t * frame) {
     if (trss > 0) telemetryStreaming = TELEMETRY_TIMEOUT10ms;
   }
   rssiSensorPresent = false;
+#endif
 
 #if defined(AUX_SERIAL)
   if (g_eeGeneral.auxSerialMode == UART_MODE_TELEMETRY_MIRROR) {
