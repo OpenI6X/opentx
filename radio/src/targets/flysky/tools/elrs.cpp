@@ -3,7 +3,7 @@
  * @author Jan Kozak (ajjjjjjjj)
  *
  * Limitations vs elrsV3.lua:
- * - no int16, float, string fields support, but not used by ExpressLRS anyway,
+ * - incomplete INT16 and STRING data type support, but not used by ExpressLRS anyway,
  */
 #include "opentx.h"
 #include "tiny_string.cpp"
@@ -39,6 +39,14 @@ enum COMMAND_STEP {
 #define CRSF_FRAMETYPE_PARAMETER_WRITE 0x2D
 #define CRSF_FRAMETYPE_ELRS_STATUS 0x2E
 
+/**
+ * INT16 and FLOAT support:
+ * Values can be keep in buffer instead of additional data structure for no additional RAM cost.
+ * standard structure keeps values at values offset, prec can be stored at min or max.
+ * prec - how many digits in fractional part.
+ * FLOAT: { VALUE 4B | MIN 4B | MAX 4B | STEP 4B } = 16B
+ * INT16: { VALUE 2B | MIN 2B | MAX 2B } =  6B
+*/
 PACK(struct FieldProps {
   uint16_t offset;
   uint8_t nameLength;
@@ -175,6 +183,7 @@ static void resetFieldData() {
   fieldDataLen = 0;
 }
 
+// TODO value always uint32_t + pass size (1-4) as parameter?
 static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t value) {
   // TRACE("crsf cmd %x %x %x", cmd, index, value);
   uint8_t crsfPushData[4] = { deviceId, handsetId, index, value };
@@ -304,13 +313,25 @@ static void unitLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
   }
 }
 
-// UINT8
 static void fieldIntegerDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
-  lcdDrawNumber(COL2, y, field->value, attr);
-  lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[field->offset + field->nameLength /*+ field->valuesLength*/ /* TODO isn't it always 0 for INTs? */], field->unitLength, attr);
+  switch (field->type) {
+    case TYPE_UINT8:
+      lcdDrawNumber(COL2, y, (uint8_t)field->value, attr);
+      break;
+    case TYPE_INT8:
+      lcdDrawNumber(COL2, y, (int8_t)field->value, attr);
+      break;
+  //   case TYPE_UINT16:
+  //     lcdDrawNumber(COL2, y, (uint16_t)buffer[field->offset + field->nameLength], attr);
+  //     break;
+  //   case TYPE_INT16:
+  //     lcdDrawNumber(COL2, y, (int16_t)buffer[field->offset + field->nameLength], attr);
+  //     break;
+  }
+  lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[field->offset + field->nameLength /* TODO isn't it always 0 for INTs? */ + field->valuesLength], field->unitLength, attr);
 }
 
-static void fieldUint8Load(FieldProps * field, uint8_t * data, uint8_t offset) {
+static void fieldInt8Load(FieldProps * field, uint8_t * data, uint8_t offset) {
   field->value = data[offset + 0];
   field->min = data[offset + 1];
   field->max = data[offset + 2];
@@ -319,6 +340,35 @@ static void fieldUint8Load(FieldProps * field, uint8_t * data, uint8_t offset) {
 
 static void fieldIntSave(FieldProps * field) {
   crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, field->id, field->value);
+  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, field->id, field->value);
+}
+
+static void fieldFloatDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
+  int32_t value = (int32_t)buffer[field->offset + field->nameLength];
+  char tmpString[10];
+  tiny_sprintf(tmpString, "%d", 1, value);
+  if (field->prec > 0) {
+    uint8_t pos = strlen(tmpString) - field->prec;
+    memmove(&tmpString[pos + 1], &tmpString[pos], field->prec + 1);
+    tmpString[pos] = '.';
+  }
+  lcdDrawText(COL2, y, tmpString, attr);
+}
+
+// size to copy can be relative to field type - FLOAT/INT16
+static void fieldFloatLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
+  // (int32_t)buffer[field->offset + field->nameLength]; = data[offset + 0];
+  bufferPush((char *)&data[offset + 0], 12); // value + min + max at once
+
+  // only if float?
+  field->prec = data[offset + 1];
+  bufferPush((char *)&data[offset + 13], 4); // step
+  unitLoad(field, data, offset + 4);
+}
+
+static void fieldFloatSave(FieldProps * field) {
+  // uint8_t crsfPushData[7] = { deviceId, handsetId, field->id, field->value, field->value, field->value, field->value };
+  // crossfireTelemetryPush(CRSF_FRAMETYPE_PARAMETER_WRITE, crsfPushData, sizeof(crsfPushData));
 }
 
 // TEXT SELECTION
@@ -509,15 +559,15 @@ static void parseDeviceInfoMessage(uint8_t* data) {
 static const FieldFunctions noopFunctions = { .load=noopLoad, .save=noopSave, .display=noopDisplay };
 
 static const FieldFunctions functions[] = {
-  { .load=fieldUint8Load, .save=fieldIntSave, .display=fieldIntegerDisplay }, // 1 UINT8(0)
-  // { .load=noopLoad, .save=noopSave, .display=fieldIntegerDisplay }, // 2 INT8(1)
+  { .load=fieldInt8Load, .save=fieldIntSave, .display=fieldIntegerDisplay }, // 1 UINT8(0)
+  { .load=fieldInt8Load, .save=fieldIntSave, .display=fieldIntegerDisplay }, // 2  INT8(1)
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 3 UINT16(2)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 4 INT16(3)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 5 UINT32(4)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 6 INT32(5)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 7 UINT64(6)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8 INT64(7)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 9 FLOAT(8)
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 4  INT16(3)
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 5
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 6
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 7
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8
+  { .load=fieldFloatLoad, .save=fieldFloatSave, .display=fieldFloatDisplay }, // 9 FLOAT(8)
   { .load=fieldTextSelectionLoad, .save=fieldIntSave, .display=fieldTextSelectionDisplay }, // 10 TEXT SELECTION(9)
   { .load=noopLoad, .save=noopSave, .display=fieldStringDisplay }, // 11 STRING(10) editing
   { .load=noopLoad, .save=fieldFolderOpen, .display=fieldUnifiedDisplay }, // 12 FOLDER(11)
@@ -532,6 +582,9 @@ static FieldFunctions getFunctions(uint32_t i) {
   if (i > TYPE_UINT8) {
     if (i < TYPE_SELECT) return noopFunctions; // guard against not implemented types
     i -= 8;
+  if (i > TYPE_INT8) {
+    if (i < TYPE_FLOAT) return noopFunctions; // guard against not implemented types
+    i -= 6;
   }
   return functions[i];
 }
