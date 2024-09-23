@@ -2,8 +2,6 @@
  * ExpressLRS V3 configurator for i6X based on elrsV2/3.lua
  * @author Jan Kozak (ajjjjjjjj)
  *
- * Limitations vs elrsV3.lua:
- * - incomplete INT16 and STRING data type support, but not used by ExpressLRS anyway,
  */
 #include "opentx.h"
 #include "tiny_string.cpp"
@@ -41,8 +39,8 @@ enum COMMAND_STEP {
 
 /**
  * INT16 and FLOAT support:
- * Values can be keep in buffer instead of additional data structure for no additional RAM cost.
- * standard structure keeps values at values offset, prec can be stored at min or max.
+ * Values are keep in buffer.
+ * Standard structure keeps values at values offset.
  * prec - how many digits in fractional part.
  * FLOAT: { VALUE 4B | MIN 4B | MAX 4B | STEP 4B } = 16B
  * INT16: { VALUE 2B | MIN 2B | MAX 2B } =  6B
