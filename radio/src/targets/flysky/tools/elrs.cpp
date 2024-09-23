@@ -328,7 +328,7 @@ static void fieldIntegerDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
   //     lcdDrawNumber(COL2, y, (int16_t)buffer[field->offset + field->nameLength], attr);
   //     break;
   }
-  lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[field->offset + field->nameLength /* TODO isn't it always 0 for INTs? */ + field->valuesLength], field->unitLength, attr);
+  lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[field->offset + field->nameLength /*+ field->valuesLength*/ /* TODO isn't it always 0 for INTs? */], field->unitLength, attr);
 }
 
 static void fieldInt8Load(FieldProps * field, uint8_t * data, uint8_t offset) {
