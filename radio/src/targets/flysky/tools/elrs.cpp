@@ -574,9 +574,6 @@ static const FieldFunctions functions[] = {
 };
 
 static FieldFunctions getFunctions(uint32_t i) {
-  if (i > TYPE_UINT8) {
-    if (i < TYPE_SELECT) return noopFunctions; // guard against not implemented types
-    i -= 8;
   if (i > TYPE_INT8) {
     if (i < TYPE_FLOAT) return noopFunctions; // guard against not implemented types
     i -= 6;
