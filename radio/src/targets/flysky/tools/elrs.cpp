@@ -344,7 +344,7 @@ static void fieldFloatDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
   int32_t value = (int32_t)buffer[field->offset + field->nameLength];
   char tmpString[10];
   tiny_sprintf(tmpString, "%d", 1, value);
-  if (field->prec > 0) {
+  if (field->prec > 0) { // insert dot
     uint8_t pos = strlen(tmpString) - field->prec;
     memmove(&tmpString[pos + 1], &tmpString[pos], field->prec + 1);
     tmpString[pos] = '.';
@@ -355,10 +355,10 @@ static void fieldFloatDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
 // size to copy can be relative to field type - FLOAT/INT16
 static void fieldFloatLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
   // (int32_t)buffer[field->offset + field->nameLength]; = data[offset + 0];
-  bufferPush((char *)&data[offset + 0], 12); // value + min + max at once
-  field->prec = data[offset + 1];
+  bufferPush((char *)&data[offset + 0], 4 + 4 + 4); // value + min + max at once
+  field->prec = data[offset + 12];
   bufferPush((char *)&data[offset + 13], 4); // step
-  unitLoad(field, data, offset + 4);
+  unitLoad(field, data, offset + 17);
 }
 
 static void fieldFloatSave(FieldProps * field) {
