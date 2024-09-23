@@ -39,8 +39,7 @@ enum COMMAND_STEP {
 
 /**
  * INT16 and FLOAT support:
- * Values are keep in buffer.
- * Standard structure keeps values at values offset.
+ * Values (val,min,max[,step]) are keep in buffer after name.
  * prec - how many digits in fractional part.
  * FLOAT: { VALUE 4B | MIN 4B | MAX 4B | STEP 4B } = 16B
  * INT16: { VALUE 2B | MIN 2B | MAX 2B } =  6B
@@ -52,6 +51,7 @@ PACK(struct FieldProps {
     uint8_t min;          // INT8
     uint8_t timeout;      // COMMAND
     uint8_t valuesLength; // SELECT
+    uint8_t prec;         // FLOAT
   };
   union {
     uint8_t unitLength;
@@ -62,10 +62,7 @@ PACK(struct FieldProps {
     uint8_t status;       // COMMAND, must be alias to value, because save expects it!
   };
   uint8_t type;
-  union {
-    uint8_t max;          // INT8, SELECT
-    uint8_t prec;         // only FLOAT, FLOAT max and min are stored in buffer
-  };
+  uint8_t max;            // INT8, SELECT
   uint8_t id;
 });
 
