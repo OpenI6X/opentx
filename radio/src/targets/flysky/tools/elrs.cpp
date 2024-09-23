@@ -340,7 +340,6 @@ static void fieldInt8Load(FieldProps * field, uint8_t * data, uint8_t offset) {
 
 static void fieldIntSave(FieldProps * field) {
   crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, field->id, field->value);
-  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, field->id, field->value);
 }
 
 static void fieldFloatDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
@@ -359,8 +358,6 @@ static void fieldFloatDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
 static void fieldFloatLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
   // (int32_t)buffer[field->offset + field->nameLength]; = data[offset + 0];
   bufferPush((char *)&data[offset + 0], 12); // value + min + max at once
-
-  // only if float?
   field->prec = data[offset + 1];
   bufferPush((char *)&data[offset + 13], 4); // step
   unitLoad(field, data, offset + 4);
