@@ -258,9 +258,16 @@ static FieldProps * getField(const uint8_t line) {
 static void incrField(int8_t step) {
   FieldProps * field = getField(lineIndex);
   int32_t min = 0, max = 0;
-  if (field->type <= TYPE_INT16) {
+  if (field->type <= TYPE_INT8) {
     min = field->min;
     max = field->max;
+//  else if (field->type <= TYPE_INT16) {
+//    min = getMin(field);
+//    max = getMax(field);
+//  else if (field->type == TYPE_FLOAT) {
+//    min = getMin(field);
+//    max = getMax(field);
+//    step = getStep(field);
   } else if (field->type == TYPE_SELECT) {
 //    min = 0;
     max = field->max;
