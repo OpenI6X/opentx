@@ -330,7 +330,7 @@ static void fieldIntegerDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
   //     lcdDrawNumber(COL2, y, (int16_t)buffer[field->offset + field->nameLength], attr);
   //     break;
   }
-  lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[field->offset + field->nameLength /*+ field->valuesLength*/ /* TODO isn't it always 0 for INTs? */], field->unitLength, attr);
+  lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[field->offset + field->nameLength + ((field->type >= TYPE_UINT16)?6:0)], field->unitLength, attr);
 }
 
 static void fieldInt8Load(FieldProps * field, uint8_t * data, uint8_t offset) {
@@ -513,11 +513,12 @@ static void fieldDeviceIdSelect(FieldProps * field) {
 static void parseDeviceInfoMessage(uint8_t* data) {
   uint8_t offset;
   uint8_t id = data[2];
-// TRACE("parseDevInfoMsg %x folder %d, expect %d, devsLen %d", id, currentFolderId, expectedFieldsCount, devicesLen);
+// TRACE("parseDev:%x folder:%d, expect:%d, devs:%d", id, currentFolderId, expectedFieldsCount, devicesLen);
   offset = strlen((char*)&data[3]) + 1 + 3;
   uint8_t devId = getDevice(id);
   if (!devId) {
     deviceIds[devicesLen] = id;
+    devicesLen++;
     if (currentFolderId == otherDevicesId) { // if "Other Devices" opened store devices to fields
       FieldProps deviceField;
       deviceField.id = id;
@@ -527,13 +528,12 @@ static void parseDeviceInfoMessage(uint8_t* data) {
 
       bufferPush((char *)&data[3], deviceField.nameLength);
       storeField(&deviceField);
-      if (devicesLen == expectedFieldsCount - 1) { // was it the last one?
+      if (devicesLen == expectedFieldsCount) { // was it the last one?
         allParamsLoaded = 1;
         fieldId = 1;
         addBackButton();
       }
     }
-    devicesLen++;
   }
 
   if (deviceId == id && currentFolderId != otherDevicesId) {
