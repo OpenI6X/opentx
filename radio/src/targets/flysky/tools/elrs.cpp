@@ -258,12 +258,12 @@ static void incrParam(int8_t step) {
     min = param->min;
     max = param->max;
 //  else if (param->type <= TYPE_INT16) {
-//    min = getMin(field);
-//    max = getMax(field);
+//    min = getMin(param);
+//    max = getMax(param);
 //  else if (param->type == TYPE_FLOAT) {
-//    min = getMin(field);
-//    max = getMax(field);
-//    step = getStep(field);
+//    min = getMin(param);
+//    max = getMax(param);
+//    step = getStep(param);
   } else if (param->type == TYPE_SELECT) {
 //    min = 0;
     max = param->max;
@@ -327,7 +327,7 @@ static void paramIntegerDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   //     lcdDrawNumber(COL2, y, (int16_t)buffer[param->offset + param->nameLength], attr);
   //     break;
   }
-  unitDisplay(param, y, param->offset + param->nameLength + ((field->type >= TYPE_UINT16)?6:0), attr);
+  unitDisplay(param, y, param->offset + param->nameLength + ((param->type >= TYPE_UINT16)?6:0), attr);
 }
 
 static void paramInt8Load(Parameter * param, uint8_t * data, uint8_t offset) {
@@ -341,29 +341,29 @@ static void paramIntSave(Parameter * param) {
   crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->value);
 }
 
-static void fieldFloatDisplay(FieldProps * field, uint8_t y, uint8_t attr) {
-  int32_t value = (int32_t)buffer[field->offset + field->nameLength];
+static void paramFloatDisplay(Parameter * param, uint8_t y, uint8_t attr) {
+  int32_t value = (int32_t)buffer[param->offset + param->nameLength];
   char tmpString[10];
   tiny_sprintf(tmpString, "%d", 1, value);
-  if (field->prec > 0) { // insert dot
-    uint8_t pos = strlen(tmpString) - field->prec;
-    memmove(&tmpString[pos + 1], &tmpString[pos], field->prec + 1);
+  if (param->prec > 0) { // insert dot
+    uint8_t pos = strlen(tmpString) - param->prec;
+    memmove(&tmpString[pos + 1], &tmpString[pos], param->prec + 1);
     tmpString[pos] = '.';
   }
   lcdDrawText(COL2, y, tmpString, attr);
 }
 
-// size to copy can be relative to field type - FLOAT/INT16
-static void paramFloatLoad(FieldProps * field, uint8_t * data, uint8_t offset) {
-  // (int32_t)buffer[field->offset + field->nameLength]; = data[offset + 0];
+// size to copy can be relative to param type - FLOAT/INT16
+static void paramFloatLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+  // (int32_t)buffer[param->offset + param->nameLength]; = data[offset + 0];
   bufferPush((char *)&data[offset + 0], 4 + 4 + 4); // value + min + max at once
-  field->prec = data[offset + 12];
+  param->prec = data[offset + 12];
   bufferPush((char *)&data[offset + 13], 4); // step
-  unitLoad(field, data, offset + 17);
+  unitLoad(param, data, offset + 17);
 }
 
-static void paramFloatSave(FieldProps * field) {
-  // uint8_t crsfPushData[7] = { deviceId, handsetId, field->id, field->value, field->value, field->value, field->value };
+static void paramFloatSave(Parameter * param) {
+  // uint8_t crsfPushData[7] = { deviceId, handsetId, param->id, param->value, param->value, param->value, param->value };
   // crossfireTelemetryPush(CRSF_FRAMETYPE_PARAMETER_WRITE, crsfPushData, sizeof(crsfPushData));
 }
 
