@@ -21,12 +21,17 @@
 #ifndef _POPUPS_H_
 #define _POPUPS_H_
 
-#define MENU_X                         10
-#define MENU_Y                         16
-#define MENU_W                         LCD_W-(2*MENU_X)
-#define WARNING_LINE_LEN               20
-#define WARNING_LINE_X                 16
-#define WARNING_LINE_Y                 3*FH
+#define MESSAGEBOX_X                   8
+#define MESSAGEBOX_Y                   8
+#define MESSAGEBOX_W                   (LCD_W - 15)
+
+#define MENU_X                         MESSAGEBOX_X
+#define MENU_Y                         MESSAGEBOX_Y
+#define MENU_W                         MESSAGEBOX_W
+
+#define WARNING_LINE_LEN               24
+#define WARNING_LINE_X                 12
+#define WARNING_LINE_Y                 MESSAGEBOX_Y + 2
 
 void drawMessageBox();
 void showMessageBox(const char * title);
