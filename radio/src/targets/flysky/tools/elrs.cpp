@@ -244,6 +244,29 @@ static void storeParam(Parameter * param) {
   memcpy(storedParam, param, sizeof(Parameter));
 }
 
+static uint8_t getSize(Parameter * param) {
+  if (param->type <= TYPE_INT8) {
+    return 1;
+  } else if (param->type <= TYPE_INT16) {
+    return 2;
+  }
+  return 4;
+}
+
+static uint32_t getMin(Parameter * param) {
+  uint8_t size = getSize(param);
+  return (size == 1) ? param->min : buffer[param->offset + param->nameLength + 1 * size];
+}
+
+static uint32_t getMax(Parameter * param) {
+  uint8_t size = getSize(param);
+  return (size == 1) ? param->min : buffer[param->offset + param->nameLength + 2 * size];
+}
+
+static uint32_t getStep(Parameter * param) {
+  return buffer[param->offset + param->nameLength + 3 * 4];
+}
+
 /**
  * Get param from line index taking only loaded current folder params into account.
  */
@@ -254,19 +277,14 @@ static Parameter * getParam(const uint8_t line) {
 static void incrParam(int8_t step) {
   Parameter * param = getParam(lineIndex);
   int32_t min = 0, max = 0;
-  if (param->type <= TYPE_INT8) {
-    min = param->min;
-    max = param->max;
-//  else if (param->type <= TYPE_INT16) {
-//    min = getMin(param);
-//    max = getMax(param);
-//  else if (param->type == TYPE_FLOAT) {
-//    min = getMin(param);
-//    max = getMax(param);
-//    step = getStep(param);
+  if (param->type <= TYPE_FLOAT) {
+    min = getMin(param);
+    max = getMax(param);
   } else if (param->type == TYPE_SELECT) {
-//    min = 0;
     max = param->max;
+  }
+  if (param->type == TYPE_FLOAT) {
+    step *= getStep(param);
   }
   param->value = limit<int32_t>(min, param->value + step, max);
 }
