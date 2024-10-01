@@ -253,12 +253,12 @@ static uint8_t getSize(Parameter * param) {
   return 4;
 }
 
-static uint32_t getMin(Parameter * param) {
+static int32_t getMin(Parameter * param) {
   uint8_t size = getSize(param);
   return (size == 1) ? param->min : buffer[param->offset + param->nameLength + 1 * size];
 }
 
-static uint32_t getMax(Parameter * param) {
+static int32_t getMax(Parameter * param) {
   uint8_t size = getSize(param);
   return (size == 1) ? param->min : buffer[param->offset + param->nameLength + 2 * size];
 }
@@ -274,7 +274,7 @@ static Parameter * getParam(const uint8_t line) {
   return &params[line - 1];
 }
 
-static void incrParam(int8_t step) {
+static void incrParam(int32_t step) {
   Parameter * param = getParam(lineIndex);
   int32_t min = 0, max = 0;
   if (param->type <= TYPE_FLOAT) {
@@ -326,8 +326,8 @@ static void unitLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   bufferPush((char*)&data[offset], unitLen);
 }
 
-static void unitDisplay(Parameter * param, uint8_t y, uint8_t offset, uint8_t attr) {
-  lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[offset], param->unitLength, attr);
+static void unitDisplay(Parameter * param, uint8_t y, uint8_t offset) {
+  lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[offset], param->unitLength, 0);
 }
 
 static void paramIntegerDisplay(Parameter * param, uint8_t y, uint8_t attr) {
@@ -345,7 +345,7 @@ static void paramIntegerDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   //     lcdDrawNumber(COL2, y, (int16_t)buffer[param->offset + param->nameLength], attr);
   //     break;
   }
-  unitDisplay(param, y, param->offset + param->nameLength + ((param->type >= TYPE_UINT16)?6:0), attr);
+  unitDisplay(param, y, param->offset + param->nameLength + ((param->type >= TYPE_UINT16) ? 6 : 0));
 }
 
 static void paramInt8Load(Parameter * param, uint8_t * data, uint8_t offset) {
@@ -369,6 +369,7 @@ static void paramFloatDisplay(Parameter * param, uint8_t y, uint8_t attr) {
     tmpString[pos] = '.';
   }
   lcdDrawText(COL2, y, tmpString, attr);
+  unitDisplay(param, y, param->offset + param->nameLength + 4 * 4);
 }
 
 // size to copy can be relative to param type - FLOAT/INT16
@@ -422,7 +423,7 @@ static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr
   len = getNextItemPos((char *)&buffer[start], param->valuesLength - (start - valuesOffset)) - 1;
 
   lcdDrawSizedText(COL2, y, (char *)&buffer[start], len, attr);
-  unitDisplay(param, y, param->offset + param->nameLength + param->valuesLength, 0);
+  unitDisplay(param, y, param->offset + param->nameLength + param->valuesLength);
 }
 
 static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
