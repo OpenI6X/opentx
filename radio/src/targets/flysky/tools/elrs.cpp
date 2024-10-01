@@ -338,12 +338,12 @@ static void paramIntegerDisplay(Parameter * param, uint8_t y, uint8_t attr) {
     case TYPE_INT8:
       lcdDrawNumber(COL2, y, (int8_t)param->value, attr);
       break;
-  //   case TYPE_UINT16:
-  //     lcdDrawNumber(COL2, y, (uint16_t)buffer[param->offset + param->nameLength], attr);
-  //     break;
-  //   case TYPE_INT16:
-  //     lcdDrawNumber(COL2, y, (int16_t)buffer[param->offset + param->nameLength], attr);
-  //     break;
+    case TYPE_UINT16:
+      lcdDrawNumber(COL2, y, (uint16_t)buffer[param->offset + param->nameLength], attr);
+      break;
+    case TYPE_INT16:
+      lcdDrawNumber(COL2, y, (int16_t)buffer[param->offset + param->nameLength], attr);
+      break;
   }
   unitDisplay(param, y, param->offset + param->nameLength + ((param->type >= TYPE_UINT16) ? 6 : 0));
 }
@@ -353,6 +353,11 @@ static void paramInt8Load(Parameter * param, uint8_t * data, uint8_t offset) {
   param->min = data[offset + 1];
   param->max = data[offset + 2];
   unitLoad(param, data, offset + 4);
+}
+
+static void paramInt16Load(Parameter * param, uint8_t * data, uint8_t offset) {
+  bufferPush((char *)&data[offset + 0], 2 + 2 + 2); // value + min + max at once
+  unitLoad(param, data, offset + 6);
 }
 
 static void paramIntSave(Parameter * param) {
@@ -374,7 +379,6 @@ static void paramFloatDisplay(Parameter * param, uint8_t y, uint8_t attr) {
 
 // size to copy can be relative to param type - FLOAT/INT16
 static void paramFloatLoad(Parameter * param, uint8_t * data, uint8_t offset) {
-  // (int32_t)buffer[param->offset + param->nameLength]; = data[offset + 0];
   bufferPush((char *)&data[offset + 0], 4 + 4 + 4); // value + min + max at once
   param->prec = data[offset + 12];
   bufferPush((char *)&data[offset + 13], 4); // step
@@ -576,8 +580,8 @@ static const ParamFunctions noopFunctions = { .load=noopLoad, .save=noopSave, .d
 static const ParamFunctions functions[] = {
   { .load=paramInt8Load, .save=paramIntSave, .display=paramIntegerDisplay }, // 1 UINT8(0)
   { .load=paramInt8Load, .save=paramIntSave, .display=paramIntegerDisplay }, // 2 INT8(1)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 3 UINT16(2)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 4  INT16(3)
+  { .load=paramInt16Load, .save=noopSave, .display=paramIntegerDisplay }, // 3 UINT16(2)
+  { .load=paramInt16Load, .save=noopSave, .display=paramIntegerDisplay }, // 4  INT16(3)
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 5
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 6
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 7
@@ -594,9 +598,9 @@ static const ParamFunctions functions[] = {
 };
 
 static ParamFunctions getFunctions(uint32_t i) {
-  if (i > TYPE_INT8) {
+  if (i > TYPE_INT16) {
     if (i < TYPE_FLOAT) return noopFunctions; // guard against not implemented types
-    i -= 6;
+    i -= 4;
   }
   return functions[i];
 }
