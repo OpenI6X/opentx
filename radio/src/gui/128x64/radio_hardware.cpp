@@ -325,26 +325,6 @@ void menuRadioHardware(event_t event)
         }
         break;
 
-#if defined(TX_CAPACITY_MEASUREMENT)
-      case ITEM_RADIO_HARDWARE_BATTERY_CALIB:
-        lcdDrawTextAlignedLeft(y, STR_CURRENT_CALIB);
-        drawValueWithUnit(HW_SETTINGS_COLUMN2, y, getCurrent(), UNIT_MILLIAMPS, attr) ;
-        if (attr) {
-          CHECK_INCDEC_GENVAR(event, g_eeGeneral.txCurrentCalibration, -49, 49);
-        }
-        break;
-#endif
-
-#if defined(PCBSKY9X)
-      case ITEM_RADIO_HARDWARE_TEMPERATURE_CALIB:
-        lcdDrawTextAlignedLeft(y, STR_TEMP_CALIB);
-        drawValueWithUnit(HW_SETTINGS_COLUMN2, y, getTemperature(), UNIT_TEMPERATURE, attr) ;
-        if (attr) {
-          CHECK_INCDEC_GENVAR(event, g_eeGeneral.temperatureCalib, -100, 100);
-        }
-        break;
-#endif
-
 #if defined(CROSSFIRE)
       case ITEM_RADIO_HARDWARE_SERIAL_BAUDRATE:
         g_eeGeneral.telemetryBaudrate = editChoice(HW_SETTINGS_COLUMN2, y, STR_MAXBAUDRATE, "\004400k115k921k1.8M", g_eeGeneral.telemetryBaudrate, 0, DIM(CROSSFIRE_BAUDRATES) - 1, attr, event);
@@ -361,39 +341,6 @@ void menuRadioHardware(event_t event)
             resumeMixerCalculations();
           }
         }
-        break;
-#endif
-
-#if defined(BLUETOOTH)
-      case ITEM_RADIO_HARDWARE_BLUETOOTH_MODE:
-        lcdDrawTextAlignedLeft(y, STR_BLUETOOTH);
-        lcdDrawTextAtIndex(HW_SETTINGS_COLUMN2, y, STR_BLUETOOTH_MODES, g_eeGeneral.bluetoothMode, attr);
-        if (g_eeGeneral.bluetoothMode != BLUETOOTH_OFF && !IS_BLUETOOTH_CHIP_PRESENT()) {
-          g_eeGeneral.bluetoothMode = BLUETOOTH_OFF;
-        }
-        if (attr) {
-          g_eeGeneral.bluetoothMode = checkIncDecGen(event, g_eeGeneral.bluetoothMode, BLUETOOTH_OFF, BLUETOOTH_TRAINER);
-        }
-        break;
-
-      case ITEM_RADIO_HARDWARE_BLUETOOTH_PAIRING_CODE:
-        lcdDrawTextAlignedLeft(y, STR_BLUETOOTH_PIN_CODE);
-        lcdDrawText(HW_SETTINGS_COLUMN2, y, "0000");
-        break;
-
-      case ITEM_RADIO_HARDWARE_BLUETOOTH_LOCAL_ADDR:
-        lcdDrawTextAlignedLeft(y, STR_BLUETOOTH_LOCAL_ADDR);
-        lcdDrawText(HW_SETTINGS_COLUMN2, y, bluetoothLocalAddr[0] == '\0' ? "---" : bluetoothLocalAddr);
-        break;
-
-      case ITEM_RADIO_HARDWARE_BLUETOOTH_DISTANT_ADDR:
-        lcdDrawTextAlignedLeft(y, STR_BLUETOOTH_DIST_ADDR);
-        lcdDrawText(HW_SETTINGS_COLUMN2, y, bluetoothDistantAddr[0] == '\0' ? "---" : bluetoothDistantAddr);
-        break;
-
-      case ITEM_RADIO_HARDWARE_BLUETOOTH_NAME:
-        lcdDrawText(INDENT_WIDTH, y, STR_NAME);
-        editName(HW_SETTINGS_COLUMN2, y, g_eeGeneral.bluetoothName, LEN_BLUETOOTH_NAME, event, attr);
         break;
 #endif
 

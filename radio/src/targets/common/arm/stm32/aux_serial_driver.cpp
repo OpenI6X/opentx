@@ -149,11 +149,7 @@ void auxSerialSbusInit()
 
 void auxSerialStop()
 {
-#if defined(STM32F0)
   DMA_DeInit(AUX_SERIAL_DMA_Channel_RX);
-#else
-  DMA_DeInit(AUX_SERIAL_DMA_Stream_RX);
-#endif // STM32F0
   USART_DeInit(AUX_SERIAL_USART);
 }
 
@@ -200,17 +196,9 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
 #endif
   // Receive
 #if !defined(PCBI6X) // works but not needed
-#if defined(STM32F0)
   uint32_t status = AUX_SERIAL_USART->ISR;
-#else
-  uint32_t status = AUX_SERIAL_USART->SR;
-#endif // STM32F0
   while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
-#if defined(STM32F0)
     uint8_t data = AUX_SERIAL_USART->RDR;
-#else
-    uint8_t data = AUX_SERIAL_USART->DR;
-#endif // STM32F0
     UNUSED(data);
     if (!(status & USART_FLAG_ERRORS)) {
 #if defined(LUA) & !defined(CLI)
@@ -218,11 +206,7 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
         luaRxFifo->push(data);
 #endif
     }
-#if defined(STM32F0)
     status = AUX_SERIAL_USART->ISR;
-#else
-    status = AUX_SERIAL_USART->SR;
-#endif // STM32F0
   }
 #endif // PCBI6X
 }

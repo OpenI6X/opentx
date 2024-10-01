@@ -69,8 +69,8 @@ void audioPlay(unsigned int index);
 #define AUDIO_RAS_RED()          audioEvent(AU_RAS_RED)
 #define AUDIO_TELEMETRY_LOST()   audioEvent(AU_TELEMETRY_LOST)
 #define AUDIO_TELEMETRY_BACK()   audioEvent(AU_TELEMETRY_BACK)
-#define AUDIO_TRAINER_LOST()     //audioEvent(AU_TRAINER_LOST)
-#define AUDIO_TRAINER_BACK()     //audioEvent(AU_TRAINER_BACK)
+#define AUDIO_TRAINER_LOST()     audioEvent(AU_TRAINER_LOST)
+#define AUDIO_TRAINER_BACK()     audioEvent(AU_TRAINER_BACK)
 
 // enum AutomaticPromptsCategories {
 //   SYSTEM_AUDIO_CATEGORY,
@@ -161,8 +161,8 @@ extern void pushUnit(uint8_t unit, uint8_t idx, uint8_t id);
 #define AUDIO_RAS_RED()          audioEvent(AU_RAS_RED)
 #define AUDIO_TELEMETRY_LOST()   audioEvent(AU_TELEMETRY_LOST)
 #define AUDIO_TELEMETRY_BACK()   audioEvent(AU_TELEMETRY_BACK)
-#define AUDIO_TRAINER_LOST()     //audioEvent(AU_TRAINER_LOST)
-#define AUDIO_TRAINER_BACK()     //audioEvent(AU_TRAINER_BACK)
+#define AUDIO_TRAINER_LOST()     audioEvent(AU_TRAINER_LOST)
+#define AUDIO_TRAINER_BACK()     audioEvent(AU_TRAINER_BACK)
 
 #define AUDIO_RESET()
 #define AUDIO_FLUSH()

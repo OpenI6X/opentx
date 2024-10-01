@@ -326,7 +326,7 @@ static void unitLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   bufferPush((char*)&data[offset], unitLen);
 }
 
-static void unitDisplay(Parameter * param, uint8_t y, uint8_t offset) {
+static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
   lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[offset], param->unitLength, 0);
 }
 

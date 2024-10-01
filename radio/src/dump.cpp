@@ -30,7 +30,7 @@ uint8_t dumpPosition;
 
 void dumpStart(unsigned int size)
 {
-  dumpPrintf("DUMP %d bytes ...\n\r", size);
+  dumpPrintf("DUMP %d b\n\r", size);
   dumpPosition = 0;
 }
 
