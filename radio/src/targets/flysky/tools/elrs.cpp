@@ -244,6 +244,11 @@ static void storeParam(Parameter * param) {
   memcpy(storedParam, param, sizeof(Parameter));
 }
 
+static int32_t readInt32FromBuffer(Parameter * param, uint16_t offset = 0) {
+  uint16_t o = param->offset + param->nameLength + offset;
+  return (buffer[o] << 24) | (buffer[o+1] << 16) | (buffer[o+2] << 8) | buffer[o+3];
+}
+
 static uint8_t getSize(Parameter * param) {
   if (param->type <= TYPE_INT8) {
     return 1;
@@ -255,16 +260,26 @@ static uint8_t getSize(Parameter * param) {
 
 static int32_t getMin(Parameter * param) {
   uint8_t size = getSize(param);
-  return (size == 1) ? param->min : buffer[param->offset + param->nameLength + 1 * size];
+  switch(size) {
+    case 2:
+      return 0;
+    case 4:
+      return readInt32FromBuffer(param, 1 * size);
+  }
 }
 
 static int32_t getMax(Parameter * param) {
   uint8_t size = getSize(param);
-  return (size == 1) ? param->min : buffer[param->offset + param->nameLength + 2 * size];
+  switch(size) {
+    case 2:
+      return 0;
+    case 4:
+      return readInt32FromBuffer(param, 2 * size);
+  }
 }
 
 static uint32_t getStep(Parameter * param) {
-  return buffer[param->offset + param->nameLength + 3 * 4];
+  return readInt32FromBuffer(param, 3 * 4);
 }
 
 /**
@@ -276,17 +291,24 @@ static Parameter * getParam(const uint8_t line) {
 
 static void incrParam(int32_t step) {
   Parameter * param = getParam(lineIndex);
-  int32_t min = 0, max = 0;
-  if (param->type <= TYPE_FLOAT) {
+  int32_t value, min = 0, max = 0;
+  if (param->type <= TYPE_INT8) {
+    param->value = limit<int32_t>(param->min, param->value + step, param->max);
+  } else if (param->type <= TYPE_INT16) {
+    value = 0;
     min = getMin(param);
     max = getMax(param);
-  } else if (param->type == TYPE_SELECT) {
-    max = param->max;
-  }
-  if (param->type == TYPE_FLOAT) {
+  } else if (param->type == TYPE_FLOAT) {
+    value = readInt32FromBuffer(param);
+    min = getMin(param);
+    max = getMax(param);
     step *= getStep(param);
+    value = limit<int32_t>(min, value + step, max);
+    // TODO save to buffer writeInt32ToBuffer
+  } else if (param->type == TYPE_SELECT) {
+    param->value = limit<int32_t>(0, param->value + step, param->max);
   }
-  param->value = limit<int32_t>(min, param->value + step, max);
+  TRACE("%d<%d+%d>%d", min, value, step, max);
 }
 
 static void selectParam(int8_t step) {
@@ -365,9 +387,8 @@ static void paramIntSave(Parameter * param) {
 }
 
 static void paramFloatDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  int32_t value = (int32_t)buffer[param->offset + param->nameLength];
-  char tmpString[10];
-  tiny_sprintf(tmpString, "%d", 1, value);
+  char tmpString[12];
+  strAppendSigned(tmpString, readInt32FromBuffer(param));
   if (param->prec > 0) { // insert dot
     uint8_t pos = strlen(tmpString) - param->prec;
     memmove(&tmpString[pos + 1], &tmpString[pos], param->prec + 1);
@@ -606,7 +627,7 @@ static ParamFunctions getFunctions(uint32_t i) {
 }
 
 static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
-  // TRACE("parse...");
+  // TRACE("parse %d...", data[3]);
   // DUMP(&data[4], length - 4);
   if (data[2] != deviceId || data[3] != paramId) {
     paramDataLen = 0;
