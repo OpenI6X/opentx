@@ -178,7 +178,6 @@ static void resetParamData() {
   paramDataLen = 0;
 }
 
-// TODO value always uint32_t + pass size (1-4) as parameter?
 static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t value) {
   // TRACE("crsf cmd %x %x %x", cmd, index, value);
   uint8_t crsfPushData[4] = { deviceId, handsetId, index, value };
@@ -247,24 +246,24 @@ static void storeParam(Parameter * param) {
 static uint32_t paramGetValue(Parameter * param, uint16_t offset, uint8_t size) {
   uint32_t result = 0;
   for (uint32_t i = 0; i < size; i++) {
-    result = result = (result << 8) + buffer[param->offset + param->nameLength + offset + i];
+    result = (result << 8) + buffer[param->offset + param->nameLength + offset + i];
   }
   return result;
 }
 
-static int32_t getMin(Parameter * param) {
-  uint8_t size = (param->type <= TYPE_INT16) ? 2 : 4;
-  return paramGetValue(param, 1 * size, size);
-}
+// static int32_t getMin(Parameter * param) {
+//   uint8_t size = (param->type <= TYPE_INT16) ? 2 : 4;
+//   return paramGetValue(param, 1 * size, size);
+// }
 
-static int32_t getMax(Parameter * param) {
-  uint8_t size = (param->type <= TYPE_INT16) ? 2 : 4;
-  return paramGetValue(param, 2 * size, size);
-}
+// static int32_t getMax(Parameter * param) {
+//   uint8_t size = (param->type <= TYPE_INT16) ? 2 : 4;
+//   return paramGetValue(param, 2 * size, size);
+// }
 
-static uint32_t getStep(Parameter * param) {
-  return paramGetValue(param, 3 * 4, 4);
-}
+// static uint32_t getStep(Parameter * param) {
+//   return paramGetValue(param, 3 * 4, 4);
+// }
 
 /**
  * Get param from line index taking only loaded current folder params into account.
@@ -358,13 +357,11 @@ static void paramInt8Load(Parameter * param, uint8_t * data, uint8_t offset) {
   param->value = data[offset + 0];
   param->min = data[offset + 1];
   param->max = data[offset + 2];
-  // skip default
   unitLoad(param, data, offset + 4);
 }
 
 static void paramInt16Load(Parameter * param, uint8_t * data, uint8_t offset) {
   bufferPush((char *)&data[offset + 0], 2 + 2 + 2); // value + min + max at once
-  // skip default
   unitLoad(param, data, offset + 8);
 }
 
