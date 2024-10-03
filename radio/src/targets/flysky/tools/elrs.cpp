@@ -244,42 +244,26 @@ static void storeParam(Parameter * param) {
   memcpy(storedParam, param, sizeof(Parameter));
 }
 
-static int32_t readInt32FromBuffer(Parameter * param, uint16_t offset = 0) {
-  uint16_t o = param->offset + param->nameLength + offset;
-  return (buffer[o] << 24) | (buffer[o+1] << 16) | (buffer[o+2] << 8) | buffer[o+3];
-}
-
-static uint8_t getSize(Parameter * param) {
-  if (param->type <= TYPE_INT8) {
-    return 1;
-  } else if (param->type <= TYPE_INT16) {
-    return 2;
+static uint32_t paramGetValue(Parameter * param, uint16_t offset, uint8_t size) {
+  uint32_t result = 0;
+  for (uint32_t i = 0; i < size; i++) {
+    result = result = (result << 8) + buffer[param->offset + param->nameLength + offset + i];
   }
-  return 4;
+  return result;
 }
 
 static int32_t getMin(Parameter * param) {
-  uint8_t size = getSize(param);
-  switch(size) {
-    case 2:
-      return 0;
-    case 4:
-      return readInt32FromBuffer(param, 1 * size);
-  }
+  uint8_t size = (param->type <= TYPE_INT16) ? 2 : 4;
+  return paramGetValue(param, 1 * size, size);
 }
 
 static int32_t getMax(Parameter * param) {
-  uint8_t size = getSize(param);
-  switch(size) {
-    case 2:
-      return 0;
-    case 4:
-      return readInt32FromBuffer(param, 2 * size);
-  }
+  uint8_t size = (param->type <= TYPE_INT16) ? 2 : 4;
+  return paramGetValue(param, 2 * size, size);
 }
 
 static uint32_t getStep(Parameter * param) {
-  return readInt32FromBuffer(param, 3 * 4);
+  return paramGetValue(param, 3 * 4, 4);
 }
 
 /**
@@ -291,24 +275,24 @@ static Parameter * getParam(const uint8_t line) {
 
 static void incrParam(int32_t step) {
   Parameter * param = getParam(lineIndex);
-  int32_t value, min = 0, max = 0;
+  // int32_t value, min = 0, max = 0;
   if (param->type <= TYPE_INT8) {
     param->value = limit<int32_t>(param->min, param->value + step, param->max);
-  } else if (param->type <= TYPE_INT16) {
-    value = 0;
-    min = getMin(param);
-    max = getMax(param);
-  } else if (param->type == TYPE_FLOAT) {
-    value = readInt32FromBuffer(param);
-    min = getMin(param);
-    max = getMax(param);
-    step *= getStep(param);
-    value = limit<int32_t>(min, value + step, max);
-    // TODO save to buffer writeInt32ToBuffer
-  } else if (param->type == TYPE_SELECT) {
-    param->value = limit<int32_t>(0, param->value + step, param->max);
-  }
-  TRACE("%d<%d+%d>%d", min, value, step, max);
+  } 
+  // else if (param->type <= TYPE_INT16) {
+  //   value = 0;
+  //   min = getMin(param);
+  //   max = getMax(param);
+  // } else if (param->type == TYPE_FLOAT) {
+  //   value = paramGetValue(param, 0, 4);
+  //   min = getMin(param);
+  //   max = getMax(param);
+  //   step *= getStep(param);
+  //   value = limit<int32_t>(min, value + step, max);
+  //   // TODO save to buffer paramSetValue
+  // } else if (param->type == TYPE_SELECT) {
+  //   param->value = limit<int32_t>(0, param->value + step, param->max);
+  // }
 }
 
 static void selectParam(int8_t step) {
@@ -361,10 +345,10 @@ static void paramIntegerDisplay(Parameter * param, uint8_t y, uint8_t attr) {
       lcdDrawNumber(COL2, y, (int8_t)param->value, attr);
       break;
     case TYPE_UINT16:
-      lcdDrawNumber(COL2, y, (uint16_t)buffer[param->offset + param->nameLength], attr);
+      lcdDrawNumber(COL2, y, (uint16_t)paramGetValue(param, 0, 2), attr);
       break;
     case TYPE_INT16:
-      lcdDrawNumber(COL2, y, (int16_t)buffer[param->offset + param->nameLength], attr);
+      lcdDrawNumber(COL2, y, (int16_t)paramGetValue(param, 0, 2), attr);
       break;
   }
   unitDisplay(param, y, param->offset + param->nameLength + ((param->type >= TYPE_UINT16) ? 6 : 0));
@@ -374,12 +358,14 @@ static void paramInt8Load(Parameter * param, uint8_t * data, uint8_t offset) {
   param->value = data[offset + 0];
   param->min = data[offset + 1];
   param->max = data[offset + 2];
+  // skip default
   unitLoad(param, data, offset + 4);
 }
 
 static void paramInt16Load(Parameter * param, uint8_t * data, uint8_t offset) {
   bufferPush((char *)&data[offset + 0], 2 + 2 + 2); // value + min + max at once
-  unitLoad(param, data, offset + 6);
+  // skip default
+  unitLoad(param, data, offset + 8);
 }
 
 static void paramIntSave(Parameter * param) {
@@ -388,7 +374,7 @@ static void paramIntSave(Parameter * param) {
 
 static void paramFloatDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   char tmpString[12];
-  strAppendSigned(tmpString, readInt32FromBuffer(param));
+  strAppendSigned(tmpString, paramGetValue(param, 0, 4));
   if (param->prec > 0) { // insert dot
     uint8_t pos = strlen(tmpString) - param->prec;
     memmove(&tmpString[pos + 1], &tmpString[pos], param->prec + 1);
@@ -398,17 +384,11 @@ static void paramFloatDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   unitDisplay(param, y, param->offset + param->nameLength + 4 * 4);
 }
 
-// size to copy can be relative to param type - FLOAT/INT16
 static void paramFloatLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   bufferPush((char *)&data[offset + 0], 4 + 4 + 4); // value + min + max at once
   param->prec = data[offset + 12];
   bufferPush((char *)&data[offset + 13], 4); // step
   unitLoad(param, data, offset + 17);
-}
-
-static void paramFloatSave(Parameter * param) {
-  // uint8_t crsfPushData[7] = { deviceId, handsetId, param->id, param->value, param->value, param->value, param->value };
-  // crossfireTelemetryPush(CRSF_FRAMETYPE_PARAMETER_WRITE, crsfPushData, sizeof(crsfPushData));
 }
 
 // TEXT SELECTION
@@ -607,7 +587,7 @@ static const ParamFunctions functions[] = {
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 6
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 7
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8
-  { .load=paramFloatLoad, .save=paramFloatSave, .display=paramFloatDisplay }, // 9 FLOAT(8)
+  { .load=paramFloatLoad, .save=noopSave, .display=paramFloatDisplay }, // 9 FLOAT(8)
   { .load=paramTextSelectionLoad, .save=paramIntSave, .display=paramTextSelectionDisplay }, // 10 TEXT SELECTION(9)
   { .load=noopLoad, .save=noopSave, .display=paramStringDisplay }, // 11 STRING(10) editing
   { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // 12 FOLDER(11)
