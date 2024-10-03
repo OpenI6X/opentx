@@ -277,11 +277,12 @@ static void incrParam(int32_t step) {
   // int32_t value, min = 0, max = 0;
   if (param->type <= TYPE_INT8) {
     param->value = limit<int32_t>(param->min, param->value + step, param->max);
-  } 
-  // else if (param->type <= TYPE_INT16) {
-  //   value = 0;
+  // } else if (param->type <= TYPE_INT16) {
+  //   value = paramGetValue(param, 0, 2);
   //   min = getMin(param);
   //   max = getMax(param);
+  //   value = limit<int32_t>(min, value + step, max);
+  //   // TODO save to buffer paramSetValue
   // } else if (param->type == TYPE_FLOAT) {
   //   value = paramGetValue(param, 0, 4);
   //   min = getMin(param);
@@ -289,9 +290,9 @@ static void incrParam(int32_t step) {
   //   step *= getStep(param);
   //   value = limit<int32_t>(min, value + step, max);
   //   // TODO save to buffer paramSetValue
-  // } else if (param->type == TYPE_SELECT) {
-  //   param->value = limit<int32_t>(0, param->value + step, param->max);
-  // }
+  } else if (param->type == TYPE_SELECT) {
+    param->value = limit<int32_t>(0, param->value + step, param->max);
+  }
 }
 
 static void selectParam(int8_t step) {
