@@ -336,22 +336,17 @@ static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
   lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[offset], param->unitLength, 0);
 }
 
-static void paramIntegerDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  switch (param->type) {
-    case TYPE_UINT8:
-      lcdDrawNumber(COL2, y, (uint8_t)param->value, attr);
-      break;
-    case TYPE_INT8:
-      lcdDrawNumber(COL2, y, (int8_t)param->value, attr);
-      break;
-    case TYPE_UINT16:
-      lcdDrawNumber(COL2, y, (uint16_t)paramGetValue(param, 0, 2), attr);
-      break;
-    case TYPE_INT16:
-      lcdDrawNumber(COL2, y, (int16_t)paramGetValue(param, 0, 2), attr);
-      break;
-  }
-  unitDisplay(param, y, param->offset + param->nameLength + ((param->type >= TYPE_UINT16) ? 6 : 0));
+static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
+    uint16_t value;
+    if (param->type == TYPE_UINT8 || param->type == TYPE_INT8) {
+        value = (uint8_t)param->value;
+    } else {
+        value = (uint16_t)paramGetValue(param, 0, 2);
+    }
+    lcdDrawNumber(COL2, y, (param->type == TYPE_UINT8) ? (uint8_t)value :
+                          (param->type == TYPE_INT8)  ? (int8_t)value :
+                          (param->type == TYPE_UINT16) ? (uint16_t)value : (int16_t)value, attr);
+    unitDisplay(param, y, param->offset + param->nameLength + (param->type >= TYPE_UINT16 ? 6 : 0));
 }
 
 static void paramInt8Load(Parameter * param, uint8_t * data, uint8_t offset) {
