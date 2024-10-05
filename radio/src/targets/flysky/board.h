@@ -340,12 +340,12 @@ enum Analogs {
   STICK4,
   SW_A,   
   SW_B,
-  SW_C,
-  SW_D,
   POT_FIRST,
   POT1 = POT_FIRST,
   POT2,
   POT_LAST = POT2,
+  SW_C,
+  SW_D,
   TX_VOLTAGE,
   NUM_ANALOGS
 };

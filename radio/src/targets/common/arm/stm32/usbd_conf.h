@@ -58,7 +58,11 @@
 #define HID_OUT_EP                   0x01
 
 #if defined(PCBI6X)
+#if defined(ADC_JOYSTICK)
+#define HID_IN_PACKET                8
+#else
 #define HID_IN_PACKET                18
+#endif
 #else
 #define HID_IN_PACKET                19
 #endif

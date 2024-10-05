@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.13)
 project(OpenTX)
 
 set(VERSION_MAJOR "1")
@@ -9,7 +10,6 @@ set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}${VERSION_SUFFI
 set(SDCARD_REVISION "0018")
 set(SDCARD_VERSION  ${VERSION_MAJOR}.${VERSION_MINOR}V${SDCARD_REVISION})
 
-cmake_minimum_required(VERSION 3.13)
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0023 OLD)
 if(POLICY CMP0042)
@@ -161,11 +161,6 @@ if(Qt5Core_FOUND OR FOX_FOUND)
   endif()
 endif()
 endif(NOT DISABLE_COMPANION)
-
-# Check for a file that is typically left from a OpenTX 2.1 build and abort if found
-if (EXISTS ${RADIO_SRC_DIRECTORY}/stamp.h OR EXISTS ${RADIO_SRC_DIRECTORY}/translations/en.h)
-   message(FATAL_ERROR "Source directory contains files leftover from a OpenTX 2.1 build. Please run `git clean -f` in source directory (Careful: Will remove any extra files) or do a new clean git checkout")
-endif()
 
 # Windows-specific includes and libs shared by sub-projects
 if(WIN32)
