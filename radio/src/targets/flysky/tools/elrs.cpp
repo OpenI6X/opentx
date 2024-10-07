@@ -436,7 +436,6 @@ static void changeDeviceId(uint8_t devId) {
   //TRACE("changeDeviceId %x", devId);
   currentFolderId = 0;
   deviceIsELRS_TX = 0;
-  linkstat.flags = 0;
   //if the selected device ID (target) is a TX Module, we use our Lua ID, so TX Flag that user is using our LUA
   if (devId == 0xEE) {
     handsetId = 0xEF;
