@@ -369,7 +369,7 @@ static void paramIntSave(Parameter * param) {
 
 static void paramFloatDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   char tmpString[12];
-  strAppendSigned(tmpString, paramGetValue(param, 0, 4));
+  strAppendSigned(tmpString, paramGetValue(param, 0, 4), param->prec + 1);
   if (param->prec > 0) { // insert dot
     uint8_t pos = strlen(tmpString) - param->prec;
     memmove(&tmpString[pos + 1], &tmpString[pos], param->prec + 1);
