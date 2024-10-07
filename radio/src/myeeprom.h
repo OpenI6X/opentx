@@ -75,7 +75,7 @@
 #endif
 
 #define HAS_ENABLE_PARAM(func) ((func) < FUNC_FIRST_WITHOUT_ENABLE || (func == FUNC_BACKLIGHT))
-#define HAS_REPEAT_PARAM(func) (IS_PLAY_FUNC(func) || IS_HAPTIC_FUNC(func))
+#define HAS_REPEAT_PARAM(func) (IS_PLAY_FUNC(func) || IS_HAPTIC_FUNC(func)|| func == FUNC_SET_SCREEN)
 
 #define CFN_EMPTY(p) (!(p)->swtch)
 #define CFN_SWITCH(p) ((p)->swtch)

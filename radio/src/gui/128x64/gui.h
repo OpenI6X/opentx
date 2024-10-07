@@ -387,7 +387,7 @@ void showAlertBox(const char * title, const char * text, const char * action , u
 
 #define IS_MAIN_VIEW_DISPLAYED()       menuHandlers[0] == menuMainView
 #if defined(TELEMETRY_FRSKY)
-#define IS_TELEMETRY_VIEW_DISPLAYED()  menuHandlers[0] == menuViewTelemetryFrsky
+#define IS_TELEMETRY_VIEW_DISPLAYED()  menuHandlers[0] == menuViewTelemetry
 #else
 #define IS_TELEMETRY_VIEW_DISPLAYED()  false
 #endif

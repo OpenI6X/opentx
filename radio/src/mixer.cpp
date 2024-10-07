@@ -359,7 +359,7 @@ getvalue_t getValue(mixsrc_t i)
     return getSwitch(SWSRC_FIRST_LOGICAL_SWITCH+i-MIXSRC_FIRST_LOGICAL_SWITCH) ? 1024 : -1024;
   }
   else if (i <= MIXSRC_LAST_TRAINER) {
-    int16_t x = ppmInput[i-MIXSRC_FIRST_TRAINER];
+    int16_t x = trainerInput[i-MIXSRC_FIRST_TRAINER];
     if (i<MIXSRC_FIRST_TRAINER+NUM_CAL_PPM) {
       x -= g_eeGeneral.trainer.calib[i-MIXSRC_FIRST_TRAINER];
     }
@@ -463,7 +463,7 @@ void evalInputs(uint8_t mode)
         TrainerMix* td = &g_eeGeneral.trainer.mix[ch];
         if (td->mode) {
           uint8_t chStud = td->srcChn;
-          int32_t vStud  = (ppmInput[chStud]- g_eeGeneral.trainer.calib[chStud]);
+          int32_t vStud  = (trainerInput[chStud]- g_eeGeneral.trainer.calib[chStud]);
           vStud *= td->studWeight;
           vStud /= 50;
           switch (td->mode) {

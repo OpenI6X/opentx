@@ -209,7 +209,7 @@
 #if defined(PCBI6X_ELRS)
 #define CTOOL_DATA_SIZE (512 + 40 + 144 + 8) // 704
 #else
-#define CTOOL_DATA_SIZE 512 // minimize RAM usage for non PCBI6X_ELRS enabled builds, like DEBUG
+#define CTOOL_DATA_SIZE 512 // minimize RAM usage for non PCBI6X_ELRS builds
 #endif
 
 // RESX range is used for internal calculation; The menu says -100.0 to 100.0; internally it is -1024 to 1024 to allow some optimizations
@@ -1276,7 +1276,7 @@ enum TelemetryViews {
   TELEMETRY_VIEW_MAX = TELEMETRY_CUSTOM_SCREEN_4
 };
 
-extern uint8_t s_frsky_view;
+extern uint8_t selectedTelemView;
 #endif
 
 #define EARTH_RADIUSKM ((uint32_t)6371)

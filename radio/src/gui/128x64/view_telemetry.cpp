@@ -23,7 +23,7 @@
 #define STATUS_BAR_Y     (7*FH+1)
 #define TELEM_2ND_COLUMN (10*FW)
 #if defined(TELEMETRY_FRSKY)
-uint8_t s_frsky_view = 0;
+uint8_t selectedTelemView = 0;
 #endif
 
 
@@ -160,7 +160,7 @@ bool displayCustomTelemetryScreen(uint8_t index)
 #if defined(TELEMETRY_FRSKY)
   FrSkyScreenData & screen = g_model.frsky.screens[index];
 
-  if (IS_BARS_SCREEN(s_frsky_view)) {
+  if (IS_BARS_SCREEN(selectedTelemView)) {
     return displayGaugesTelemetryScreen(screen);
   }
 
@@ -175,8 +175,8 @@ bool displayTelemetryScreen()
 {
 #if defined(TELEMETRY_FRSKY)
 #if defined(LUA)
-  if (TELEMETRY_SCREEN_TYPE(s_frsky_view) == TELEMETRY_SCREEN_TYPE_SCRIPT) {
-    uint8_t state = isTelemetryScriptAvailable(s_frsky_view);
+  if (TELEMETRY_SCREEN_TYPE(selectedTelemView) == TELEMETRY_SCREEN_TYPE_SCRIPT) {
+    uint8_t state = isTelemetryScriptAvailable(selectedTelemView);
     switch (state) {
       case SCRIPT_OK:
         return true;  // contents will be drawed by Lua Task
@@ -191,20 +191,20 @@ bool displayTelemetryScreen()
     return false;
   }
 #elif defined(PCBI6X_INAV)
-  if (TELEMETRY_SCREEN_TYPE(s_frsky_view) == TELEMETRY_SCREEN_TYPE_SCRIPT) {
+  if (TELEMETRY_SCREEN_TYPE(selectedTelemView) == TELEMETRY_SCREEN_TYPE_SCRIPT) {
     inavRun(0xff);
     return true;
   }
 #endif
 
-  if (TELEMETRY_SCREEN_TYPE(s_frsky_view) == TELEMETRY_SCREEN_TYPE_NONE) {
+  if (TELEMETRY_SCREEN_TYPE(selectedTelemView) == TELEMETRY_SCREEN_TYPE_NONE) {
     return false;
   }
 
   drawTelemetryTopBar();
 
-  if (s_frsky_view < MAX_TELEMETRY_SCREENS) {
-    return displayCustomTelemetryScreen(s_frsky_view);
+  if (selectedTelemView < MAX_TELEMETRY_SCREENS) {
+    return displayCustomTelemetryScreen(selectedTelemView);
   }
 
 
@@ -231,7 +231,7 @@ enum NavigationDirection {
 #define EVT_KEY_NEXT_VIEW              EVT_KEY_FIRST(KEY_DOWN)
 #endif
 
-void menuViewTelemetryFrsky(event_t event)
+void menuViewTelemetry(event_t event)
 {
 #if defined(TELEMETRY_FRSKY)
   enum NavigationDirection direction = none;
@@ -246,26 +246,14 @@ void menuViewTelemetryFrsky(event_t event)
       break;
 
     case EVT_KEY_PREVIOUS_VIEW:
-#if defined(PCBXLITE)
-      if (IS_SHIFT_PRESSED()) {
-        decrTelemetryScreen();
-      }
-#else
       if (IS_KEY_LONG(EVT_KEY_PREVIOUS_VIEW)) {
         killEvents(event);
       }
       decrTelemetryScreen();
-#endif
       break;
 
     case EVT_KEY_NEXT_VIEW:
-#if defined(PCBXLITE)
-      if (IS_SHIFT_PRESSED()) {
-        incrTelemetryScreen();
-      }
-#else
       incrTelemetryScreen();
-#endif
       break;
 
     case EVT_KEY_LONG(KEY_ENTER):
@@ -278,12 +266,12 @@ void menuViewTelemetryFrsky(event_t event)
 
   for (int i=0; i<=TELEMETRY_SCREEN_TYPE_MAX; i++) {
     if (direction == up) {
-      if (s_frsky_view-- == 0)
-        s_frsky_view = TELEMETRY_VIEW_MAX;
+      if (selectedTelemView-- == 0)
+        selectedTelemView = TELEMETRY_VIEW_MAX;
     }
     else if (direction == down) {
-      if (s_frsky_view++ == TELEMETRY_VIEW_MAX)
-        s_frsky_view = 0;
+      if (selectedTelemView++ == TELEMETRY_VIEW_MAX)
+        selectedTelemView = 0;
     }
     else {
       direction = down;
@@ -297,6 +285,21 @@ void menuViewTelemetryFrsky(event_t event)
   lcdDrawText(2*FW, 3*FH, "No Telemetry Screens");
   displayRssiLine();
 #endif
+}
+
+void showTelemScreen(uint8_t index)
+{
+  if (menuHandlers[menuLevel] == menuViewTelemetry || menuHandlers[menuLevel] == menuMainView) {
+    if (index == 0) {
+      chainMenu(menuMainView);
+    } else {
+      index -= 1;
+      if ((/*index >= 0 &&*/ index <= TELEMETRY_SCREEN_TYPE_MAX) && (TELEMETRY_SCREEN_TYPE(index) != TELEMETRY_SCREEN_TYPE_NONE)) {
+        selectedTelemView = index;
+        chainMenu(menuViewTelemetry);
+      }
+    }
+  }
 }
 
 #undef EVT_KEY_PREVIOUS_VIEW

@@ -212,15 +212,6 @@ void usbJoystickUpdate()
 
     }
 
-#if defined(PCBI6X)
-    // HID_Buffer index 8 & 9 causes mess. Looks like clock issue but cannot confirm.
-    // i reduced buttons to 16 so it will affect only one analog and remapped it [3] -> [5]
-    HID_Buffer[12] = HID_Buffer[8]; // ch[3] remap to ch[5]  // channel 5 void
-    HID_Buffer[13] = HID_Buffer[9];
-    HID_Buffer[8] = 0;
-    HID_Buffer[9] = 0;
-#endif
-
 #if defined(STM32F0)
     USBD_HID_SendReport(&USB_Device_dev, HID_Buffer, HID_IN_PACKET);
 #else

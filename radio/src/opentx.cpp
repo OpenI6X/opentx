@@ -99,10 +99,8 @@ void per10ms()
     noHighlightCounter--;
 #endif
 
-  if (trimsCheckTimer)
-    trimsCheckTimer--;
-  if (ppmInputValidityTimer)
-    ppmInputValidityTimer--;
+  if (trimsCheckTimer) trimsCheckTimer--;
+  if (trainerInputValidityTimer) trainerInputValidityTimer--;
 
   if (trimsDisplayTimer)
     trimsDisplayTimer--;

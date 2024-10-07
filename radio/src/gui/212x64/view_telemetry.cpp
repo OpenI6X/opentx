@@ -23,7 +23,7 @@
 #define STATUS_BAR_Y     (7*FH+1)
 #define TELEM_2ND_COLUMN (11*FW)
 
-uint8_t s_frsky_view = 0;
+uint8_t selectedTelemView = 0;
 
 #define BAR_LEFT    30
 #define BAR_WIDTH   152
@@ -161,7 +161,7 @@ void displayCustomTelemetryScreen(uint8_t index)
 {
   FrSkyScreenData & screen = g_model.frsky.screens[index];
 
-  if (IS_BARS_SCREEN(s_frsky_view)) {
+  if (IS_BARS_SCREEN(selectedTelemView)) {
     return displayGaugesTelemetryScreen(screen);
   }
 
@@ -171,8 +171,8 @@ void displayCustomTelemetryScreen(uint8_t index)
 bool displayTelemetryScreen()
 {
 #if defined(LUA)
-  if (TELEMETRY_SCREEN_TYPE(s_frsky_view) == TELEMETRY_SCREEN_TYPE_SCRIPT) {
-    uint8_t state = isTelemetryScriptAvailable(s_frsky_view);
+  if (TELEMETRY_SCREEN_TYPE(selectedTelemView) == TELEMETRY_SCREEN_TYPE_SCRIPT) {
+    uint8_t state = isTelemetryScriptAvailable(selectedTelemView);
     switch (state) {
       case SCRIPT_OK:
         return true;  // contents will be drawed by Lua Task
@@ -188,14 +188,14 @@ bool displayTelemetryScreen()
   }
 #endif
 
-  if (TELEMETRY_SCREEN_TYPE(s_frsky_view) == TELEMETRY_SCREEN_TYPE_NONE) {
+  if (TELEMETRY_SCREEN_TYPE(selectedTelemView) == TELEMETRY_SCREEN_TYPE_NONE) {
     return false;
   }
 
   drawTelemetryTopBar();
 
-  if (s_frsky_view < MAX_TELEMETRY_SCREENS) {
-    displayCustomTelemetryScreen(s_frsky_view);
+  if (selectedTelemView < MAX_TELEMETRY_SCREENS) {
+    displayCustomTelemetryScreen(selectedTelemView);
   }
 
   return true;
@@ -244,12 +244,12 @@ void menuViewTelemetryFrsky(event_t event)
 
   for (int i=0; i<=TELEMETRY_SCREEN_TYPE_MAX; i++) {
     if (direction == up) {
-      if (s_frsky_view-- == 0)
-        s_frsky_view = TELEMETRY_VIEW_MAX;
+      if (selectedTelemView-- == 0)
+        selectedTelemView = TELEMETRY_VIEW_MAX;
     }
     else if (direction == down) {
-      if (s_frsky_view++ == TELEMETRY_VIEW_MAX)
-        s_frsky_view = 0;
+      if (selectedTelemView++ == TELEMETRY_VIEW_MAX)
+        selectedTelemView = 0;
     }
     else {
       direction = down;

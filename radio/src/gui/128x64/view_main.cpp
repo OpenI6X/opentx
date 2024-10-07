@@ -412,7 +412,7 @@ void menuMainView(event_t event)
 
     case EVT_KEY_TELEMETRY:
 #if defined(TELEMETRY_FRSKY)
-      chainMenu(menuViewTelemetryFrsky);
+      chainMenu(menuViewTelemetry);
 #else
       chainMenu(menuStatisticsDebug);
 #endif

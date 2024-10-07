@@ -26,10 +26,6 @@ uint8_t currentBacklightBright = 0;
 uint8_t requiredBacklightBright = 0;
 uint8_t mainRequestFlags = 0;
 
-#if defined(PCBI6X_ELRS)
-extern void elrsStop();
-#endif
-
 #if defined(STM32)
 void onUSBConnectMenu(const char *result)
 {
@@ -73,6 +69,7 @@ void handleUsbConnection()
       #if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
       if (getSelectedUsbMode() == USB_MASS_STORAGE_MODE) {
         #if defined(PCBI6X_ELRS)
+        extern void elrsStop();
         elrsStop();
         #endif
         opentxClose(false);
@@ -330,7 +327,7 @@ void handleGui(event_t event) {
       // SHIFT + LEFT/RIGHT LONG used to change telemetry screen on XLITE
       if ((!IS_KEY_LONG(event) && key == KEY_RIGHT && IS_SHIFT_PRESSED()) || (!IS_KEY_LONG(event) && key == KEY_LEFT  && IS_SHIFT_PRESSED()) || (!IS_KEY_LONG(event) && key == KEY_EXIT)) {
 #else
-      // no need to filter out MENU and ENT(short), because they are not used by menuViewTelemetryFrsky()
+      // no need to filter out MENU and ENT(short), because they are not used by menuViewTelemetry()
       if (key == KEY_PLUS || key == KEY_MINUS || (!IS_KEY_LONG(event) && key == KEY_EXIT)) {
 #endif
         // TRACE("Telemetry script event 0x%02x killed", event);
