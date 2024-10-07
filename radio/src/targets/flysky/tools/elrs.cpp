@@ -2,8 +2,6 @@
  * ExpressLRS V3 configurator for i6X based on elrsV2/3.lua
  * @author Jan Kozak (ajjjjjjjj)
  *
- * Limitations vs elrsV3.lua:
- * - no int16, float, string params support, but not used by ExpressLRS anyway,
  */
 #include "opentx.h"
 
@@ -38,6 +36,13 @@ enum COMMAND_STEP {
 #define CRSF_FRAMETYPE_PARAMETER_WRITE 0x2D
 #define CRSF_FRAMETYPE_ELRS_STATUS 0x2E
 
+/**
+ * INT16 and FLOAT support:
+ * Values (val,min,max[,step]) are keep in buffer after name.
+ * prec - how many digits in fractional part.
+ * FLOAT: { VALUE 4B | MIN 4B | MAX 4B | STEP 4B } = 16B
+ * INT16: { VALUE 2B | MIN 2B | MAX 2B } =  6B
+*/
 PACK(struct Parameter {
   uint16_t offset;
   uint8_t nameLength;
@@ -45,6 +50,7 @@ PACK(struct Parameter {
     uint8_t min;          // INT8
     uint8_t timeout;      // COMMAND
     uint8_t valuesLength; // SELECT, min always 0
+    uint8_t prec;         // FLOAT
   };
   union {
     uint8_t unitLength;
@@ -55,7 +61,7 @@ PACK(struct Parameter {
     uint8_t status;       // COMMAND, must be alias to value, because save expects it!
   };
   uint8_t type;
-  uint8_t max;          // INT8, SELECT
+  uint8_t max;            // INT8, SELECT
   uint8_t id;
 });
 
@@ -239,6 +245,28 @@ static void storeParam(Parameter * param) {
   memcpy(storedParam, param, sizeof(Parameter));
 }
 
+static uint32_t paramGetValue(Parameter * param, uint16_t offset, uint8_t size) {
+  uint32_t result = 0;
+  for (uint32_t i = 0; i < size; i++) {
+    result = (result << 8) + buffer[param->offset + param->nameLength + offset + i];
+  }
+  return result;
+}
+
+// static int32_t getMin(Parameter * param) {
+//   uint8_t size = (param->type <= TYPE_INT16) ? 2 : 4;
+//   return paramGetValue(param, 1 * size, size);
+// }
+
+// static int32_t getMax(Parameter * param) {
+//   uint8_t size = (param->type <= TYPE_INT16) ? 2 : 4;
+//   return paramGetValue(param, 2 * size, size);
+// }
+
+// static uint32_t getStep(Parameter * param) {
+//   return paramGetValue(param, 3 * 4, 4);
+// }
+
 /**
  * Get param from line index taking only loaded current folder params into account.
  */
@@ -246,17 +274,27 @@ static Parameter * getParam(const uint8_t line) {
   return &params[line - 1];
 }
 
-static void incrParam(int8_t step) {
+static void incrParam(int32_t step) {
   Parameter * param = getParam(lineIndex);
-  int32_t min = 0, max = 0;
+  // int32_t value, min = 0, max = 0;
   if (param->type <= TYPE_INT8) {
-    min = param->min;
-    max = param->max;
+    param->value = limit<int32_t>(param->min, param->value + step, param->max);
+  // } else if (param->type <= TYPE_INT16) {
+  //   value = paramGetValue(param, 0, 2);
+  //   min = getMin(param);
+  //   max = getMax(param);
+  //   value = limit<int32_t>(min, value + step, max);
+  //   // TODO save to buffer paramSetValue
+  // } else if (param->type == TYPE_FLOAT) {
+  //   value = paramGetValue(param, 0, 4);
+  //   min = getMin(param);
+  //   max = getMax(param);
+  //   step *= getStep(param);
+  //   value = limit<int32_t>(min, value + step, max);
+  //   // TODO save to buffer paramSetValue
   } else if (param->type == TYPE_SELECT) {
-//    min = 0;
-    max = param->max;
+    param->value = limit<int32_t>(0, param->value + step, param->max);
   }
-  param->value = limit<int32_t>(min, param->value + step, max);
 }
 
 static void selectParam(int8_t step) {
@@ -300,21 +338,52 @@ static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
   lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[offset], param->unitLength, 0);
 }
 
-// UINT8
-static void paramIntegerDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  lcdDrawNumber(COL2, y, param->value, attr);
-  unitDisplay(param, y, param->offset + param->nameLength);
+static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
+    uint16_t value;
+    if (param->type == TYPE_UINT8 || param->type == TYPE_INT8) {
+        value = (uint8_t)param->value;
+    } else {
+        value = (uint16_t)paramGetValue(param, 0, 2);
+    }
+    lcdDrawNumber(COL2, y, (param->type == TYPE_UINT8) ? (uint8_t)value :
+                          (param->type == TYPE_INT8)  ? (int8_t)value :
+                          (param->type == TYPE_UINT16) ? (uint16_t)value : (int16_t)value, attr);
+    unitDisplay(param, y, param->offset + param->nameLength + (param->type >= TYPE_UINT16 ? 6 : 0));
 }
 
-static void paramUint8Load(Parameter * param, uint8_t * data, uint8_t offset) {
+static void paramInt8Load(Parameter * param, uint8_t * data, uint8_t offset) {
   param->value = data[offset + 0];
   param->min = data[offset + 1];
   param->max = data[offset + 2];
   unitLoad(param, data, offset + 4);
 }
 
+static void paramInt16Load(Parameter * param, uint8_t * data, uint8_t offset) {
+  bufferPush((char *)&data[offset + 0], 2 + 2 + 2); // value + min + max at once
+  unitLoad(param, data, offset + 8);
+}
+
 static void paramIntSave(Parameter * param) {
   crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->value);
+}
+
+static void paramFloatDisplay(Parameter * param, uint8_t y, uint8_t attr) {
+  char tmpString[12];
+  strAppendSigned(tmpString, paramGetValue(param, 0, 4), param->prec + 1);
+  if (param->prec > 0) { // insert dot
+    uint8_t pos = strlen(tmpString) - param->prec;
+    memmove(&tmpString[pos + 1], &tmpString[pos], param->prec + 1);
+    tmpString[pos] = '.';
+  }
+  lcdDrawText(COL2, y, tmpString, attr);
+  unitDisplay(param, y, param->offset + param->nameLength + 4 * 4);
+}
+
+static void paramFloatLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+  bufferPush((char *)&data[offset + 0], 4 + 4 + 4); // value + min + max at once
+  param->prec = data[offset + 12];
+  bufferPush((char *)&data[offset + 13], 4); // step
+  unitLoad(param, data, offset + 17);
 }
 
 // TEXT SELECTION
@@ -499,15 +568,15 @@ static void parseDeviceInfoMessage(uint8_t* data) {
 static const ParamFunctions noopFunctions = { .load=noopLoad, .save=noopSave, .display=noopDisplay };
 
 static const ParamFunctions functions[] = {
-  { .load=paramUint8Load, .save=paramIntSave, .display=paramIntegerDisplay }, // 1 UINT8(0)
-  // { .load=noopLoad, .save=noopSave, .display=paramIntegerDisplay }, // 2 INT8(1)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 3 UINT16(2)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 4 INT16(3)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 5 UINT32(4)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 6 INT32(5)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 7 UINT64(6)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8 INT64(7)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 9 FLOAT(8)
+  { .load=paramInt8Load, .save=paramIntSave, .display=paramIntegerDisplay }, // 1 UINT8(0)
+  { .load=paramInt8Load, .save=paramIntSave, .display=paramIntegerDisplay }, // 2 INT8(1)
+  { .load=paramInt16Load, .save=noopSave, .display=paramIntegerDisplay }, // 3 UINT16(2)
+  { .load=paramInt16Load, .save=noopSave, .display=paramIntegerDisplay }, // 4  INT16(3)
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 5
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 6
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 7
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8
+  { .load=paramFloatLoad, .save=noopSave, .display=paramFloatDisplay }, // 9 FLOAT(8)
   { .load=paramTextSelectionLoad, .save=paramIntSave, .display=paramTextSelectionDisplay }, // 10 TEXT SELECTION(9)
   { .load=noopLoad, .save=noopSave, .display=paramStringDisplay }, // 11 STRING(10) editing
   { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // 12 FOLDER(11)
@@ -519,15 +588,15 @@ static const ParamFunctions functions[] = {
 };
 
 static ParamFunctions getFunctions(uint32_t i) {
-  if (i > TYPE_UINT8) {
-    if (i < TYPE_SELECT) return noopFunctions; // guard against not implemented types
-    i -= 8;
+  if (i > TYPE_INT16) {
+    if (i < TYPE_FLOAT) return noopFunctions; // guard against not implemented types
+    i -= 4;
   }
   return functions[i];
 }
 
 static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
-  // TRACE("parse...");
+  // TRACE("parse %d...", data[3]);
   // DUMP(&data[4], length - 4);
   if (data[2] != deviceId || data[3] != paramId) {
     paramDataLen = 0;
