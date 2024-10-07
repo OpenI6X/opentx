@@ -26,10 +26,6 @@ uint8_t currentBacklightBright = 0;
 uint8_t requiredBacklightBright = 0;
 uint8_t mainRequestFlags = 0;
 
-#if defined(PCBI6X_ELRS)
-extern void elrsStop();
-#endif
-
 #if defined(STM32)
 void onUSBConnectMenu(const char *result)
 {
@@ -73,6 +69,7 @@ void handleUsbConnection()
       #if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
       if (getSelectedUsbMode() == USB_MASS_STORAGE_MODE) {
         #if defined(PCBI6X_ELRS)
+        extern void elrsStop();
         elrsStop();
         #endif
         opentxClose(false);

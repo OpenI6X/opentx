@@ -6,7 +6,6 @@
  * - no int16, float, string params support, but not used by ExpressLRS anyway,
  */
 #include "opentx.h"
-#include "tiny_string.cpp"
 
 enum COMMAND_STEP {
     STEP_IDLE = 0,
@@ -110,8 +109,11 @@ static tmr10ms_t paramTimeout = 0;
 static uint8_t paramId = 1;
 static uint8_t paramChunk = 0;
 
-static char goodBadPkt[11] = "";
-static uint8_t elrsFlags = 0;
+static struct LinkStat {
+  uint16_t good;
+  uint8_t bad;
+  uint8_t flags;
+} linkstat;
 static constexpr uint8_t ELRS_FLAGS_INFO_MAX_LEN = 20;
 //static char *elrsFlagsInfo = (char *)&reusableBuffer.cToolData[BUFFER_SIZE + PARAM_DATA_TAIL_SIZE + PARAMS_SIZE + DEVICES_MAX_COUNT + DEVICE_NAME_MAX_LEN];
 static char elrsFlagsInfo[ELRS_FLAGS_INFO_MAX_LEN] = "";
@@ -278,14 +280,14 @@ static void selectParam(int8_t step) {
   }
 }
 
-static uint8_t isExistingDevice(uint8_t devId) {
+static bool isExistingDevice(uint8_t devId) {
 //   TRACE("isExistingDevice %x", devId);
   for (uint32_t i = 0; i < devicesLen; i++) {
     if (deviceIds[i] == devId) {
-      return deviceIds[i];
+      return true;
     }
   }
-  return 0;
+  return false;
 }
 
 static void unitLoad(Parameter * param, uint8_t * data, uint8_t offset) {
@@ -402,26 +404,24 @@ static void paramCommandSave(Parameter * param) {
 }
 
 static void paramUnifiedDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  const char* backPat = "[----BACK----]";
-  const char* folderPat = "> %s";
-  const char* otherPat = "> Other Devices";
-  const char* cmdPat = "[%s]";
-  const char *pat;
   uint8_t textIndent = COL1 + 9;
+  char tmp[28];
+  char * tmpString = tmp;
   if (param->type == TYPE_FOLDER) {
-    pat = folderPat;
+    tmpString = strAppend(tmpString, "> ");
+    strAppend(tmpString, (char *)&buffer[param->offset], param->nameLength);
     textIndent = COL1;
   } else if (param->type == TYPE_DEVICES_FOLDER) {
-    pat = otherPat;
+    strAppend(tmpString, "> Other Devices");
     textIndent = COL1;
   } else if (param->type == TYPE_BACK) {
-    pat = backPat;
+    strAppend(tmpString, "[----BACK----]");
   } else { // CMD || DEVICE
-    pat = cmdPat;
+    tmpString = strAppend(tmpString, "[");
+    tmpString = strAppend(tmpString, (char *)&buffer[param->offset], param->nameLength);
+    strAppend(tmpString, "]");
   }
-  char tmpString[28];
-  tiny_sprintf((char *)&tmpString, pat, 2, param->nameLength, (char *)&buffer[param->offset]);
-  lcdDrawText(textIndent, y, (char *)&tmpString, attr | BOLD);
+  lcdDrawText(textIndent, y, tmp, attr | BOLD);
 }
 
 static void paramBackExec(Parameter * param = 0) {
@@ -436,7 +436,7 @@ static void changeDeviceId(uint8_t devId) {
   //TRACE("changeDeviceId %x", devId);
   currentFolderId = 0;
   deviceIsELRS_TX = 0;
-  elrsFlags = 0;
+  linkstat.flags = 0;
   //if the selected device ID (target) is a TX Module, we use our Lua ID, so TX Flag that user is using our LUA
   if (devId == 0xEE) {
     handsetId = 0xEF;
@@ -635,18 +635,15 @@ static void parseElrsInfoMessage(uint8_t* data) {
     return;
   }
 
-  uint8_t badPkt = data[3];
-  uint16_t goodPkt = (data[4] << 8) + data[5];
+  linkstat.bad = data[3];
+  linkstat.good = (data[4] << 8) + data[5];
   uint8_t newFlags = data[6];
   // If flags are changing, reset the warning timeout to display/hide message immediately
-  if (newFlags != elrsFlags) {
-    elrsFlags = newFlags;
+  if (newFlags != linkstat.flags) {
+    linkstat.flags = newFlags;
     titleShowWarnTimeout = 0;
   }
   strncpy(elrsFlagsInfo, (char*)&data[7], ELRS_FLAGS_INFO_MAX_LEN);
-
-  char state = (elrsFlags & 1) ? 'C' : '-';
-  tiny_sprintf(goodBadPkt, "%d/%d   %c", 3, badPkt, goodPkt, state);
 }
 
 static void refreshNextCallback(uint8_t command, uint8_t* data, uint8_t length) {
@@ -679,16 +676,13 @@ static void refreshNext() {
     }
   }
 
-  if (time > linkstatTimeout) {
-    if (!deviceIsELRS_TX && allParamsLoaded == 1) {
-      goodBadPkt[0] = '\0';
-    } else {
-      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, 0x0, 0x0); // request linkstat
-    }
+  if (deviceIsELRS_TX && time > linkstatTimeout) {
+    crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, 0x0, 0x0); // request linkstat
     linkstatTimeout = time + 100;
   }
+
   if (time > titleShowWarnTimeout) {
-    titleShowWarn = (elrsFlags > 3) ? !titleShowWarn : 0;
+    titleShowWarn = (linkstat.flags > 3) ? !titleShowWarn : 0;
     titleShowWarnTimeout = time + 100;
   }
 }
@@ -697,8 +691,13 @@ static void lcd_title() {
   lcdClear();
 
   const uint8_t barHeight = 9;
-  if (!titleShowWarn) {
-    lcdDrawText(LCD_W - 1, 1, goodBadPkt, RIGHT);
+  if (deviceIsELRS_TX && !titleShowWarn) {
+    char tmp[16];
+    char * tmpString = tmp;
+    tmpString = strAppendUnsigned(tmpString, linkstat.bad);
+    tmpString = strAppendStringWithIndex(tmpString, "/", linkstat.good);
+    strAppend(tmpString, (linkstat.flags & 1) ? "   C" : "   -");
+    lcdDrawText(LCD_W - 1, 1, tmp, RIGHT);
     lcdDrawVerticalLine(LCD_W - 10, 0, barHeight, SOLID, INVERS);
   }
 
@@ -751,8 +750,8 @@ static void handleDevicePageEvent(event_t event) {
       paramBackExec();
     }
   } else if (event == EVT_VIRTUAL_ENTER) {
-    if (elrsFlags > 0x1F) {
-      elrsFlags = 0;
+    if (linkstat.flags > 0x1F) {
+      linkstat.flags = 0;
       crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, 0x2E, 0x00);
     } else {
       Parameter * param = getParam(lineIndex);
@@ -805,7 +804,7 @@ static void runDevicePage(event_t event) {
   if (devicesLen > 1 && otherDevicesState == BTN_REQUESTED) {
     addOtherDevicesButton();
   }
-  if (elrsFlags > 0x1F) {
+  if (linkstat.flags > 0x1F) {
     lcd_warn();
   } else {
     Parameter * param;
