@@ -259,27 +259,31 @@ static void storeParam(Parameter * param) {
   memcpy(storedParam, param, sizeof(Parameter));
 }
 
-static uint32_t paramGetValue(Parameter * param, uint16_t offset, uint8_t size) {
+static uint32_t paramGetValue(Parameter * param, uint16_t offset) {
   uint32_t result = 0;
-  for (uint32_t i = 0; i < size; i++) {
+  for (uint32_t i = 0; i < param->valuesLength; i++) {
     result = (result << 8) + buffer[param->offset + param->nameLength + offset + i];
   }
   return result;
 }
 
-// static int32_t getMin(Parameter * param) {
-//   uint8_t size = (param->type <= TYPE_INT16) ? 2 : 4;
-//   return paramGetValue(param, 1 * size, size);
-// }
+static void paramSetValue(Parameter * param, int32_t value) {
+  for (uint32_t i = 0; i < param->valuesLength; i++) {
+    buffer[param->offset + param->nameLength + i] = (uint8_t)((value >> (8 * i)) & 0xFF);
+  }
+}
 
-// static int32_t getMax(Parameter * param) {
-//   uint8_t size = (param->type <= TYPE_INT16) ? 2 : 4;
-//   return paramGetValue(param, 2 * size, size);
-// }
+static int32_t getMin(Parameter * param) {
+  return paramGetValue(param, 1 * param->valuesLength);
+}
 
-// static uint32_t getStep(Parameter * param) {
-//   return paramGetValue(param, 3 * 4, 4);
-// }
+static int32_t getMax(Parameter * param) {
+  return paramGetValue(param, 2 * param->valuesLength);
+}
+
+static uint32_t getStep(Parameter * param) {
+  return paramGetValue(param, 3 * 4);
+}
 
 /**
  * Get param from line index taking only loaded current folder params into account.
@@ -290,22 +294,16 @@ static Parameter * getParam(const uint8_t line) {
 
 static void incrParam(int32_t step) {
   Parameter * param = getParam(lineIndex);
-  // int32_t value, min = 0, max = 0;
+  int32_t value, min, max;
   if (param->type <= TYPE_INT8) {
     param->value = limit<int32_t>(param->min, param->value + step, param->max);
-  // } else if (param->type <= TYPE_INT16) {
-  //   value = paramGetValue(param, 0, 2);
-  //   min = getMin(param);
-  //   max = getMax(param);
-  //   value = limit<int32_t>(min, value + step, max);
-  //   // TODO save to buffer paramSetValue
-  // } else if (param->type == TYPE_FLOAT) {
-  //   value = paramGetValue(param, 0, 4);
-  //   min = getMin(param);
-  //   max = getMax(param);
-  //   step *= getStep(param);
-  //   value = limit<int32_t>(min, value + step, max);
-  //   // TODO save to buffer paramSetValue
+  } else if (param->type <= TYPE_INT16 || param->type == TYPE_FLOAT) {
+    value = paramGetValue(param, 0);
+    min = getMin(param);
+    max = getMax(param);
+    if (param->type == TYPE_FLOAT) step *= getStep(param);
+    value = limit<int32_t>(min, value + step, max);
+    paramSetValue(param, value);
   } else if (param->type == TYPE_SELECT) {
     param->value = limit<int32_t>(0, param->value + step, param->max);
   }
@@ -357,7 +355,7 @@ static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
     if (param->type == TYPE_UINT8 || param->type == TYPE_INT8) {
         value = (uint8_t)param->value;
     } else {
-        value = (uint16_t)paramGetValue(param, 0, 2);
+        value = (uint16_t)paramGetValue(param, 0);
     }
     lcdDrawNumber(COL2, y, (param->type == TYPE_UINT8) ? (uint8_t)value :
                           (param->type == TYPE_INT8)  ? (int8_t)value :
@@ -384,7 +382,7 @@ static void paramInt16Load(Parameter * param, uint8_t * data, uint8_t offset) {
 
 static void paramFloatDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   char tmpString[12];
-  strAppendSigned(tmpString, paramGetValue(param, 0, 4), param->prec + 1);
+  strAppendSigned(tmpString, paramGetValue(param, 0), param->prec + 1);
   if (param->prec > 0) { // insert dot
     uint8_t pos = strlen(tmpString) - param->prec;
     memmove(&tmpString[pos + 1], &tmpString[pos], param->prec + 1);
