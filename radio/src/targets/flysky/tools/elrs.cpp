@@ -389,7 +389,7 @@ static void paramFloatLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   unitLoad(param, data, offset + 17);
 }
 
-staic void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+static void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
   if (param->valuesLength == 0) {
     bufferPush((char*)&data[offset], len);
