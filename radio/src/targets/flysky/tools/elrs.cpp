@@ -389,6 +389,15 @@ static void paramFloatLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   unitLoad(param, data, offset + 17);
 }
 
+staic void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+  uint8_t len = strlen((char*)&data[offset]);
+  if (param->valuesLength == 0) {
+    bufferPush((char*)&data[offset], len);
+    param->valuesLength = len;
+  }
+  unitLoad(param, data, offset + len + 1);
+}
+
 // TEXT SELECTION
 /**
  * Reused also for INFO params value (i.e. commit sha) for 0 flash cost
@@ -397,7 +406,6 @@ static void paramTextSelectionLoad(Parameter * param, uint8_t * data, uint8_t of
   uint8_t len = strlen((char*)&data[offset]);
   param->value = data[offset + len + 1];
   param->max = data[offset + len + 3];
-  len = strlen((char*)&data[offset]);
   if (param->valuesLength == 0) {
     bufferPush((char*)&data[offset], len);
     param->valuesLength = len;
@@ -576,7 +584,7 @@ static const ParamFunctions functions[] = {
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8
   { .load=paramFloatLoad, .save=noopSave, .display=paramFloatDisplay }, // 9 FLOAT(8)
   { .load=paramTextSelectionLoad, .save=paramIntSave, .display=paramTextSelectionDisplay }, // 10 TEXT SELECTION(9)
-  { .load=noopLoad, .save=noopSave, .display=paramStringDisplay }, // 11 STRING(10) editing
+  { .load=paramStringLoad, .save=noopSave, .display=paramStringDisplay }, // 11 STRING(10) editing
   { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // 12 FOLDER(11)
   { .load=paramTextSelectionLoad, .save=noopSave, .display=paramStringDisplay }, // 13 INFO(12)
   { .load=paramCommandLoad, .save=paramCommandSave, .display=paramUnifiedDisplay }, // 14 COMMAND(13)
