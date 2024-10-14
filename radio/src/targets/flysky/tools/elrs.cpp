@@ -438,11 +438,7 @@ static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr
 }
 
 static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  if (edit && param->type == TYPE_STRING) {
-    editSingleName(COL2, y, "", (char *)&buffer[param->offset + param->nameLength], param->valuesLength, currentEvent, attr);
-  } else {
-    lcdDrawSizedText(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, attr);
-  }
+  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, currentEvent, attr, (edit && param->type == TYPE_STRING));
 }
 
 static void paramFolderOpen(Parameter * param) {
