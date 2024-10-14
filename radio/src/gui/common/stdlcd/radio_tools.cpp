@@ -26,7 +26,7 @@ void addRadioTool(uint8_t index, const char * label, void (* tool)(event_t event
   int8_t sub = menuVerticalPosition - HEADER_LINE;
   LcdFlags attr = (sub == index ? INVERS : 0);
   coord_t y = MENU_HEADER_HEIGHT + 1 + index * FH;
-  lcdDrawText(0, y, label, attr);
+  lcdDrawText(1, y, label, attr);
   if (attr && s_editMode > 0) {
     s_editMode = 0;
     pushMenu(tool);

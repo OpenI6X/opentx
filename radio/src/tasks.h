@@ -26,7 +26,7 @@
 // stack sizes should be in multiples of 8 for better alignment
 // expressed in integers resulting size is 4 times bigger
 #if defined(STM32F0)
-#define MENUS_STACK_SIZE       728
+#define MENUS_STACK_SIZE       648
 #else
 #define MENUS_STACK_SIZE       2048
 #endif

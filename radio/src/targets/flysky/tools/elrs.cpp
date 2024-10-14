@@ -745,8 +745,8 @@ static void refreshNext() {
   tmr10ms_t time = getTime();
   if (paramPopup != nullptr) {
     if (time > paramTimeout && paramPopup->status != STEP_CONFIRM) {
-      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, 6); // lcsQuery
-      paramTimeout = time + paramPopup->timeout; // + popup timeout
+      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, STEP_QUERY);
+      paramTimeout = time + paramPopup->timeout;
     }
   } else if (time > devicesRefreshTimeout && expectedParamsCount < 1) {
     devicesRefreshTimeout = time + 100;
