@@ -409,10 +409,11 @@ static void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   unitLoad(param, data, offset + len + 1);
 }
 
+static void paramStringSave(Parameter * param) {
+  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, &buffer[param->offset + param->nameLength], param->valuesLength);
+}
+
 // TEXT SELECTION
-/**
- * Reused also for INFO params value (i.e. commit sha) for 0 flash cost
- */
 static void paramTextSelectionLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
   param->value = data[offset + len + 1];
@@ -595,9 +596,9 @@ static const ParamFunctions functions[] = {
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8
   { .load=paramFloatLoad, .save=noopSave, .display=paramFloatDisplay }, // 9 FLOAT(8)
   { .load=paramTextSelectionLoad, .save=paramIntSave, .display=paramTextSelectionDisplay }, // 10 TEXT SELECTION(9)
-  { .load=paramStringLoad, .save=noopSave, .display=paramStringDisplay }, // 11 STRING(10) editing
+  { .load=paramStringLoad, .save=paramStringSave, .display=paramStringDisplay }, // 11 STRING(10) editing
   { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // 12 FOLDER(11)
-  { .load=paramTextSelectionLoad, .save=noopSave, .display=paramStringDisplay }, // 13 INFO(12)
+  { .load=paramStringLoad, .save=noopSave, .display=paramStringDisplay }, // 13 INFO(12)
   { .load=paramCommandLoad, .save=paramCommandSave, .display=paramUnifiedDisplay }, // 14 COMMAND(13)
   { .load=noopLoad, .save=paramBackExec, .display=paramUnifiedDisplay }, // 15 back(14)
   { .load=noopLoad, .save=paramDeviceIdSelect, .display=paramUnifiedDisplay }, // 16 device(15)
