@@ -136,6 +136,8 @@ static tmr10ms_t linkstatTimeout = 100;
 static uint8_t titleShowWarn = 0;
 static tmr10ms_t titleShowWarnTimeout = 100;
 
+static event_t currentEvent;
+
 static constexpr uint8_t COL1          =  0;
 static constexpr uint8_t COL2          = 70;
 static constexpr uint8_t maxLineIndex  =  6;
@@ -436,7 +438,11 @@ static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr
 }
 
 static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  lcdDrawSizedText(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, attr);
+  if (edit && param->type == TYPE_STRING) {
+    editSingleName(COL2, y, "", (char *)&buffer[param->offset + param->nameLength], param->valuesLength, currentEvent, attr);
+  } else {
+    lcdDrawSizedText(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, attr);
+  }
 }
 
 static void paramFolderOpen(Parameter * param) {
@@ -851,6 +857,10 @@ static void handleDevicePageEvent(event_t event) {
       }
     }
   } else if (edit) {
+    Parameter * param = getParam(lineIndex);
+    if (param->type == TYPE_STRING) {
+      return;
+    }
     if (event == EVT_VIRTUAL_NEXT) {
       incrParam(1);
     } else if (event == EVT_VIRTUAL_PREV) {
@@ -868,6 +878,8 @@ static void handleDevicePageEvent(event_t event) {
 static void runDevicePage(event_t event) {
   handleDevicePageEvent(event);
 
+  currentEvent = event;
+
   lcd_title();
 
   if (linkstat.flags > 0x1F) {
@@ -881,7 +893,7 @@ static void runDevicePage(event_t event) {
         break;
       } else if (param->nameLength > 0) {
         uint8_t attr = (lineIndex == (pageOffset+y)) ? ((edit && BLINK) + INVERS) : 0;
-        if (param->type < TYPE_FOLDER || param->type == TYPE_INFO) {
+        if (param->type < TYPE_FOLDER || param->type == TYPE_INFO) { // if not folder, command, or back
           lcdDrawSizedText(COL1, y * textSize+textYoffset, (char *)&buffer[param->offset], param->nameLength, 0);
         }
         getFunctions(param->type).display(param, y*textSize+textYoffset, attr);
