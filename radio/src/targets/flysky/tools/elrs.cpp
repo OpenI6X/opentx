@@ -194,7 +194,7 @@ static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const 
   // TRACE("crsf cmd %x %x %x", cmd, index, value);
   uint8_t crsfPushData[3 + size] = { deviceId, handsetId, index };
   for (uint32_t i = 0; i < size; i++) {
-    crsfPushData[3 + i] = *data[i];
+    crsfPushData[3 + i] = data[i];
   }
   crossfireTelemetryPush(cmd, crsfPushData, sizeof(crsfPushData));
 }
