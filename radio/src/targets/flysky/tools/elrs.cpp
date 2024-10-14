@@ -49,8 +49,7 @@ PACK(struct Parameter {
   union {
     uint8_t min;          // INT8
     uint8_t timeout;      // COMMAND
-    uint8_t valuesLength; // SELECT, min always 0
-    uint8_t prec;         // FLOAT
+    uint8_t valuesLength; // SELECT, min always 0, INT16 size, FLOAT size
   };
   union {
     uint8_t unitLength;
@@ -59,6 +58,7 @@ PACK(struct Parameter {
   union {
     uint8_t value;
     uint8_t status;       // COMMAND, must be alias to value, because save expects it!
+    uint8_t prec;         // FLOAT
   };
   uint8_t type;
   union {
@@ -372,13 +372,14 @@ static void paramInt8Load(Parameter * param, uint8_t * data, uint8_t offset) {
   unitLoad(param, data, offset + 4);
 }
 
-static void paramInt16Load(Parameter * param, uint8_t * data, uint8_t offset) {
-  bufferPush((char *)&data[offset + 0], 2 + 2 + 2); // value + min + max at once
-  unitLoad(param, data, offset + 8);
+static void paramInt8Save(Parameter * param) {
+  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->value);
 }
 
-static void paramIntSave(Parameter * param) {
-  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->value);
+static void paramInt16Load(Parameter * param, uint8_t * data, uint8_t offset) {
+  param->valuesLength = 2;
+  bufferPush((char *)&data[offset + 0], 2 + 2 + 2); // value + min + max at once
+  unitLoad(param, data, offset + 8);
 }
 
 static void paramFloatDisplay(Parameter * param, uint8_t y, uint8_t attr) {
@@ -396,6 +397,7 @@ static void paramFloatDisplay(Parameter * param, uint8_t y, uint8_t attr) {
 static void paramFloatLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   bufferPush((char *)&data[offset + 0], 4 + 4 + 4); // value + min + max at once
   param->prec = data[offset + 12];
+  param->valuesLength = 4;
   bufferPush((char *)&data[offset + 13], 4); // step
   unitLoad(param, data, offset + 17);
 }
@@ -409,7 +411,7 @@ static void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   unitLoad(param, data, offset + len + 1);
 }
 
-static void paramStringSave(Parameter * param) {
+static void paramMultibyteSave(Parameter * param) {
   crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, &buffer[param->offset + param->nameLength], param->valuesLength);
 }
 
@@ -487,7 +489,7 @@ static void paramCommandLoad(Parameter * param, uint8_t * data, uint8_t offset) 
 static void paramCommandSave(Parameter * param) {
   if (param->status < STEP_CONFIRMED) {
     param->status = STEP_CLICK;
-    paramIntSave(param); //crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->status);
+    paramInt8Save(param); //crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->status);
     paramPopup = param;
     paramPopup->lastStatus = 0;
     paramTimeout = getTime() + param->timeout;
@@ -586,17 +588,17 @@ static void parseDeviceInfoMessage(uint8_t* data) {
 static const ParamFunctions noopFunctions = { .load=noopLoad, .save=noopSave, .display=noopDisplay };
 
 static const ParamFunctions functions[] = {
-  { .load=paramInt8Load, .save=paramIntSave, .display=paramIntegerDisplay }, // 1 UINT8(0)
-  { .load=paramInt8Load, .save=paramIntSave, .display=paramIntegerDisplay }, // 2 INT8(1)
-  { .load=paramInt16Load, .save=noopSave, .display=paramIntegerDisplay }, // 3 UINT16(2)
-  { .load=paramInt16Load, .save=noopSave, .display=paramIntegerDisplay }, // 4  INT16(3)
+  { .load=paramInt8Load, .save=paramInt8Save, .display=paramIntegerDisplay }, // 1 UINT8(0)
+  { .load=paramInt8Load, .save=paramInt8Save, .display=paramIntegerDisplay }, // 2 INT8(1)
+  { .load=paramInt16Load, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // 3 UINT16(2)
+  { .load=paramInt16Load, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // 4  INT16(3)
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 5
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 6
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 7
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8
-  { .load=paramFloatLoad, .save=noopSave, .display=paramFloatDisplay }, // 9 FLOAT(8)
-  { .load=paramTextSelectionLoad, .save=paramIntSave, .display=paramTextSelectionDisplay }, // 10 TEXT SELECTION(9)
-  { .load=paramStringLoad, .save=paramStringSave, .display=paramStringDisplay }, // 11 STRING(10) editing
+  { .load=paramFloatLoad, .save=paramMultibyteSave, .display=paramFloatDisplay }, // 9 FLOAT(8)
+  { .load=paramTextSelectionLoad, .save=paramInt8Save, .display=paramTextSelectionDisplay }, // 10 TEXT SELECTION(9)
+  { .load=paramStringLoad, .save=paramMultibyteSave, .display=paramStringDisplay }, // 11 STRING(10) editing
   { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // 12 FOLDER(11)
   { .load=paramStringLoad, .save=noopSave, .display=paramStringDisplay }, // 13 INFO(12)
   { .load=paramCommandLoad, .save=paramCommandSave, .display=paramUnifiedDisplay }, // 14 COMMAND(13)
