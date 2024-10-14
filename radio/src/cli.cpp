@@ -709,9 +709,7 @@ int cliTrace(const char ** argv)
 
 int cliStackInfo(const char ** argv)
 {
-  #if !defined(PCBI6X)
   serialPrint("[MAIN] %d available / %d", stackAvailable(), stackSize() * 4);  // stackSize() returns size in 32bit chunks
-  #endif
   serialPrint("[MENUS] %d available / %d", menusStack.available(), menusStack.size());
   serialPrint("[MIXER] %d available / %d", mixerStack.available(), mixerStack.size());
   #if defined(AUDIO)

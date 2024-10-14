@@ -1,5 +1,5 @@
 option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
-option(PCBI6X_ELRS "Enable ExpressLRS configuration tool" NO) # ~4.2kB
+option(PCBI6X_ELRS "Enable ExpressLRS configuration tool" NO) # ~4.1kB
 option(PCBI6X_HELLO "Enable Hello World example tool" NO)
 option(PCBI6X_INAV "Enable INAV Lite telemetry screen" NO) # ~2kB
 option(PCBI6X_USB_VBUS "Remove manual USB connection, just auto using VBUS, requires wiring USB VBUS to PA15 pad" NO)
@@ -151,5 +151,6 @@ set(FIRMWARE_TARGET_SRC
   ${FIRMWARE_TARGET_SRC}
   lcd_driver.cpp
   pwr_driver.cpp
+  startup_stm32f072.s
   )
 set(FIRMWARE_DEPENDENCIES ${FIRMWARE_DEPENDENCIES} ${BITMAPS_TARGET})

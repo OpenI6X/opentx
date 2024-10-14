@@ -280,7 +280,6 @@ void crossfireTelemetrySeekStart(uint8_t *rxBuffer, uint8_t &rxBufferCount)
       if (remain > 1 && !crossfireLenIsSane(rxBuffer[idx+1]))
         continue;
 
-      //TRACE("Found 0x%02x with %u remain", data, remain);
       TRACE("Found 0x%02x with %u remain", data, remain);
       // copy the data to the front of the buffer
       for (uint8_t src=idx; src<rxBufferCount; ++src) {

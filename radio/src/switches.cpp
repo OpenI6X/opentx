@@ -122,43 +122,15 @@ uint64_t check3PosSwitchPosition(uint8_t idx, uint8_t sw, bool startup)
 #define CHECK_2POS(sw)       newPos |= check2PosSwitchPosition(sw ## 0)
 #define CHECK_3POS(idx, sw)  newPos |= check3PosSwitchPosition(idx, sw ## 0, startup)
 
-void getSwitchesPosition(bool startup){
+void getSwitchesPosition(bool startup)
+{
   uint64_t newPos = 0;
-#if defined(PCBI6X)
-  CHECK_2POS(SW_SA);
-  CHECK_2POS(SW_SB);
-  CHECK_3POS(2, SW_SC);
-  CHECK_2POS(SW_SD);
-#else
+
   CHECK_3POS(0, SW_SA);
   CHECK_3POS(1, SW_SB);
   CHECK_3POS(2, SW_SC);
   CHECK_3POS(3, SW_SD);
-#if !defined(PCBX7) && !defined(PCBXLITE)
-  CHECK_3POS(4, SW_SE);
-#endif
-#if !defined(PCBXLITE)
-  CHECK_2POS(SW_SF);
-#endif
-#if !defined(PCBX7) && !defined(PCBXLITE)
-  CHECK_3POS(5, SW_SG);
-#endif
-#if !defined(PCBXLITE)
-  CHECK_2POS(SW_SH);
-#endif
-#if defined(PCBX9E)
-  CHECK_3POS(6, SW_SI);
-  CHECK_3POS(7, SW_SJ);
-  CHECK_3POS(8, SW_SK);
-  CHECK_3POS(9, SW_SL);
-  CHECK_3POS(10, SW_SM);
-  CHECK_3POS(11, SW_SN);
-  CHECK_3POS(12, SW_SO);
-  CHECK_3POS(13, SW_SP);
-  CHECK_3POS(14, SW_SQ);
-  CHECK_3POS(15, SW_SR);
-#endif
-#endif
+
   switchesPos = newPos;
 
   for (int i=0; i<NUM_XPOTS; i++) {
@@ -421,7 +393,7 @@ bool getSwitch(swsrc_t swtch, uint8_t flags)
     result = true;
   }
   else if (cs_idx <= SWSRC_LAST_SWITCH) {
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
     if (flags & GETSWITCH_MIDPOS_DELAY)
       result = SWITCH_POSITION(cs_idx-SWSRC_FIRST_SWITCH);
     else

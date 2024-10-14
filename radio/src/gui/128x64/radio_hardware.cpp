@@ -169,10 +169,8 @@ enum MenuRadioHardwareItems {
 #else
 #define BLUETOOTH_ROWS
 #endif
-#if defined(PCBXLITE)
+#if defined(PCBXLITE) || defined(PCBI6X)
 #define SWITCH_TYPE_MAX(sw)            (SWITCH_3POS)
-#elif defined(PCBI6X)
-#define SWITCH_TYPE_MAX(sw)            ((MIXSRC_SC-MIXSRC_FIRST_SWITCH == sw) ? SWITCH_3POS : SWITCH_2POS)
 #else
 #define SWITCH_TYPE_MAX(sw)            ((MIXSRC_SF-MIXSRC_FIRST_SWITCH == sw || MIXSRC_SH-MIXSRC_FIRST_SWITCH == sw) ? SWITCH_2POS : SWITCH_3POS)
 #endif

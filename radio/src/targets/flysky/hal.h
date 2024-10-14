@@ -87,7 +87,6 @@
 #define I2C_ADDRESS_EEPROM            0xA0 // 0x50 << 1 (convert to upper 7 bits)
 #define I2C_FLASH_PAGESIZE            64
 #define EEPROM_BLOCK_SIZE     (64)
-//#define EEPROM_VERIFY_WRITES
 
 // ADC
 #define ADC_MAIN                        ADC1
@@ -171,7 +170,7 @@ void TIM16_IRQHandler(void);
 #define RF_SCN_RESET_PIN GPIO_BSRR_BR_12
 
 #define RF_GIO2_GPIO_PORT GPIOB
-#define RF_GIO2_PIN EXTI_IMR_IM2
+#define RF_GIO2_PIN EXTI_IMR_MR2
 
 #define RF_RxTx_GPIO_PORT GPIOE
 #define RF_RxTx_PIN_MASK 0x00000300U
@@ -207,144 +206,6 @@ void init_afhds2a(uint32_t port);
 void disable_afhds2a(uint32_t port);
 #define A7105_CSN_on a7105_csn_on()
 #define A7105_CSN_off a7105_csn_off()
-
-/******************************************************************************/
-/*                                                                            */
-/*                 External Interrupt/Event Controller (EXTI)                 */
-/*                                                                            */
-/******************************************************************************/
-
-/* References Defines */
-#define  EXTI_IMR_IM0 EXTI_IMR_MR0
-#define  EXTI_IMR_IM1 EXTI_IMR_MR1
-#define  EXTI_IMR_IM2 EXTI_IMR_MR2
-#define  EXTI_IMR_IM3 EXTI_IMR_MR3
-#define  EXTI_IMR_IM4 EXTI_IMR_MR4
-#define  EXTI_IMR_IM5 EXTI_IMR_MR5
-#define  EXTI_IMR_IM6 EXTI_IMR_MR6
-#define  EXTI_IMR_IM7 EXTI_IMR_MR7
-#define  EXTI_IMR_IM8 EXTI_IMR_MR8
-#define  EXTI_IMR_IM9 EXTI_IMR_MR9
-#define  EXTI_IMR_IM10 EXTI_IMR_MR10
-#define  EXTI_IMR_IM11 EXTI_IMR_MR11
-#define  EXTI_IMR_IM12 EXTI_IMR_MR12
-#define  EXTI_IMR_IM13 EXTI_IMR_MR13
-#define  EXTI_IMR_IM14 EXTI_IMR_MR14
-#define  EXTI_IMR_IM15 EXTI_IMR_MR15
-#define  EXTI_IMR_IM16 EXTI_IMR_MR16
-#define  EXTI_IMR_IM17 EXTI_IMR_MR17
-#define  EXTI_IMR_IM18 EXTI_IMR_MR18
-#define  EXTI_IMR_IM19 EXTI_IMR_MR19
-#define  EXTI_IMR_IM20 EXTI_IMR_MR20
-#define  EXTI_IMR_IM21 EXTI_IMR_MR21
-#define  EXTI_IMR_IM22 EXTI_IMR_MR22
-#define  EXTI_IMR_IM23 EXTI_IMR_MR23
-#define  EXTI_IMR_IM25 EXTI_IMR_MR25
-#define  EXTI_IMR_IM26 EXTI_IMR_MR26
-#define  EXTI_IMR_IM27 EXTI_IMR_MR27
-#define  EXTI_IMR_IM31 EXTI_IMR_MR31
-
-/* References Defines */
-#define  EXTI_EMR_EM0 EXTI_EMR_MR0
-#define  EXTI_EMR_EM1 EXTI_EMR_MR1
-#define  EXTI_EMR_EM2 EXTI_EMR_MR2
-#define  EXTI_EMR_EM3 EXTI_EMR_MR3
-#define  EXTI_EMR_EM4 EXTI_EMR_MR4
-#define  EXTI_EMR_EM5 EXTI_EMR_MR5
-#define  EXTI_EMR_EM6 EXTI_EMR_MR6
-#define  EXTI_EMR_EM7 EXTI_EMR_MR7
-#define  EXTI_EMR_EM8 EXTI_EMR_MR8
-#define  EXTI_EMR_EM9 EXTI_EMR_MR9
-#define  EXTI_EMR_EM10 EXTI_EMR_MR10
-#define  EXTI_EMR_EM11 EXTI_EMR_MR11
-#define  EXTI_EMR_EM12 EXTI_EMR_MR12
-#define  EXTI_EMR_EM13 EXTI_EMR_MR13
-#define  EXTI_EMR_EM14 EXTI_EMR_MR14
-#define  EXTI_EMR_EM15 EXTI_EMR_MR15
-#define  EXTI_EMR_EM16 EXTI_EMR_MR16
-#define  EXTI_EMR_EM17 EXTI_EMR_MR17
-#define  EXTI_EMR_EM18 EXTI_EMR_MR18
-#define  EXTI_EMR_EM19 EXTI_EMR_MR19
-#define  EXTI_EMR_EM20 EXTI_EMR_MR0
-#define  EXTI_EMR_EM21 EXTI_EMR_MR21
-#define  EXTI_EMR_EM22 EXTI_EMR_MR22
-#define  EXTI_EMR_EM23 EXTI_EMR_MR23
-#define  EXTI_EMR_EM25 EXTI_EMR_MR25
-#define  EXTI_EMR_EM26 EXTI_EMR_MR26
-#define  EXTI_EMR_EM27 EXTI_EMR_MR27
-#define  EXTI_EMR_EM31 EXTI_EMR_MR31
-
-/* References Defines */
-#define EXTI_RTSR_RT0 EXTI_RTSR_TR0
-#define EXTI_RTSR_RT1 EXTI_RTSR_TR1
-#define EXTI_RTSR_RT2 EXTI_RTSR_TR2
-#define EXTI_RTSR_RT3 EXTI_RTSR_TR3
-#define EXTI_RTSR_RT4 EXTI_RTSR_TR4
-#define EXTI_RTSR_RT5 EXTI_RTSR_TR5
-#define EXTI_RTSR_RT6 EXTI_RTSR_TR6
-#define EXTI_RTSR_RT7 EXTI_RTSR_TR7
-#define EXTI_RTSR_RT8 EXTI_RTSR_TR8
-#define EXTI_RTSR_RT9 EXTI_RTSR_TR9
-#define EXTI_RTSR_RT10 EXTI_RTSR_TR10
-#define EXTI_RTSR_RT11 EXTI_RTSR_TR11
-#define EXTI_RTSR_RT12 EXTI_RTSR_TR12
-#define EXTI_RTSR_RT13 EXTI_RTSR_TR13
-#define EXTI_RTSR_RT14 EXTI_RTSR_TR14
-#define EXTI_RTSR_RT15 EXTI_RTSR_TR15
-#define EXTI_RTSR_RT16 EXTI_RTSR_TR16
-#define EXTI_RTSR_RT17 EXTI_RTSR_TR17
-#define EXTI_RTSR_RT19 EXTI_RTSR_TR19
-#define EXTI_RTSR_RT20 EXTI_RTSR_TR20
-#define EXTI_RTSR_RT21 EXTI_RTSR_TR21
-#define EXTI_RTSR_RT22 EXTI_RTSR_TR22
-
-/* References Defines */
-#define EXTI_SWIER_SWI0 EXTI_SWIER_SWIER0
-#define EXTI_SWIER_SWI1 EXTI_SWIER_SWIER1
-#define EXTI_SWIER_SWI2 EXTI_SWIER_SWIER2
-#define EXTI_SWIER_SWI3 EXTI_SWIER_SWIER3
-#define EXTI_SWIER_SWI4 EXTI_SWIER_SWIER4
-#define EXTI_SWIER_SWI5 EXTI_SWIER_SWIER5
-#define EXTI_SWIER_SWI6 EXTI_SWIER_SWIER6
-#define EXTI_SWIER_SWI7 EXTI_SWIER_SWIER7
-#define EXTI_SWIER_SWI8 EXTI_SWIER_SWIER8
-#define EXTI_SWIER_SWI9 EXTI_SWIER_SWIER9
-#define EXTI_SWIER_SWI10 EXTI_SWIER_SWIER10
-#define EXTI_SWIER_SWI11 EXTI_SWIER_SWIER11
-#define EXTI_SWIER_SWI12 EXTI_SWIER_SWIER12
-#define EXTI_SWIER_SWI13 EXTI_SWIER_SWIER13
-#define EXTI_SWIER_SWI14 EXTI_SWIER_SWIER14
-#define EXTI_SWIER_SWI15 EXTI_SWIER_SWIER15
-#define EXTI_SWIER_SWI16 EXTI_SWIER_SWIER16
-#define EXTI_SWIER_SWI17 EXTI_SWIER_SWIER17
-#define EXTI_SWIER_SWI19 EXTI_SWIER_SWIER19
-#define EXTI_SWIER_SWI20 EXTI_SWIER_SWIER20
-#define EXTI_SWIER_SWI21 EXTI_SWIER_SWIER21
-#define EXTI_SWIER_SWI22 EXTI_SWIER_SWIER22
-
-/* References Defines */
-#define EXTI_PR_PIF0 EXTI_PR_PR0
-#define EXTI_PR_PIF1 EXTI_PR_PR1
-#define EXTI_PR_PIF2 EXTI_PR_PR2
-#define EXTI_PR_PIF3 EXTI_PR_PR3
-#define EXTI_PR_PIF4 EXTI_PR_PR4
-#define EXTI_PR_PIF5 EXTI_PR_PR5
-#define EXTI_PR_PIF6 EXTI_PR_PR6
-#define EXTI_PR_PIF7 EXTI_PR_PR7
-#define EXTI_PR_PIF8 EXTI_PR_PR8
-#define EXTI_PR_PIF9 EXTI_PR_PR9
-#define EXTI_PR_PIF10 EXTI_PR_PR10
-#define EXTI_PR_PIF11 EXTI_PR_PR11
-#define EXTI_PR_PIF12 EXTI_PR_PR12
-#define EXTI_PR_PIF13 EXTI_PR_PR13
-#define EXTI_PR_PIF14 EXTI_PR_PR14
-#define EXTI_PR_PIF15 EXTI_PR_PR15
-#define EXTI_PR_PIF16 EXTI_PR_PR16
-#define EXTI_PR_PIF17 EXTI_PR_PR17
-#define EXTI_PR_PIF19 EXTI_PR_PR19
-#define EXTI_PR_PIF20 EXTI_PR_PR20
-#define EXTI_PR_PIF21 EXTI_PR_PR21
-#define EXTI_PR_PIF22 EXTI_PR_PR22
 
 #define UID_BASE              ((uint32_t)0x1FFFF7ACU)       /*!< Unique device ID register base address */
 
@@ -549,17 +410,7 @@ F072 IRQs
   #define BACKLIGHT_STD_GPIO_PIN            GPIO_Pin_3
 
 // Audio
-//#define AUDIO_RCC_AHB1Periph            (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_DMA1)
-//#define AUDIO_RCC_APB1Periph            (RCC_APB1Periph_TIM6)
-//#define AUDIO_OUTPUT_GPIO               GPIOA
-//#define AUDIO_OUTPUT_GPIO_PIN           GPIO_Pin_8  // PA.08
-//#define AUDIO_DMA_Stream                DMA1_Stream5
-//#define AUDIO_DMA_Stream_IRQn           DMA1_Stream5_IRQn
-//#define AUDIO_TIM_IRQn                  TIM6_DAC_IRQn
-//#define AUDIO_TIM_IRQHandler            TIM6_DAC_IRQHandler
-//#define AUDIO_DMA_Stream_IRQHandler     DMA1_Stream5_IRQHandler
-//#define AUDIO_TIMER                     TIM6
-//#define AUDIO_DMA                       DMA1
+//...
 
 // Buzzer
 #define BUZZER_GPIO_PORT                GPIOA

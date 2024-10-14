@@ -878,14 +878,19 @@ void drawGPSCoord(coord_t x, coord_t y, int32_t value, const char * direction, L
   lcdDrawSizedText(lcdLastRightPos+1, y, direction + (value>=0 ? 0 : 1), 1);
 }
 
+void drawTime(coord_t x, coord_t y, TelemetryItem & telemetryItem, LcdFlags att)
+{
+  lcdDrawNumber(x, y, telemetryItem.datetime.hour, att|LEADING0, 2);
+  lcdDrawText(lcdNextPos, y, ":", att);
+  lcdDrawNumber(lcdNextPos, y, telemetryItem.datetime.min, att|LEADING0, 2);
+  lcdDrawText(lcdNextPos, y, ":", att);
+  lcdDrawNumber(lcdNextPos, y, telemetryItem.datetime.sec, att|LEADING0, 2);
+}
+
 void drawDate(coord_t x, coord_t y, TelemetryItem & telemetryItem, LcdFlags att)
 {
   if (BLINK_ON_PHASE) {
-     lcdDrawNumber(x, y, telemetryItem.datetime.hour, att|LEADING0, 2);
-     lcdDrawText(lcdNextPos, y, ":", att);
-     lcdDrawNumber(lcdNextPos, y, telemetryItem.datetime.min, att|LEADING0, 2);
-     lcdDrawText(lcdNextPos, y, ":", att);
-     lcdDrawNumber(lcdNextPos, y, telemetryItem.datetime.sec, att|LEADING0, 2);
+     drawTime(x, y, telemetryItem, att);
   }
   else {
     lcdDrawNumber(x, y, telemetryItem.datetime.year, att|LEADING0|LEFT, 4);
@@ -940,11 +945,7 @@ void drawTelemScreenDate(coord_t x, coord_t y, source_t sensor, LcdFlags att)
   sensor = (sensor-MIXSRC_FIRST_TELEM) / 3;
 	TelemetryItem & telemetryItem = telemetryItems[sensor];
 
-  lcdDrawNumber(x, y, telemetryItem.datetime.hour, att|LEADING0, 2);
-  lcdDrawText(lcdNextPos, y, ":", att);
-  lcdDrawNumber(lcdNextPos, y, telemetryItem.datetime.min, att|LEADING0, 2);
-  lcdDrawText(lcdNextPos, y, ":", att);
-  lcdDrawNumber(lcdNextPos, y, telemetryItem.datetime.sec, att|LEADING0, 2);
+  drawTime(x, y, telemetryItem, att);
 
   lcdDrawNumber(x-29, y, telemetryItem.datetime.month, att|LEADING0|LEFT, 2);
   lcdDrawChar(lcdNextPos, y, '-', att);

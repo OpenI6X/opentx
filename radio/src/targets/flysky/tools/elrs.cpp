@@ -61,7 +61,10 @@ PACK(struct Parameter {
     uint8_t status;       // COMMAND, must be alias to value, because save expects it!
   };
   uint8_t type;
-  uint8_t max;            // INT8, SELECT
+  union {
+  uint8_t max;          // INT8, SELECT
+  uint8_t infoOffset;   // COMMAND, paramData info offset
+  };
   uint8_t id;
 });
 
@@ -75,10 +78,7 @@ static constexpr uint16_t BUFFER_SIZE = 512;
 static uint8_t *buffer = &reusableBuffer.cToolData[0];
 static uint16_t bufferOffset = 0;
 
-// last POPUP_MSG_MAX_LEN of PARAM_DATA_TAIL_SIZE are reused for popup message
 static constexpr uint8_t PARAM_DATA_TAIL_SIZE = 40; // max popup packet size
-static constexpr uint8_t POPUP_MSG_MAX_LEN = 24; // popup hard limit = 24
-static constexpr uint8_t POPUP_MSG_OFFSET = PARAM_DATA_TAIL_SIZE - POPUP_MSG_MAX_LEN;
 
 static uint8_t *paramData = &reusableBuffer.cToolData[BUFFER_SIZE];
 static uint8_t paramDataLen = 0;
@@ -96,10 +96,12 @@ static uint8_t devicesLen = 0;
 static constexpr uint8_t backButtonId = 100;
 static constexpr uint8_t otherDevicesId = 101;
 
-#define BTN_NONE 0
-#define BTN_REQUESTED 1
-#define BTN_ADDED 2
-static uint8_t otherDevicesState = BTN_NONE;
+enum {
+  BTN_NONE,
+  BTN_BACK,
+  BTN_DEVICES,
+};
+static uint8_t btnState = BTN_NONE;
 
 static uint8_t deviceId = 0xEE;
 static uint8_t handsetId = 0xEF;
@@ -194,7 +196,7 @@ static void crossfireTelemetryPing(){
 static void clearParams() {
 //  TRACE("clearParams %d", allocatedParamsCount);
   memclear(params, PARAMS_SIZE);
-  otherDevicesState = BTN_NONE;
+  btnState = BTN_NONE;
   allocatedParamsCount = 0;
 }
 
@@ -205,6 +207,7 @@ static void addBackButton() {
   backBtnParam.nameLength = 1; // mark as present
   backBtnParam.type = TYPE_BACK;
   storeParam(&backBtnParam);
+  btnState = BTN_BACK;
 }
 
 static void addOtherDevicesButton() {
@@ -213,7 +216,7 @@ static void addOtherDevicesButton() {
   otherDevicesParam.nameLength = 1;
   otherDevicesParam.type = TYPE_DEVICES_FOLDER;
   storeParam(&otherDevicesParam);
-  otherDevicesState = BTN_ADDED;
+  btnState = BTN_DEVICES;
 }
 
 static void reloadAllParam() {
@@ -455,10 +458,9 @@ static void noopDisplay(Parameter * param, uint8_t y, uint8_t attr) {}
 static void paramCommandLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   param->status = data[offset];
   param->timeout = data[offset+1];
+  param->infoOffset = offset+2; // do not copy info, access directly
   if (param->status == STEP_IDLE) {
     paramPopup = nullptr;
-  } else {
-    strncpy((char *)&paramData[POPUP_MSG_OFFSET], (char *)&data[offset+2], POPUP_MSG_MAX_LEN);
   }
 }
 
@@ -524,7 +526,7 @@ static void paramDeviceIdSelect(Parameter * param) {
 static void parseDeviceInfoMessage(uint8_t* data) {
   uint8_t offset;
   uint8_t id = data[2];
-// TRACE("parseDev:%x folder:%d, expect:%d, devs:%d", id, currentFolderId, expectedParamsCount, devicesLen);
+// TRACE("parseDev:%x, exp:%d, devs:%d", id, expectedParamsCount, devicesLen);
   offset = strlen((char*)&data[3]) + 1 + 3;
   if (!isExistingDevice(id)) {
     deviceIds[devicesLen] = id;
@@ -540,8 +542,6 @@ static void parseDeviceInfoMessage(uint8_t* data) {
       storeParam(&deviceParam);
       if (devicesLen == expectedParamsCount) { // was it the last one?
         allParamsLoaded = 1;
-        paramId = 1;
-        addBackButton();
       }
     }
   }
@@ -558,8 +558,6 @@ static void parseDeviceInfoMessage(uint8_t* data) {
       if (newParamCount == 0) {
       // This device has no params so the Loading code never starts
         allParamsLoaded = 1;
-        paramId = 1;
-        addBackButton();
       }
     }
   }
@@ -625,12 +623,6 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
   if (paramDataLen == 0 && data[5] != currentFolderId) {
     if (paramId == expectedParamsCount) {
       allParamsLoaded = 1;
-      paramId = 1;
-      if (currentFolderId == 0) {
-        otherDevicesState = BTN_REQUESTED;
-      } else {
-        addBackButton();
-      }
     }
     paramChunk = 0;
     paramId++;
@@ -679,12 +671,6 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
     if (paramPopup == nullptr) {
       if (paramId == expectedParamsCount) { // if we have loaded all params
         allParamsLoaded = 1;
-        paramId = 1;
-        if (currentFolderId == 0) {
-          otherDevicesState = BTN_REQUESTED;
-        } else {
-          addBackButton();
-        }
       } else if (allParamsLoaded == 0) {
         paramId++; // paramId = 1 + (paramId % (paramsLen-1));
       }
@@ -725,6 +711,14 @@ static void refreshNextCallback(uint8_t command, uint8_t* data, uint8_t length) 
   } else if (command == CRSF_FRAMETYPE_ELRS_STATUS) {
     parseElrsInfoMessage(data);
   }
+
+  if (btnState == BTN_NONE && allParamsLoaded) {
+    if (currentFolderId == 0) {
+      if (devicesLen > 1) addOtherDevicesButton();
+    } else {
+      addBackButton();
+    }
+  }
 }
 
 static void refreshNext() {
@@ -764,20 +758,19 @@ static void lcd_title() {
     char * tmpString = tmp;
     tmpString = strAppendUnsigned(tmpString, linkstat.bad);
     tmpString = strAppendStringWithIndex(tmpString, "/", linkstat.good);
-    strAppend(tmpString, (linkstat.flags & 1) ? "   C" : "   -");
-    lcdDrawText(LCD_W - 1, 1, tmp, RIGHT);
+    lcdDrawText(LCD_W - 11, 1, tmp, RIGHT);
     lcdDrawVerticalLine(LCD_W - 10, 0, barHeight, SOLID, INVERS);
+    lcdDrawChar(LCD_W - 7, 1, (linkstat.flags & 1) ? 'C' : '-');
   }
 
   lcdDrawFilledRect(0, 0, LCD_W, barHeight, SOLID);
   if (allParamsLoaded != 1 && expectedParamsCount > 0) {
     luaLcdDrawGauge(0, 1, COL2, barHeight, paramId, expectedParamsCount);
   } else {
-    if (titleShowWarn) {
-      lcdDrawSizedText(COL1, 1, elrsFlagsInfo, ELRS_FLAGS_INFO_MAX_LEN, INVERS);
-    } else {
-      lcdDrawSizedText(COL1, 1, (allParamsLoaded == 1) ? (char *)&deviceName[0] : "Loading...", DEVICE_NAME_MAX_LEN, INVERS);
-    }
+    const char* textToDisplay = titleShowWarn ? elrsFlagsInfo :
+                            (allParamsLoaded == 1) ? (char *)&deviceName[0] : "Loading...";
+    uint8_t textLen = titleShowWarn ? ELRS_FLAGS_INFO_MAX_LEN : DEVICE_NAME_MAX_LEN;
+    lcdDrawSizedText(COL1, 1, textToDisplay, textLen, INVERS);
   }
 }
 
@@ -869,9 +862,6 @@ static void runDevicePage(event_t event) {
 
   lcd_title();
 
-  if (devicesLen > 1 && otherDevicesState == BTN_REQUESTED) {
-    addOtherDevicesButton();
-  }
   if (linkstat.flags > 0x1F) {
     lcd_warn();
   } else {
@@ -893,7 +883,7 @@ static void runDevicePage(event_t event) {
 }
 
 static uint8_t popupCompat(event_t event) {
-  showMessageBox((char *)&paramData[POPUP_MSG_OFFSET]);
+  showMessageBox((char *)&paramData[paramPopup->infoOffset]);
   lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+4*FH+2, STR_POPUPS_ENTER_EXIT);
 
   if (event == EVT_VIRTUAL_EXIT) {
