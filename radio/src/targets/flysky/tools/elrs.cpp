@@ -399,6 +399,12 @@ static void paramFloatLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   unitLoad(param, data, offset + 17);
 }
 
+static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
+  uint8_t active = (edit && param->type == TYPE_STRING);
+  if (active) s_editMode = EDIT_MODIFY_FIELD;
+  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, currentEvent, active, attr);
+}
+
 static void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
   if (param->valuesLength == 0) {
@@ -444,10 +450,6 @@ static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr
   }
   lcdDrawSizedText(COL2, y, (char *)&buffer[valuesOffset + startOffset], len, attr);
   unitDisplay(param, y, param->offset + param->nameLength + param->valuesLength);
-}
-
-static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, currentEvent, attr, (edit && param->type == TYPE_STRING));
 }
 
 static void paramFolderOpen(Parameter * param) {
@@ -837,7 +839,7 @@ static void handleDevicePageEvent(event_t event) {
       Parameter * param = getParam(lineIndex);
       if (param != 0 && param->nameLength > 0) {
         if (param->type == TYPE_STRING) {
-          ; // not implemented
+          edit = 1 - edit;
         } else if (param->type < TYPE_FOLDER) {
           edit = 1 - edit;
         }
@@ -881,9 +883,8 @@ static void handleDevicePageEvent(event_t event) {
 }
 
 static void runDevicePage(event_t event) {
-  handleDevicePageEvent(event);
-
   currentEvent = event;
+  handleDevicePageEvent(event);
 
   lcd_title();
 
@@ -934,13 +935,13 @@ static void runPopupPage(event_t event) {
     result = popupCompat(event);
     paramPopup->lastStatus = paramPopup->status;
     if (result == RESULT_OK) {
-      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, STEP_CONFIRMED); // lcsConfirmed
+      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, STEP_CONFIRMED);
       paramTimeout = getTime() + paramPopup->timeout; // we are expecting an immediate response
       paramPopup->status = STEP_CONFIRMED;
     } else if (result == RESULT_CANCEL) {
       paramPopup = nullptr;
     }
-  } else if (paramPopup->status == STEP_EXECUTING) { // running
+  } else if (paramPopup->status == STEP_EXECUTING) {
     result = popupCompat(event);
     paramPopup->lastStatus = paramPopup->status;
     if (result == RESULT_CANCEL) {
