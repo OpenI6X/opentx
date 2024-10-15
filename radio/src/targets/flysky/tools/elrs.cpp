@@ -838,9 +838,7 @@ static void handleDevicePageEvent(event_t event) {
     } else {
       Parameter * param = getParam(lineIndex);
       if (param != 0 && param->nameLength > 0) {
-        if (param->type == TYPE_STRING) {
-          edit = 1 - edit;
-        } else if (param->type < TYPE_FOLDER) {
+        if (param->type < TYPE_FOLDER) {
           edit = 1 - edit;
         }
         if (!edit) {
