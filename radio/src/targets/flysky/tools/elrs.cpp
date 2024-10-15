@@ -400,9 +400,8 @@ static void paramFloatLoad(Parameter * param, uint8_t * data, uint8_t offset) {
 }
 
 static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  uint8_t active = (edit && param->type == TYPE_STRING);
-  if (active) s_editMode = EDIT_MODIFY_FIELD;
-  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, currentEvent, active, attr);
+  s_editMode = (edit && param->type == TYPE_STRING) ? EDIT_MODIFY_FIELD : 0;
+  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, currentEvent, attr, 0);
 }
 
 static void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
