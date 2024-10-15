@@ -294,9 +294,10 @@ static Parameter * getParam(const uint8_t line) {
 
 static void incrParam(int32_t step) {
   Parameter * param = getParam(lineIndex);
-  int32_t value, min, max;
-  if (param->type <= TYPE_INT8) {
-    param->value = limit<int32_t>(param->min, param->value + step, param->max);
+  int32_t value, min = 0, max;
+  if (param->type <= TYPE_INT8 || param->type == TYPE_SELECT) {
+    if (param->type <= TYPE_INT8) min = param->min;
+    param->value = limit<int32_t>(min, param->value + step, param->max);
   } else if (param->type <= TYPE_INT16 || param->type == TYPE_FLOAT) {
     value = paramGetValue(param, 0);
     min = getMin(param);
@@ -304,8 +305,6 @@ static void incrParam(int32_t step) {
     if (param->type == TYPE_FLOAT) step *= getStep(param);
     value = limit<int32_t>(min, value + step, max);
     paramSetValue(param, value);
-  } else if (param->type == TYPE_SELECT) {
-    param->value = limit<int32_t>(0, param->value + step, param->max);
   }
 }
 
