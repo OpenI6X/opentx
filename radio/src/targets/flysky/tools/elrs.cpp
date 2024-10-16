@@ -185,19 +185,17 @@ static void resetParamData() {
   paramDataLen = 0;
 }
 
-static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t value) {
-  // TRACE("crsf cmd %x %x %x", cmd, index, value);
-  uint8_t crsfPushData[4] = { deviceId, handsetId, index, value };
-  crossfireTelemetryPush(cmd, crsfPushData, sizeof(crsfPushData));
-}
-
 static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t * data, const uint8_t size) {
-  // TRACE("crsf cmd %x %x %x", cmd, index, value);
+  // TRACE("crsf cmd %x %x %x", cmd, index, size);
   uint8_t crsfPushData[3 + size] = { deviceId, handsetId, index };
   for (uint32_t i = 0; i < size; i++) {
     crsfPushData[3 + i] = data[i];
   }
   crossfireTelemetryPush(cmd, crsfPushData, sizeof(crsfPushData));
+}
+
+static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t value) {
+  crossfireTelemetryCmd(cmd, index, &value, 1);
 }
 
 static void crossfireTelemetryPing(){
