@@ -75,12 +75,10 @@ extern "C" {
 }
 #endif
 
-#if defined(STM32F0)
 #define VECTOR_TABLE_SIZE (48)                    // 31 positive vectors, 0 vector, 7 negative vectors and 9 extra
 #define SYSCFG_CFGR1_MEM_MODE__MAIN_FLASH      0  // x0: Main Flash memory mapped at 0x0000 0000
 #define SYSCFG_CFGR1_MEM_MODE__SYSTEM_FLASH    1  // 01: System Flash memory mapped at 0x0000 0000
 #define SYSCFG_CFGR1_MEM_MODE__SRAM            3  // 11: Embedded SRAM mapped at 0x0000 0000
-#endif
 
 #define FLASHSIZE                       0x20000  // 128 kb
 #define BOOTLOADER_SIZE                 0x4000   //  16 kb
@@ -92,17 +90,13 @@ extern "C" {
 #define PERI1_FREQUENCY               48000000
 #define PERI2_FREQUENCY               48000000
 
-#define TIMER_MULT_APB1                 1 //2
-#define TIMER_MULT_APB2                 1 //2
-
-#define strcpy_P strcpy
-#define strcat_P strcat
+#define TIMER_MULT_APB1                 1
+#define TIMER_MULT_APB2                 1
 
 #define BATTERY_WARN                  45 // 4.5V
 #define BATTERY_MIN                   43 // 4.3V
 #define BATTERY_MAX                   60 // 6.0V
 
-//maybe bind?
 #define IS_SHIFT_KEY(index)             (false)
 #define IS_SHIFT_PRESSED()              (false)
 

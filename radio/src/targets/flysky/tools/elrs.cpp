@@ -129,7 +129,7 @@ static uint8_t expectedParamsCount = 0;
 
 static tmr10ms_t devicesRefreshTimeout = 50;
 static uint8_t allParamsLoaded = 0;
-static uint8_t currentFolderId = 0; // folder id
+static uint8_t currentFolderId = 0;
 static int8_t expectedChunks = -1;
 static uint8_t deviceIsELRS_TX = 0;
 static tmr10ms_t linkstatTimeout = 100;
@@ -434,10 +434,8 @@ static void paramTextSelectionLoad(Parameter * param, uint8_t * data, uint8_t of
   uint8_t len = strlen((char*)&data[offset]);
   param->value = data[offset + len + 1];
   param->max = data[offset + len + 3];
-  if (param->valuesLength == 0) {
-    bufferPush((char*)&data[offset], len);
-    param->valuesLength = len;
-  }
+  bufferPush((char*)&data[offset], len);
+  param->valuesLength = len;
   unitLoad(param, data, offset + len + 5);
 }
 
@@ -517,11 +515,10 @@ static void paramUnifiedDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   } else if (param->type == TYPE_DEVICES_FOLDER) {
     strAppend(tmpString, "> Other Devices");
     textIndent = COL1;
-  } else if (param->type == TYPE_BACK) {
-    strAppend(tmpString, "[----BACK----]");
-  } else { // CMD || DEVICE
+  } else { // CMD || DEVICE || BACK
     tmpString = strAppend(tmpString, "[");
-    tmpString = strAppend(tmpString, (char *)&buffer[param->offset], param->nameLength);
+    if (param->type == TYPE_BACK) tmpString = strAppend(tmpString, "----BACK----");
+    else tmpString = strAppend(tmpString, (char *)&buffer[param->offset], param->nameLength);
     strAppend(tmpString, "]");
   }
   lcdDrawText(textIndent, y, tmp, attr | BOLD);
@@ -789,7 +786,7 @@ static void lcd_title() {
     char tmp[16];
     char * tmpString = tmp;
     tmpString = strAppendUnsigned(tmpString, linkstat.bad);
-    tmpString = strAppendStringWithIndex(tmpString, "/", linkstat.good);
+    strAppendStringWithIndex(tmpString, "/", linkstat.good);
     lcdDrawText(LCD_W - 11, 1, tmp, RIGHT);
     lcdDrawVerticalLine(LCD_W - 10, 0, barHeight, SOLID, INVERS);
     lcdDrawChar(LCD_W - 7, 1, (linkstat.flags & 1) ? 'C' : '-');
