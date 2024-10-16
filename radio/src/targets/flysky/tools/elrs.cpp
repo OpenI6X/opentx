@@ -136,6 +136,7 @@ static tmr10ms_t linkstatTimeout = 100;
 static uint8_t titleShowWarn = 0;
 static tmr10ms_t titleShowWarnTimeout = 100;
 
+static constexpr uint8_t STRING_LEN_MAX = 10; // without trailing \0
 static event_t currentEvent;
 
 static constexpr uint8_t COL1          =  0;
@@ -400,21 +401,35 @@ static void paramFloatLoad(Parameter * param, uint8_t * data, uint8_t offset) {
 }
 
 static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  s_editMode = (edit && param->type == TYPE_STRING) ? EDIT_MODIFY_FIELD : 0;
-  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, currentEvent, attr, 0);
+  s_editMode = edit; // (edit) ? EDIT_MODIFY_FIELD : 0;
+  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, currentEvent, attr);
+  // unitDisplay(param, y, param->offset + param->nameLength + STRING_LEN_MAX); // lastRightPos is broken after edit
+}
+
+static void paramInfoDisplay(Parameter * param, uint8_t y, uint8_t attr) {
+  lcdDrawSizedText(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, attr);
 }
 
 static void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
   if (param->valuesLength == 0) {
-    bufferPush((char*)&data[offset], len);
-    param->valuesLength = len;
+    char tmp[STRING_LEN_MAX];
+    memset(tmp, 0, STRING_LEN_MAX);
+    str2zchar(tmp, (char*)&data[offset], len);
+    bufferPush(tmp, STRING_LEN_MAX);
+    param->valuesLength = STRING_LEN_MAX;
   }
-  unitLoad(param, data, offset + len + 1);
+  // unitLoad(param, data, offset + len + 1);
 }
 
 static void paramMultibyteSave(Parameter * param) {
   crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, &buffer[param->offset + param->nameLength], param->valuesLength);
+}
+
+static void paramStringSave(Parameter * param) {
+  char tmp[STRING_LEN_MAX + 1];
+  zchar2str(tmp, (char*)&buffer[param->offset + param->nameLength], STRING_LEN_MAX);
+  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, (uint8_t *)&tmp, strlen(tmp) + 1);
 }
 
 // TEXT SELECTION
@@ -596,9 +611,9 @@ static const ParamFunctions functions[] = {
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8
   { .load=paramFloatLoad, .save=paramMultibyteSave, .display=paramFloatDisplay }, // 9 FLOAT(8)
   { .load=paramTextSelectionLoad, .save=paramInt8Save, .display=paramTextSelectionDisplay }, // 10 TEXT SELECTION(9)
-  { .load=paramStringLoad, .save=paramMultibyteSave, .display=paramStringDisplay }, // 11 STRING(10) editing
+  { .load=paramStringLoad, .save=paramStringSave, .display=paramStringDisplay }, // 11 STRING(10) editing
   { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // 12 FOLDER(11)
-  { .load=paramStringLoad, .save=noopSave, .display=paramStringDisplay }, // 13 INFO(12)
+  { .load=paramTextSelectionLoad, .save=noopSave, .display=paramInfoDisplay }, // 13 INFO(12)
   { .load=paramCommandLoad, .save=paramCommandSave, .display=paramUnifiedDisplay }, // 14 COMMAND(13)
   { .load=noopLoad, .save=paramBackExec, .display=paramUnifiedDisplay }, // 15 back(14)
   { .load=noopLoad, .save=paramDeviceIdSelect, .display=paramUnifiedDisplay }, // 16 device(15)
