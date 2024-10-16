@@ -402,7 +402,7 @@ static void paramFloatLoad(Parameter * param, uint8_t * data, uint8_t offset) {
 
 static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   s_editMode = edit; // (edit) ? EDIT_MODIFY_FIELD : 0;
-  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, currentEvent, attr);
+  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], STRING_LEN_MAX, currentEvent, attr);
   // unitDisplay(param, y, param->offset + param->nameLength + STRING_LEN_MAX); // lastRightPos is broken after edit
 }
 
@@ -412,13 +412,10 @@ static void paramInfoDisplay(Parameter * param, uint8_t y, uint8_t attr) {
 
 static void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
-  if (param->valuesLength == 0) {
-    char tmp[STRING_LEN_MAX];
-    memset(tmp, 0, STRING_LEN_MAX);
-    str2zchar(tmp, (char*)&data[offset], len);
-    bufferPush(tmp, STRING_LEN_MAX);
-    param->valuesLength = STRING_LEN_MAX;
-  }
+  char tmp[STRING_LEN_MAX];
+  memset(tmp, 0, STRING_LEN_MAX);
+  str2zchar(tmp, (char*)&data[offset], len);
+  bufferPush(tmp, STRING_LEN_MAX);
   // unitLoad(param, data, offset + len + 1);
 }
 
