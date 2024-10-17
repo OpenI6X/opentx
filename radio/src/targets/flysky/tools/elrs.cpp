@@ -49,7 +49,7 @@ PACK(struct Parameter {
   union {
     uint8_t min;          // INT8
     uint8_t timeout;      // COMMAND
-    uint8_t valuesLength; // SELECT, min always 0, INT16 size, FLOAT size
+    uint8_t valuesLength; // SELECT, min always 0, INT16/FLOAT size
   };
   union {
     uint8_t unitLength;
@@ -58,7 +58,6 @@ PACK(struct Parameter {
   union {
     uint8_t value;
     uint8_t status;       // COMMAND, must be alias to value, because save expects it!
-    uint8_t prec;         // FLOAT
   };
   uint8_t type;
   union {
@@ -280,10 +279,6 @@ static int32_t getMax(Parameter * param) {
   return paramGetValue(param, 2 * param->valuesLength);
 }
 
-static uint32_t getStep(Parameter * param) {
-  return paramGetValue(param, 3 * 4);
-}
-
 /**
  * Get param from line index taking only loaded current folder params into account.
  */
@@ -297,11 +292,10 @@ static void incrParam(int32_t step) {
   if (param->type <= TYPE_INT8 || param->type == TYPE_SELECT) {
     if (param->type <= TYPE_INT8) min = param->min;
     param->value = limit<int32_t>(min, param->value + step, param->max);
-  } else if (param->type <= TYPE_INT16 || param->type == TYPE_FLOAT) {
+  } else if (param->type <= TYPE_INT16) {
     value = paramGetValue(param, 0);
     min = getMin(param);
     max = getMax(param);
-    if (param->type == TYPE_FLOAT) step *= getStep(param);
     value = limit<int32_t>(min, value + step, max);
     paramSetValue(param, value);
   }
@@ -372,36 +366,16 @@ static void paramInt8Save(Parameter * param) {
   crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->value);
 }
 
-static void paramInt16Load(Parameter * param, uint8_t * data, uint8_t offset) {
+static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   param->valuesLength = 2;
   bufferPush((char *)&data[offset + 0], 2 + 2 + 2); // value + min + max at once
   unitLoad(param, data, offset + 8);
 }
 
-static void paramFloatDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  char tmpString[12];
-  strAppendSigned(tmpString, paramGetValue(param, 0), param->prec + 1);
-  if (param->prec > 0) { // insert dot
-    uint8_t pos = strlen(tmpString) - param->prec;
-    memmove(&tmpString[pos + 1], &tmpString[pos], param->prec + 1);
-    tmpString[pos] = '.';
-  }
-  lcdDrawText(COL2, y, tmpString, attr);
-  unitDisplay(param, y, param->offset + param->nameLength + 4 * 4);
-}
-
-static void paramFloatLoad(Parameter * param, uint8_t * data, uint8_t offset) {
-  bufferPush((char *)&data[offset + 0], 4 + 4 + 4); // value + min + max at once
-  param->prec = data[offset + 12];
-  param->valuesLength = 4;
-  bufferPush((char *)&data[offset + 13], 4); // step
-  unitLoad(param, data, offset + 17);
-}
-
 static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   s_editMode = edit; // (edit) ? EDIT_MODIFY_FIELD : 0;
   editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], STRING_LEN_MAX, currentEvent, attr);
-  // unitDisplay(param, y, param->offset + param->nameLength + STRING_LEN_MAX); // lastRightPos is broken after edit
+  // unitDisplay(param, y, param->offset + param->nameLength + STRING_LEN_MAX);
 }
 
 static void paramInfoDisplay(Parameter * param, uint8_t y, uint8_t attr) {
@@ -595,13 +569,13 @@ static const ParamFunctions noopFunctions = { .load=noopLoad, .save=noopSave, .d
 static const ParamFunctions functions[] = {
   { .load=paramInt8Load, .save=paramInt8Save, .display=paramIntegerDisplay }, // 1 UINT8(0)
   { .load=paramInt8Load, .save=paramInt8Save, .display=paramIntegerDisplay }, // 2 INT8(1)
-  { .load=paramInt16Load, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // 3 UINT16(2)
-  { .load=paramInt16Load, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // 4  INT16(3)
+  { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // 3 UINT16(2)
+  { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // 4  INT16(3)
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 5
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 6
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 7
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8
-  { .load=paramFloatLoad, .save=paramMultibyteSave, .display=paramFloatDisplay }, // 9 FLOAT(8)
+  // { .load=paramFloatLoad, .save=paramMultibyteSave, .display=paramFloatDisplay }, // 9 FLOAT(8)
   { .load=paramTextSelectionLoad, .save=paramInt8Save, .display=paramTextSelectionDisplay }, // 10 TEXT SELECTION(9)
   { .load=paramStringLoad, .save=paramStringSave, .display=paramStringDisplay }, // 11 STRING(10) editing
   { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // 12 FOLDER(11)
@@ -614,8 +588,8 @@ static const ParamFunctions functions[] = {
 
 static ParamFunctions getFunctions(uint32_t i) {
   if (i > TYPE_INT16) {
-    if (i < TYPE_FLOAT) return noopFunctions; // guard against not implemented types
-    i -= 4;
+    if (i < TYPE_SELECT) return noopFunctions; // guard against not implemented types
+    i -= 5;
   }
   return functions[i];
 }
