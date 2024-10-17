@@ -2,8 +2,6 @@
  * ExpressLRS V3 configurator for i6X based on elrsV2/3.lua
  * @author Jan Kozak (ajjjjjjjj)
  *
- * Limitations vs elrsV3.lua:
- * - no int16, float, string params support, but not used by ExpressLRS anyway,
  */
 #include "opentx.h"
 
@@ -38,13 +36,20 @@ enum COMMAND_STEP {
 #define CRSF_FRAMETYPE_PARAMETER_WRITE 0x2D
 #define CRSF_FRAMETYPE_ELRS_STATUS 0x2E
 
+/**
+ * INT16 and FLOAT support:
+ * Values (val,min,max[,step]) are keep in buffer after name.
+ * prec - how many digits in fractional part.
+ * FLOAT: { VALUE 4B | MIN 4B | MAX 4B | STEP 4B } = 16B
+ * INT16: { VALUE 2B | MIN 2B | MAX 2B } =  6B
+*/
 PACK(struct Parameter {
   uint16_t offset;
   uint8_t nameLength;
   union {
     uint8_t min;          // INT8
     uint8_t timeout;      // COMMAND
-    uint8_t valuesLength; // SELECT, min always 0
+    uint8_t valuesLength; // SELECT, min always 0, INT16/FLOAT size
   };
   union {
     uint8_t unitLength;
@@ -130,6 +135,9 @@ static tmr10ms_t linkstatTimeout = 100;
 static uint8_t titleShowWarn = 0;
 static tmr10ms_t titleShowWarnTimeout = 100;
 
+static constexpr uint8_t STRING_LEN_MAX = 10; // without trailing \0
+static event_t currentEvent;
+
 static constexpr uint8_t COL1          =  0;
 static constexpr uint8_t COL2          = 70;
 static constexpr uint8_t maxLineIndex  =  6;
@@ -176,10 +184,17 @@ static void resetParamData() {
   paramDataLen = 0;
 }
 
-static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t value) {
-  // TRACE("crsf cmd %x %x %x", cmd, index, value);
-  uint8_t crsfPushData[4] = { deviceId, handsetId, index, value };
+static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t * data, const uint8_t size) {
+  // TRACE("crsf cmd %x %x %x", cmd, index, size);
+  uint8_t crsfPushData[3 + size] = { deviceId, handsetId, index };
+  for (uint32_t i = 0; i < size; i++) {
+    crsfPushData[3 + i] = data[i];
+  }
   crossfireTelemetryPush(cmd, crsfPushData, sizeof(crsfPushData));
+}
+
+static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t value) {
+  crossfireTelemetryCmd(cmd, index, &value, 1);
 }
 
 static void crossfireTelemetryPing(){
@@ -242,6 +257,28 @@ static void storeParam(Parameter * param) {
   memcpy(storedParam, param, sizeof(Parameter));
 }
 
+static uint32_t paramGetValue(Parameter * param, uint16_t offset) {
+  uint32_t result = 0;
+  for (uint32_t i = 0; i < param->valuesLength; i++) {
+    result = (result << 8) + buffer[param->offset + param->nameLength + offset + i];
+  }
+  return result;
+}
+
+static void paramSetValue(Parameter * param, int32_t value) {
+  for (uint32_t i = 0; i < param->valuesLength; i++) {
+    buffer[param->offset + param->nameLength + i] = (uint8_t)((value >> (8 * i)) & 0xFF);
+  }
+}
+
+static int32_t getMin(Parameter * param) {
+  return paramGetValue(param, 1 * param->valuesLength);
+}
+
+static int32_t getMax(Parameter * param) {
+  return paramGetValue(param, 2 * param->valuesLength);
+}
+
 /**
  * Get param from line index taking only loaded current folder params into account.
  */
@@ -249,17 +286,19 @@ static Parameter * getParam(const uint8_t line) {
   return &params[line - 1];
 }
 
-static void incrParam(int8_t step) {
+static void incrParam(int32_t step) {
   Parameter * param = getParam(lineIndex);
-  int32_t min = 0, max = 0;
-  if (param->type <= TYPE_INT8) {
-    min = param->min;
-    max = param->max;
-  } else if (param->type == TYPE_SELECT) {
-//    min = 0;
-    max = param->max;
+  int32_t value, min = 0, max;
+  if (param->type <= TYPE_INT8 || param->type == TYPE_SELECT) {
+    if (param->type <= TYPE_INT8) min = param->min;
+    param->value = limit<int32_t>(min, param->value + step, param->max);
+  } else if (param->type <= TYPE_INT16) {
+    value = paramGetValue(param, 0);
+    min = getMin(param);
+    max = getMax(param);
+    value = limit<int32_t>(min, value + step, max);
+    paramSetValue(param, value);
   }
-  param->value = limit<int32_t>(min, param->value + step, max);
 }
 
 static void selectParam(int8_t step) {
@@ -303,10 +342,17 @@ static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
   lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[offset], param->unitLength, 0);
 }
 
-// UINT8
-static void paramIntegerDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  lcdDrawNumber(COL2, y, param->value, attr);
-  unitDisplay(param, y, param->offset + param->nameLength);
+static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
+    uint16_t value;
+    if (param->type == TYPE_UINT8 || param->type == TYPE_INT8) {
+        value = (uint8_t)param->value;
+    } else {
+        value = (uint16_t)paramGetValue(param, 0);
+    }
+    lcdDrawNumber(COL2, y, (param->type == TYPE_UINT8) ? (uint8_t)value :
+                          (param->type == TYPE_INT8)  ? (int8_t)value :
+                          (param->type == TYPE_UINT16) ? (uint16_t)value : (int16_t)value, attr);
+    unitDisplay(param, y, param->offset + param->nameLength + (param->type >= TYPE_UINT16 ? 6 : 0));
 }
 
 static void paramInt8Load(Parameter * param, uint8_t * data, uint8_t offset) {
@@ -320,10 +366,42 @@ static void paramInt8Save(Parameter * param) {
   crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->value);
 }
 
+static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+  param->valuesLength = 2;
+  bufferPush((char *)&data[offset + 0], 2 + 2 + 2); // value + min + max at once
+  unitLoad(param, data, offset + 8);
+}
+
+static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
+  s_editMode = edit; // (edit) ? EDIT_MODIFY_FIELD : 0;
+  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], STRING_LEN_MAX, currentEvent, attr);
+  // unitDisplay(param, y, param->offset + param->nameLength + STRING_LEN_MAX);
+}
+
+static void paramInfoDisplay(Parameter * param, uint8_t y, uint8_t attr) {
+  lcdDrawSizedText(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, attr);
+}
+
+static void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+  uint8_t len = strlen((char*)&data[offset]);
+  char tmp[STRING_LEN_MAX];
+  memset(tmp, 0, STRING_LEN_MAX);
+  str2zchar(tmp, (char*)&data[offset], len);
+  bufferPush(tmp, STRING_LEN_MAX);
+  // unitLoad(param, data, offset + len + 1);
+}
+
+static void paramMultibyteSave(Parameter * param) {
+  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, &buffer[param->offset + param->nameLength], param->valuesLength);
+}
+
+static void paramStringSave(Parameter * param) {
+  char tmp[STRING_LEN_MAX + 1];
+  zchar2str(tmp, (char*)&buffer[param->offset + param->nameLength], STRING_LEN_MAX);
+  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, (uint8_t *)&tmp, strlen(tmp) + 1);
+}
+
 // TEXT SELECTION
-/**
- * Reused also for INFO params value (i.e. commit sha) for 0 flash cost
- */
 static void paramTextSelectionLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
   param->value = data[offset + len + 1];
@@ -353,10 +431,6 @@ static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr
   }
   lcdDrawSizedText(COL2, y, (char *)&buffer[valuesOffset + startOffset], len, attr);
   unitDisplay(param, y, param->offset + param->nameLength + param->valuesLength);
-}
-
-static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  lcdDrawSizedText(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, attr);
 }
 
 static void paramFolderOpen(Parameter * param) {
@@ -494,18 +568,18 @@ static const ParamFunctions noopFunctions = { .load=noopLoad, .save=noopSave, .d
 
 static const ParamFunctions functions[] = {
   { .load=paramInt8Load, .save=paramInt8Save, .display=paramIntegerDisplay }, // 1 UINT8(0)
-  // { .load=noopLoad, .save=noopSave, .display=paramIntegerDisplay }, // 2 INT8(1)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 3 UINT16(2)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 4 INT16(3)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 5 UINT32(4)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 6 INT32(5)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 7 UINT64(6)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8 INT64(7)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 9 FLOAT(8)
+  { .load=paramInt8Load, .save=paramInt8Save, .display=paramIntegerDisplay }, // 2 INT8(1)
+  { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // 3 UINT16(2)
+  { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // 4  INT16(3)
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 5
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 6
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 7
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8
+  // { .load=paramFloatLoad, .save=paramMultibyteSave, .display=paramFloatDisplay }, // 9 FLOAT(8)
   { .load=paramTextSelectionLoad, .save=paramInt8Save, .display=paramTextSelectionDisplay }, // 10 TEXT SELECTION(9)
-  { .load=noopLoad, .save=noopSave, .display=paramStringDisplay }, // 11 STRING(10) editing
+  { .load=paramStringLoad, .save=paramStringSave, .display=paramStringDisplay }, // 11 STRING(10) editing
   { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // 12 FOLDER(11)
-  { .load=paramTextSelectionLoad, .save=noopSave, .display=paramStringDisplay }, // 13 INFO(12)
+  { .load=paramTextSelectionLoad, .save=noopSave, .display=paramInfoDisplay }, // 13 INFO(12)
   { .load=paramCommandLoad, .save=paramCommandSave, .display=paramUnifiedDisplay }, // 14 COMMAND(13)
   { .load=noopLoad, .save=paramBackExec, .display=paramUnifiedDisplay }, // 15 back(14)
   { .load=noopLoad, .save=paramDeviceIdSelect, .display=paramUnifiedDisplay }, // 16 device(15)
@@ -513,9 +587,9 @@ static const ParamFunctions functions[] = {
 };
 
 static ParamFunctions getFunctions(uint32_t i) {
-  if (i > TYPE_UINT8) {
+  if (i > TYPE_INT16) {
     if (i < TYPE_SELECT) return noopFunctions; // guard against not implemented types
-    i -= 8;
+    i -= 5;
   }
   return functions[i];
 }
@@ -694,7 +768,7 @@ static void lcd_title() {
   if (allParamsLoaded != 1 && expectedParamsCount > 0) {
     luaLcdDrawGauge(0, 1, COL2, barHeight, paramId, expectedParamsCount);
   } else {
-    const char* textToDisplay = titleShowWarn ? elrsFlagsInfo : 
+    const char* textToDisplay = titleShowWarn ? elrsFlagsInfo :
                             (allParamsLoaded == 1) ? (char *)&deviceName[0] : "Loading...";
     uint8_t textLen = titleShowWarn ? ELRS_FLAGS_INFO_MAX_LEN : DEVICE_NAME_MAX_LEN;
     lcdDrawSizedText(COL1, 1, textToDisplay, textLen, INVERS);
@@ -768,6 +842,9 @@ static void handleDevicePageEvent(event_t event) {
       }
     }
   } else if (edit) {
+    if (param->type == TYPE_STRING) {
+      return;
+    }
     if (event == EVT_VIRTUAL_NEXT) {
       incrParam(1);
     } else if (event == EVT_VIRTUAL_PREV) {
@@ -783,6 +860,7 @@ static void handleDevicePageEvent(event_t event) {
 }
 
 static void runDevicePage(event_t event) {
+  currentEvent = event;
   handleDevicePageEvent(event);
 
   lcd_title();
