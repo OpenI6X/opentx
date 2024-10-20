@@ -660,7 +660,7 @@ static void parseElrsInfoMessage(uint8_t* data) {
   }
 
   linkstat.bad = data[3];
-  linkstat.good = (data[4] << 8) + data[5];
+  linkstat.good = paramGetValue(&data[4], 2);
   uint8_t newFlags = data[6];
   // If flags are changing, reset the warning timeout to display/hide message immediately
   if (newFlags != linkstat.flags) {
