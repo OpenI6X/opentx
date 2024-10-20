@@ -22,7 +22,6 @@
 #define RX_EN            0b00000001
 #define TXRX_OFF         0b00000011
 #define AFHDS2A_NUMFREQ	 16
-#define RADIO_PPM_CENTER 1500
 
 #define AFHDS2A_TXPACKET_SIZE 38
 #define AFHDS2A_RXPACKET_SIZE 37

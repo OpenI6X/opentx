@@ -109,9 +109,9 @@ void AFHDS2A_build_packet(const uint8_t type) {
 #if defined(AFHDS2A_LQI_CH)
         const uint16_t channelMicros = (ch == (AFHDS2A_LQI_CH - 1)) ? 
                                            (1000 + 10 * telemetryData.rssi.value) : 
-                                           (channelOutputs[ch] / 2 + RADIO_PPM_CENTER);
+                                           (channelOutputs[ch] / 2 + 2*PPM_CH_CENTER(ch) - 2*PPM_CENTER);
 #else
-        const uint16_t channelMicros = channelOutputs[ch] / 2 + RADIO_PPM_CENTER;
+        const uint16_t channelMicros = channelOutputs[ch] / 2 + 2*PPM_CH_CENTER(ch) - 2*PPM_CENTER;
 #endif
         if (ch < 14) {
             packet[9 + ch * 2] = channelMicros & 0xFF;
@@ -128,7 +128,7 @@ void AFHDS2A_build_packet(const uint8_t type) {
       for (uint8_t ch = 0; ch < num_ch; ch++) {
         if (g_model.moduleData[INTERNAL_MODULE].failsafeMode == FAILSAFE_CUSTOM &&
             g_model.moduleData[INTERNAL_MODULE].failsafeChannels[ch] < FAILSAFE_CHANNEL_HOLD) {
-          const uint16_t failsafeMicros = g_model.moduleData[INTERNAL_MODULE].failsafeChannels[ch] / 2 + RADIO_PPM_CENTER;
+          const uint16_t failsafeMicros = g_model.moduleData[INTERNAL_MODULE].failsafeChannels[ch] / 2 + 2*PPM_CH_CENTER(ch) - 2*PPM_CENTER;
           packet[9 + ch * 2] = failsafeMicros & 0xff;
           packet[10 + ch * 2] = (failsafeMicros >> 8) & 0xff;
         } else {  // no values
