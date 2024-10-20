@@ -402,7 +402,7 @@ static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr
     return;
   }
   lcdDrawSizedText(COL2, y, (char *)&buffer[valuesOffset + startOffset], len, attr);
-  unitDisplay(param, y, param->offset + param->nameLength + 2 /* min, max */ + valuesLen + 1);
+  unitDisplay(param, y, valuesOffset + 2 /* min, max */ + valuesLen + 1);
 }
 
 static void paramFolderOpen(Parameter * param) {
