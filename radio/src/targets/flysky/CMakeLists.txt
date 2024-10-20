@@ -3,7 +3,7 @@ option(PCBI6X_ELRS "Enable ExpressLRS configuration tool" NO) # ~4.1kB
 option(PCBI6X_HELLO "Enable Hello World example tool" NO)
 option(PCBI6X_INAV "Enable INAV Lite telemetry screen" NO) # ~2kB
 option(PCBI6X_USB_VBUS "Remove manual USB connection, just auto using VBUS, requires wiring USB VBUS to PA15 pad" NO)
-option(AFHDS2A_LQI_CH "Send RSSI at channel 1-17" 17)
+option(AFHDS2A_LQI_CH "Send RSSI at channel 1-17" OFF)
 option(DFPLAYER "Enables DFPlayer on AUX3 TX" NO) # ~1.7kB
 option(FAKE_RSSI "Enables converting TRSS to RSSI data for receivers not sending RSSI" NO)
 
@@ -37,10 +37,9 @@ if(PCB STREQUAL I6X)
   add_definitions(-DAFHDS2A)
 endif()
 
-if(NOT AFHDS2A_LQI_CH)
-  set(AFHDS2A_LQI_CH 17)
+if(NOT AFHDS2A_LQI_CH STREQUAL OFF)
+  add_definitions(-DAFHDS2A_LQI_CH=${AFHDS2A_LQI_CH})
 endif()
-add_definitions(-DAFHDS2A_LQI_CH=${AFHDS2A_LQI_CH})
 
 if(PCBI6X_USB_VBUS STREQUAL YES)
   add_definitions(-DPCBI6X_USB_VBUS)

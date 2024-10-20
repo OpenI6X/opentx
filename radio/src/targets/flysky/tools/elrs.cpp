@@ -2,8 +2,6 @@
  * ExpressLRS V3 configurator for i6X based on elrsV2/3.lua
  * @author Jan Kozak (ajjjjjjjj)
  *
- * Limitations vs elrsV3.lua:
- * - no int16, float, string params support, but not used by ExpressLRS anyway,
  */
 #include "opentx.h"
 
@@ -38,29 +36,29 @@ enum COMMAND_STEP {
 #define CRSF_FRAMETYPE_PARAMETER_WRITE 0x2D
 #define CRSF_FRAMETYPE_ELRS_STATUS 0x2E
 
-PACK(struct Parameter {
+/**
+ * INT16 and FLOAT support:
+ * Values (val,min,max[,step]) are keep in buffer after name.
+ * prec - how many digits in fractional part.
+ * FLOAT: { VALUE 4B | MIN 4B | MAX 4B | STEP 4B } = 16B
+ * INT16: { VALUE 2B | MIN 2B | MAX 2B } =  6B
+*/
+struct Parameter {
   uint16_t offset;
-  uint8_t nameLength;
-  union {
-    uint8_t min;          // INT8
-    uint8_t timeout;      // COMMAND
-    uint8_t valuesLength; // SELECT, min always 0
-  };
-  union {
-    uint8_t unitLength;
-    uint8_t lastStatus;   // COMMAND
-  };
-  union {
-    uint8_t value;
-    uint8_t status;       // COMMAND, must be alias to value, because save expects it!
-  };
   uint8_t type;
-  union {
-  uint8_t max;          // INT8, SELECT
-  uint8_t infoOffset;   // COMMAND, paramData info offset
-  };
+  uint8_t nameLength;
+  uint8_t size;         // INT8/16/FLOAT/SELECT size
   uint8_t id;
-});
+  union {
+    int16_t value;
+    struct {
+      uint8_t timeout;      // COMMAND
+      uint8_t lastStatus;   // COMMAND
+      uint8_t status;       // COMMAND
+      uint8_t infoOffset;   // COMMAND, paramData info offset
+    };
+  };
+};
 
 struct ParamFunctions {
   void (*load)(Parameter*, uint8_t *, uint8_t);
@@ -77,7 +75,7 @@ static constexpr uint8_t PARAM_DATA_TAIL_SIZE = 40; // max popup packet size
 static uint8_t *paramData = &reusableBuffer.cToolData[BUFFER_SIZE];
 static uint8_t paramDataLen = 0;
 
-static constexpr uint8_t PARAMS_MAX_COUNT = 16;
+static constexpr uint8_t PARAMS_MAX_COUNT = 18;
 static constexpr uint8_t PARAMS_SIZE = PARAMS_MAX_COUNT * sizeof(Parameter);
 static Parameter *params = (Parameter *)&reusableBuffer.cToolData[BUFFER_SIZE + PARAM_DATA_TAIL_SIZE];
 static uint8_t allocatedParamsCount = 0;
@@ -130,6 +128,9 @@ static tmr10ms_t linkstatTimeout = 100;
 static uint8_t titleShowWarn = 0;
 static tmr10ms_t titleShowWarnTimeout = 100;
 
+static constexpr uint8_t STRING_LEN_MAX = 10; // without trailing \0
+static event_t currentEvent;
+
 static constexpr uint8_t COL1          =  0;
 static constexpr uint8_t COL2          = 70;
 static constexpr uint8_t maxLineIndex  =  6;
@@ -176,10 +177,17 @@ static void resetParamData() {
   paramDataLen = 0;
 }
 
-static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t value) {
-  // TRACE("crsf cmd %x %x %x", cmd, index, value);
-  uint8_t crsfPushData[4] = { deviceId, handsetId, index, value };
+static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t * data, const uint8_t size) {
+  // TRACE("crsf cmd %x %x %x", cmd, index, size);
+  uint8_t crsfPushData[3 + size] = { deviceId, handsetId, index };
+  for (uint32_t i = 0; i < size; i++) {
+    crsfPushData[3 + i] = data[i];
+  }
   crossfireTelemetryPush(cmd, crsfPushData, sizeof(crsfPushData));
+}
+
+static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t value) {
+  crossfireTelemetryCmd(cmd, index, &value, 1);
 }
 
 static void crossfireTelemetryPing(){
@@ -242,6 +250,22 @@ static void storeParam(Parameter * param) {
   memcpy(storedParam, param, sizeof(Parameter));
 }
 
+static int32_t paramGetValue(uint8_t * data, uint8_t size) {
+  int32_t result = 0;
+  for (uint32_t i = 0; i < size; i++) {
+    result = (result << 8) + data[i];
+  }
+  return result;
+}
+
+static int32_t paramGetMin(Parameter * param) {
+  return paramGetValue(&buffer[param->offset + param->nameLength + (0 * param->size)], param->size);
+}
+
+static int32_t paramGetMax(Parameter * param) {
+  return paramGetValue(&buffer[param->offset + param->nameLength + (1 * param->size)], param->size);
+}
+
 /**
  * Get param from line index taking only loaded current folder params into account.
  */
@@ -249,32 +273,35 @@ static Parameter * getParam(const uint8_t line) {
   return &params[line - 1];
 }
 
-static void incrParam(int8_t step) {
+static void incrParam(int32_t step) {
   Parameter * param = getParam(lineIndex);
-  int32_t min = 0, max = 0;
-  if (param->type <= TYPE_INT8) {
-    min = param->min;
-    max = param->max;
-  } else if (param->type == TYPE_SELECT) {
-//    min = 0;
-    max = param->max;
+  int32_t min, max;
+  if (param->type <= TYPE_INT16 || param->type == TYPE_SELECT) {
+    min = paramGetMin(param);
+    max = paramGetMax(param);
+    param->value = limit<int32_t>(min, param->value + step, max);
   }
-  param->value = limit<int32_t>(min, param->value + step, max);
 }
 
 static void selectParam(int8_t step) {
-  int32_t newLineIndex = lineIndex;
+  int32_t newLineIndex = lineIndex + step;
+
+  if (newLineIndex <= 0) {
+    newLineIndex = allocatedParamsCount;
+  } else if (newLineIndex > allocatedParamsCount) {
+    newLineIndex = 1;
+    pageOffset = 0;
+  }
+
   Parameter * param;
   do {
-    newLineIndex = newLineIndex + step;
-    if (newLineIndex <= 0) {
-      newLineIndex = allocatedParamsCount;
-    } else if (newLineIndex == 1 + allocatedParamsCount) {
-      newLineIndex = 1;
-      pageOffset = 0;
-    }
     param = getParam(newLineIndex);
-  } while (newLineIndex != lineIndex && (param == 0 || param->nameLength == 0));
+    if (param != 0 && param->nameLength != 0) break;  // Valid param found
+    newLineIndex = newLineIndex + step;
+    if (newLineIndex <= 0) newLineIndex = allocatedParamsCount;
+    if (newLineIndex > allocatedParamsCount) newLineIndex = 1;
+  } while (newLineIndex != lineIndex);
+
   lineIndex = newLineIndex;
   if (lineIndex > maxLineIndex + pageOffset) {
     pageOffset = lineIndex - maxLineIndex;
@@ -294,43 +321,71 @@ static bool isExistingDevice(uint8_t devId) {
 }
 
 static void unitLoad(Parameter * param, uint8_t * data, uint8_t offset) {
-  uint8_t unitLen = strlen((char*)&data[offset]);
-  param->unitLength = unitLen;
-  bufferPush((char*)&data[offset], unitLen);
+  uint8_t len = strlen((char*)&data[offset]) + 1;
+  bufferPush((char*)&data[offset], len);
 }
 
 static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
-  lcdDrawSizedText(lcdLastRightPos, y, (char *)&buffer[offset], param->unitLength, 0);
+  lcdDrawText(lcdLastRightPos, y, (char *)&buffer[offset]);
 }
 
-// UINT8
-static void paramIntegerDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  lcdDrawNumber(COL2, y, param->value, attr);
-  unitDisplay(param, y, param->offset + param->nameLength);
+static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
+    uint16_t value = param->value;
+    lcdDrawNumber(COL2, y, (param->type == TYPE_UINT8) ? (uint8_t)value :
+                          (param->type == TYPE_INT8)  ? (int8_t)value :
+                          (param->type == TYPE_UINT16) ? (uint16_t)value : (int16_t)value, attr);
+    unitDisplay(param, y, param->offset + param->nameLength + (2 * param->size));
 }
 
-static void paramInt8Load(Parameter * param, uint8_t * data, uint8_t offset) {
-  param->value = data[offset + 0];
-  param->min = data[offset + 1];
-  param->max = data[offset + 2];
-  unitLoad(param, data, offset + 4);
+static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+  uint8_t size = (param->type == TYPE_UINT16 || param->type == TYPE_INT16) ? 2 : 1;
+  param->size = size;
+  uint8_t valuesLen = 0;
+  if (param->type == TYPE_SELECT) {
+    valuesLen = strlen((char*)&data[offset]) + 1; // + \0
+  }
+  param->value = paramGetValue(&data[offset + valuesLen + (0 * size)], size);
+  bufferPush((char *)&data[offset + valuesLen + (1 * size)], 2 * size); // min + max at once
+  bufferPush((char*)&data[offset], valuesLen); // TYPE_SELECT values
+  unitLoad(param, data, offset + valuesLen + 4 * size);
 }
 
-static void paramInt8Save(Parameter * param) {
-  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->value);
+static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
+  s_editMode = edit; // (edit) ? EDIT_MODIFY_FIELD : 0;
+  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], STRING_LEN_MAX, currentEvent, attr);
+  // unitDisplay(param, y, param->offset + param->nameLength + STRING_LEN_MAX);
 }
 
-// TEXT SELECTION
-/**
- * Reused also for INFO params value (i.e. commit sha) for 0 flash cost
- */
-static void paramTextSelectionLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+static void paramInfoDisplay(Parameter * param, uint8_t y, uint8_t attr) {
+  lcdDrawText(COL2, y, (char *)&buffer[param->offset + param->nameLength], attr);
+}
+
+static void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
-  param->value = data[offset + len + 1];
-  param->max = data[offset + len + 3];
-  bufferPush((char*)&data[offset], len);
-  param->valuesLength = len;
-  unitLoad(param, data, offset + len + 5);
+  char tmp[STRING_LEN_MAX];
+  memset(tmp, 0, STRING_LEN_MAX);
+  str2zchar(tmp, (char*)&data[offset], len);
+  bufferPush(tmp, STRING_LEN_MAX);
+  // unitLoad(param, data, offset + len + 1);
+}
+
+static void paramMultibyteSave(Parameter * param) {
+  uint8_t data[4];
+  for (uint32_t i = 0; i < param->size; i++) {
+      data[i] = (uint8_t)((param->value >> (8 * i)) & 0xFF);
+    }
+  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, (uint8_t *)&data, param->size);
+}
+
+static void paramStringSave(Parameter * param) {
+  char tmp[STRING_LEN_MAX + 1];
+  zchar2str(tmp, (char*)&buffer[param->offset + param->nameLength], STRING_LEN_MAX);
+  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, (uint8_t *)&tmp, strlen(tmp) + 1);
+}
+
+static void paramInfoLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+  uint8_t len = strlen((char*)&data[offset]) + 1;
+  bufferPush((char*)&data[offset], len); // info + \0
 }
 
 static uint8_t findNthItemPos(const char * str, uint8_t nth, uint8_t len) {
@@ -344,19 +399,16 @@ static uint8_t findNthItemPos(const char * str, uint8_t nth, uint8_t len) {
 }
 
 static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  const uint16_t valuesOffset = param->offset + param->nameLength;
-  uint8_t startOffset = findNthItemPos((char *)&buffer[valuesOffset], param->value, param->valuesLength);
-  uint8_t len = findNthItemPos((char *)&buffer[valuesOffset + startOffset], 1, param->valuesLength - startOffset) - 1;
-  if (startOffset >= param->valuesLength) {
+  const uint16_t valuesOffset = param->offset + param->nameLength + 2 /* min, max */;
+  uint8_t valuesLen = strlen((char*)&buffer[valuesOffset]);
+  uint8_t startOffset = findNthItemPos((char *)&buffer[valuesOffset], param->value, valuesLen);
+  uint8_t len = findNthItemPos((char *)&buffer[valuesOffset + startOffset], 1, valuesLen - startOffset) - 1;
+  if (startOffset >= valuesLen) {
     lcdDrawText(COL2, y, "ERR", attr);
     return;
   }
   lcdDrawSizedText(COL2, y, (char *)&buffer[valuesOffset + startOffset], len, attr);
-  unitDisplay(param, y, param->offset + param->nameLength + param->valuesLength);
-}
-
-static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  lcdDrawSizedText(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->valuesLength, attr);
+  unitDisplay(param, y, valuesOffset + valuesLen + 1);
 }
 
 static void paramFolderOpen(Parameter * param) {
@@ -395,9 +447,9 @@ static void paramCommandLoad(Parameter * param, uint8_t * data, uint8_t offset) 
 static void paramCommandSave(Parameter * param) {
   if (param->status < STEP_CONFIRMED) {
     param->status = STEP_CLICK;
-    paramInt8Save(param); //crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->status);
+    crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->status);
     paramPopup = param;
-    paramPopup->lastStatus = 0;
+    paramPopup->lastStatus = STEP_IDLE;
     paramTimeout = getTime() + param->timeout;
   }
 }
@@ -493,31 +545,28 @@ static void parseDeviceInfoMessage(uint8_t* data) {
 static const ParamFunctions noopFunctions = { .load=noopLoad, .save=noopSave, .display=noopDisplay };
 
 static const ParamFunctions functions[] = {
-  { .load=paramInt8Load, .save=paramInt8Save, .display=paramIntegerDisplay }, // 1 UINT8(0)
-  // { .load=noopLoad, .save=noopSave, .display=paramIntegerDisplay }, // 2 INT8(1)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 3 UINT16(2)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 4 INT16(3)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 5 UINT32(4)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 6 INT32(5)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 7 UINT64(6)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 8 INT64(7)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // 9 FLOAT(8)
-  { .load=paramTextSelectionLoad, .save=paramInt8Save, .display=paramTextSelectionDisplay }, // 10 TEXT SELECTION(9)
-  { .load=noopLoad, .save=noopSave, .display=paramStringDisplay }, // 11 STRING(10) editing
-  { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // 12 FOLDER(11)
-  { .load=paramTextSelectionLoad, .save=noopSave, .display=paramStringDisplay }, // 13 INFO(12)
-  { .load=paramCommandLoad, .save=paramCommandSave, .display=paramUnifiedDisplay }, // 14 COMMAND(13)
-  { .load=noopLoad, .save=paramBackExec, .display=paramUnifiedDisplay }, // 15 back(14)
-  { .load=noopLoad, .save=paramDeviceIdSelect, .display=paramUnifiedDisplay }, // 16 device(15)
-  { .load=noopLoad, .save=paramFolderDeviceOpen, .display=paramUnifiedDisplay }, // 17 deviceFOLDER(16)
+  { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay },    // UINT8(0), common integer
+  // { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // INT8(1)
+  // { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // UINT16(2)
+  // { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // INT16(3)
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay },
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay },
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay },
+  // { .load=noopLoad, .save=noopSave, .display=noopDisplay },
+  { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // { .load=paramFloatLoad, .save=paramMultibyteSave, .display=paramFloatDisplay }, // FLOAT(8)
+  { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramTextSelectionDisplay }, // SELECT(9)
+  { .load=paramStringLoad, .save=paramStringSave, .display=paramStringDisplay }, // STRING(10) editing
+  { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // FOLDER(11)
+  { .load=paramInfoLoad, .save=noopSave, .display=paramInfoDisplay }, // INFO(12)
+  { .load=paramCommandLoad, .save=paramCommandSave, .display=paramUnifiedDisplay }, // COMMAND(13)
+  { .load=noopLoad, .save=paramBackExec, .display=paramUnifiedDisplay }, // back(14)
+  { .load=noopLoad, .save=paramDeviceIdSelect, .display=paramUnifiedDisplay }, // device(15)
+  { .load=noopLoad, .save=paramFolderDeviceOpen, .display=paramUnifiedDisplay }, // deviceFOLDER(16)
 };
 
 static ParamFunctions getFunctions(uint32_t i) {
-  if (i > TYPE_UINT8) {
-    if (i < TYPE_SELECT) return noopFunctions; // guard against not implemented types
-    i -= 8;
-  }
-  return functions[i];
+  if (i <= TYPE_INT16) return functions[0];
+  else return functions[i - 7];
 }
 
 static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
@@ -617,7 +666,7 @@ static void parseElrsInfoMessage(uint8_t* data) {
   }
 
   linkstat.bad = data[3];
-  linkstat.good = (data[4] << 8) + data[5];
+  linkstat.good = paramGetValue(&data[4], 2);
   uint8_t newFlags = data[6];
   // If flags are changing, reset the warning timeout to display/hide message immediately
   if (newFlags != linkstat.flags) {
@@ -694,7 +743,7 @@ static void lcd_title() {
   if (allParamsLoaded != 1 && expectedParamsCount > 0) {
     luaLcdDrawGauge(0, 1, COL2, barHeight, paramId, expectedParamsCount);
   } else {
-    const char* textToDisplay = titleShowWarn ? elrsFlagsInfo : 
+    const char* textToDisplay = titleShowWarn ? elrsFlagsInfo :
                             (allParamsLoaded == 1) ? (char *)&deviceName[0] : "Loading...";
     uint8_t textLen = titleShowWarn ? ELRS_FLAGS_INFO_MAX_LEN : DEVICE_NAME_MAX_LEN;
     lcdDrawSizedText(COL1, 1, textToDisplay, textLen, INVERS);
@@ -768,6 +817,9 @@ static void handleDevicePageEvent(event_t event) {
       }
     }
   } else if (edit) {
+    if (param->type == TYPE_STRING) {
+      return;
+    }
     if (event == EVT_VIRTUAL_NEXT) {
       incrParam(1);
     } else if (event == EVT_VIRTUAL_PREV) {
@@ -783,6 +835,7 @@ static void handleDevicePageEvent(event_t event) {
 }
 
 static void runDevicePage(event_t event) {
+  currentEvent = event;
   handleDevicePageEvent(event);
 
   lcd_title();
