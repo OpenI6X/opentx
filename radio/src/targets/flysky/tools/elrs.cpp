@@ -284,18 +284,24 @@ static void incrParam(int32_t step) {
 }
 
 static void selectParam(int8_t step) {
-  int32_t newLineIndex = lineIndex;
+  int32_t newLineIndex = lineIndex + step;
+
+  if (newLineIndex <= 0) {
+    newLineIndex = allocatedParamsCount;
+  } else if (newLineIndex > allocatedParamsCount) {
+    newLineIndex = 1;
+    pageOffset = 0;
+  }
+
   Parameter * param;
   do {
-    newLineIndex = newLineIndex + step;
-    if (newLineIndex <= 0) {
-      newLineIndex = allocatedParamsCount;
-    } else if (newLineIndex == 1 + allocatedParamsCount) {
-      newLineIndex = 1;
-      pageOffset = 0;
-    }
     param = getParam(newLineIndex);
-  } while (newLineIndex != lineIndex && (param == 0 || param->nameLength == 0));
+    if (param != 0 && param->nameLength != 0) break;  // Valid param found
+    newLineIndex = newLineIndex + step;
+    if (newLineIndex <= 0) newLineIndex = allocatedParamsCount;
+    if (newLineIndex > allocatedParamsCount) newLineIndex = 1;
+  } while (newLineIndex != lineIndex);
+
   lineIndex = newLineIndex;
   if (lineIndex > maxLineIndex + pageOffset) {
     pageOffset = lineIndex - maxLineIndex;
@@ -339,8 +345,8 @@ static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) 
     valuesLen = strlen((char*)&data[offset]) + 1; // + \0
   }
   param->value = paramGetValue(&data[offset + valuesLen + (0 * size)], size);
-   bufferPush((char *)&data[offset + valuesLen + (1 * size)], 2 * size); // [value +] min + max at once
-  bufferPush((char*)&data[offset], valuesLen);
+  bufferPush((char *)&data[offset + valuesLen + (1 * size)], 2 * size); // min + max at once
+  bufferPush((char*)&data[offset], valuesLen); // TYPE_SELECT values
   unitLoad(param, data, offset + valuesLen + 4 * size);
 }
 
@@ -402,7 +408,7 @@ static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr
     return;
   }
   lcdDrawSizedText(COL2, y, (char *)&buffer[valuesOffset + startOffset], len, attr);
-  unitDisplay(param, y, valuesOffset + 2 /* min, max */ + valuesLen + 1);
+  unitDisplay(param, y, valuesOffset + valuesLen + 1);
 }
 
 static void paramFolderOpen(Parameter * param) {
