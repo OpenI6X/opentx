@@ -50,7 +50,10 @@ struct Parameter {
   uint8_t size;         // INT8/16/FLOAT/SELECT size
   uint8_t id;
   union {
-    int16_t value;
+    union {
+      int16_t value;
+      uint8_t maxlen;   // STRING
+    };
     struct {
       uint8_t timeout;      // COMMAND
       uint8_t lastStatus;   // COMMAND
@@ -127,7 +130,7 @@ static tmr10ms_t linkstatTimeout = 100;
 static uint8_t titleShowWarn = 0;
 static tmr10ms_t titleShowWarnTimeout = 100;
 
-static constexpr uint8_t STRING_LEN_MAX = 10; // without trailing \0
+static constexpr uint8_t STRING_LEN_MAX = 15; // without trailing \0
 static event_t currentEvent;
 
 static constexpr uint8_t COL1          =  0;
@@ -348,7 +351,7 @@ static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) 
 }
 
 static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], STRING_LEN_MAX, currentEvent, attr);
+  editName(COL2, y, (char *)&buffer[param->offset + param->nameLength], param->maxlen, currentEvent, attr);
   // unitDisplay(param, y, param->offset + param->nameLength + STRING_LEN_MAX);
 }
 
@@ -358,10 +361,11 @@ static void paramInfoDisplay(Parameter * param, uint8_t y, uint8_t attr) {
 
 static void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]);
+  if (len) param->maxlen = data[offset + len + 1];
   char tmp[STRING_LEN_MAX];
   memset(tmp, 0, STRING_LEN_MAX);
   str2zchar(tmp, (char*)&data[offset], len);
-  bufferPush(tmp, STRING_LEN_MAX);
+  bufferPush(tmp, param->maxlen);
 }
 
 static void paramMultibyteSave(Parameter * param) {
