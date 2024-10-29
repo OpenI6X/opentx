@@ -32,12 +32,14 @@ void (*popupMenuHandler)(const char * result);
 
 const char * runPopupMenu(event_t event)
 {
-  const char * result = NULL;
+  const char * result = nullptr;
 
   uint8_t display_count = min<uint8_t>(popupMenuItemsCount, MENU_MAX_DISPLAY_LINES);
-  uint8_t y = (display_count >= 5 ? MENU_Y - FH - 1 : MENU_Y);
-  lcdDrawFilledRect(MENU_X, y, MENU_W, display_count * (FH+1) + 2, SOLID, ERASE);
-  lcdDrawRect(MENU_X, y, MENU_W, display_count * (FH+1) + 2);
+  uint8_t y = LCD_H / 2 - 3 - (display_count * FH / 2);
+
+  lcdDrawFilledRect(MENU_X - 1, y - 1, MENU_W + 2, display_count * (FH+1) + 4, SOLID, ERASE);
+  
+  lcdDrawRect(MENU_X, y, MENU_W, display_count * (FH+1) + 2, SOLID, FORCE);
 
   for (uint8_t i=0; i<display_count; i++) {
     lcdDrawText(MENU_X+6, i*(FH+1) + y + 2, popupMenuItems[i+(popupMenuOffsetType == MENU_OFFSET_INTERNAL ? popupMenuOffset : 0)], 0);
