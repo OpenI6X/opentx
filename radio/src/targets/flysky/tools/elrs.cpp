@@ -551,8 +551,6 @@ static void parseDeviceInfoMessage(uint8_t* data) {
   }
 }
 
-static const ParamFunctions noopFunctions = { .load=noopLoad, .save=noopSave, .display=noopDisplay };
-
 static const ParamFunctions functions[] = {
   { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay },    // UINT8(0), common integer
   // { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // INT8(1)
