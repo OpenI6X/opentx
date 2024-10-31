@@ -334,18 +334,18 @@ static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
 
 static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
     uint16_t value = param->value;
-    uint8_t precSize = 0;
+    uint8_t offset = param->offset + param->nameLength + (2 * param->size);
     if (param->type == TYPE_FLOAT) {
-      uint8_t prec = buffer[param->offset + param->nameLength + (2 * 4)];
+      uint8_t prec = buffer[offset];
       if (prec > 0) {
         attr |= (prec == 1 ? PREC1 : PREC2);
       }
-      precSize = 1;
+      offset += 1; // skip prec
     }
     lcdDrawNumber(COL2, y, (param->type == TYPE_UINT8) ? (uint8_t)value :
                           (param->type == TYPE_INT8)  ? (int8_t)value :
                           (param->type == TYPE_UINT16) ? (uint16_t)value : (int16_t)value, attr);
-    unitDisplay(param, y, param->offset + param->nameLength + (2 * param->size) + precSize);
+    unitDisplay(param, y, offset);
 }
 
 static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) {
