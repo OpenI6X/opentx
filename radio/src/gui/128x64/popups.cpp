@@ -54,7 +54,7 @@ void drawAlertBox(const char * title, const char * text, const char * action)
 
 #if defined(PCBI6X_ELRS) && defined(TRANSLATIONS_PT) // saves ~140B
   lcdDrawRect(2, 2, 32 - 4, 32 - 4);
-  lcdDrawText(11, 6, "x", DBLSIZE);
+  lcdDrawChar(11, 6, 'x', DBLSIZE);
 #else
   lcdDraw1bitBitmap(2, 0, ASTERISK_BITMAP, 0, 0);
 #endif
