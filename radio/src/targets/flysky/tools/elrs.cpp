@@ -344,7 +344,8 @@ static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
     }
     lcdDrawNumber(COL2, y, (param->type == TYPE_UINT8) ? (uint8_t)value :
                           (param->type == TYPE_INT8)  ? (int8_t)value :
-                          (param->type == TYPE_UINT16) ? (uint16_t)value : (int16_t)value, attr);
+                          (param->type == TYPE_UINT16) ? (uint16_t)value :
+                          (param->type == TYPE_INT16) ? (int16_t)value : (int32_t)value, attr);
     unitDisplay(param, y, offset);
 }
 
