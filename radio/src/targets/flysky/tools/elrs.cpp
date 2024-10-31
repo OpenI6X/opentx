@@ -267,6 +267,10 @@ static int32_t paramGetMax(Parameter * param) {
   return paramGetValue(&buffer[param->offset + param->nameLength + (1 * param->size)], param->size);
 }
 
+static uint32_t getStep(Parameter * param) {
+  return paramGetValue(&buffer[param->offset + param->nameLength + (2 * 4) + 1], 4);
+}
+
 /**
  * Get param from line index taking only loaded current folder params into account.
  */
@@ -330,10 +334,17 @@ static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
 
 static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
     uint16_t value = param->value;
+    uint8_t precFlag = 0;
+    uint8_t precSize = 0;
+    if (param->type == TYPE_FLOAT) {
+      uint8_t prec = buffer[param->offset + param->nameLength + (2 * 4)];
+      precFlag = (prec + 1) << 4; // convert to PREC1/2
+      precSize = 1;
+    }
     lcdDrawNumber(COL2, y, (param->type == TYPE_UINT8) ? (uint8_t)value :
                           (param->type == TYPE_INT8)  ? (int8_t)value :
-                          (param->type == TYPE_UINT16) ? (uint16_t)value : (int16_t)value, attr);
-    unitDisplay(param, y, param->offset + param->nameLength + (2 * param->size));
+                          (param->type == TYPE_UINT16) ? (uint16_t)value : (int16_t)value, attr | precFlag);
+    unitDisplay(param, y, param->offset + param->nameLength + (2 * param->size) + precSize);
 }
 
 static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) {
@@ -549,7 +560,7 @@ static const ParamFunctions functions[] = {
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay },
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay },
   // { .load=noopLoad, .save=noopSave, .display=noopDisplay },
-  { .load=noopLoad, .save=noopSave, .display=noopDisplay }, // { .load=paramFloatLoad, .save=paramMultibyteSave, .display=paramFloatDisplay }, // FLOAT(8)
+  // { .load=paramFloatLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // FLOAT(8)
   { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramTextSelectionDisplay }, // SELECT(9)
   { .load=paramStringLoad, .save=paramStringSave, .display=paramStringDisplay }, // STRING(10) editing
   { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // FOLDER(11)
@@ -561,8 +572,8 @@ static const ParamFunctions functions[] = {
 };
 
 static ParamFunctions getFunctions(uint32_t i) {
-  if (i <= TYPE_INT16) return functions[0];
-  else return functions[i - 7];
+  if (i <= TYPE_FLOAT) return functions[0];
+  else return functions[i - 8];
 }
 
 static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
