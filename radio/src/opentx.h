@@ -207,7 +207,7 @@
 #endif
 
 #if defined(PCBI6X_ELRS)
-#define CTOOL_DATA_SIZE (552 + 44 + 180 + 8) // 784
+#define CTOOL_DATA_SIZE (552 + 44 + 216 + 8) // 812
 #else
 #define CTOOL_DATA_SIZE 512 // minimize RAM usage for non PCBI6X_ELRS builds
 #endif
