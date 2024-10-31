@@ -51,8 +51,7 @@ struct Parameter {
   uint8_t id;
   union {
     union {
-      int16_t value;
-      // uint8_t maxlen;   // STRING
+      int32_t value;
     };
     struct {
       uint8_t timeout;      // COMMAND
@@ -351,15 +350,20 @@ static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
 
 static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   uint8_t size = (param->type == TYPE_UINT16 || param->type == TYPE_INT16) ? 2 : 1;
+  uint8_t loadSize = 2 * size; // min + max at once
+  if (param->type == TYPE_FLOAT) {
+    size = 4;
+    loadSize = 13; // min + max + prec + step at once
+  }
   param->size = size;
   uint8_t valuesLen = 0;
   if (param->type == TYPE_SELECT) {
     valuesLen = strlen((char*)&data[offset]) + 1; // + \0
   }
   param->value = paramGetValue(&data[offset + valuesLen + (0 * size)], size);
-  bufferPush((char *)&data[offset + valuesLen + (1 * size)], 2 * size); // min + max at once
+  bufferPush((char *)&data[offset + valuesLen + (1 * size)], loadSize); // min + max at once
   bufferPush((char*)&data[offset], valuesLen); // TYPE_SELECT values
-  unitLoad(param, data, offset + valuesLen + 4 * size);
+  unitLoad(param, data, offset + valuesLen + loadSize + 1 * size);
 }
 
 static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
