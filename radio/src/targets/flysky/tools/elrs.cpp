@@ -345,7 +345,7 @@ static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
 }
 
 static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) {
-  uint8_t size = (param->type == TYPE_UINT16 || param->type == TYPE_INT16) ? 2 : 1;
+  uint8_t size = (param->type <= TYPE_INT8) ? 1 : 2;
   uint8_t loadSize = 2 * size; // min + max at once
   if (param->type == TYPE_FLOAT) {
     size = 4;
