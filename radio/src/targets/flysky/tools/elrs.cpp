@@ -266,10 +266,6 @@ static int32_t paramGetMax(Parameter * param) {
   return paramGetValue(&buffer[param->offset + param->nameLength + (1 * param->size)], param->size);
 }
 
-static uint32_t getStep(Parameter * param) {
-  return paramGetValue(&buffer[param->offset + param->nameLength + (2 * 4) + 1], 4);
-}
-
 /**
  * Get param from line index taking only loaded current folder params into account.
  */
