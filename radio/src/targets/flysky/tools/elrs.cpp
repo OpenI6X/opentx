@@ -328,7 +328,7 @@ static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
 }
 
 static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
-    uint16_t value = param->value;
+    int32_t value = param->value;
     uint8_t offset = param->offset + param->nameLength + (2 * param->size);
     if (param->type == TYPE_FLOAT) {
       uint8_t prec = buffer[offset];
