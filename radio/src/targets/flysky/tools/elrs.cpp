@@ -442,7 +442,6 @@ static void paramFolderDeviceOpen(Parameter * param) {
 
 static void noopLoad(Parameter * param, uint8_t * data, uint8_t offset) {}
 static void noopSave(Parameter * param) {}
-static void noopDisplay(Parameter * param, uint8_t y, uint8_t attr) {}
 
 static void paramCommandLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   param->status = data[offset];
