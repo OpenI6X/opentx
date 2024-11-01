@@ -371,7 +371,7 @@ static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) 
   param->value = paramGetValue(&data[offset + valuesLen + (0 * size)], size);
   bufferPush((char *)&data[offset + valuesLen + (1 * size)], loadSize); // min + max at once
   bufferPush((char*)&data[offset], valuesLen); // TYPE_SELECT values
-  unitLoad(param, data, offset + valuesLen + loadSize + 1 * size);
+  unitLoad(param, data, offset + valuesLen + loadSize + 2 * size);
 }
 
 static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
