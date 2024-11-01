@@ -332,19 +332,25 @@ static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
 static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
     int32_t value = param->value;
     uint8_t offset = param->offset + param->nameLength + (2 * param->size);
-#if defined(ELRS_EXTENDED_TYPES)
     if (param->type == TYPE_FLOAT) {
+#if defined(ELRS_EXTENDED_TYPES)
       uint8_t prec = buffer[offset];
       if (prec > 0) {
         attr |= (prec == 1 ? PREC1 : PREC2);
       }
       offset += 1; // skip prec
-    }
+#else
+      return;
 #endif
+    }
     lcdDrawNumber(COL2, y, (param->type == TYPE_UINT8) ? (uint8_t)value :
                           (param->type == TYPE_INT8)  ? (int8_t)value :
                           (param->type == TYPE_UINT16) ? (uint16_t)value :
+#if defined(ELRS_EXTENDED_TYPES)
                           (param->type == TYPE_INT16) ? (int16_t)value : (int32_t)value, attr);
+#else
+                          (int16_t)value, attr);
+#endif
     unitDisplay(param, y, offset);
 }
 
