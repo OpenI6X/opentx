@@ -408,26 +408,30 @@ static void paramInfoLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   bufferPush((char*)&data[offset], len); // info + \0
 }
 
-static uint8_t findNthItemPos(const char * str, uint8_t nth, uint8_t len) {
-  uint8_t offset = 0, itemCount = 0;
-  while (offset < len) {
-    if (itemCount == nth) return offset;
-    if (str[offset] == ';') itemCount++;
-    offset++;
+static bool getSelectedOption(char * option, char * options, const uint8_t value) {
+  uint8_t current = 0;
+  while (*options != '\0') {
+    if (current == value) break;
+    if (*options++ == ';') current++;
   }
-  return offset + 1;
+  while (*options != ';' && *options != '\0') {
+    *option++ = *options++;
+  }
+ *option = '\0';
+  return (current == value);
 }
 
 static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   const uint16_t valuesOffset = param->offset + param->nameLength + 2 /* min, max */;
   uint8_t valuesLen = strlen((char*)&buffer[valuesOffset]);
-  uint8_t startOffset = findNthItemPos((char *)&buffer[valuesOffset], param->value, valuesLen);
-  uint8_t len = findNthItemPos((char *)&buffer[valuesOffset + startOffset], 1, valuesLen - startOffset) - 1;
-  if (startOffset >= valuesLen) {
-    lcdDrawText(COL2, y, "ERR", attr);
-    return;
+  char option[24];
+  if (!getSelectedOption(option, (char*)&buffer[valuesOffset], param->value)) {
+    option[0] = 'E';
+    option[1] = 'R';
+    option[2] = 'R';
+    option[3] = '\0';
   }
-  lcdDrawSizedText(COL2, y, (char *)&buffer[valuesOffset + startOffset], len, attr);
+  lcdDrawText(COL2, y, option, attr);
   unitDisplay(param, y, valuesOffset + valuesLen + 1);
 }
 
