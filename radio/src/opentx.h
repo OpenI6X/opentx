@@ -207,7 +207,11 @@
 #endif
 
 #if defined(PCBI6X_ELRS)
-#define CTOOL_DATA_SIZE (552 + 44 + 216 + 8) // 812
+#if defined(CRSF_EXTENDED_TYPES)
+#define CTOOL_DATA_SIZE (552 + 44 + 216 + 8) // 820
+#else
+#define CTOOL_DATA_SIZE (552 + 44 + 180 + 8) // 784
+#endif
 #else
 #define CTOOL_DATA_SIZE 512 // minimize RAM usage for non PCBI6X_ELRS builds
 #endif
