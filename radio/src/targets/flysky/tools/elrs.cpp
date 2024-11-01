@@ -50,9 +50,11 @@ struct Parameter {
   uint8_t size;         // INT8/16/FLOAT/SELECT size
   uint8_t id;
   union {
-    union {
-      int32_t value;
-    };
+#if defined(ELRS_EXTENDED_TYPES)
+    int32_t value;
+#else
+    int16_t value;
+#endif
     struct {
       uint8_t timeout;      // COMMAND
       uint8_t lastStatus;   // COMMAND
@@ -330,6 +332,7 @@ static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
 static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
     int32_t value = param->value;
     uint8_t offset = param->offset + param->nameLength + (2 * param->size);
+#if defined(ELRS_EXTENDED_TYPES)
     if (param->type == TYPE_FLOAT) {
       uint8_t prec = buffer[offset];
       if (prec > 0) {
@@ -337,6 +340,7 @@ static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
       }
       offset += 1; // skip prec
     }
+#endif
     lcdDrawNumber(COL2, y, (param->type == TYPE_UINT8) ? (uint8_t)value :
                           (param->type == TYPE_INT8)  ? (int8_t)value :
                           (param->type == TYPE_UINT16) ? (uint16_t)value :
@@ -347,10 +351,12 @@ static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
 static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   uint8_t size = (param->type == TYPE_UINT16 || param->type == TYPE_INT16) ? 2 : 1; // else INT8, SELECT
   uint8_t loadSize = 2 * size; // min + max at once
+#if defined(ELRS_EXTENDED_TYPES)
   if (param->type == TYPE_FLOAT) {
     size = 4;
     loadSize = 13; // min + max + prec + step at once
   }
+#endif
   param->size = size;
   uint8_t valuesLen = 0;
   if (param->type == TYPE_SELECT) {
@@ -366,22 +372,27 @@ static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   char * str = (char *)&buffer[param->offset + param->nameLength];
   if (param->type == TYPE_INFO) 
     lcdDrawText(COL2, y, str, attr);
-  else 
+#if defined(ELRS_EXTENDED_TYPES)
+  else
     editName(COL2, y, str, 10/* max len to fit screen */, currentEvent, attr);
+#endif
 }
-
 static void paramStringLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+#if defined(ELRS_EXTENDED_TYPES)
   uint8_t len = strlen((char*)&data[offset]);
   // if (len) param->maxlen = data[offset + len + 1];
   char tmp[STRING_LEN_MAX] = {0};
   str2zchar(tmp, (char*)&data[offset], len);
   bufferPush(tmp, STRING_LEN_MAX);
+#endif
 }
 
 static void paramStringSave(Parameter * param) {
+#if defined(ELRS_EXTENDED_TYPES)
   char tmp[STRING_LEN_MAX + 1];
   zchar2str(tmp, (char*)&buffer[param->offset + param->nameLength], STRING_LEN_MAX);
   crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, (uint8_t *)&tmp, strlen(tmp) + 1);
+#endif
 }
 
 static void paramMultibyteSave(Parameter * param) {
@@ -551,7 +562,7 @@ static void parseDeviceInfoMessage(uint8_t* data) {
 }
 
 static const ParamFunctions functions[] = {
-  { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay },    // UINT8(0), common integer
+  { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay },    // UINT8(0), common for INTs, FLOAT
   // { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // INT8(1)
   // { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // UINT16(2)
   // { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // INT16(3)
