@@ -277,10 +277,6 @@ void processFlySkyPacketAC(const uint8_t *packet) {
 }
 
 #if defined(AFHDS2A)
-
-void commonPutc(uint8_t c) {
-
-}
 /*
 packet[0] - type
 packet[1-4] - rx_tx_addr
