@@ -218,7 +218,11 @@ uint8_t *  USBD_USR_ProductStrDescriptor( uint8_t speed , uint16_t *length)
       USBD_GetString ((uint8_t*)USBD_HID_PRODUCT_FS_STRING, USBD_StrDesc, length);
       break;
 #if defined(USB_SERIAL)
+#if defined(DEBUG)
     case USB_SERIAL_MODE:
+#else
+    case USB_TELEMETRY_MIRROR_MODE:
+#endif
       USBD_GetString ((uint8_t*)USBD_CDC_PRODUCT_FS_STRING, USBD_StrDesc, length);
       break;
 #endif
@@ -272,7 +276,11 @@ uint8_t *  USBD_USR_ConfigStrDescriptor( uint8_t speed , uint16_t *length)
       USBD_GetString ((uint8_t*)USBD_HID_CONFIGURATION_FS_STRING, USBD_StrDesc, length);
       break;
 #if defined(USB_SERIAL)
+#if defined(DEBUG)
     case USB_SERIAL_MODE:
+#else
+    case USB_TELEMETRY_MIRROR_MODE:
+#endif
       USBD_GetString ((uint8_t*)USBD_CDC_CONFIGURATION_FS_STRING, USBD_StrDesc, length);
       break;
 #endif
@@ -300,7 +308,11 @@ uint8_t *  USBD_USR_InterfaceStrDescriptor( uint8_t speed , uint16_t *length)
       USBD_GetString ((uint8_t*)USBD_HID_INTERFACE_FS_STRING, USBD_StrDesc, length);
       break;
 #if defined(USB_SERIAL)
+#if defined(DEBUG)
     case USB_SERIAL_MODE:
+#else
+    case USB_TELEMETRY_MIRROR_MODE:
+#endif
       USBD_GetString ((uint8_t*)USBD_CDC_INTERFACE_FS_STRING, USBD_StrDesc, length);
       break;
 #endif
