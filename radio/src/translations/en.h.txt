@@ -991,6 +991,7 @@
 #define TR_USB_JOYSTICK                "USB Joystick"
 #define TR_USB_MASS_STORAGE            "USB Storage"
 #define TR_USB_SERIAL                  "USB Serial"
+#define TR_USB_TELEMETRY               "USB Telem mirror"
 #define TR_SETUP_SCREENS               "Setup screens"
 #define TR_MONITOR_SCREENS             "Monitors"
 #define TR_AND_SWITCH                  "AND switch"

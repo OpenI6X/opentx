@@ -59,6 +59,9 @@ void handleUsbConnection()
   #if defined(DEBUG) && !defined(PCBI6X)
         POPUP_MENU_ADD_ITEM(STR_USB_SERIAL);
   #endif
+  #if defined(USB_SERIAL)
+        POPUP_MENU_ADD_ITEM(STR_USB_TELEMETRY);
+  #endif
         POPUP_MENU_START(onUSBConnectMenu);
       }
       else {
