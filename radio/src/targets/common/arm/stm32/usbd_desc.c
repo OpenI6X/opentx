@@ -54,7 +54,8 @@
   * @{
   */
 
-#define USBD_VID                            0x0483
+#define USBD_VID_STM                        0x0483    // STM Vendor ID
+#define USBD_VID_PID_CODES                  0x1209    // https://pid.codes
 
 #define USBD_LANGID_STRING                  0x409
 #define USBD_MANUFACTURER_STRING            "OpenTX"
@@ -67,16 +68,18 @@
   #define USBD_MSC_PRODUCT_FS_STRING          USB_NAME " Mass Storage"
 #endif
 
+#define USBD_MSC_VID                        USBD_VID_PID_CODES
 #define USBD_MSC_PID                        0x5720
 #define USBD_MSC_CONFIGURATION_FS_STRING    "MSC Config"
 #define USBD_MSC_INTERFACE_FS_STRING        "MSC Interface"
 
-#define USBD_HID_VID                        0x1209  // https://pid.codes
+#define USBD_HID_VID                        USBD_VID_PID_CODES
 #define USBD_HID_PID                        0x4F54  // OpenTX assigned PID
 #define USBD_HID_PRODUCT_FS_STRING          USB_NAME " Joystick"
 #define USBD_HID_CONFIGURATION_FS_STRING    "HID Config"
 #define USBD_HID_INTERFACE_FS_STRING        "HID Interface"
 
+#define USBD_CDC_VID                        USBD_VID_STM
 #define USBD_CDC_PID                        0x5740      // do not change, this ID is used by the ST USB driver for Windows
 #define USBD_CDC_PRODUCT_FS_STRING          USB_NAME " Serial Port"
 #define USBD_CDC_CONFIGURATION_FS_STRING    "VSP Config"
@@ -129,21 +132,26 @@ __ALIGN_BEGIN uint8_t USBD_StrDesc[USB_MAX_STR_DESC_SIZ] __ALIGN_END ;	// modifi
 */
 uint8_t *  USBD_USR_DeviceDescriptor( uint8_t speed , uint16_t *length)
 {
-  int pid = 0;
-  int vid = USBD_VID;
+  int vid = 0, pid = 0;
 
   switch (getSelectedUsbMode()) {
     case USB_JOYSTICK_MODE:
-      pid = USBD_HID_PID;
       vid = USBD_HID_VID;
+      pid = USBD_HID_PID;
       break;
-#if !defined(PCBI6X)
+#if defined(USB_SERIAL)
+#if defined(DEBUG)
     case USB_SERIAL_MODE:
+#else
+    case USB_TELEMETRY_MIRROR_MODE:
+#endif
+      vid = USBD_CDC_VID;
       pid = USBD_CDC_PID;
       break;
 #endif
 #if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
     case USB_MASS_STORAGE_MODE:
+      vid = USBD_MSC_VID;
       pid = USBD_MSC_PID;
       break;
 #endif
