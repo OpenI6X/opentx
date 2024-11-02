@@ -298,7 +298,7 @@ void crossfireTelemetrySeekStart(uint8_t *rxBuffer, uint8_t &rxBufferCount)
 void processCrossfireTelemetryData(uint8_t data) {
 
 #if !defined(DEBUG) && defined(USB_SERIAL)
-  if (getSelectedUsbMode() == USB_TELEMETRY_MIRROR_MODE) {
+  if (getSelectedUsbMode() == USB_SERIAL_MODE) {
     usbSerialPutc(data);
   }
 #endif

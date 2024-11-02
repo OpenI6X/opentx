@@ -309,7 +309,7 @@ void processFlySkyTelemetryFrame(uint8_t * frame) {
 #endif
 
 #if !defined(DEBUG) && defined(USB_SERIAL)
-  if (getSelectedUsbMode() == USB_TELEMETRY_MIRROR_MODE) {
+  if (getSelectedUsbMode() == USB_SERIAL_MODE) {
     // usbSerialPutc(frame[0]);
   }
 #endif
