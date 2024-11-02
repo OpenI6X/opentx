@@ -308,6 +308,12 @@ void processFlySkyTelemetryFrame(uint8_t * frame) {
   rssiSensorPresent = false;
 #endif
 
+#if !defined(DEBUG) && defined(USB_SERIAL)
+  if (getSelectedUsbMode() == USB_TELEMETRY_MIRROR_MODE) {
+    // usbSerialPutc(frame[0]);
+  }
+#endif
+
 #if defined(AUX_SERIAL)
   if (g_eeGeneral.auxSerialMode == UART_MODE_TELEMETRY_MIRROR) {
     // header, add to packet before packet data
