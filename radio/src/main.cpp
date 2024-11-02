@@ -62,12 +62,13 @@ void handleUsbConnection()
   #if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
         POPUP_MENU_ADD_ITEM(STR_USB_MASS_STORAGE);
   #endif
+#if defined(USB_SERIAL)
   #if defined(DEBUG)
         POPUP_MENU_ADD_ITEM(STR_USB_SERIAL);
-  #endif
-  #if defined(USB_SERIAL)
+  #else
         POPUP_MENU_ADD_ITEM(STR_USB_TELEMETRY);
   #endif
+#endif
         POPUP_MENU_START(onUSBConnectMenu);
       }
       else {
