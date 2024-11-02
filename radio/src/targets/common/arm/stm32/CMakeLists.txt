@@ -4,7 +4,7 @@ set(LUA_SCRIPT_LOAD_MODE "" CACHE STRING "Script loading mode and compilation fl
 option(LUA_COMPILER "Pre-compile and save Lua scripts" OFF)
 option(LUA_ALLOCATOR_TRACER "Trace Lua memory (de)allocations to debug port (also needs DEBUG=YES NANO=NO)" OFF)
 
-option(USB_SERIAL "Enable USB serial (CDC)" OFF)
+option(USB_SERIAL "Enable USB serial (CDC)" OFF) # 1.1kB
 set(ARCH ARM)
 
 if(NOT CPU_TYPE STREQUAL STM32F0)
