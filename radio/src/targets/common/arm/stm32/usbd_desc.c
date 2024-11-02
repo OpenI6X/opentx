@@ -59,13 +59,13 @@
 
 #define USBD_LANGID_STRING                  0x409
 #define USBD_MANUFACTURER_STRING            "OpenTX"
-#define USBD_SERIALNUMBER_FS_STRING         "00000000001B"
+#define USBD_SERIALNUMBER_FS_STRING         "01"
 
 
 #if defined(BOOT)
   #define USBD_MSC_PRODUCT_FS_STRING          USB_NAME " Bootloader"
 #else
-  #define USBD_MSC_PRODUCT_FS_STRING          USB_NAME " Mass Storage"
+  #define USBD_MSC_PRODUCT_FS_STRING          USB_NAME " Storage"
 #endif
 
 #define USBD_MSC_VID                        USBD_VID_PID_CODES
@@ -81,7 +81,7 @@
 
 #define USBD_CDC_VID                        USBD_VID_STM
 #define USBD_CDC_PID                        0x5740      // do not change, this ID is used by the ST USB driver for Windows
-#define USBD_CDC_PRODUCT_FS_STRING          USB_NAME " Serial Port"
+#define USBD_CDC_PRODUCT_FS_STRING          USB_NAME " Serial"
 #define USBD_CDC_CONFIGURATION_FS_STRING    "VSP Config"
 #define USBD_CDC_INTERFACE_FS_STRING        "VSP Interface"
 
