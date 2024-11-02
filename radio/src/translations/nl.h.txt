@@ -110,7 +110,7 @@
 #define TR_COUNTRYCODES        TR("US""JP""EU", "Amerika""Japan\0 ""Europa\0")
 
 #define LEN_USBMODES           TR("\006", "\010")
-#if defined(PCBI6X)
+#if !defined(USB_SERIAL)
 #define TR_USBMODES                    TR("Ask\0  ""Joyst\0""Storag", "Ask\0    ""Joystick""Storage\0")
 #else
 #define TR_USBMODES            TR("Ask\0  ""Joyst\0""Storag""Serial", "Ask\0    ""Joystick""Storage\0""Serial\0 ")

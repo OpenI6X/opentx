@@ -27,11 +27,9 @@
 enum usbMode {
   USB_UNSELECTED_MODE,
   USB_JOYSTICK_MODE,
-#if defined(PCBI6X_USB_MSD)
   USB_MASS_STORAGE_MODE,
-#endif
-#if defined(USB_SERIAL)
   USB_SERIAL_MODE,
+#if defined(USB_SERIAL)
   USB_MAX_MODE=USB_SERIAL_MODE
 #else // no USB_SERIAL
 #if !defined(PCBI6X_USB_MSD)
