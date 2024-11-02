@@ -38,11 +38,17 @@ void onUSBConnectMenu(const char *result)
   if (result == STR_USB_JOYSTICK) {
     setSelectedUsbMode(USB_JOYSTICK_MODE);
   }
-#if !defined(PCBI6X)
+#if defined(USB_SERIAL)
+#if defined(DEBUG)
   else if (result == STR_USB_SERIAL) {
     setSelectedUsbMode(USB_SERIAL_MODE);
   }
+#else
+  else if (result == STR_USB_TELEMETRY) {
+    setSelectedUsbMode(USB_TELEMETRY_MIRROR_MODE);
+  }
 #endif
+#endif // USB_SERIAL
 }
 #endif
 
