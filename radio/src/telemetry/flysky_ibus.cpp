@@ -301,22 +301,14 @@ void processFlySkyTelemetryFrame(uint8_t * frame) {
   rssiSensorPresent = false;
 #endif
 
-#if !defined(DEBUG) && defined(USB_SERIAL)
-  if (getSelectedUsbMode() == USB_SERIAL_MODE) {
-      // header: MP[type][size][RSSI] followed by 4*7 bytes of telemetry data, skip rx and tx id
-      frame[4] = 'M';
-      frame[5] = 'P';
-      frame[6] = (frame[0] == 0xAA) ? 0x06 : 0x0C; // MPM telemetry types for AFHDS2A
-      frame[7] = AFHDS2A_RXPACKET_SIZE - 8;
-
-      for (uint8_t c = 4; c < AFHDS2A_RXPACKET_SIZE; c++) {
-        usbSerialPutc(frame[c]);
-      }
-    }
-#endif
-
+  if (false
 #if defined(AUX_SERIAL)
-  if (g_eeGeneral.auxSerialMode == UART_MODE_TELEMETRY_MIRROR) {
+    || (g_eeGeneral.auxSerialMode == UART_MODE_TELEMETRY_MIRROR)
+#endif
+#if !defined(DEBUG) && defined(USB_SERIAL)
+    ||(getSelectedUsbMode() == USB_SERIAL_MODE)
+#endif
+  ) {
     // header: MP[type][size][RSSI] followed by 4*7 bytes of telemetry data, skip rx and tx id
     frame[4] = 'M';
     frame[5] = 'P';
@@ -324,10 +316,14 @@ void processFlySkyTelemetryFrame(uint8_t * frame) {
     frame[7] = AFHDS2A_RXPACKET_SIZE - 8;
 
     for (uint8_t c = 4; c < AFHDS2A_RXPACKET_SIZE; c++) {
+#if defined(AUX_SERIAL)
       auxSerialPutc(frame[c]);
+#endif
+#if !defined(DEBUG) && defined(USB_SERIAL)
+      usbSerialPutc(frame[c]);
+#endif
     }
   }
-#endif
 }
 #endif // AFHDS2A
 
