@@ -62,7 +62,7 @@ void handleUsbConnection()
   #if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
         POPUP_MENU_ADD_ITEM(STR_USB_MASS_STORAGE);
   #endif
-  #if defined(DEBUG) && !defined(PCBI6X)
+  #if defined(DEBUG)
         POPUP_MENU_ADD_ITEM(STR_USB_SERIAL);
   #endif
   #if defined(USB_SERIAL)
