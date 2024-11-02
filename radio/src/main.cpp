@@ -485,7 +485,7 @@ void perMain()
   }
 #endif
 
-#if defined(STM32)
+#if defined(STM32) && defined(PCBI6X_USB_MSD)
   if (usbPlugged() && getSelectedUsbMode() == USB_MASS_STORAGE_MODE) {
     // disable access to menus
     lcdClear();
