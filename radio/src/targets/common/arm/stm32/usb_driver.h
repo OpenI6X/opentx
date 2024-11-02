@@ -27,15 +27,24 @@
 enum usbMode {
   USB_UNSELECTED_MODE,
   USB_JOYSTICK_MODE,
+#if defined(PCBI6X_USB_MSD)
   USB_MASS_STORAGE_MODE,
-  USB_SERIAL_MODE,
+#endif
 #if defined(USB_SERIAL)
-  USB_MAX_MODE = USB_SERIAL_MODE
-#elif defined(PCBI6X) && !defined(PCBI6X_USB_MSD)
+#if defined(DEBUG)
+  USB_SERIAL_MODE,
+  USB_MAX_MODE=USB_SERIAL_MODE
+#else
+  USB_TELEMETRY_MIRROR_MODE,
+  USB_MAX_MODE=USB_TELEMETRY_MIRROR_MODE
+#endif
+#else // no USB_SERIAL
+#if !defined(PCBI6X_USB_MSD)
   USB_MAX_MODE = USB_JOYSTICK_MODE
 #else
   USB_MAX_MODE = USB_MASS_STORAGE_MODE
 #endif
+#endif // USB_SERIAL
 };
 
 int usbPlugged();

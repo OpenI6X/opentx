@@ -86,13 +86,13 @@ endif()
 if(DEBUG OR CLI OR USB_SERIAL)
   set(STM32USB_SRC
     ${STM32USB_SRC}
-    # STM32_USB_Device_Library/Class/cdc/src/usbd_cdc_core.c
+    STM32_USB_Device_Library/Class/cdc/src/usbd_cdc_core.c
   )
   set(FIRMWARE_TARGET_SRC
     ${FIRMWARE_TARGET_SRC}
-    # ../common/arm/stm32/usbd_cdc.cpp
+    ../common/arm/stm32/usbd_cdc.cpp
   )
-  #add_definitions(-DUSB_SERIAL)
+  add_definitions(-DUSB_SERIAL)
 endif()
 set(STM32USB_SRC
   ${STM32USB_SRC}
