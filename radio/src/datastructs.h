@@ -453,6 +453,9 @@ PACK(struct ModuleData {
     NOBACKUP(struct {
       uint16_t servoFreq; // 50 - 400
     } afhds2a);
+    NOBACKUP(struct {
+      uint16_t crsfArmingModeAndTrigger; // 0 means crsfArmingMode CH5, Switch otherwise, or use last bit?
+    } crsf);
   };
 
   // Helper functions to set both of the rfProto protocol at the same time
