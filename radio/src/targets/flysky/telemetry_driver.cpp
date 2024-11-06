@@ -36,7 +36,7 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
 
   NVIC_InitTypeDef NVIC_InitStructure;
   NVIC_InitStructure.NVIC_IRQChannel = TELEMETRY_DMA_TX_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPriority = 1; // High - In F4 NVIC_IRQChannelPreemptionPriority = 1; (0 is highest, 15 is lowest)
+  NVIC_InitStructure.NVIC_IRQChannelPriority = 1;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 
