@@ -356,6 +356,10 @@ extern void ISR_TIMER3_CAPT_vect(void);
 #define TELEMETRY_DMA_TX_IRQn           DMA1_Channel4_5_IRQn
 #define TELEMETRY_DMA_TX_IRQHandler     DMA1_Channel4_5_IRQHandler
 #define TELEMETRY_DMA_TX_FLAG_TC        DMA1_IT_TC4
+#define TELEMETRY_DMA_Channel_RX        DMA1_Channel5
+//#define TELEMETRY_DMA_RX_IRQn           DMA1_Channel4_5_IRQn
+//#define TELEMETRY_DMA_RX_IRQHandler     DMA1_Channel4_5_IRQHandler
+//#define TELEMETRY_DMA_RX_FLAG_TC        DMA1_IT_TC5
 #define TELEMETRY_USART_IRQHandler      USART2_IRQHandler
 #define TELEMETRY_USART_IRQn            USART2_IRQn
 #define TELEMETRY_DIR_OUTPUT()          
