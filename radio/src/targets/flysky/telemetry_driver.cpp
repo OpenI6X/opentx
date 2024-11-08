@@ -20,11 +20,8 @@
 
 #include "opentx.h"
 
-// Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
 // uint32_t telemetryErrors = 0;
 DMAFifo<TELEMETRY_FIFO_SIZE> telemetryDMAFifo __DMA (TELEMETRY_DMA_Channel_RX);
-
-// void uartSetDirection(bool tx); // not needed on STM32F0
 
 void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   TRACE("telemetryPortInit %d", baudrate);
@@ -40,8 +37,8 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 
-  USART_InitTypeDef USART_InitStructure;
   GPIO_InitTypeDef GPIO_InitStructure;
+  USART_InitTypeDef USART_InitStructure;
 
   GPIO_InitStructure.GPIO_Pin = TELEMETRY_TX_GPIO_PIN;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
@@ -51,14 +48,14 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
 #else
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;  // was GPIO_PuPd_UP;
 #endif
-  GPIO_InitStructure.GPIO_Speed = baudrate <= 400000 ? GPIO_Speed_2MHz : GPIO_Speed_50MHz;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_Init(TELEMETRY_GPIO, &GPIO_InitStructure);
 
   USART_DeInit(TELEMETRY_USART);
 
-  USART_OverSampling8Cmd(TELEMETRY_USART, baudrate <= 400000 ? DISABLE : ENABLE);
+  USART_OverSampling8Cmd(TELEMETRY_USART, ENABLE);
 
-  GPIO_PinAFConfig(TELEMETRY_GPIO, TELEMETRY_GPIO_PinSource_TX, TELEMETRY_GPIO_AF); // TX & RX Pin
+  GPIO_PinAFConfig(TELEMETRY_GPIO, TELEMETRY_GPIO_PinSource_TX, TELEMETRY_GPIO_AF);
 
   USART_InitStructure.USART_BaudRate = baudrate;
   USART_InitStructure.USART_WordLength = USART_WordLength_8b;
@@ -67,6 +64,8 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
   USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
   USART_Init(TELEMETRY_USART, &USART_InitStructure);
+
+  TELEMETRY_USART->CR1 |= USART_CR1_IDLEIE;
 
   // Half duplex
   USART_HalfDuplexCmd(TELEMETRY_USART, ENABLE);
@@ -81,18 +80,16 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   DMA_DeInit(TELEMETRY_DMA_Channel_RX);
 
   telemetryDMAFifo.stream = TELEMETRY_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
-  DMA_InitTypeDef DMA_InitStructure;
   telemetryDMAFifo.clear();
 
-  // USART_Cmd(TELEMETRY_USART, ENABLE); // after RX DMA init
   USART_ITConfig(TELEMETRY_USART, USART_IT_RXNE, DISABLE);
-  USART_ITConfig(TELEMETRY_USART, USART_IT_TXE, DISABLE);
   NVIC_SetPriority(TELEMETRY_USART_IRQn, 6);
   NVIC_EnableIRQ(TELEMETRY_USART_IRQn);
 
-  // TX DMA
-  DMA_InitStructure.DMA_PeripheralBaseAddr = CONVERT_PTR_UINT(&TELEMETRY_USART->TDR);
-  DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;  
+  // RX DMA
+  DMA_InitTypeDef DMA_InitStructure;
+  DMA_InitStructure.DMA_PeripheralBaseAddr = CONVERT_PTR_UINT(&TELEMETRY_USART->RDR);
+  DMA_InitStructure.DMA_Priority = DMA_Priority_Low;
   DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
   DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
   DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
@@ -101,7 +98,7 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   DMA_InitStructure.DMA_MemoryBaseAddr = CONVERT_PTR_UINT(telemetryDMAFifo.buffer());
   DMA_InitStructure.DMA_BufferSize = telemetryDMAFifo.size();
   DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-  DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+  DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
 
   DMA_Init(TELEMETRY_DMA_Channel_RX, &DMA_InitStructure);
   USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, ENABLE);
@@ -109,27 +106,33 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   DMA_Cmd(TELEMETRY_DMA_Channel_RX, ENABLE);
 }
 
-// called in sportSendBuffer
 void telemetryPortSetDirectionOutput() {
-  USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, DISABLE);
+  // Disable RX
+  TELEMETRY_DMA_Channel_RX->CCR &= ~DMA_CCR_EN;
+  TELEMETRY_USART->CR3 &= ~USART_CR3_DMAR; // same as USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, DISABLE);
   TELEMETRY_USART->CR1 &= ~USART_CR1_RE;  // disable receive
+
+  // Enable TX
   TELEMETRY_USART->CR1 |= USART_CR1_TE;   // enable transmit
   // USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Tx, ENABLE); // done in sportSendBuffer
 }
 
-// called on TX transfer complete
 void telemetryPortSetDirectionInput() {
-  USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Tx, DISABLE);
+  // Disable TX
+  DMA_DeInit(TELEMETRY_DMA_Channel_TX); // moved from sportSendBuffer
   TELEMETRY_USART->CR1 &= ~USART_CR1_TE;  // disable transmit
+
+  // Enable RX
   TELEMETRY_USART->CR1 |= USART_CR1_RE;   // enable receive
-   USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, ENABLE);
+  TELEMETRY_USART->CR3 |= USART_CR3_DMAR;
+  TELEMETRY_DMA_Channel_RX->CCR |= DMA_CCR_EN; // same as USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, ENABLE);
 }
 
 void sportSendBuffer(const uint8_t* buffer, unsigned long count) {
   telemetryPortSetDirectionOutput();
 
   DMA_InitTypeDef DMA_InitStructure;
-  DMA_DeInit(TELEMETRY_DMA_Channel_TX);
+  // DMA_DeInit(TELEMETRY_DMA_Channel_TX);
 
   DMA_InitStructure.DMA_PeripheralBaseAddr = CONVERT_PTR_UINT(&TELEMETRY_USART->TDR);
   DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;  
@@ -168,6 +171,8 @@ extern "C" void TELEMETRY_DMA_TX_IRQHandler(void) {
 extern "C" void TELEMETRY_USART_IRQHandler(void) {
   DEBUG_INTERRUPT(INT_TELEM_USART);
   uint32_t status = TELEMETRY_USART->ISR;
+
+  // TX
   if ((status & USART_FLAG_TC) && (TELEMETRY_USART->CR1 & USART_CR1_TCIE)) {
     TELEMETRY_USART->CR1 &= ~USART_CR1_TCIE;
     telemetryPortSetDirectionInput();
@@ -176,26 +181,50 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
       status = TELEMETRY_USART->ISR;
     }
   }
-//   while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
-//     uint8_t data = TELEMETRY_USART->RDR; // This will clear the RXNE/error bits in USART_SR register
-// //    if (status & USART_FLAG_ERRORS) {
-// //      // telemetryErrors++;
-// //    }
-//     if (status & USART_FLAG_RXNE) {
-//       // telemetryFifo.push(data); // handled by RX DMA
-//     }
-//     status = TELEMETRY_USART->ISR;
-//   }
+
+  // RX
+//  while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
+//    uint8_t data = TELEMETRY_USART->RDR;
+//    if (status & USART_FLAG_ERRORS) {
+//      // telemetryErrors++;
+//      if (status & USART_FLAG_ORE) {
+//        USART_ClearITPendingBit(TELEMETRY_USART, USART_IT_ORE);
+//      }
+////      if (status & USART_FLAG_NE) {
+////        USART_ClearITPendingBit(TELEMETRY_USART, USART_FLAG_NE);
+////      }
+////       if (status & USART_FLAG_FE) {
+////         USART_ClearITPendingBit(TELEMETRY_USART, USART_FLAG_FE);
+////       }
+//      if (status & USART_FLAG_PE) {
+//        USART_ClearITPendingBit(TELEMETRY_USART, USART_FLAG_PE);
+//      }
+//    } else {
+////      telemetryFifo.push(data);
+//    }
+//    status = TELEMETRY_USART->ISR;
+//  }
 
   // IDLE
   if (status & USART_FLAG_IDLE) {
     TELEMETRY_USART->ICR = USART_ICR_IDLECF;
-    pendingTelemetryPollFrame = true; // TODO pointer to callback?
-    TELEMETRY_USART->CR1 |= USART_CR1_IDLEIE; // wait until handled?
+    pendingTelemetryPollFrame = true;
+    TELEMETRY_USART->CR1 |= USART_CR1_IDLEIE;
   }
 }
 
 // TODO we should have telemetry in an higher layer, functions above should move to a sport_driver.cpp
 uint8_t telemetryGetByte(uint8_t* byte) {
+#if defined(AUX_SERIAL) && !defined(PCBI6X)
+  if (telemetryProtocol == PROTOCOL_FRSKY_D_SECONDARY) {
+    if (auxSerialMode == UART_MODE_TELEMETRY)
+      return auxSerialRxFifo.pop(*byte);
+    else
+      return false;
+  } else {
     return telemetryDMAFifo.pop(*byte);
+  }
+#else
+  return telemetryDMAFifo.pop(*byte);
+#endif
 }

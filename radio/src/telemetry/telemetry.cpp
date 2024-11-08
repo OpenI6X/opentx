@@ -80,22 +80,41 @@ void telemetryWakeup()
     telemetryInit(requiredTelemetryProtocol);
   }
 
-  uint8_t data;
-  if (telemetryGetByte(&data)) {
-    LOG_TELEMETRY_WRITE_START();
-    do {
-      processTelemetryData(data);
-      LOG_TELEMETRY_WRITE_BYTE(data);
-    } while (telemetryGetByte(&data));
-  }
+//  uint8_t data;
+//  if (telemetryGetByte(&data)) {
+//    LOG_TELEMETRY_WRITE_START();
+//    do {
+//      processTelemetryData(data);
+//      LOG_TELEMETRY_WRITE_BYTE(data);
+//    } while (telemetryGetByte(&data));
+//  }
 
-#if defined(AFHDS2A)
-  // AFHDS2A is handled per complete frame
-  if (pendingTelemetryPollFrame) { // only AFHDS2A for now
+
+  // Handle complete telemetry frame
+  if (pendingTelemetryPollFrame) {
     pendingTelemetryPollFrame = false;
-    processFlySkyTelemetryFrame(telemetryRxBuffer);
-  }
+   switch (telemetryProtocol) {
+#if defined(AFHDS2A)
+     case PROTOCOL_FLYSKY_IBUS:
+       processFlySkyTelemetryFrame(telemetryRxBuffer);
+     break;
 #endif
+#if defined(CROSSFIRE)
+     case PROTOCOL_PULSES_CROSSFIRE:
+     {
+       uint8_t data;
+       while (telemetryGetByte(&data)) {
+         processCrossfireTelemetryData(data);
+         LOG_TELEMETRY_WRITE_BYTE(data);
+       }
+     }
+     break;
+#endif
+     default:
+//       TRACE("Unknown telemProto %d", telemetryProtocol);
+     break;
+   }
+  }
 
 
   for (int i=0; i<MAX_TELEMETRY_SENSORS; i++) {
