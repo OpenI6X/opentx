@@ -109,22 +109,19 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
 void telemetryPortSetDirectionOutput() {
   // Disable RX
   TELEMETRY_DMA_Channel_RX->CCR &= ~DMA_CCR_EN;
-  TELEMETRY_USART->CR3 &= ~USART_CR3_DMAR; // same as USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, DISABLE);
   TELEMETRY_USART->CR1 &= ~USART_CR1_RE;  // disable receive
 
   // Enable TX
   TELEMETRY_USART->CR1 |= USART_CR1_TE;   // enable transmit
-  // USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Tx, ENABLE); // done in sportSendBuffer
 }
 
 void telemetryPortSetDirectionInput() {
   // Disable TX
-  DMA_DeInit(TELEMETRY_DMA_Channel_TX); // moved from sportSendBuffer
+  TELEMETRY_DMA_Channel_TX->CCR &= ~DMA_CCR_EN;
   TELEMETRY_USART->CR1 &= ~USART_CR1_TE;  // disable transmit
 
   // Enable RX
   TELEMETRY_USART->CR1 |= USART_CR1_RE;   // enable receive
-  TELEMETRY_USART->CR3 |= USART_CR3_DMAR;
   TELEMETRY_DMA_Channel_RX->CCR |= DMA_CCR_EN; // same as USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, ENABLE);
 }
 
