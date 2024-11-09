@@ -94,7 +94,7 @@ void telemetryWakeup()
      {
        uint8_t data;
        while (telemetryGetByte(&data)) {
-         processCrossfireTelemetryData(data);
+         processCrossfireTelemetryData(data); // TODO handle full frame as in EdgeTX
          LOG_TELEMETRY_WRITE_BYTE(data);
        }
      }
