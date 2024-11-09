@@ -75,9 +75,9 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   USART_InvPinCmd(TELEMETRY_USART, USART_InvPin_Tx | USART_InvPin_Rx, ENABLE);
 #endif
 
-  DMA_Cmd(TELEMETRY_DMA_Channel_RX, DISABLE);
-  USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, DISABLE);
-  DMA_DeInit(TELEMETRY_DMA_Channel_RX);
+  // DMA_Cmd(TELEMETRY_DMA_Channel_RX, DISABLE);
+  // USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, DISABLE);
+  // DMA_DeInit(TELEMETRY_DMA_Channel_RX);
 
   telemetryDMAFifo.stream = TELEMETRY_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
   telemetryDMAFifo.clear();
@@ -122,7 +122,7 @@ void telemetryPortSetDirectionInput() {
 
   // Enable RX
   TELEMETRY_USART->CR1 |= USART_CR1_RE;   // enable receive
-  TELEMETRY_DMA_Channel_RX->CCR |= DMA_CCR_EN; // same as USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, ENABLE);
+  TELEMETRY_DMA_Channel_RX->CCR |= DMA_CCR_EN; // same as DMA_Cmd(TELEMETRY_DMA_Channel_RX, ENABLE);
 }
 
 void sportSendBuffer(const uint8_t* buffer, unsigned long count) {
@@ -179,28 +179,7 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
     }
   }
 
-  // RX
-//  while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
-//    uint8_t data = TELEMETRY_USART->RDR;
-//    if (status & USART_FLAG_ERRORS) {
-//      // telemetryErrors++;
-//      if (status & USART_FLAG_ORE) {
-//        USART_ClearITPendingBit(TELEMETRY_USART, USART_IT_ORE);
-//      }
-////      if (status & USART_FLAG_NE) {
-////        USART_ClearITPendingBit(TELEMETRY_USART, USART_FLAG_NE);
-////      }
-////       if (status & USART_FLAG_FE) {
-////         USART_ClearITPendingBit(TELEMETRY_USART, USART_FLAG_FE);
-////       }
-//      if (status & USART_FLAG_PE) {
-//        USART_ClearITPendingBit(TELEMETRY_USART, USART_FLAG_PE);
-//      }
-//    } else {
-////      telemetryFifo.push(data);
-//    }
-//    status = TELEMETRY_USART->ISR;
-//  }
+  // RX, handled by DMA
 
   // IDLE
   if (status & USART_FLAG_IDLE) {

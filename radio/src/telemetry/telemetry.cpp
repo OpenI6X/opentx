@@ -80,16 +80,6 @@ void telemetryWakeup()
     telemetryInit(requiredTelemetryProtocol);
   }
 
-//  uint8_t data;
-//  if (telemetryGetByte(&data)) {
-//    LOG_TELEMETRY_WRITE_START();
-//    do {
-//      processTelemetryData(data);
-//      LOG_TELEMETRY_WRITE_BYTE(data);
-//    } while (telemetryGetByte(&data));
-//  }
-
-
   // Handle complete telemetry frame
   if (pendingTelemetryPollFrame) {
     pendingTelemetryPollFrame = false;
@@ -111,7 +101,7 @@ void telemetryWakeup()
      break;
 #endif
      default:
-//       TRACE("Unknown telemProto %d", telemetryProtocol);
+//       TRACE("Unhandled telemetry %d", telemetryProtocol);
      break;
    }
   }
