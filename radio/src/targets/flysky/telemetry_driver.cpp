@@ -75,14 +75,15 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   USART_InvPinCmd(TELEMETRY_USART, USART_InvPin_Tx | USART_InvPin_Rx, ENABLE);
 #endif
 
-  // DMA_Cmd(TELEMETRY_DMA_Channel_RX, DISABLE);
-  // USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, DISABLE);
-  // DMA_DeInit(TELEMETRY_DMA_Channel_RX);
+  DMA_Cmd(TELEMETRY_DMA_Channel_RX, DISABLE);
+  USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, DISABLE);
+  DMA_DeInit(TELEMETRY_DMA_Channel_RX);
 
   telemetryDMAFifo.stream = TELEMETRY_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
   telemetryDMAFifo.clear();
 
   USART_ITConfig(TELEMETRY_USART, USART_IT_RXNE, DISABLE);
+  USART_ITConfig(TELEMETRY_USART, USART_IT_TXE, DISABLE);
   NVIC_SetPriority(TELEMETRY_USART_IRQn, 6);
   NVIC_EnableIRQ(TELEMETRY_USART_IRQn);
 
@@ -129,7 +130,7 @@ void sportSendBuffer(const uint8_t* buffer, unsigned long count) {
   telemetryPortSetDirectionOutput();
 
   DMA_InitTypeDef DMA_InitStructure;
-  // DMA_DeInit(TELEMETRY_DMA_Channel_TX);
+  DMA_DeInit(TELEMETRY_DMA_Channel_TX);
 
   DMA_InitStructure.DMA_PeripheralBaseAddr = CONVERT_PTR_UINT(&TELEMETRY_USART->TDR);
   DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;  
@@ -158,7 +159,6 @@ extern "C" void TELEMETRY_DMA_TX_IRQHandler(void) {
   DEBUG_INTERRUPT(INT_TELEM_DMA);
   if (DMA_GetITStatus(TELEMETRY_DMA_TX_FLAG_TC)) {
     DMA_ClearITPendingBit(TELEMETRY_DMA_TX_FLAG_TC);
-
     // clear TC flag before enabling interrupt
     TELEMETRY_USART->ISR &= ~USART_ISR_TC;
     TELEMETRY_USART->CR1 |= USART_CR1_TCIE;
