@@ -123,7 +123,7 @@ void telemetryPortSetDirectionInput() {
 
   // Enable RX
   TELEMETRY_USART->CR1 |= USART_CR1_RE;   // enable receive
-  TELEMETRY_DMA_Channel_RX->CCR |= DMA_CCR_EN; // same as DMA_Cmd(TELEMETRY_DMA_Channel_RX, ENABLE);
+  TELEMETRY_DMA_Channel_RX->CCR |= DMA_CCR_EN;
 }
 
 void sportSendBuffer(const uint8_t* buffer, unsigned long count) {
