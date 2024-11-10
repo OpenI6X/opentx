@@ -112,12 +112,16 @@ const uint32_t CROSSFIRE_BAUDRATES[] = {
   115200,
   921600,
   1870000,
+//  3750000,
+//  5250000,
 };
 const uint8_t CROSSFIRE_PERIODS[] = {
   4,
   16,
   4,
   4,
+//  4,
+//  4,
 };
 
 #define CROSSFIRE_BAUDRATE    CROSSFIRE_BAUDRATES[g_eeGeneral.telemetryBaudrate]
