@@ -54,23 +54,22 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wor
 
   if (dma) {
     auxSerialRxFifo.stream = AUX_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
-    DMA_InitTypeDef DMA_InitStructure;
     auxSerialRxFifo.clear();
     USART_ITConfig(AUX_SERIAL_USART, USART_IT_RXNE, DISABLE);
     USART_ITConfig(AUX_SERIAL_USART, USART_IT_TXE, DISABLE);
 
-    DMA_InitStructure.DMA_PeripheralBaseAddr = CONVERT_PTR_UINT(&AUX_SERIAL_USART->RDR);
-    DMA_InitStructure.DMA_MemoryBaseAddr = CONVERT_PTR_UINT(auxSerialRxFifo.buffer());
-    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-    DMA_InitStructure.DMA_BufferSize = auxSerialRxFifo.size();
-    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
-    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-    DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
-    DMA_InitStructure.DMA_Priority = DMA_Priority_Low;
-    DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
-    DMA_Init(AUX_SERIAL_DMA_Channel_RX, &DMA_InitStructure);
+    AUX_SERIAL_DMA_Channel_RX->CPAR = (uint32_t) &AUX_SERIAL_USART->RDR;
+    AUX_SERIAL_DMA_Channel_RX->CMAR = (uint32_t) auxSerialRxFifo.buffer();
+    AUX_SERIAL_DMA_Channel_RX->CNDTR = auxSerialRxFifo.size();
+    AUX_SERIAL_DMA_Channel_RX->CCR = DMA_MemoryInc_Enable
+                                | DMA_M2M_Disable
+                                | DMA_Mode_Circular
+                                | DMA_Priority_Low
+                                | DMA_DIR_PeripheralSRC
+                                | DMA_PeripheralInc_Disable
+                                | DMA_PeripheralDataSize_Byte
+                                | DMA_MemoryDataSize_Byte;
+
     USART_InvPinCmd(AUX_SERIAL_USART, USART_InvPin_Rx, ENABLE); // Only for SBUS!
     USART_DMACmd(AUX_SERIAL_USART, USART_DMAReq_Rx, ENABLE);
     USART_Cmd(AUX_SERIAL_USART, ENABLE);
@@ -295,23 +294,22 @@ void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
   USART_Init(AUX4_SERIAL_USART, &USART_InitStructure);
 
     aux4SerialRxFifo.stream = AUX4_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
-    DMA_InitTypeDef DMA_InitStructure;
     aux4SerialRxFifo.clear();
     // USART_ITConfig(AUX4_SERIAL_USART, USART_IT_RXNE, DISABLE);
     AUX4_SERIAL_USART->CR1 &= ~(USART_CR1_RXNEIE /*| USART_CR1_TXEIE*/);
 
-    DMA_InitStructure.DMA_PeripheralBaseAddr = CONVERT_PTR_UINT(&AUX4_SERIAL_USART->RDR);
-    DMA_InitStructure.DMA_MemoryBaseAddr = CONVERT_PTR_UINT(aux4SerialRxFifo.buffer());
-    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-    DMA_InitStructure.DMA_BufferSize = aux4SerialRxFifo.size();
-    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
-    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-    DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
-    DMA_InitStructure.DMA_Priority = DMA_Priority_Low;
-    DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
-    DMA_Init(AUX4_SERIAL_DMA_Channel_RX, &DMA_InitStructure);
+    AUX4_SERIAL_DMA_Channel_RX->CPAR = (uint32_t) &AUX4_SERIAL_USART->RDR;
+    AUX4_SERIAL_DMA_Channel_RX->CMAR = (uint32_t) aux4SerialRxFifo.buffer();
+    AUX4_SERIAL_DMA_Channel_RX->CNDTR = aux4SerialRxFifo.size();
+    AUX4_SERIAL_DMA_Channel_RX->CCR = DMA_MemoryInc_Enable
+                                | DMA_M2M_Disable
+                                | DMA_Mode_Circular
+                                | DMA_Priority_Low
+                                | DMA_DIR_PeripheralSRC
+                                | DMA_PeripheralInc_Disable
+                                | DMA_PeripheralDataSize_Byte
+                                | DMA_MemoryDataSize_Byte;
+
     USART_DMACmd(AUX4_SERIAL_USART, USART_DMAReq_Rx, ENABLE);
     USART_Cmd(AUX4_SERIAL_USART, ENABLE);
     DMA_Cmd(AUX4_SERIAL_DMA_Channel_RX, ENABLE);

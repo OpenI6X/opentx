@@ -440,7 +440,7 @@ extern InactivityData inactivity;
 
 char hex2zchar(uint8_t hex);
 char zchar2char(int8_t idx);
-int8_t char2idx(char c);
+int8_t char2zchar(char c);
 void str2zchar(char *dest, const char *src, int size);
 int zchar2str(char *dest, const char *src, int size);
 
