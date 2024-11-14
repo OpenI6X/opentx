@@ -66,6 +66,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc_core.h"
 #include "usbd_core.h"
+#include "usbd_req.h"
 
 #define USB_CDC_IDLE         0
 #define USB_CDC_BUSY         1
