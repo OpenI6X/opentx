@@ -310,12 +310,12 @@ void processCrossfireTelemetryData(uint8_t data) {
 #endif
 
   if (telemetryRxBufferCount == 0 && data != RADIO_ADDRESS) {
-    TRACE("[XF] address 0x%02X error", data);
+    TRACE("[XF] addr 0x%02X err", data);
     return;
   }
 
   if (telemetryRxBufferCount == 1 && !crossfireLenIsSane(data)) {
-    TRACE("[XF] length 0x%02X error", data);
+    TRACE("[XF] len 0x%02X err", data);
     telemetryRxBufferCount = 0;
     return;
   }
@@ -323,7 +323,7 @@ void processCrossfireTelemetryData(uint8_t data) {
   if (telemetryRxBufferCount < TELEMETRY_RX_PACKET_SIZE) {
     telemetryRxBuffer[telemetryRxBufferCount++] = data;
   } else {
-    TRACE("[XF] array size %d error", telemetryRxBufferCount);
+    TRACE("[XF] arr size %d err", telemetryRxBufferCount);
     telemetryRxBufferCount = 0;
   }
 
@@ -334,7 +334,7 @@ void processCrossfireTelemetryData(uint8_t data) {
       telemetryRxBufferCount = 0;
     }
     else {
-      TRACE("[XF] CRC error ");
+      TRACE("[XF] CRC err");
       crossfireTelemetrySeekStart(telemetryRxBuffer, telemetryRxBufferCount); // adjusts telemetryRxBufferCount
     }
   }
