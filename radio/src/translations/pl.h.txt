@@ -110,8 +110,10 @@
 #define LEN_USBMODES                   TR("\006", "\010")
 #if !defined(USB_SERIAL)
 #define TR_USBMODES                    TR("Pytaj\0""Joyst\0""Dane\0 ", "Ask\0    ""Joystick""Storage\0")
+#elif !defined(PCBI6X_USB_MSD)
+#define TR_USBMODES                    TR("Pytaj\0""Joyst\0""Serial", "Ask\0    ""Joystick""Serial\0 ")
 #else
-#define TR_USBMODES                    TR("Ask\0  ""Joyst\0""Storag""Serial", "Ask\0    ""Joystick""Storage\0""Serial\0 ")
+#define TR_USBMODES                    TR("Pytaj\0""Joyst\0""Dane\0 ""Serial", "Ask\0    ""Joystick""Storage\0""Serial\0 ")
 #endif
 
 #define LEN_TARANIS_PROTOCOLS  "\004"

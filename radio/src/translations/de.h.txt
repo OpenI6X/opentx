@@ -110,6 +110,8 @@
 #define LEN_USBMODES           TR("\006", "\010")
 #if !defined(USB_SERIAL)
 #define TR_USBMODES            TR("Fragen""Joyst\0""Storag", "Fragen\0 ""Joystick""Speicher")
+#elif !defined(PCBI6X_USB_MSD)
+#define TR_USBMODES            TR("Fragen""Joyst\0""Serial", "Fragen\0 ""Joystick""Serial\0 ")
 #else
 #define TR_USBMODES            TR("Fragen""Joyst\0""Storag""Serial", "Fragen\0 ""Joystick""Speicher""Seriell\0")
 #endif
