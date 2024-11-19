@@ -53,6 +53,7 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wor
   USART_Init(AUX_SERIAL_USART, &USART_InitStructure);
 
   if (dma) {
+#if defined(SBUS_TRAINER)
     auxSerialRxFifo.stream = AUX_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
     auxSerialRxFifo.clear();
     USART_ITConfig(AUX_SERIAL_USART, USART_IT_RXNE, DISABLE);
@@ -74,6 +75,7 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wor
     USART_DMACmd(AUX_SERIAL_USART, USART_DMAReq_Rx, ENABLE);
     USART_Cmd(AUX_SERIAL_USART, ENABLE);
     DMA_Cmd(AUX_SERIAL_DMA_Channel_RX, ENABLE);
+#endif // SBUS_TRAINER
   }
   else {
     USART_Cmd(AUX_SERIAL_USART, ENABLE);
@@ -110,9 +112,10 @@ void auxSerialInit(unsigned int mode, unsigned int protocol)
       break;
 #endif
 
-#if defined(SBUS)
+#if defined(SBUS_TRAINER)
     case UART_MODE_SBUS_TRAINER:
       auxSerialSetup(SBUS_BAUDRATE, true, USART_WordLength_9b, USART_Parity_Even, USART_StopBits_2); // USART_WordLength_9b due to parity bit
+//      AUX_SERIAL_POWER_ON();
       break;
 #endif
 
@@ -142,7 +145,7 @@ void auxSerialPutc(char c)
 
 void auxSerialSbusInit()
 {
-#if defined(SBUS)
+#if defined(SBUS_TRAINER)
   auxSerialInit(UART_MODE_SBUS_TRAINER, 0);
 #endif
 }

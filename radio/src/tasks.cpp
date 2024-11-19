@@ -92,7 +92,7 @@ void execMixerFrequentActions()
     DEBUG_TIMER_STOP(debugTimerTelemetryWakeup);
   }
 
-#if defined(SBUS)
+#if defined(SBUS_TRAINER)
   if (g_eeGeneral.auxSerialMode == UART_MODE_SBUS_TRAINER) {
     processSbusInput();
   }

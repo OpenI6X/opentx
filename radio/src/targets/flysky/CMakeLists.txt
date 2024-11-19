@@ -109,6 +109,7 @@ set(TARGET_SRC
   )
 
 add_definitions(-DSBUS)
+# add_definitions(-DSBUS_TRAINER) # ~520B
 set(PULSES_SRC
   ${PULSES_SRC}
   ../sbus.cpp
