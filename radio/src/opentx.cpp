@@ -1423,8 +1423,9 @@ void doMixerPeriodicUpdates()
       s_cnt_1s += 1;
 
       logicalSwitchesTimerTick();
+#if defined(SBUS_TRAINER)
       checkTrainerSignalWarning();
-
+#endif
       if (s_cnt_1s >= 10) {  // 1sec
         s_cnt_1s -= 10;
         sessionTimer += 1;

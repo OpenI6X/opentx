@@ -60,6 +60,7 @@ common_options = {
     "PPM_UNIT": "PERCENT_PREC1",
     "PCBI6X_USB_VBUS": "NO",
     "PCBI6X_USB_MSD": "YES",
+    "SBUS_TRAINER": "NO",
 }
 
 

@@ -301,8 +301,9 @@ extern void ISR_TIMER3_CAPT_vect(void);
 #define CR_PSIZE_MASK              ((uint32_t)0xFFFFFCFF)
 
 // Serial Port
-
+#if defined(SBUS_TRAINER)
 #define TRAINER_BATTERY_COMPARTMENT
+#endif
 
 // AUX Serial
 #define AUX_SERIAL_RCC_AHB1Periph         (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_DMA1)
