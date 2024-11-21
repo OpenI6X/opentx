@@ -948,8 +948,7 @@ void menuModelSetup(event_t event)
       break;
 #endif
 
-#if defined(PCBTARANIS) || defined(PCBI6X)
-#if defined(SBUS_TRAINER)
+#if defined(PCBTARANIS) || defined(SBUS_TRAINER)
       case ITEM_MODEL_TRAINER_LABEL:
         lcdDrawTextAlignedLeft(y, STR_TRAINER);
         break;
@@ -967,7 +966,6 @@ void menuModelSetup(event_t event)
 #endif
         }
         break;
-#endif
 #endif
 
 #if defined(PCBTARANIS) && defined(BLUETOOTH)
