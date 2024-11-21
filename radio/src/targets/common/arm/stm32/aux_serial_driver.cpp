@@ -34,7 +34,9 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wor
   USART_InitTypeDef USART_InitStructure;
   GPIO_InitTypeDef GPIO_InitStructure;
 
+#if defined(SBUS_TRAINER)
   GPIO_PinAFConfig(AUX_SERIAL_GPIO, AUX_SERIAL_GPIO_PinSource_RX, AUX_SERIAL_GPIO_AF);
+#endif
   GPIO_PinAFConfig(AUX_SERIAL_GPIO, AUX_SERIAL_GPIO_PinSource_TX, AUX_SERIAL_GPIO_AF);
 
   GPIO_InitStructure.GPIO_Pin = AUX_SERIAL_GPIO_PIN_TX | AUX_SERIAL_GPIO_PIN_RX;
@@ -53,6 +55,7 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wor
   USART_Init(AUX_SERIAL_USART, &USART_InitStructure);
 
   if (dma) {
+#if defined(SBUS_TRAINER)
     auxSerialRxFifo.stream = AUX_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
     auxSerialRxFifo.clear();
     USART_ITConfig(AUX_SERIAL_USART, USART_IT_RXNE, DISABLE);
@@ -70,10 +73,11 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wor
                                 | DMA_PeripheralDataSize_Byte
                                 | DMA_MemoryDataSize_Byte;
 
-    USART_InvPinCmd(AUX_SERIAL_USART, USART_InvPin_Rx, ENABLE); // Only for SBUS!
+    USART_InvPinCmd(AUX_SERIAL_USART, USART_InvPin_Rx, ENABLE); // Only for SBUS
     USART_DMACmd(AUX_SERIAL_USART, USART_DMAReq_Rx, ENABLE);
     USART_Cmd(AUX_SERIAL_USART, ENABLE);
     DMA_Cmd(AUX_SERIAL_DMA_Channel_RX, ENABLE);
+#endif // SBUS_TRAINER
   }
   else {
     USART_Cmd(AUX_SERIAL_USART, ENABLE);
@@ -110,9 +114,10 @@ void auxSerialInit(unsigned int mode, unsigned int protocol)
       break;
 #endif
 
-#if defined(SBUS)
+#if defined(SBUS_TRAINER)
     case UART_MODE_SBUS_TRAINER:
       auxSerialSetup(SBUS_BAUDRATE, true, USART_WordLength_9b, USART_Parity_Even, USART_StopBits_2); // USART_WordLength_9b due to parity bit
+//      AUX_SERIAL_POWER_ON();
       break;
 #endif
 
@@ -140,16 +145,18 @@ void auxSerialPutc(char c)
 #endif
 }
 
+#if defined(SBUS_TRAINER)
 void auxSerialSbusInit()
 {
-#if defined(SBUS)
   auxSerialInit(UART_MODE_SBUS_TRAINER, 0);
-#endif
 }
+#endif
 
 void auxSerialStop()
 {
+#if defined(SBUS_TRAINER)
   DMA_DeInit(AUX_SERIAL_DMA_Channel_RX);
+#endif
   USART_DeInit(AUX_SERIAL_USART);
 }
 

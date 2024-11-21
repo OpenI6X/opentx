@@ -8,6 +8,7 @@ option(PCBI6X_USB_MSD "Enable USB mass storage mode" YES) # 3.2kB
 option(AFHDS2A_LQI_CH "Send RSSI at channel 1-17" OFF)
 option(DFPLAYER "Enables DFPlayer on AUX3 TX" NO) # ~1.7kB
 option(FAKE_RSSI "Enables converting TRSS to RSSI data for receivers not sending RSSI" NO)
+option(SBUS_TRAINER "Enables SBUS Trainer mode and trainer lost/back sounds" NO) # ~0.6kB
 
 if(PCB STREQUAL I6X)
   set(PWR_BUTTON "SWITCH" CACHE STRING "Pwr button type (PRESS/SWITCH)")
@@ -96,7 +97,7 @@ set(TARGET_SRC
 endif()
 
 if(PCBI6X_USB_MSD STREQUAL YES)
-add_definitions(-DPCBI6X_USB_MSD)
+  add_definitions(-DPCBI6X_USB_MSD)
 endif()
 
 set(TARGET_SRC
@@ -108,11 +109,14 @@ set(TARGET_SRC
   ../common/arm/stm32/timers_driver.cpp
   )
 
-add_definitions(-DSBUS)
-set(PULSES_SRC
-  ${PULSES_SRC}
-  ../sbus.cpp
-  )
+if(SBUS_TRAINER STREQUAL YES)
+  add_definitions(-DSBUS)
+  add_definitions(-DSBUS_TRAINER)
+  set(PULSES_SRC
+    ${PULSES_SRC}
+    ../sbus.cpp
+    )
+endif()
 
 set(HSE_VALUE 8000000)
 set(SDCARD NO) # ~24kB
