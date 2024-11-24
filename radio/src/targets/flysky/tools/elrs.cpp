@@ -556,7 +556,7 @@ static void parseDeviceInfoMessage(uint8_t* data) {
 
   if (deviceId == id && currentFolderId != otherDevicesId) {
     memcpy(&deviceName[0], (char *)&data[3], DEVICE_NAME_MAX_LEN);
-    deviceIsELRS_TX = ((memcmp(&data[offset], "ELRS", 4) == 0) && (deviceId == 0xEE)) ? 1 : 0; // SerialNumber = 'E L R S' and ID is TX module
+    deviceIsELRS_TX = ((paramGetValue(&data[offset], 4) == 0x454C5253) && (deviceId == 0xEE)); // SerialNumber = 'E L R S' and ID is TX module
     uint8_t newParamCount = data[offset+12];
 //    TRACE("deviceId match %x, newParamCount %d", deviceId, newParamCount);
     reloadAllParam();

@@ -275,7 +275,8 @@ int8_t STORAGE_GetMaxLun (void)
 }
 
 /* Firmware.txt */
-const char firmware_txt[] =
+const char firmware_txt[] = ""
+#if !defined(PCBI6X)
 #if defined(BOOT)
   "OpenI6X Bootloader"
 #else
@@ -302,6 +303,7 @@ const char firmware_txt[] =
 "BOOTVER    "
 #else
 "FWVERSION  "
+#endif
 #endif
 #endif
   ;

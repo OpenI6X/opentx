@@ -287,20 +287,5 @@ void menuViewTelemetry(event_t event)
 #endif
 }
 
-void showTelemScreen(uint8_t index)
-{
-  if (menuHandlers[menuLevel] == menuViewTelemetry || menuHandlers[menuLevel] == menuMainView) {
-    if (index == 0) {
-      chainMenu(menuMainView);
-    } else {
-      index -= 1;
-      if ((/*index >= 0 &&*/ index <= TELEMETRY_SCREEN_TYPE_MAX) && (TELEMETRY_SCREEN_TYPE(index) != TELEMETRY_SCREEN_TYPE_NONE)) {
-        selectedTelemView = index;
-        chainMenu(menuViewTelemetry);
-      }
-    }
-  }
-}
-
 #undef EVT_KEY_PREVIOUS_VIEW
 #undef EVT_KEY_NEXT_VIEW

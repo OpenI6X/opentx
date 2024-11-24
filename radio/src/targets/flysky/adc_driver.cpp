@@ -110,35 +110,20 @@ void adcInit()
 
   // -- init dma --
 
-  DMA_InitTypeDef dma_init;
-  DMA_StructInit(&dma_init);
-
   // reset DMA1 channe1 to default values
   DMA_DeInit(ADC_DMA_Channel);
 
-  // set up dma to convert 2 adc channels to two mem locations:
-  // channel will be used for memory to memory transfer
-  dma_init.DMA_M2M = DMA_M2M_Disable;
-  // setting normal mode(non circular)
-  dma_init.DMA_Mode = DMA_Mode_Circular;
-  // medium priority
-  dma_init.DMA_Priority = DMA_Priority_High;
-  // source and destination 16bit
-  dma_init.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
-  dma_init.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
-  // automatic memory destination increment enable.
-  dma_init.DMA_MemoryInc = DMA_MemoryInc_Enable;
-  // source address increment disable
-  dma_init.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-  // Location assigned to peripheral register will be source
-  dma_init.DMA_DIR = DMA_DIR_PeripheralSRC;
-  // chunk of data to be transfered
-  dma_init.DMA_BufferSize = NUM_ANALOGS;
-  // source and destination start addresses
-  dma_init.DMA_PeripheralBaseAddr = (uint32_t)&ADC_MAIN->DR;
-  dma_init.DMA_MemoryBaseAddr = (uint32_t)&adcValues[FIRST_ANALOG_ADC];
-  // send values to DMA registers
-  DMA_Init(ADC_DMA_Channel, &dma_init);
+  ADC_DMA_Channel->CPAR = (uint32_t) &ADC_MAIN->DR;
+  ADC_DMA_Channel->CMAR = (uint32_t)&adcValues[FIRST_ANALOG_ADC];
+  ADC_DMA_Channel->CNDTR = NUM_ANALOGS;
+  ADC_DMA_Channel->CCR = DMA_MemoryInc_Enable
+                              | DMA_M2M_Disable
+                              | DMA_Mode_Circular
+                              | DMA_Priority_High
+                              | DMA_DIR_PeripheralSRC
+                              | DMA_PeripheralInc_Disable
+                              | DMA_PeripheralDataSize_HalfWord
+                              | DMA_MemoryDataSize_HalfWord;
 
   // enable the DMA1 - Channel1
   DMA_Cmd(ADC_DMA_Channel, ENABLE);

@@ -49,7 +49,7 @@ void setSelectedUsbMode(int mode)
 
 int usbPlugged()
 {
-#if defined(PCBI6X) && !defined(PCBI6X_USB_VBUS)
+#if !defined(USB_VBUS)
   if (globalData.usbConnect) {
     return 1;
   }
@@ -131,7 +131,7 @@ void usbStart()
 #endif
       break;
 #endif
-#if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
+#if defined(USB_MSD)
     default:
     case USB_MASS_STORAGE_MODE:
       // initialize USB as MSC device

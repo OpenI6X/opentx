@@ -5,100 +5,42 @@
 
 ![Banner](https://github.com/OpenI6X/opentx/blob/master/doc/flysky/banner.png?raw=true)
 
-## Welcome to Openi6X!
+## Custom OpenTX / EdgeTX for Flysky FS-i6X
 
-Custom OpenTX/EdgeTX for Flysky FS-i6X.
+Join our [Discord](https://discord.gg/3vKfYNTVa2), [RCGroups](https://www.rcgroups.com/forums/showthread.php?3916435-FlySky-I6X-port-of-OpenTX) or [Telegram](https://t.me/otx_flysky_i6x) to contribute, discuss or get help.<br> 
 
-Join our [Discord](https://discord.gg/3vKfYNTVa2) or [Telegram](https://t.me/otx_flysky_i6x).<br>
-You can find instructions and videos contributed by fellow early adopters in the [RCGroups](https://www.rcgroups.com/forums/showthread.php?3916435-FlySky-I6X-port-of-OpenTX) and [Rakish Rc](https://www.youtube.com/playlist?list=PLfzAEbvn4Bgr3ndNrwp87UimoKVhXkzBa) youtube tutorials. 
+## Instructions
 
-- [Wiki](https://github.com/OpenI6X/opentx/wiki) - Read before asking for help<br>
-  - [How to install and upgrade firmware](https://github.com/OpenI6X/opentx/wiki/Flashing-&-Upgrading) <br>
-  - [Developers guide, how to build](https://github.com/OpenI6X/opentx/wiki/Development) <br>
-  - [Modifications](https://github.com/OpenI6X/opentx/wiki/Modifications)<br>
-- [Features](#features)<br>
-- [Navigation](#navigation)<br>
-- [Proper shutdown (I see square icon)](#shutdown)<br>
-- [USB connection](#usb-connection)<br>
-- [Powering by 2S Li-Po/Li-ion/18650](#powering-by-2s-li-poli-ion18650)<br>
-- [Mode 1 and Mode 3 radios](#mode-1--mode-3-radios)<br>
-- [Credits](#credits)<br>
+- [FlySky i6X user interface](https://github.com/OpenI6X/opentx/wiki/Manual) and other differences to official EdgeTX/OpenTX devices.<br>
+- [EdgeTX manual](https://manual.edgetx.org/bw-radios)
+- [How to install, upgrade or restore firmware](https://github.com/OpenI6X/opentx/wiki/Flashing-&-Upgrading)<br>
+- [Developers guide, how to build](https://github.com/OpenI6X/opentx/wiki/Development)<br>
+- [Modifications](https://github.com/OpenI6X/opentx/wiki/Modifications)<br>
 
-
-## Features
-
-Comparison with original firmware:
+## Selected features comparison
 
 | Feature                   | FlySky i6X | OpenTX i6X                   |
 |---------------------------|------------|------------------------------|
 | Channels                  | 6/10       | 16                           |
 | Mixers                    | 3          | 32                           |
 | Models                    | 20         | 16 / unlimited<sup>[1]</sup> |
-| Protocols                 | AFHDS, AFHDS2A, PPM | AFHDS2A, PPM, CRSF  |
+| Protocols                 | AFHDS, AFHDS2A, PPM | AFHDS2A + 16Ch modes, PPM, CRSF (CRSFshot)  |
 | Trainer                   | PPM        | SBUS, PPM                    |
-| Logical switches          | _          | ✓                            |
-| Global variables          | _          | ✓                            |
 | Timers                    | _          | ✓                            |
 | Voice annoucements        | _          | ✓<sup>[2]</sup>              |
-| Use trims as buttons      | _          | ✓                            |
-| ExpressLRS ready          | _          | ✓                            |
-| Telemetry mirror          | _          | ✓                            |
-| Languages                 | EN,CN      | PL,EN,CZ,DE,ES,FI,FR,IT,NL,PT,SE |
+| Vario                     | _          | ✓                            |
+| ExpressLRS ready          | _          | ✓ Configurator built-in (no need for LUA) |
+| Adjustable screen brightness | _       | ✓<sup>[3]</sup>              |
+| USB Modes                 | Joystick   | Joystick, Storage, Serial (Telemetry mirror, Debug) |
+| AUX Serial port           | _          | ✓ SBUS Trainer, Telemetry mirror, Debug |
+| FlySky FS-HZCZ03-ADJ Digital Gimbal | _   | ✓<sup>[4]</sup>    |
+| Languages                 | EN, CN      | PL, EN, CZ, DE, ES, FI, FR, IT, NL, PT, SE |
 
 <sub>[1] Unlimited by using USB mass storage mode eeprom backup/restore.</sub><br>
-<sub>[2] By adding DFPlayer, see modifications in wiki.</sub>
-
-* Protocols:
-  * AFHDS2A with SBUS, IBUS and extended SBUS16, IBUS16 - 16 channels modes
-  * PPM in/out
-  * CRSF with ExpressLRS and Crossfire modules:
-    * CRSFshot
-    * MEGA Bauds up to 1.8M
-    * ExpressLRS V3 configuration built-in (no need to copy ELRSV3.lua)
-* Telemetry
-* Adjustable backlight brightness level
-* Audio tones, alarms and Vario sound custom implementation
-* Voice annoucements
-* DFU bootloader - Start by pushing horizontal trims to the center, like regular OpenTX one
-* USB Joystick & Storage modes
-* AUX Serial port with modes:
-  * Telemetry mirror for AFHDS2A and CRSF
-  * SBUS Trainer
-  * Debug (on DEBUG builds)
-* FlySky FS-HZCZ03-ADJ Digital Gimbal support 
+<sub>[2] By adding DFPlayer, see [instructions](https://github.com/OpenI6X/opentx/wiki/Modifications#dfplayer) in wiki.</sub><br>
+<sub>[3] By wiring 2 pads, see [instructions](https://github.com/OpenI6X/opentx/wiki/Modifications#adjustable-backlight-level) in wiki.</sub><br>
+<sub>[4] See [instructions](https://github.com/OpenI6X/opentx/wiki/Modifications#flysky-fs-hzcz03-adj-gimbal) in wiki.</sub>
   
-## Navigation
-
-| Key | Function                                                                                           |
-| --- |----------------------------------------------------------------------------------------------------|
-| UP     | Up. Scroll values. Hold on main screen for stats.                                                  |                              
-| DOWN   | Down. Scroll values. Hold on main screen for telemetry.                                            |                                  
-| OK     | Confirm. Hold on main screen for model menu. Short press on main screen for popup menu.            |
-| CANCEL | Exit/Back/Cancel.                                                                                  |                      
-| BIND   | Scroll pages right or left (long press), go right in a line. Hold on main screen for general menu. |
-
-## Shutdown
-
-FlySky FS-i6X don't have a software controlled shutdown button. Do not switch off radio when you see `▫` (small square) icon in top right corner of main screen. It indicates that settings are not yet saved. Wait until it disappears or use "Save all" option from main screen popup menu.
-
-When to use "Save all" option:
-* When you don't want to wait until square icon disappear before shutdown.
-* With USB connected - when USB is connected then settings are not stored with standard delay.
-* To save timers.
-
-## USB connection
-
-FlySky FS-i6X don't have a USB VBUS making it impossible to detect USB connection. To connect press OK on main screen and select "USB Connect" (In version 1.8.0 or earlier it's in: Radio Setup -> "USB Detect").<br>
-Automatic connection detection can be added by wiring `PA15` pad to USB VBUS preferably with a resistor (I have used 1K).
-
-## Powering by 2S Li-Po/Li-ion/18650
-
-FlySky i6X is officially rated for up to 6V. Running anything above may damage your radio.
-
-## Mode 1 & Mode 3 radios
-
-With Mode 1 & Mode 3 radios you may experience inverted gimbal movement and swapped gimbals on main screen. To fix this swap gimbal connectors (red-white one with black-white one).
-
 ## Credits
 
 * Janek ([ajjjjjjjj](https://github.com/ajjjjjjjj)), continues Kuba's and Mariano's work, added sound, USB, ExpressLRS V2/V3 configuration, telemetry mirror, SBUS trainer, new/fixed drivers, ports, bugfixes.

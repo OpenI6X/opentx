@@ -14,24 +14,28 @@ boards = {
         "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "YES",
         "DFPLAYER": "NO",
+        "USB_SERIAL": "YES",
     },
     "I6X_DFPLAYER": {
         "HELI": "NO",
         "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "YES",
         "DFPLAYER": "YES",
+        "USB_SERIAL": "NO",
     },
     "I6X_HELI": {
         "HELI": "YES",
         "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "NO",
         "DFPLAYER": "NO",
+        "USB_SERIAL": "YES",
     },
     "I6X_HELI_DFPLAYER": {
         "HELI": "YES",
         "PCBI6X_ELRS": "YES",
         "PCBI6X_INAV": "NO",
         "DFPLAYER": "YES",
+        "USB_SERIAL": "YES",
     },
 }
 
@@ -58,8 +62,9 @@ common_options = {
     "LUA_COMPILER": "NO",
     "DISABLE_COMPANION": "YES",
     "PPM_UNIT": "PERCENT_PREC1",
-    "PCBI6X_USB_VBUS": "NO",
-    "PCBI6X_USB_MSD": "YES",
+    "USB_VBUS": "NO",
+    "USB_MSD": "YES",
+    "SBUS_TRAINER": "NO",
 }
 
 

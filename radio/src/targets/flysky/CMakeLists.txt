@@ -3,11 +3,12 @@ option(PCBI6X_ELRS "Enable ExpressLRS configuration tool" NO) # ~4.0kB
 option(CRSF_EXTENDED_TYPES "Enable Support for CRSF STRING and FLOAT types" NO) # ~0.2kB
 option(PCBI6X_HELLO "Enable Hello World example tool" NO)
 option(PCBI6X_INAV "Enable INAV Lite telemetry screen" NO) # ~2kB
-option(PCBI6X_USB_VBUS "Removes manual USB connection menu option, requires wiring USB VBUS to PA15 pad" NO)
-option(PCBI6X_USB_MSD "Enable USB mass storage mode" YES) # 3.2kB
+option(USB_VBUS "Removes manual USB connection menu option, requires wiring USB VBUS to PA15 pad" NO)
+option(USB_MSD "Enable USB mass storage mode" YES) # 3.2kB
 option(AFHDS2A_LQI_CH "Send RSSI at channel 1-17" OFF)
 option(DFPLAYER "Enables DFPlayer on AUX3 TX" NO) # ~1.7kB
 option(FAKE_RSSI "Enables converting TRSS to RSSI data for receivers not sending RSSI" NO)
+option(SBUS_TRAINER "Enables SBUS Trainer mode and trainer lost/back sounds" NO) # ~0.6kB
 
 if(PCB STREQUAL I6X)
   set(PWR_BUTTON "SWITCH" CACHE STRING "Pwr button type (PRESS/SWITCH)")
@@ -43,8 +44,8 @@ if(NOT AFHDS2A_LQI_CH STREQUAL OFF)
   add_definitions(-DAFHDS2A_LQI_CH=${AFHDS2A_LQI_CH})
 endif()
 
-if(PCBI6X_USB_VBUS STREQUAL YES)
-  add_definitions(-DPCBI6X_USB_VBUS)
+if(USB_VBUS STREQUAL YES)
+  add_definitions(-DUSB_VBUS)
 endif()
 
 if(FLYSKY_GIMBAL STREQUAL YES)
@@ -95,8 +96,8 @@ set(TARGET_SRC
   )
 endif()
 
-if(PCBI6X_USB_MSD STREQUAL YES)
-add_definitions(-DPCBI6X_USB_MSD)
+if(USB_MSD STREQUAL YES)
+  add_definitions(-DUSB_MSD)
 endif()
 
 set(TARGET_SRC
@@ -108,11 +109,14 @@ set(TARGET_SRC
   ../common/arm/stm32/timers_driver.cpp
   )
 
-add_definitions(-DSBUS)
-set(PULSES_SRC
-  ${PULSES_SRC}
-  ../sbus.cpp
-  )
+if(SBUS_TRAINER STREQUAL YES)
+  add_definitions(-DSBUS)
+  add_definitions(-DSBUS_TRAINER)
+  set(PULSES_SRC
+    ${PULSES_SRC}
+    ../sbus.cpp
+    )
+endif()
 
 set(HSE_VALUE 8000000)
 set(SDCARD NO) # ~24kB

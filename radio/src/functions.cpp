@@ -426,13 +426,6 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
             }
             break;
 #endif
-          case FUNC_SET_SCREEN:
-            if (isRepeatDelayElapsed(functions, functionsContext, i)) {
-              TRACE("SET VIEW %d", (CFN_PARAM(cfn)));
-              extern void showTelemScreen(uint8_t index);
-              showTelemScreen(CFN_PARAM(cfn));
-            }
-            break;
 #if defined(DEBUG)
           case FUNC_TEST:
             testFunc();

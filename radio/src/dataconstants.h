@@ -235,7 +235,11 @@ enum BeeperMode {
 #elif defined(PCBX7) || defined(PCBXLITE)
   #define TRAINER_MODE_MAX()             TRAINER_MODE_MASTER_CPPM_EXTERNAL_MODULE
 #elif defined(PCBI6X)
-  #define TRAINER_MODE_MAX()             TRAINER_MODE_MASTER_BATTERY_COMPARTMENT
+  #if defined(SBUS_TRAINER)
+    #define TRAINER_MODE_MAX()             TRAINER_MODE_MASTER_BATTERY_COMPARTMENT
+  #else
+    #define TRAINER_MODE_MAX()             TRAINER_MODE_MASTER_TRAINER_JACK
+  #endif
 #else
   #define TRAINER_MODE_MAX()             HAS_WIRELESS_TRAINER_HARDWARE() ? TRAINER_MODE_MASTER_BATTERY_COMPARTMENT : TRAINER_MODE_MASTER_CPPM_EXTERNAL_MODULE
 #endif
@@ -258,7 +262,7 @@ enum UartModes {
 #if !defined(PCBI6X)
   UART_MODE_TELEMETRY,
 #endif
-#if defined(SBUS)
+#if defined(SBUS_TRAINER)
   UART_MODE_SBUS_TRAINER,
 #endif
 #if defined(LUA)
@@ -772,7 +776,6 @@ enum Functions {
 #if defined(PCBTARANIS)
   FUNC_SCREENSHOT,
 #endif
-  FUNC_SET_SCREEN,
 #if defined(DEBUG)
   FUNC_TEST, // should remain the last before MAX as not added in Companion
 #endif

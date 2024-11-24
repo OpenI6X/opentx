@@ -29,7 +29,7 @@ uint8_t mainRequestFlags = 0;
 #if defined(STM32)
 void onUSBConnectMenu(const char *result)
 {
-#if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
+#if defined(USB_MSD)
   if (result == STR_USB_MASS_STORAGE) {
     setSelectedUsbMode(USB_MASS_STORAGE_MODE);
   }
@@ -53,7 +53,7 @@ void handleUsbConnection()
     if (getSelectedUsbMode() == USB_UNSELECTED_MODE) {
       if (g_eeGeneral.USBMode == USB_UNSELECTED_MODE && popupMenuItemsCount == 0) {
         POPUP_MENU_ADD_ITEM(STR_USB_JOYSTICK);
-  #if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
+  #if defined(USB_MSD)
         POPUP_MENU_ADD_ITEM(STR_USB_MASS_STORAGE);
   #endif
 #if defined(USB_SERIAL)
@@ -66,7 +66,7 @@ void handleUsbConnection()
       }
     }
     else {
-      #if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
+      #if !defined(PCBI6X) || defined(USB_MSD)
       if (getSelectedUsbMode() == USB_MASS_STORAGE_MODE) {
         #if defined(PCBI6X_ELRS)
         extern void elrsStop();
@@ -82,7 +82,7 @@ void handleUsbConnection()
 
   if (usbStarted() && !usbPlugged()) {
     usbStop();
-    #if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
+    #if !defined(PCBI6X) || defined(USB_MSD)
     if (getSelectedUsbMode() == USB_MASS_STORAGE_MODE) {
       opentxResume();
     }
@@ -476,7 +476,7 @@ void perMain()
   }
 #endif
 
-#if defined(STM32) && defined(PCBI6X_USB_MSD)
+#if defined(STM32) && defined(USB_MSD)
   if (usbPlugged() && getSelectedUsbMode() == USB_MASS_STORAGE_MODE) {
     // disable access to menus
     lcdClear();

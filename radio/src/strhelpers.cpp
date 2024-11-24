@@ -44,7 +44,7 @@ char zchar2char(int8_t idx)
   return ' ';
 }
 
-int8_t char2idx(char c)
+int8_t char2zchar(char c)
 {
   if (c == '_') return 37;
 #if LEN_SPECIAL_CHARS > 0
@@ -63,7 +63,7 @@ void str2zchar(char * dest, const char * src, int size)
 {
   memset(dest, 0, size);
   for (int c=0; c<size && src[c]; c++) {
-    dest[c] = char2idx(src[c]);
+    dest[c] = char2zchar(src[c]);
   }
 }
 
