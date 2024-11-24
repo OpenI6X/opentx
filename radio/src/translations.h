@@ -224,7 +224,8 @@ extern const char STR_OPEN9X[];
   #define OFS_VOLTSRC           (OFS_I6X_PROTOCOLS + sizeof(TR_I6X_PROTOCOLS))
 #endif
   #define OFS_CURVE_TYPES       (OFS_VOLTSRC + sizeof(TR_VOLTSRC))
-  #define OFS_VSENSORTYPES      (OFS_CURVE_TYPES + sizeof(TR_CURVE_TYPES))
+  #define OFS_CRSF_ARMING_MODES (OFS_CURVE_TYPES + sizeof(TR_CURVE_TYPES))
+  #define OFS_VSENSORTYPES      (OFS_CRSF_ARMING_MODES + sizeof(TR_CRSF_ARMING_MODES))
   #define OFS_VFORMULAS         (OFS_VSENSORTYPES + sizeof(TR_VSENSORTYPES))
   #define OFS_VPREC             (OFS_VFORMULAS + sizeof(TR_VFORMULAS))
   #define OFS_VCELLINDEX        (OFS_VPREC + sizeof(TR_VPREC))
@@ -330,6 +331,7 @@ extern const char STR_OPEN9X[];
   #define STR_MULTI_PROTOCOLS   (STR_OPEN9X + OFS_MULTI_PROTOCOLS)
 #endif
   #define STR_CURVE_TYPES       (STR_OPEN9X + OFS_CURVE_TYPES)
+  #define STR_CRSF_ARMING_MODES (STR_OPEN9X + OFS_CRSF_ARMING_MODES)
   #define STR_VSENSORTYPES      (STR_OPEN9X + OFS_VSENSORTYPES)
   #define STR_VFORMULAS         (STR_OPEN9X + OFS_VFORMULAS)
   #define STR_VPREC             (STR_OPEN9X + OFS_VPREC)
@@ -754,6 +756,7 @@ extern const char STR_TEMP_CALIB[];
 extern const char STR_TIME[];
 extern const char STR_MAXBAUDRATE[];
 extern const char STR_BAUDRATE[];
+extern const char STR_CRSF_ARMING_MODE[];
 extern const char STR_SD_INFO_TITLE[];
 extern const char STR_SD_TYPE[];
 extern const char STR_SD_SPEED[];

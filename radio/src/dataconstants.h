@@ -207,6 +207,14 @@ enum BeeperMode {
     TRAINER_MODULE,
     FLASHING_MODULE,
   };
+
+  enum ArmingMode {
+  ARMING_MODE_FIRST = 0,
+  ARMING_MODE_CH5 = ARMING_MODE_FIRST,
+  ARMING_MODE_SWITCH = 1,
+  ARMING_MODE_LAST = ARMING_MODE_SWITCH,
+};
+
   enum TrainerMode {
     TRAINER_MODE_MASTER_TRAINER_JACK,
 #if !defined(PCBI6X)

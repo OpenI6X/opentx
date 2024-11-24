@@ -113,6 +113,7 @@ const char STR_OPEN9X[]  =
 #endif
     ISTR(VOLTSRC)
     ISTR(CURVE_TYPES)
+    ISTR(CRSF_ARMING_MODES)
     ISTR(VSENSORTYPES)
     ISTR(VFORMULAS)
     ISTR(VPREC)
@@ -540,6 +541,7 @@ const char STR_TEMP_CALIB[]  = TR_TEMP_CALIB;
 const char STR_TIME[]  = TR_TIME;
 const char STR_MAXBAUDRATE[]  = TR_MAXBAUDRATE;
 const char STR_BAUDRATE[]  = TR_BAUDRATE;
+const char STR_CRSF_ARMING_MODE[] = TR_CRSF_ARMING_MODE;
 const char STR_SD_INFO_TITLE[]  = TR_SD_INFO_TITLE;
 const char STR_SD_TYPE[]  = TR_SD_TYPE;
 const char STR_SD_SPEED[]  = TR_SD_SPEED;

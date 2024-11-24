@@ -55,6 +55,8 @@ const CrossfireSensor crossfireSensors[] = {
     {0, 0, "UNKNOWN", UNIT_RAW, 0},
 };
 
+CrossfireModuleStatus crossfireModuleStatus = {0};
+
 const CrossfireSensor &getCrossfireSensor(uint8_t id, uint8_t subId) {
   if (id == LINK_ID)
     return crossfireSensors[RX_RSSI1_INDEX + subId];
@@ -247,6 +249,28 @@ void processCrossfireTelemetryFrame() {
         }
       }
 #else
+      if (id == DEVICE_INFO_ID && telemetryRxBuffer[4] == MODULE_ADDRESS) {
+        uint8_t nameSize = telemetryRxBuffer[1] - 18;
+        // strncpy((char *)&crossfireModuleStatus.name, (const char *)&telemetryRxBuffer[5], CRSF_NAME_MAXSIZE);
+        // crossfireModuleStatus.name[CRSF_NAME_MAXSIZE -1] = 0; // For some reason, GH din't like strlcpy
+        if (strncmp((const char *) &telemetryRxBuffer[5 + nameSize], "ELRS", 4) == 0)
+          crossfireModuleStatus.isELRS = true;
+        crossfireModuleStatus.major = telemetryRxBuffer[14 + nameSize];
+        crossfireModuleStatus.minor = telemetryRxBuffer[15 + nameSize];
+        // crossfireModuleStatus.revision = telemetryRxBuffer[16 + nameSize];
+        crossfireModuleStatus.queryCompleted = true;
+      }
+
+      ModuleData *md = &g_model.moduleData[EXTERNAL_MODULE];
+
+      if (!CRSF_ELRS_MIN_VER(4, 0) &&
+          (md->crsf.crsfArmingMode != ARMING_MODE_CH5 || md->crsf.crsfArmingMode != SWSRC_NONE)) {
+        md->crsf.crsfArmingMode = ARMING_MODE_CH5;
+        md->crsf.crsfArmingTrigger = SWSRC_NONE;
+
+        storageDirty(EE_MODEL);
+      }
+
       // <Device address 0><Frame length 1><Type 2><Payload 3><CRC>
       // destination address and CRC are skipped
       runCrossfireTelemetryCallback(telemetryRxBuffer[2], telemetryRxBuffer + 2, telemetryRxBuffer[1] - 1);

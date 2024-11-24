@@ -143,8 +143,8 @@ enum MenuModelSetupItems {
 #endif
 
 #if defined(CROSSFIRE)
-#define IF_MODULE_ARMED(module, xxx) (isModuleCrossfire(module) ? (uint8_t)(xxx) : HIDDEN_ROW)
-#define IF_MODULE_ARMED_TRIGGER(module, xxx) (isModuleCrossfire(module) && (g_model.moduleData[module].crsf.crsfArmingModeAndTrigger & 0x8000) ? (uint8_t)(xxx) : HIDDEN_ROW)
+#define IF_MODULE_ARMED(module, xxx) (CRSF_ELRS_MIN_VER(4, 0) ? (uint8_t)(xxx) : HIDDEN_ROW)
+#define IF_MODULE_ARMED_TRIGGER(module, xxx) ((CRSF_ELRS_MIN_VER(4, 0) && g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingMode) ? (uint8_t)(xxx) : HIDDEN_ROW)
 #else
 #define IF_MODULE_ARMED(module, xxx)
 #define IF_MODULE_ARMED_TRIGGER(module, xxx)
@@ -347,14 +347,14 @@ void menuModelSetup(event_t event)
     IF_INTERNAL_MODULE_ON(FAILSAFE_ROWS(INTERNAL_MODULE)),
     LABEL(ExternalModule),
     EXTERNAL_MODULE_MODE_ROWS,
+    IF_MODULE_ARMED(EXTERNAL_MODULE, 0),           /* Arming Mode */
+    IF_MODULE_ARMED_TRIGGER(EXTERNAL_MODULE, 0),   /* Arming TRIGGER */
     MULTIMODULE_SUBTYPE_ROWS(EXTERNAL_MODULE)
     MULTIMODULE_STATUS_ROWS
     EXTERNAL_MODULE_CHANNELS_ROWS,
     EXTERNAL_MODULE_BIND_ROWS(),
     OUTPUT_TYPE_ROWS()
     EXTERNAL_MODULE_OPTION_ROW,
-    IF_MODULE_ARMED(EXTERNAL_MODULE, 0),           /* Arming Mode */
-    IF_MODULE_ARMED_TRIGGER(EXTERNAL_MODULE, 0),   /* Arming TRIGGER */
     MULTIMODULE_MODULE_ROWS
     EXTERNAL_MODULE_POWER_ROW,
     EXTRA_MODULE_ROWS
@@ -964,16 +964,16 @@ void menuModelSetup(event_t event)
 
 #if defined(CROSSFIRE)
       case ITEM_MODEL_SETUP_EXTERNAL_MODULE_ARMING_MODE:
-      {
-        uint16_t crsfArmingMode = (g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingModeAndTrigger & 0x8000) ? 1 : 0;
-        crsfArmingMode = editChoice(MODEL_SETUP_2ND_COLUMN, y, STR_ARMING_MODE, STR_CRSF_ARMING_MODES, crsfArmingMode, 0, 1, attr, event, INDENT_WIDTH);
-        g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingModeAndTrigger |= (crsfArmingMode << 15); // set highest bit
+        g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingMode =
+          editChoice(MODEL_SETUP_2ND_COLUMN, y, STR_CRSF_ARMING_MODE, STR_CRSF_ARMING_MODES,
+          g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingMode, ARMING_MODE_FIRST, ARMING_MODE_LAST, attr, event/*, INDENT_WIDTH*/);
         break;
-      }
+
       case ITEM_MODEL_SETUP_EXTERNAL_MODULE_ARMING_TRIGGER:
         lcdDrawText(INDENT_WIDTH, y, STR_SWITCH);
-        drawSwitch(MODEL_SETUP_2ND_COLUMN, y, g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingModeAndTrigger, attr);
-        CHECK_INCDEC_MODELSWITCH(event, g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingModeAndTrigger, SWSRC_FIRST_IN_MIXES, SWSRC_LAST_IN_MIXES, isSwitchAvailableForArming);
+        drawSwitch(MODEL_SETUP_2ND_COLUMN, y, g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingTrigger, attr);
+        if (attr)
+          CHECK_INCDEC_SWITCH(event, g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingTrigger, SWSRC_FIRST, SWSRC_LAST, EE_MODEL, isSwitchAvailableForArming);
         break;
 #endif
 

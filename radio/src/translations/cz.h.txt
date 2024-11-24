@@ -911,6 +911,9 @@
 #define TR_TEMP_CALIB          " +=\006Teplota"
 #define TR_TIME                "Čas"
 #define TR_MAXBAUDRATE         "Baudrate"
+#define TR_CRSF_ARMING_MODE            "Arm mód"
+#define LEN_CRSF_ARMING_MODES          "\006"
+#define TR_CRSF_ARMING_MODES           TR_CH "5\0  " TR_SWITCH
 
 #define TR_BLUETOOTH            "Bluetooth"
 #define TR_BLUETOOTH_DISC       "Discover"

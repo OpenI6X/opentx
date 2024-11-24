@@ -454,7 +454,9 @@ PACK(struct ModuleData {
       uint16_t servoFreq; // 50 - 400
     } afhds2a);
     NOBACKUP(struct {
-      uint16_t crsfArmingModeAndTrigger; // 0 means crsfArmingMode CH5, Switch otherwise, or use last bit?
+      int16_t crsfArmingTrigger:10;
+      int16_t crsfArmingMode:1;
+      int16_t spare1:5;
     } crsf);
   };
 
