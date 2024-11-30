@@ -966,7 +966,7 @@
 #define TR_MENUSENSOR          "SENSOR"
 #define TR_SENSOR              "SENSOR"
 #define TR_COUNTRYCODE         "Landcode"
-#define TR_USBCONNECT          "USB Connect"
+#define           "USB Connect"
 #define TR_USBMODE             "USB Mode"
 #define TR_VOICELANG           "Taal"
 #define TR_UNITSSYSTEM         "Eenheden"

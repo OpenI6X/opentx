@@ -290,7 +290,8 @@ extern void ISR_TIMER3_CAPT_vect(void);
 // USB
 #define USB_RCC_AHBPeriph_GPIO          RCC_AHBPeriph_GPIOA
 #define USB_GPIO                        GPIOA
-#define USB_GPIO_PIN_VBUS               GPIO_Pin_15  // PA.15
+#define USB_GPIO_PIN_DM                 GPIO_Pin_11 // PA.11
+#define USB_GPIO_PIN_DP                 GPIO_Pin_12 // PA.12
 
 // Flash (taken from f2)
 #define FLASH_CR_SER               ((uint32_t)0x00000002)
@@ -434,7 +435,7 @@ extern void ISR_TIMER3_CAPT_vect(void);
 //all used RCC goes here
 #define RCC_AHB1_LIST                   (I2C_RCC_AHB1Periph | BACKLIGHT_STD_RCC_APB1Periph | BACKLIGHT_RCC_AHB1Periph | LCD_RCC_AHB1Periph | KEYS_RCC_AHB1Periph | BUZZER_RCC_AHBPeriph \
                                          | EXTMODULE_RCC_AHBPeriph | CRC_RCC_AHB1Periph | TELEMETRY_RCC_AHB1Periph | AUX_SERIAL_RCC_AHB1Periph \
-                                         | AUX3_SERIAL_RCC_AHB1Periph | AUX4_SERIAL_RCC_AHB1Periph | ADC_RCC_AHB1Periph)
+                                         | AUX3_SERIAL_RCC_AHB1Periph | AUX4_SERIAL_RCC_AHB1Periph | ADC_RCC_AHB1Periph | USB_RCC_AHBPeriph_GPIO)
 #define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | RCC_APB1Periph_TIM6 /*delays*/ | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph \
                                          | TELEMETRY_RCC_APB1Periph | BACKLIGHT_STD_RCC_APB1Periph | BACKLIGHT_RCC_APB1Periph | RCC_APB1Periph_USB \
                                          | AUX3_SERIAL_RCC_APB1Periph | AUX4_SERIAL_RCC_APB1Periph)

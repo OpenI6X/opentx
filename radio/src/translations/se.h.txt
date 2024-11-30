@@ -982,7 +982,6 @@
 #define TR_MENUSENSOR          "SENSOR"
 #define TR_SENSOR              "SENSOR"
 #define TR_COUNTRYCODE         "Landskod"
-#define TR_USBCONNECT          "USB Connect"
 #define TR_USBMODE             "USB Mode"
 #define TR_VOICELANG           "Röstspråk"
 #define TR_UNITSSYSTEM         "Enheter"

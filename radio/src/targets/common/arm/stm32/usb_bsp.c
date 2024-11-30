@@ -34,40 +34,10 @@ static void CRS_Config(void);
 
 void USB_BSP_Init(USB_CORE_HANDLE *pdev) {
 
-  RCC_AHBPeriphClockCmd(USB_RCC_AHBPeriph_GPIO, ENABLE);
-
 #if defined USB_CLOCK_SOURCE_CRS
   RCC_USBCLKConfig(RCC_USBCLK_HSI48);
 
   CRS_Config();  
-#else 
-  RCC_HSEConfig(RCC_HSE_ON);
-  
-  /* Wait till HSE is ready */
-  while (RCC_GetFlagStatus(RCC_FLAG_HSERDY) == RESET) {}
-  
-  /* Enable PLL */
-  RCC_PLLCmd(ENABLE);
-  
-  /* Wait till PLL is ready */
-  while (RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET) {}
-  
-  /* Configure USBCLK from PLL clock */
-  RCC_USBCLKConfig(RCC_USBCLK_PLLCLK); 
-#endif /*USB_CLOCK_SOURCE_CRS */ 
-
-// included in RCC_APB1_LIST
-//  RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, ENABLE);
-
-#if defined(USB_GPIO_PIN_VBUS)
-  /* Configure VBUS Pin */
-  GPIO_InitTypeDef GPIO_InitStructure;
-  GPIO_InitStructure.GPIO_Pin = USB_GPIO_PIN_VBUS;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
-  GPIO_Init(USB_GPIO, &GPIO_InitStructure);
 #endif
 }
 

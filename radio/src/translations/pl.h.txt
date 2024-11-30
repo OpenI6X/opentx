@@ -975,7 +975,6 @@
 #define TR_MENUSENSOR          "CZUJNIK"
 #define TR_SENSOR              "SENSOR"
 #define TR_COUNTRYCODE         "Kod regionu"
-#define TR_USBCONNECT          "Połącz USB"
 #define TR_USBMODE             "Tryb USB"
 #define TR_VOICELANG           "Język głosu"
 #define TR_UNITSSYSTEM         "Jednostki"

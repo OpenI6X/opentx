@@ -49,18 +49,16 @@ void setSelectedUsbMode(int mode)
 
 int usbPlugged()
 {
-#if !defined(USB_VBUS)
-  if (globalData.usbConnect) {
+  // if connected prevent false reads on USB DM pin
+  if (usbStarted()) {
     return 1;
   }
-#endif
 
-#if defined(USB_GPIO_PIN_VBUS)
   // debounce
   static uint8_t debounced_state = 0;
   static uint8_t last_state = 0;
 
-  if (GPIO_ReadInputDataBit(USB_GPIO, USB_GPIO_PIN_VBUS)) {
+  if (!GPIO_ReadInputDataBit(USB_GPIO, USB_GPIO_PIN_DM)) {
     if (last_state) {
       debounced_state = 1;
     }
@@ -73,9 +71,6 @@ int usbPlugged()
     last_state = 0;
   }
   return debounced_state;
-#else
-  return 0;
-#endif // USB_GPIO_PIN_VBUS
 }
 
 #if defined(STM32F0)
@@ -99,6 +94,15 @@ extern "C" void OTG_FS_IRQHandler()
 
 void usbInit()
 {
+  // USB DP/DM as connection detect
+  GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitStructure.GPIO_Pin = USB_GPIO_PIN_DM;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(USB_GPIO, &GPIO_InitStructure);
+
   // Initialize hardware
 #if defined(STM32F0)
   USB_BSP_Init(&USB_Device_dev);

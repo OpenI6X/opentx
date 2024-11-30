@@ -62,7 +62,6 @@ common_options = {
     "LUA_COMPILER": "NO",
     "DISABLE_COMPANION": "YES",
     "PPM_UNIT": "PERCENT_PREC1",
-    "USB_VBUS": "NO",
     "USB_MSD": "YES",
     "SBUS_TRAINER": "NO",
 }

@@ -960,7 +960,6 @@
 #define TR_MENUSENSOR          "SENZOR"
 #define TR_SENSOR              "SENZOR"
 #define TR_COUNTRYCODE         "Kód regionu"
-#define TR_USBCONNECT          "USB Connect"
 #define TR_USBMODE             "USB Mode"
 #define TR_VOICELANG           "Jazyk hlasu"
 #define TR_UNITSSYSTEM         "Jednotky"

@@ -978,7 +978,6 @@
 #define TR_MENUSENSOR                  "CAPTEUR"
 #define TR_SENSOR                      "SENSOR"
 #define TR_COUNTRYCODE                 TR("Zone géo.", "Zone géographique")
-#define TR_USBCONNECT                  "USB Connect"
 #define TR_USBMODE                     "USB Mode"
 #define TR_VOICELANG                   TR("Langue voix", "Langue annonces vocales")
 #define TR_UNITSSYSTEM                 "Unités"

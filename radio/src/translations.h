@@ -597,7 +597,6 @@ extern const char STR_NONE[];
 extern const char STR_MENUSENSOR[];
 extern const char STR_SENSOR[];
 extern const char STR_COUNTRYCODE[];
-extern const char STR_USBCONNECT[];
 extern const char STR_USBMODE[];
 extern const char STR_DISABLE_INTERNAL[];
 
