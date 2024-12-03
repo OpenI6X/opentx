@@ -60,14 +60,10 @@ const char STR_OPEN9X[]  =
     ISTR(VFSWRESET)
     ISTR(FUNCSOUNDS)
     ISTR(VTELEMUNIT)
-    // ISTR(VALARM)
-    // ISTR(VALARMFN)
 #if !defined(PCBI6X)
-    ISTR(VTELPROTO)
     ISTR(GPSFORMAT)
     ISTR(AMPSRC)
 #endif
-    // ISTR(VARIOSRC)
     ISTR(VTELEMSCREENTYPE)
 #if defined(HELI)
     ISTR(VSWASHTYPE)
@@ -79,7 +75,9 @@ const char STR_OPEN9X[]  =
     ISTR(INPUTNAMES)
 #endif
     ISTR(VTMRMODES)
+#if defined(RTCCLOCK)
     ISTR(DATETIME)
+#endif
     ISTR(VPERSISTENT)
 #if !defined(PCBI6X)
     ISTR(VLCD)

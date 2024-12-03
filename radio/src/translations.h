@@ -176,8 +176,12 @@ extern const char STR_OPEN9X[];
 #else
   #define OFS_VTMRMODES           (OFS_VSRCRAW + sizeof(TR_VSRCRAW))
 #endif
+#if defined(RTCCLOCK)
 #define OFS_DATETIME            (OFS_VTMRMODES + sizeof(TR_VTMRMODES))
 #define OFS_VPERSISTENT         (OFS_DATETIME + sizeof(TR_DATETIME))
+#else
+#define OFS_VPERSISTENT         (OFS_VTMRMODES + sizeof(TR_VTMRMODES))
+#endif
 #if !defined(PCBI6X)
   #define OFS_VLCD                (OFS_VPERSISTENT + sizeof(TR_VPERSISTENT))
   #define OFS_VUNITSSYSTEM        (OFS_VLCD + sizeof(TR_VLCD))
