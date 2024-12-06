@@ -1734,7 +1734,7 @@ void opentxInit()
     globalData.unexpectedShutdown = 1;
   }
 
-#if defined(SDCARD) && !defined(PCBMEGA2560)
+#if defined(SDCARD)
   // SDCARD related stuff, only done if not unexpectedShutdown
   if (!globalData.unexpectedShutdown) {
     sdInit();

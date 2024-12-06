@@ -203,17 +203,13 @@ void init_no_pulses(uint32_t port);
 void disable_no_pulses(uint32_t port);
 void init_ppm( uint32_t module_index );
 void disable_ppm( uint32_t module_index );
-void init_pxx( uint32_t module_index );
-void disable_pxx( uint32_t module_index );
 void init_serial( uint32_t module_index, uint32_t baudrate, uint32_t period);
 void disable_serial( uint32_t module_index);
 void init_module_timer( uint32_t module_index, uint32_t period, uint8_t state);
 void disable_module_timer( uint32_t module_index);
 
-//jsut to allow compilation
-void setupPulsesSbus(uint8_t port);
+//just to allow compilation
 void extmoduleSendNextFrame();
-//void intmoduleSendNextFrame();
 
 // Trainer driver
 #define SLAVE_MODE()                    (false) // (g_model.trainerMode == TRAINER_MODE_SLAVE)

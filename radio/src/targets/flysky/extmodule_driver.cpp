@@ -129,20 +129,20 @@ inline void extmoduleSendNextFrame() {
   static bool delay = true;
   static uint16_t delay_halfus = GET_PPM_DELAY(EXTERNAL_MODULE) * 2;
   if (moduleState[EXTERNAL_MODULE].protocol == PROTOCOL_CHANNELS_PPM) {
-    //TRACE("modulePulsesData[EXTERNAL_MODULE].ppm: %p",(void*)&modulePulsesData[EXTERNAL_MODULE].ppm);
-    //DUMP((uint8_t*)(modulePulsesData[EXTERNAL_MODULE].ppm.pulses), 40);
-    static uint16_t *pulsePtr = modulePulsesData[EXTERNAL_MODULE].ppm.ptr;
+    //TRACE("extmodulePulsesData.ppm: %p",(void*)&extmodulePulsesData.ppm);
+    //DUMP((uint8_t*)(extmodulePulsesData.ppm.pulses), 40);
+    static uint16_t *pulsePtr = extmodulePulsesData.ppm.ptr;
 
     if (*pulsePtr != 0) {
       if (delay) {
         EXTMODULE_TIMER->CCR2 = EXTMODULE_TIMER->CCR2 + delay_halfus;
       } else {
-        //TRACE("ptr %d val %d", (uint8_t)(pulsePtr - modulePulsesData[EXTERNAL_MODULE].ppm.pulses), *pulsePtr);
+        //TRACE("ptr %d val %d", (uint8_t)(pulsePtr - extmodulePulsesData.ppm.pulses), *pulsePtr);
         EXTMODULE_TIMER->CCR2 = EXTMODULE_TIMER->CCR2 + *pulsePtr - delay_halfus;
         pulsePtr += 1;
       }
     } else {
-      pulsePtr = modulePulsesData[EXTERNAL_MODULE].ppm.pulses;
+      pulsePtr = extmodulePulsesData.ppm.pulses;
       // polarity 1 +
       // polarity 0 -
       EXTMODULE_TIMER->CCER = TIM_CCER_CC2E | (GET_PPM_POLARITY(EXTERNAL_MODULE) ? 0 : TIM_CCER_CC2P);
@@ -153,10 +153,10 @@ inline void extmoduleSendNextFrame() {
     delay = !delay;
 #if defined(CROSSFIRE)
   } else if (moduleState[EXTERNAL_MODULE].protocol == PROTOCOL_CHANNELS_CROSSFIRE) {
-    if (modulePulsesData[EXTERNAL_MODULE].crossfire.length > 0) {
+    if (extmodulePulsesData.crossfire.length > 0) {
       sportSendBuffer(
-          modulePulsesData[EXTERNAL_MODULE].crossfire.pulses,
-          modulePulsesData[EXTERNAL_MODULE].crossfire.length);
+          extmodulePulsesData.crossfire.pulses,
+          extmodulePulsesData.crossfire.length);
     }
 #endif
   } else {

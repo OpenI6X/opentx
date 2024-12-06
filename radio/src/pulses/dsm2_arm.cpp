@@ -34,13 +34,13 @@
 #if defined(PPM_PIN_SERIAL)
 void putDsm2SerialBit(uint8_t bit)
 {
-  modulePulsesData[EXTERNAL_MODULE].dsm2.serialByte >>= 1;
+  extmodulePulsesData.dsm2.serialByte >>= 1;
   if (bit & 1) {
-    modulePulsesData[EXTERNAL_MODULE].dsm2.serialByte |= 0x80;
+    extmodulePulsesData.dsm2.serialByte |= 0x80;
   }
-  if (++modulePulsesData[EXTERNAL_MODULE].dsm2.serialBitCount >= 8) {
-    *modulePulsesData[EXTERNAL_MODULE].dsm2.ptr++ = modulePulsesData[EXTERNAL_MODULE].dsm2.serialByte;
-    modulePulsesData[EXTERNAL_MODULE].dsm2.serialBitCount = 0;
+  if (++extmodulePulsesData.dsm2.serialBitCount >= 8) {
+    *extmodulePulsesData.dsm2.ptr++ = extmodulePulsesData.dsm2.serialByte;
+    extmodulePulsesData.dsm2.serialBitCount = 0;
   }
 }
 
@@ -65,14 +65,14 @@ void putDsm2Flush()
 #else
 void _send_1(uint8_t v)
 {
-  if (modulePulsesData[EXTERNAL_MODULE].dsm2.index & 1)
+  if (extmodulePulsesData.dsm2.index & 1)
     v += 2;
   else
     v -= 2;
 
-  *modulePulsesData[EXTERNAL_MODULE].dsm2.ptr++ = v - 1;
-  modulePulsesData[EXTERNAL_MODULE].dsm2.index += 1;
-  modulePulsesData[EXTERNAL_MODULE].dsm2.rest -= v;
+  *extmodulePulsesData.dsm2.ptr++ = v - 1;
+  extmodulePulsesData.dsm2.index += 1;
+  extmodulePulsesData.dsm2.rest -= v;
 }
 
 void sendByteDsm2(uint8_t b) // max 10 changes 0 10 10 10 10 1
@@ -96,10 +96,10 @@ void sendByteDsm2(uint8_t b) // max 10 changes 0 10 10 10 10 1
 
 void putDsm2Flush()
 {
-  if (modulePulsesData[EXTERNAL_MODULE].dsm2.index & 1)
-    *modulePulsesData[EXTERNAL_MODULE].dsm2.ptr++ = modulePulsesData[EXTERNAL_MODULE].dsm2.rest;
+  if (extmodulePulsesData.dsm2.index & 1)
+    *extmodulePulsesData.dsm2.ptr++ = extmodulePulsesData.dsm2.rest;
   else
-    *(modulePulsesData[EXTERNAL_MODULE].dsm2.ptr - 1) = modulePulsesData[EXTERNAL_MODULE].dsm2.rest;      
+    *(extmodulePulsesData.dsm2.ptr - 1) = extmodulePulsesData.dsm2.rest;      
 }
 #endif
 
@@ -111,14 +111,14 @@ void setupPulsesDSM2(uint8_t port)
   uint8_t dsmDat[14];
 
 #if defined(PPM_PIN_SERIAL)
-  modulePulsesData[EXTERNAL_MODULE].dsm2.serialByte = 0 ;
-  modulePulsesData[EXTERNAL_MODULE].dsm2.serialBitCount = 0 ;
+  extmodulePulsesData.dsm2.serialByte = 0 ;
+  extmodulePulsesData.dsm2.serialBitCount = 0 ;
 #else
-  modulePulsesData[EXTERNAL_MODULE].dsm2.index = 0;
-  modulePulsesData[EXTERNAL_MODULE].dsm2.rest = DSM2_PERIOD * 2000;
+  extmodulePulsesData.dsm2.index = 0;
+  extmodulePulsesData.dsm2.rest = DSM2_PERIOD * 2000;
 #endif
 
-  modulePulsesData[EXTERNAL_MODULE].dsm2.ptr = modulePulsesData[EXTERNAL_MODULE].dsm2.pulses;
+  extmodulePulsesData.dsm2.ptr = extmodulePulsesData.dsm2.pulses;
 
   switch (moduleState[port].protocol) {
     case PROTO_DSM2_LP45:
