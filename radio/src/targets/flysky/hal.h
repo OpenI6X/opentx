@@ -345,14 +345,16 @@ extern void ISR_TIMER3_CAPT_vect(void);
 #define SPORT_MAX_BAUDRATE            400000
 
 // Telemetry
-#define TELEMETRY_RCC_AHB1Periph        (RCC_AHBPeriph_GPIOD | RCC_AHBPeriph_DMA1)
+#define TELEMETRY_RCC_AHB1Periph        (RCC_AHBPeriph_GPIOD | RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_DMA1)
 #define TELEMETRY_RCC_APB1Periph        RCC_APB1Periph_USART2
 #define TELEMETRY_GPIO                  GPIOD
 #define TELEMETRY_TX_GPIO_PIN           GPIO_Pin_5  // PD.05
-#define TELEMETRY_RX_GPIO_PIN           
+#define TELEMETRY_RX_GPIO               GPIOA
+#define TELEMETRY_RX_GPIO_PIN           GPIO_Pin_15 // PA.15
 #define TELEMETRY_GPIO_PinSource_TX     GPIO_PinSource5
-#define TELEMETRY_GPIO_PinSource_RX     
-#define TELEMETRY_GPIO_AF               GPIO_AF_0
+#define TELEMETRY_GPIO_PinSource_RX     GPIO_PinSource15
+#define TELEMETRY_TX_GPIO_AF            GPIO_AF_0
+#define TELEMETRY_RX_GPIO_AF            GPIO_AF_1
 #define TELEMETRY_USART                 USART2
 #define TELEMETRY_DMA_Channel_TX        DMA1_Channel4
 #define TELEMETRY_DMA_TX_IRQn           DMA1_Channel4_5_IRQn

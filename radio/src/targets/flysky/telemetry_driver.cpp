@@ -46,20 +46,30 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   GPIO_InitStructure.GPIO_Pin = TELEMETRY_TX_GPIO_PIN;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-#if defined(CRSF_UNINVERTED)
+#if defined(CRSF_FULLDUPLEX)
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
 #else
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;  // was GPIO_PuPd_UP;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
 #endif
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_Init(TELEMETRY_GPIO, &GPIO_InitStructure);
+
+#if defined(CRSF_FULLDUPLEX)
+  GPIO_InitStructure.GPIO_Pin = TELEMETRY_RX_GPIO_PIN;
+  // GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+  // GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  // GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  // GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_Init(TELEMETRY_RX_GPIO, &GPIO_InitStructure);
+  GPIO_PinAFConfig(TELEMETRY_RX_GPIO, TELEMETRY_GPIO_PinSource_RX, TELEMETRY_RX_GPIO_AF);
+#endif
 
   USART_DeInit(TELEMETRY_USART);
 
   // OverSampling + IDLE
   TELEMETRY_USART->CR1 |= ( USART_CR1_OVER8 | USART_CR1_IDLEIE );
 
-  GPIO_PinAFConfig(TELEMETRY_GPIO, TELEMETRY_GPIO_PinSource_TX, TELEMETRY_GPIO_AF);
+  GPIO_PinAFConfig(TELEMETRY_GPIO, TELEMETRY_GPIO_PinSource_TX, TELEMETRY_TX_GPIO_AF);
 
   USART_InitStructure.USART_BaudRate = baudrate;
   USART_InitStructure.USART_WordLength = USART_WordLength_8b;
@@ -69,8 +79,7 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
   USART_Init(TELEMETRY_USART, &USART_InitStructure);
 
-  // Level inversion
-#if !defined(CRSF_UNINVERTED)
+#if !defined(CRSF_FULLDUPLEX)
   USART_InvPinCmd(TELEMETRY_USART, USART_InvPin_Tx | USART_InvPin_Rx, ENABLE);
 #endif
 
@@ -98,15 +107,22 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
                                 | DMA_PeripheralDataSize_Byte
                                 | DMA_MemoryDataSize_Byte;
 
-  TELEMETRY_USART->CR3 |= USART_CR3_HDSEL | USART_DMAReq_Rx; // HalfDuplex + DMA RX
+#if defined(CRSF_FULLDUPLEX)
+  TELEMETRY_USART->CR3 |= USART_DMAReq_Rx;
+#else
+  TELEMETRY_USART->CR3 |= USART_CR3_HDSEL /*Half duplex*/ | USART_DMAReq_Rx;
+#endif
+
   USART_Cmd(TELEMETRY_USART, ENABLE);
   DMA_Cmd(TELEMETRY_DMA_Channel_RX, ENABLE);
 }
 
 void telemetryPortSetDirectionOutput() {
   // Disable RX
+#if !defined(CRSF_FULLDUPLEX)
   TELEMETRY_DMA_Channel_RX->CCR &= ~DMA_CCR_EN;
   TELEMETRY_USART->CR1 &= ~USART_CR1_RE;
+#endif
 
   // Enable TX
   TELEMETRY_USART->CR1 |= USART_CR1_TE;
@@ -114,8 +130,10 @@ void telemetryPortSetDirectionOutput() {
 
 void telemetryPortSetDirectionInput() {
   // Disable TX
+#if !defined(CRSF_FULLDUPLEX)
   TELEMETRY_DMA_Channel_TX->CCR &= ~DMA_CCR_EN;
   TELEMETRY_USART->CR1 &= ~USART_CR1_TE;
+#endif
 
   // Enable RX
   TELEMETRY_USART->CR1 |= USART_CR1_RE;
