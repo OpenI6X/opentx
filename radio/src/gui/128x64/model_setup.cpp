@@ -217,6 +217,7 @@ void editTimerCountdown(int timerIdx, coord_t y, LcdFlags attr, event_t event)
   }
 }
 
+#if defined(PCBTARANIS)
 void onBindMenu(const char * result)
 {
   uint8_t moduleIdx = CURRENT_MODULE_EDITED(menuVerticalPosition);
@@ -243,6 +244,7 @@ void onBindMenu(const char * result)
 
   moduleState[moduleIdx].mode = MODULE_MODE_BIND;
 }
+#endif
 
 
 void menuModelSetup(event_t event)
@@ -360,9 +362,11 @@ void menuModelSetup(event_t event)
 
   TITLE(STR_MENUSETUP);
 
+#if defined(PXX)
   if (event == EVT_ENTRY) {
     reusableBuffer.modelsetup.r9mPower = g_model.moduleData[EXTERNAL_MODULE].pxx.power;
   }
+#endif
 
   uint8_t sub = menuVerticalPosition - HEADER_LINE;
   int8_t editMode = s_editMode;
