@@ -1440,7 +1440,7 @@ void menuModelSetup(event_t event)
     }
   }
 
-#if defined(PXX) || defined(PCBI6X)
+#if defined(AFHDS2A)
   if (IS_RANGECHECK_ENABLE()) {
     showMessageBox("RQly ");
     lcdDrawNumber(16+4*FW, 5*FH, TELEMETRY_RSSI(), BOLD);
@@ -1456,10 +1456,12 @@ void menuModelSetup(event_t event)
         checkModelIdUnique(g_eeGeneral.currModel, INTERNAL_MODULE);
       break;
 #endif
+#if !defined(PCBI6X)
       case ITEM_MODEL_EXTERNAL_MODULE_BIND:
       if (menuHorizontalPosition == 0)
         checkModelIdUnique(g_eeGeneral.currModel, EXTERNAL_MODULE);
       break;
+#endif
     }
   }
 }
