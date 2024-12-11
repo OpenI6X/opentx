@@ -168,7 +168,11 @@ extern const char STR_OPEN9X[];
 #else
   #define OFS_VKEYS             (OFS_VSWASHTYPE)
 #endif
+#if defined(MENU_DIAG_ANAS_KEYS)
 #define OFS_VSWITCHES           (OFS_VKEYS + sizeof(TR_VKEYS))
+#else
+#define OFS_VSWITCHES           (OFS_VKEYS)
+#endif
 #define OFS_VSRCRAW             (OFS_VSWITCHES + sizeof(TR_VSWITCHES))
 #if defined(TRANSLATIONS_CZ)
   #define OFS_INPUTNAMES          (OFS_VSRCRAW + sizeof(TR_VSRCRAW))

@@ -68,7 +68,9 @@ const char STR_OPEN9X[]  =
 #if defined(HELI)
     ISTR(VSWASHTYPE)
 #endif
+#if defined(MENU_DIAG_ANAS_KEYS)
     ISTR(VKEYS)
+#endif
     ISTR(VSWITCHES)
     ISTR(VSRCRAW)
 #if defined(TRANSLATIONS_CZ)
