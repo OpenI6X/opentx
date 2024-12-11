@@ -228,7 +228,7 @@ void menuModelLimits(event_t event)
 
   SIMPLE_MENU(STR_MENULIMITS, menuTabModel, MENU_MODEL_OUTPUTS, HEADER_LINE+MAX_OUTPUT_CHANNELS+1);
 
-  for (uint8_t i=0; i<LCD_LINES-1; i++) {
+  for (uint32_t i=0; i<LCD_LINES-1; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     uint8_t k = i+menuVerticalOffset;
     LcdFlags attr = (sub==MAX_OUTPUT_CHANNELS) ? INVERS : 0;

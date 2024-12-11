@@ -69,7 +69,7 @@ void sportOutputPushPacket(SportTelemetryPacket * packet)
 {
   uint16_t crc = 0;
 
-  for (uint8_t i=1; i<sizeof(SportTelemetryPacket); i++) {
+  for (uint32_t i=1; i<sizeof(SportTelemetryPacket); i++) {
     uint8_t byte = packet->raw[i];
     sportOutputPushByte(byte);
     crc += byte; // 0-1FF

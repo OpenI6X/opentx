@@ -76,9 +76,7 @@ void disable_no_pulses(uint32_t port) {
   }
 }
 
-void init_sbusOut(uint32_t module_index) {}
-void disable_sbusOut(uint32_t module_index) {}
-void setupPulsesSbus(uint8_t port) {}
+void setupPulsesSbus() {}
 
 void init_serial(uint32_t port, uint32_t baudrate, uint32_t period_half_us) {
 }

@@ -152,18 +152,18 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
 #endif
 
 #if defined(OVERRIDE_CHANNEL_FUNCTION)
-  for (uint8_t i=0; i<MAX_OUTPUT_CHANNELS; i++) {
+  for (uint32_t i=0; i<MAX_OUTPUT_CHANNELS; i++) {
     safetyCh[i] = OVERRIDE_CHANNEL_UNDEFINED;
   }
 #endif
 
 #if defined(GVARS)
-  for (uint8_t i=0; i<NUM_TRIMS; i++) {
+  for (uint32_t i=0; i<NUM_TRIMS; i++) {
     trimGvar[i] = -1;
   }
 #endif
 
-  for (uint8_t i=0; i<MAX_SPECIAL_FUNCTIONS; i++) {
+  for (uint32_t i=0; i<MAX_SPECIAL_FUNCTIONS; i++) {
     const CustomFunctionData * cfn = &functions[i];
     swsrc_t swtch = CFN_SWITCH(cfn);
     if (swtch) {
@@ -460,7 +460,7 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
   functionsContext.activeFunctions  = newActiveFunctions;
 
 #if defined(ROTARY_ENCODERS) && defined(GVARS)
-  for (uint8_t i=0; i<ROTARY_ENCODERS; i++) {
+  for (uint32_t i=0; i<ROTARY_ENCODERS; i++) {
     rePreviousValues[i] = (rotencValue[i] / ROTARY_ENCODER_GRANULARITY);
   }
 #endif

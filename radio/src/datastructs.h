@@ -436,15 +436,6 @@ PACK(struct ModuleData {
       int8_t optionValue;
     } multi);
     NOBACKUP(struct {
-      uint8_t power : 2;  // 0=10 mW, 1=100 mW, 2=500 mW, 3=1W
-      uint8_t spare1 : 2;
-      uint8_t receiver_telem_off : 1;     // false = receiver telem enabled
-      uint8_t receiver_channel_9_16 : 1;  // false = pwm out 1-8, true 9-16
-      uint8_t external_antenna : 1;       // false = internal antenna, true = external antenna
-      uint8_t fast : 1;                   // TODO: to be used later by external module (fast means serial @ high speed)
-      uint8_t spare2;
-    } pxx);
-    NOBACKUP(struct {
       uint8_t spare1 : 6;
       uint8_t noninverted : 1;
       uint8_t spare2 : 1;
@@ -741,7 +732,7 @@ PACK(struct TrainerData {
 
 PACK(struct RadioData {
   NOBACKUP(uint8_t version);
-  NOBACKUP(uint16_t variant);
+  NOBACKUP(uint16_t variant); // not used on PCBI6X, reuse for swconfig_t?
   CalibData calib[NUM_CALIBRATED_ANALOGS];
   NOBACKUP(uint16_t chkSum);
   N_HORUS_FIELD(int8_t currModel);

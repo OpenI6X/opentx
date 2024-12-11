@@ -133,7 +133,7 @@ bool menuModelSensor(event_t event)
   lcdDrawNumber(lcdNextPos, 3, s_currIdx+1, MENU_TITLE_COLOR|LEFT);
   drawSensorCustomValue(50, 3+FH, s_currIdx, getValue(MIXSRC_FIRST_TELEM+3*s_currIdx), MENU_TITLE_COLOR|LEFT);
 
-  for (uint8_t i=0; i<NUM_BODY_LINES+1; i++) {
+  for (uint32_t i=0; i<NUM_BODY_LINES+1; i++) {
     coord_t y = MENU_CONTENT_TOP - FH - 2 + i*FH;
     int k = i + menuVerticalOffset;
 
@@ -413,7 +413,7 @@ bool menuModelTelemetryFrsky(event_t event)
 
   MENU(STR_MENUTELEMETRY, MODEL_ICONS, menuTabModel, MENU_MODEL_TELEMETRY_FRSKY, ITEM_TELEMETRY_MAX, { TELEMETRY_TYPE_ROWS RSSI_ROWS SENSORS_ROWS VARIO_ROWS });
 
-  for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
+  for (uint32_t i=0; i<NUM_BODY_LINES; i++) {
     coord_t y = MENU_CONTENT_TOP + i*FH;
     int k = i + menuVerticalOffset;
     for (int j=0; j<=k; j++) {

@@ -374,7 +374,7 @@ static int luaSportTelemetryPop(lua_State * L)
 
   if (luaInputTelemetryFifo->size() >= sizeof(SportTelemetryPacket)) {
     SportTelemetryPacket packet;
-    for (uint8_t i=0; i<sizeof(packet); i++) {
+    for (uint32_t i=0; i<sizeof(packet); i++) {
       luaInputTelemetryFifo->pop(packet.raw[i]);
     }
     lua_pushnumber(L, packet.physicalId);
@@ -466,7 +466,7 @@ static int luaCrossfireTelemetryPop(lua_State * L)
     luaInputTelemetryFifo->pop(data); // command
     lua_pushnumber(L, data);
     lua_newtable(L);
-    for (uint8_t i=1; i<length-1; i++) {
+    for (uint32_t i=1; i<length-1; i++) {
       luaInputTelemetryFifo->pop(data);
       lua_pushinteger(L, i);
       lua_pushinteger(L, data);

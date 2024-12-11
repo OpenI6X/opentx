@@ -124,7 +124,7 @@ void menuRadioSetup(event_t event)
 
   int sub = menuVerticalPosition;
 
-  for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
+  for (uint32_t i=0; i<NUM_BODY_LINES; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     uint8_t k = i + menuVerticalOffset;
     uint8_t blink = ((s_editMode>0) ? BLINK|INVERS : INVERS);
@@ -477,7 +477,7 @@ void menuRadioSetup(event_t event)
 
       case ITEM_SETUP_RX_CHANNEL_ORD:
         lcdDrawTextAlignedLeft(y, STR_RXCHANNELORD); // RAET->AETR
-        for (uint8_t i=1; i<=4; i++) {
+        for (uint32_t i=1; i<=4; i++) {
           putsChnLetter(RADIO_SETUP_2ND_COLUMN - FW + i*FW, y, channel_order(i), attr);
         }
         if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.templateSetup, 0, 23);
@@ -485,14 +485,14 @@ void menuRadioSetup(event_t event)
 
       case ITEM_SETUP_STICK_MODE_LABELS:
         lcdDrawTextAlignedLeft(y, STR_MODE);
-        for (uint8_t i=0; i<4; i++) {
+        for (uint32_t i=0; i<4; i++) {
           lcdDraw1bitBitmap((6+4*i)*FW, y, sticks, i, 0);
         }
         break;
 
       case ITEM_SETUP_STICK_MODE:
         lcdDrawChar(2*FW, y, '1'+reusableBuffer.generalSettings.stickMode, attr);
-        for (uint8_t i=0; i<4; i++) {
+        for (uint32_t i=0; i<4; i++) {
           putsStickName((6+4*i)*FW, y, *(modn12x3 + 4*reusableBuffer.generalSettings.stickMode + i), 0);
         }
         if (attr && s_editMode>0) {

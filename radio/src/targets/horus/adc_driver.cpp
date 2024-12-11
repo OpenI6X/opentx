@@ -175,7 +175,7 @@ uint32_t adcReadNextSPIChannel(uint8_t index)
   //         62               0             0.225ms - 0.243ms
   delay_01us(40);
 
-  for (uint8_t i = 0; i < 4; i++) {
+  for (uint32_t i = 0; i < 4; i++) {
     ADC_CS_LOW();
     delay_01us(1);
     // command is changed to the next index for the last two readings

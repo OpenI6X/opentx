@@ -301,7 +301,7 @@ bool menuModelSetup(event_t event)
 
   int sub = menuVerticalPosition;
 
-  for (uint8_t i=0; i<NUM_BODY_LINES; ++i) {
+  for (uint32_t i=0; i<NUM_BODY_LINES; ++i) {
     coord_t y = MENU_CONTENT_TOP + i*FH;
     uint8_t k = i + menuVerticalOffset;
     for (int j=0; j<=k; j++) {
@@ -421,7 +421,7 @@ bool menuModelSetup(event_t event)
           s_editMode = 0;
           if (event==EVT_KEY_LONG(KEY_ENTER)) {
             START_NO_HIGHLIGHT();
-            for (uint8_t i=0; i<MAX_FLIGHT_MODES; i++) {
+            for (uint32_t i=0; i<MAX_FLIGHT_MODES; i++) {
               memclear(&g_model.flightModeData[i], TRIMS_ARRAY_SIZE);
             }
             storageDirty(EE_MODEL);

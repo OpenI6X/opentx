@@ -33,7 +33,6 @@ uint8_t telemetryProtocol = 255;
 
 volatile bool pendingTelemetryPollFrame = false;
 
-
 void processTelemetryData(uint8_t data)
 {
 #if defined(CROSSFIRE)
@@ -76,6 +75,16 @@ void telemetryWakeup()
     telemetryInit(requiredTelemetryProtocol);
   }
 
+#if defined(CROSSFIRE)
+  if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
+    uint8_t data;
+    while (telemetryGetByte(&data)) {
+      processCrossfireTelemetryData(data); // TODO handle full frame as in EdgeTX
+      LOG_TELEMETRY_WRITE_BYTE(data);
+    }
+  }
+#endif
+
   // Handle complete telemetry frame
   if (pendingTelemetryPollFrame) {
     pendingTelemetryPollFrame = false;
@@ -86,15 +95,18 @@ void telemetryWakeup()
      break;
 #endif
 #if defined(CROSSFIRE)
-     case PROTOCOL_TELEMETRY_CROSSFIRE:
-     {
-       uint8_t data;
-       while (telemetryGetByte(&data)) {
-         processCrossfireTelemetryData(data); // TODO handle full frame as in EdgeTX
-         LOG_TELEMETRY_WRITE_BYTE(data);
-       }
-     }
-     break;
+    //  case PROTOCOL_TELEMETRY_CROSSFIRE:
+    //  {
+    //    uint8_t data;
+    //    uint8_t count = 0;
+    //    while (telemetryGetByte(&data)) {
+    //      processCrossfireTelemetryData(data); // TODO handle full frame as in EdgeTX
+    //      LOG_TELEMETRY_WRITE_BYTE(data);
+    //      count++;
+    //    }
+    //    TRACE("c%d", count);
+    //  }
+    //  break;
 #endif
      default:
 //       TRACE("Unhandled telemetry %d", telemetryProtocol);
@@ -196,12 +208,6 @@ void telemetryInterrupt10ms()
 
   }
 
-#if defined(WS_HOW_HIGH)
-  if (wshhStreaming > 0) {
-    wshhStreaming--;
-  }
-#endif
-
   if (telemetryStreaming > 0) {
     telemetryStreaming--;
   }
@@ -229,7 +235,7 @@ void telemetryInit(uint8_t protocol)
 {
   telemetryProtocol = protocol;
   switch(telemetryProtocol){
-#if defined(TELEMETRY_FRSKY)
+#if defined(TELEMETRY_FRSKY) && !defined(PCBI6X)
   case PROTOCOL_TELEMETRY_FRSKY_D:
 	  telemetryPortInit(FRSKY_D_BAUDRATE, TELEMETRY_SERIAL_DEFAULT);
 	  break;
@@ -266,7 +272,7 @@ void telemetryInit(uint8_t protocol)
 	  break;
 #endif
   default:
-#if defined(TELEMETRY_FRSKY)
+#if defined(TELEMETRY_FRSKY) && !defined(PCBI6X)
 	  telemetryPortInit(FRSKY_SPORT_BAUDRATE, TELEMETRY_SERIAL_WITHOUT_DMA);
 	  #if defined(LUA)
 	  outputTelemetryBufferSize = 0;
@@ -275,14 +281,6 @@ void telemetryInit(uint8_t protocol)
 #endif
 	  break;
   }
-#if defined(REVX) && !defined(SIMU)
-  if (serialInversion) {
-    setMFP();
-  }
-  else {
-    clearMFP();
-  }
-#endif
 }
 
 
@@ -306,7 +304,7 @@ void logTelemetryWriteByte(uint8_t data)
 }
 #endif
 
-uint8_t outputTelemetryBuffer[TELEMETRY_OUTPUT_FIFO_SIZE] __DMA;
+uint8_t outputTelemetryBuffer[TELEMETRY_OUTPUT_BUFFER_SIZE] __DMA;
 uint8_t outputTelemetryBufferSize = 0;
 uint8_t outputTelemetryBufferTrigger = 0;
 

@@ -91,14 +91,14 @@ void setupPulsesMultimodule(uint8_t port)
   static int counter = 0;
 
 #if defined(PPM_PIN_SERIAL)
-  modulePulsesData[EXTERNAL_MODULE].dsm2.serialByte = 0 ;
-  modulePulsesData[EXTERNAL_MODULE].dsm2.serialBitCount = 0 ;
+  extmodulePulsesData.dsm2.serialByte = 0 ;
+  extmodulePulsesData.dsm2.serialBitCount = 0 ;
 #else
-  modulePulsesData[EXTERNAL_MODULE].dsm2.rest = multiSyncStatus.getAdjustedRefreshRate();
-  modulePulsesData[EXTERNAL_MODULE].dsm2.index = 0;
+  extmodulePulsesData.dsm2.rest = multiSyncStatus.getAdjustedRefreshRate();
+  extmodulePulsesData.dsm2.index = 0;
 #endif
 
-  modulePulsesData[EXTERNAL_MODULE].dsm2.ptr = modulePulsesData[EXTERNAL_MODULE].dsm2.pulses;
+  extmodulePulsesData.dsm2.ptr = extmodulePulsesData.dsm2.pulses;
 
   // Every 1000 cycles (=9s) send a config packet that configures the multimodule (inversion, telemetry type)
   counter++;

@@ -40,7 +40,7 @@ bool isFaiForbidden(source_t idx) {
       }
       break;
 #endif
-#if defined(TELEMETRY_FRSKY)
+#if defined(TELEMETRY_FRSKY) && !defined(PCBI6X)
     case PROTOCOL_TELEMETRY_FRSKY_D:
       if (sensor->id == D_RSSI_ID) {
         return false;

@@ -41,7 +41,7 @@ const char * runPopupMenu(event_t event)
   
   lcdDrawRect(MENU_X, y, MENU_W, display_count * (FH+1) + 2, SOLID, FORCE);
 
-  for (uint8_t i=0; i<display_count; i++) {
+  for (uint32_t i=0; i<display_count; i++) {
     lcdDrawText(MENU_X+6, i*(FH+1) + y + 2, popupMenuItems[i+(popupMenuOffsetType == MENU_OFFSET_INTERNAL ? popupMenuOffset : 0)], 0);
     if (i == s_menu_item) lcdDrawSolidFilledRect(MENU_X+1, i*(FH+1) + y + 1, MENU_W-2, 9);
   }

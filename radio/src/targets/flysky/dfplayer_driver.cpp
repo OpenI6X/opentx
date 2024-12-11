@@ -118,7 +118,7 @@ static void dfplayerCommand(uint8_t cmd, uint16_t param = 0) {
     packet[5] = param >> 8;   // param1
     packet[6] = param & 0xFF; // param2
     packet[7] = 0xEF;         // end
-    for (uint8_t i = 0; i < 8; i++) {
+    for (uint32_t i = 0; i < 8; i++) {
         aux3SerialPutc(packet[i]);
     }
 }

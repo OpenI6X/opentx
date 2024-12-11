@@ -112,7 +112,7 @@ void eepromCheck()
   blkid_t blk ;
 
   blkid_t blocksCount;
-  for (uint8_t i=0; i<=MAXFILES; i++) {
+  for (uint32_t i=0; i<=MAXFILES; i++) {
     blocksCount = 0;
     blkid_t blk = (i==MAXFILES ? eeFs.freeList : eeFs.files[i].startBlk);
     blkid_t lastBlk = 0;
@@ -773,7 +773,7 @@ bool eeLoadGeneral()
   theFile.openRlc(FILE_GENERAL);
   if (theFile.readRlc((uint8_t*)&g_eeGeneral, 3) == 3 && g_eeGeneral.version == EEPROM_VER) {
     theFile.openRlc(FILE_GENERAL);
-    if (theFile.readRlc((uint8_t*)&g_eeGeneral, sizeof(g_eeGeneral)) <= sizeof(g_eeGeneral) && g_eeGeneral.variant == EEPROM_VARIANT) {
+    if (theFile.readRlc((uint8_t*)&g_eeGeneral, sizeof(g_eeGeneral)) <= sizeof(g_eeGeneral) /*&& g_eeGeneral.variant == EEPROM_VARIANT*/) {
       return true;
     }
   }

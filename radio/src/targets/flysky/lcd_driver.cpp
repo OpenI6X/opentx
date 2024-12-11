@@ -196,7 +196,7 @@ void lcdReset() {
     delay_us(20);  // at least 5us
     LCD_RST_HI();
     delay_us(20); // at least 5us?
-    for (uint8_t i=0; i<sizeof(lcdInitSequence); i++) {
+    for (uint32_t i=0; i<sizeof(lcdInitSequence); i++) {
       lcdSendCtl(lcdInitSequence[i]);
     }
 }

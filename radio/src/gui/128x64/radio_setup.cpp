@@ -182,7 +182,7 @@ void menuRadioSetup(event_t event)
 
   uint8_t sub = menuVerticalPosition - HEADER_LINE;
 
-  for (uint8_t i=0; i<LCD_LINES-1; i++) {
+  for (uint32_t i=0; i<LCD_LINES-1; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     uint8_t k = i + menuVerticalOffset;
     uint8_t blink = ((s_editMode>0) ? BLINK|INVERS : INVERS);
@@ -194,7 +194,7 @@ void menuRadioSetup(event_t event)
         lcdDrawTextAlignedLeft(y, STR_DATE);
         lcdDrawChar(RADIO_SETUP_DATE_COLUMN, y, '-');
         lcdDrawChar(RADIO_SETUP_DATE_COLUMN+3*FW-2, y, '-');
-        for (uint8_t j=0; j<3; j++) {
+        for (uint32_t j=0; j<3; j++) {
           uint8_t rowattr = (menuHorizontalPosition==j ? attr : 0);
           switch (j) {
             case 0:
@@ -225,7 +225,7 @@ void menuRadioSetup(event_t event)
       case ITEM_SETUP_TIME:
         lcdDrawTextAlignedLeft(y, STR_TIME);
         lcdDrawChar(RADIO_SETUP_TIME_COLUMN+1, y, ':'); lcdDrawChar(RADIO_SETUP_TIME_COLUMN+3*FW-2, y, ':');
-        for (uint8_t j=0; j<3; j++) {
+        for (uint32_t j=0; j<3; j++) {
           uint8_t rowattr = (menuHorizontalPosition==j ? attr : 0);
           switch (j) {
             case 0:
@@ -510,7 +510,7 @@ void menuRadioSetup(event_t event)
 #endif
 
 #if defined(TELEMETRY_FRSKY) && defined(GPS)
-#if !defined(PCBI6X)
+#if defined(RTCLOCK)
       case ITEM_SETUP_TIMEZONE:
         lcdDrawTextAlignedLeft(y, STR_TIMEZONE);
         lcdDrawNumber(RADIO_SETUP_2ND_COLUMN, y, g_eeGeneral.timezone, attr|LEFT);
@@ -576,7 +576,7 @@ void menuRadioSetup(event_t event)
 #endif
       case ITEM_SETUP_RX_CHANNEL_ORD:
         lcdDrawTextAlignedLeft(y, STR_RXCHANNELORD); // RAET->AETR
-        for (uint8_t i=1; i<=4; i++) {
+        for (uint32_t i=1; i<=4; i++) {
           putsChnLetter(RADIO_SETUP_2ND_COLUMN - FW + i*FW, y, channelOrder(i), attr);
         }
         if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.templateSetup, 0, 23);
@@ -584,7 +584,7 @@ void menuRadioSetup(event_t event)
 
       case ITEM_SETUP_STICK_MODE_LABELS:
         lcdDrawTextAlignedLeft(y, STR_MODE);
-        for (uint8_t i=0; i<4; i++) {
+        for (uint32_t i=0; i<4; i++) {
           lcdDraw1bitBitmap(5*FW+i*(4*FW+2), y, sticks, i, 0);
 #if defined(FRSKY_STICKS) && !defined(PCBTARANIS)
           if (g_eeGeneral.stickReverse & (1<<i)) {
@@ -603,7 +603,7 @@ void menuRadioSetup(event_t event)
 
       case ITEM_SETUP_STICK_MODE:
         lcdDrawChar(2*FW, y, '1'+reusableBuffer.generalSettings.stickMode, attr);
-        for (uint8_t i=0; i<NUM_STICKS; i++) {
+        for (uint32_t i=0; i<NUM_STICKS; i++) {
           drawSource((5*FW-3)+i*(4*FW+2), y, MIXSRC_Rud + *(modn12x3 + 4*reusableBuffer.generalSettings.stickMode + i), 0);
         }
         if (attr && s_editMode>0) {

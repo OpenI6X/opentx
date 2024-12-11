@@ -66,7 +66,7 @@ void lcdPutPattern(coord_t x, coord_t y, const uint8_t * pattern, uint8_t width,
       }
       else if (i<=width) {
         uint8_t skip = true;
-        for (uint8_t j=0; j<lines; j++) {
+        for (uint32_t j=0; j<lines; j++) {
           b[j] = *(pattern++); /*top byte*/
           if (b[j] != 0xff) {
             skip = false;
@@ -74,7 +74,7 @@ void lcdPutPattern(coord_t x, coord_t y, const uint8_t * pattern, uint8_t width,
         }
         if (skip) {
           if (flags & FIXEDWIDTH) {
-            for (uint8_t j=0; j<lines; j++) {
+            for (uint32_t j=0; j<lines; j++) {
               b[j] = 0;
             }
           }
@@ -129,7 +129,7 @@ uint8_t getPatternWidth(const PatternData * pattern)
   uint8_t lines = (pattern->height+7)/8;
   const uint8_t * data = pattern->data;
   for (int8_t i=0; i<pattern->width; i++) {
-    for (uint8_t j=0; j<lines; j++) {
+    for (uint32_t j=0; j<lines; j++) {
       if (data[j] != 0xff) {
         result += 1;
         break;
@@ -986,7 +986,7 @@ void lcdDraw1bitBitmap(coord_t x, coord_t y, const uint8_t * img, uint8_t idx, L
   uint8_t hb = ((*q++) + 7) / 8;
   bool inv = (att & INVERS) ? true : (att & BLINK ? BLINK_ON_PHASE : false);
   q += idx*w*hb;
-  for (uint8_t yb = 0; yb < hb; yb++) {
+  for (uint32_t yb = 0; yb < hb; yb++) {
     uint8_t *p = &displayBuf[(y / 8 + yb) * LCD_W + x];
     for (coord_t i=0; i<w; i++){
       uint8_t b = *q++;

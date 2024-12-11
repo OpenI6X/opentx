@@ -152,7 +152,7 @@ class StandardPxxTransport: public BitTransport, public PxxCrcMixin {
 
     void addRawByteWithoutCrc(uint8_t byte)
     {
-      for (uint8_t i = 0; i < 8; i++) {
+      for (uint32_t i = 0; i < 8; i++) {
         if (byte & 0x80)
           BitTransport::addPart(1);
         else
@@ -163,7 +163,7 @@ class StandardPxxTransport: public BitTransport, public PxxCrcMixin {
 
     void addByteWithoutCrc(uint8_t byte)
     {
-      for (uint8_t i = 0; i < 8; i++) {
+      for (uint32_t i = 0; i < 8; i++) {
         addBit(byte & 0x80);
         byte <<= 1;
       }

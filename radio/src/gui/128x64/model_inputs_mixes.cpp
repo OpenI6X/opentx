@@ -240,7 +240,7 @@ void menuModelExpoOne(event_t event)
 
   coord_t y = MENU_HEADER_HEIGHT + 1;
 
-  for (uint8_t i=0; i<EXPO_FIELD_MAX+1; i++) {
+  for (uint32_t i=0; i<EXPO_FIELD_MAX+1; i++) {
     uint8_t attr = (sub==i ? (s_editMode>0 ? BLINK|INVERS : INVERS) : 0);
     switch (i) {
       case EXPO_FIELD_NAME:
@@ -361,13 +361,13 @@ void drawOffsetBar(uint8_t x, uint8_t y, MixData * md)
   }
   lcdDrawSolidVerticalLine(x+GAUGE_WIDTH/2-1, y, GAUGE_HEIGHT+1);
   if (barMin == -101) {
-    for (uint8_t i=0; i<3; ++i) {
+    for (uint32_t i=0; i<3; ++i) {
       lcdDrawPoint(x+i, y+4-i);
       lcdDrawPoint(x+3+i, y+4-i);
     }
   }
   if (barMax == 101) {
-    for (uint8_t i=0; i<3; ++i) {
+    for (uint32_t i=0; i<3; ++i) {
       lcdDrawPoint(x+GAUGE_WIDTH-8+i, y+4-i);
       lcdDrawPoint(x+GAUGE_WIDTH-5+i, y+4-i);
     }

@@ -922,7 +922,7 @@ void lcdDraw1bitBitmap(coord_t x, coord_t y, const unsigned char * img, uint8_t 
   bool    inv  = (att & INVERS) ? true : (att & BLINK ? BLINK_ON_PHASE : false);
   q += idx*w*hb;
   for (uint8_t yb = 0; yb < hb; yb++) {
-    for (uint8_t i=0; i<w; i++) {
+    for (uint32_t i=0; i<w; i++) {
       uint8_t b = *(q++);
       uint8_t val = inv ? ~b : b;
       for (int k=0; k<8; k++) {

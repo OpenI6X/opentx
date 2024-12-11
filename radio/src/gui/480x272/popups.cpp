@@ -150,7 +150,7 @@ const char * runPopupMenu(event_t event)
   lcdDrawSolidFilledRect(MENU_X, y, MENU_W, display_count * (FH+1) + 1, TEXT_BGCOLOR);
   lcdDrawSolidRect(MENU_X, y, MENU_W, display_count * (FH+1) + 2, 1, ALARM_COLOR);
 
-  for (uint8_t i=0; i<display_count; i++) {
+  for (uint32_t i=0; i<display_count; i++) {
     if (i == s_menu_item) {
       lcdDrawSolidFilledRect(MENU_X+1, i*(FH+1) + y + 1, MENU_W-2, FH+1, TEXT_INVERTED_BGCOLOR);
       lcdDrawText(MENU_X+6, i*(FH+1) + y + 2, popupMenuItems[i+(popupMenuOffsetType == MENU_OFFSET_INTERNAL ? popupMenuOffset : 0)], TEXT_INVERTED_COLOR);

@@ -41,7 +41,7 @@ void menuRadioDiagKeys(event_t event)
 
   lcdDrawText(14*FW, MENU_HEADER_HEIGHT+2*FH, STR_VTRIM);
 
-  for (uint8_t i=0; i<9; i++) {
+  for (uint32_t i=0; i<9; i++) {
     coord_t y;
 
     if (i < NUM_TRIMS_KEYS) {
@@ -87,7 +87,7 @@ void menuRadioDiagKeys(event_t event)
   }
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
-  for (uint8_t i=0; i<DIM(rotencValue); i++) {
+  for (uint32_t i=0; i<DIM(rotencValue); i++) {
 
 #if defined(PCBX7)
     coord_t y = MENU_HEADER_HEIGHT + FH;

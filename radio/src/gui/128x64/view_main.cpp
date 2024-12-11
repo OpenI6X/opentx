@@ -107,7 +107,7 @@ void doMainScreenGraphics()
 
 void displayTrims(uint8_t phase)
 {
-  for (uint8_t i=0; i<4; i++) {
+  for (uint32_t i=0; i<4; i++) {
     static coord_t x[4] = {TRIM_LH_X, TRIM_LV_X, TRIM_RV_X, TRIM_RH_X};
     static uint8_t vert[4] = {0,1,1,0};
     coord_t xm, ym;
@@ -191,7 +191,7 @@ void displayBattVoltage()
   lcdDrawSolidFilledRect(VBATT_X-25, VBATT_Y+9, 21, 5);
   lcdDrawSolidVerticalLine(VBATT_X-4, VBATT_Y+10, 3);
   uint8_t count = GET_TXBATT_BARS();
-  for (uint8_t i=0; i<count; i+=2)
+  for (uint32_t i=0; i<count; i+=2)
     lcdDrawSolidVerticalLine(VBATT_X-24+i, VBATT_Y+10, 3);
   if (!IS_TXBATT_WARNING() || BLINK_ON_PHASE)
     lcdDrawSolidFilledRect(VBATT_X-26, VBATT_Y, 24, 15);
@@ -414,7 +414,7 @@ void menuMainView(event_t event)
       // scroll bar
       lcdDrawHorizontalLine(38, 34, 54, DOTTED);
       lcdDrawSolidHorizontalLine(38 + (g_eeGeneral.view / ALTERNATE_VIEW) * CHANNELS_SEGMENT_WIDTH, 34, CHANNELS_SEGMENT_WIDTH, SOLID);
-      for (uint8_t i=0; i<8; i++) {
+      for (uint32_t i=0; i<8; i++) {
         uint8_t x0, y0;
         uint8_t chan = 8 * (g_eeGeneral.view / ALTERNATE_VIEW) + i;
         int16_t val = channelOutputs[chan];
@@ -510,7 +510,7 @@ void menuMainView(event_t event)
         }
 #else
         // The ID0 3-POS switch is merged with the TRN switch
-        for (uint8_t i=SWSRC_THR; i<=SWSRC_TRN; i++) {
+        for (uint32_t i=SWSRC_THR; i<=SWSRC_TRN; i++) {
           int8_t sw = (i == SWSRC_TRN ? (switchState(SW_ID0) ? SWSRC_ID0 : (switchState(SW_ID1) ? SWSRC_ID1 : SWSRC_ID2)) : i);
           uint8_t x = 2*FW-2, y = i*FH+1;
           if (i >= SWSRC_AIL) {

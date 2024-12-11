@@ -678,7 +678,7 @@
 #define TR_ADJUST_RTC          TR("Adjust RTC", INDENT "Adjust RTC")
 #define TR_GPS                 "GPS"
 #define TR_RXCHANNELORD        TR("Rx Orden canal", "Orden habitual canales")
-#define TR_STICKS              "Sticks"
+#define TR_STICKS              "Axis"
 #define TR_POTS                "Pots"
 #define TR_SWITCHES            "Switches"
 #define TR_SWITCHES_DELAY      "Switches Delay"

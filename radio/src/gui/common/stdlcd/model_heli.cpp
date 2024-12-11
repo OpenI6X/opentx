@@ -44,7 +44,7 @@ void menuModelHeli(event_t event)
 
   uint8_t sub = menuVerticalPosition - HEADER_LINE;
 
-  for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
+  for (uint32_t i=0; i<NUM_BODY_LINES; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     uint8_t k = i + menuVerticalOffset;
     LcdFlags blink = (s_editMode > 0 ? BLINK|INVERS : INVERS);

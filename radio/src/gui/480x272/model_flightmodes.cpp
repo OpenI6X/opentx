@@ -88,7 +88,7 @@ bool menuModelFlightModesAll(event_t event)
     drawColumnHeader(STR_PHASES_HEADERS, NULL, menuHorizontalPosition);
   }
 
-  for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
+  for (uint32_t i=0; i<NUM_BODY_LINES; i++) {
     coord_t y = MENU_CONTENT_TOP + i*FH;
     int k = i+menuVerticalOffset;
 

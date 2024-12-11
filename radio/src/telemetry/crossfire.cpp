@@ -100,7 +100,7 @@ bool getCrossfireTelemetryValue(uint8_t index, int32_t &value) {
   bool result = false;
   uint8_t *byte = &telemetryRxBuffer[index];
   value = (*byte & 0x80) ? -1 : 0;
-  for (uint8_t i = 0; i < N; i++) {
+  for (uint32_t i = 0; i < N; i++) {
     value <<= 8;
     if (*byte != 0xff) {
       result = true;
@@ -243,7 +243,7 @@ void processCrossfireTelemetryFrame() {
     default:
 #if defined(LUA)
       if (luaInputTelemetryFifo && luaInputTelemetryFifo->hasSpace(telemetryRxBufferCount - 2)) {
-        for (uint8_t i = 1; i < telemetryRxBufferCount - 1; i++) {
+        for (uint32_t i = 1; i < telemetryRxBufferCount - 1; i++) {
           // destination address and CRC are skipped
           luaInputTelemetryFifo->push(telemetryRxBuffer[i]);
         }
@@ -296,7 +296,7 @@ void crossfireTelemetrySeekStart(uint8_t *rxBuffer, uint8_t &rxBufferCount)
   // the parser tries to resync.
   // Search through the rxBuffer for a sync byte, shift the contents if found
   // and reduce rxBufferCount
-  for (uint8_t idx=1; idx<rxBufferCount; ++idx) {
+  for (uint32_t idx=1; idx<rxBufferCount; ++idx) {
     uint8_t data = rxBuffer[idx];
     if (data == RADIO_ADDRESS || data == UART_SYNC) {
       uint8_t remain = rxBufferCount - idx;
@@ -400,13 +400,13 @@ inline void runCrossfireTelemetryCallback(uint8_t command, uint8_t* data, uint8_
   }
 }
 
-bool crossfireTelemetryPush(uint8_t command, uint8_t *data, uint8_t length) {
+bool crossfireTelemetryPush(uint8_t command, uint8_t *data, uint32_t length) {
   // TRACE("crsfPush %x", command);
   if (isCrossfireOutputBufferAvailable()) {
     telemetryOutputPushByte(MODULE_ADDRESS);
     telemetryOutputPushByte(2 + length);  // 1(COMMAND) + data length + 1(CRC)
     telemetryOutputPushByte(command);     // COMMAND
-    for (int i = 0; i < length; i++) {
+    for (uint32_t i = 0; i < length; i++) {
       telemetryOutputPushByte(data[i]);
     }
 #if defined(PCBI6X)

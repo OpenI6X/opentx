@@ -78,7 +78,7 @@ void frskyDProcessPacket(const uint8_t *packet)
 
     case USRPKT: // User Data packet
       uint8_t numBytes = 3 + (packet[1] & 0x07); // sanitize in case of data corruption leading to buffer overflow
-      for (uint8_t i=3; i<numBytes; i++) {
+      for (uint32_t i=3; i<numBytes; i++) {
         parseTelemHubByte(packet[i]);
       }
       break;

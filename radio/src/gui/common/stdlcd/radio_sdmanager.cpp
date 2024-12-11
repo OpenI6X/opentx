@@ -338,7 +338,7 @@ void menuRadioSdManager(event_t _event)
         bool isfile = !(fno.fattrib & AM_DIR);
 
         if (menuVerticalOffset == 0) {
-          for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
+          for (uint32_t i=0; i<NUM_BODY_LINES; i++) {
             char * line = reusableBuffer.sdmanager.lines[i];
             if (line[0] == '\0' || isFilenameLower(isfile, fno.fname, line)) {
               if (i < NUM_BODY_LINES-1) memmove(reusableBuffer.sdmanager.lines[i+1], line, sizeof(reusableBuffer.sdmanager.lines[i]) * (NUM_BODY_LINES-1-i));
@@ -383,7 +383,7 @@ void menuRadioSdManager(event_t _event)
   reusableBuffer.sdmanager.offset = menuVerticalOffset;
   int index = menuVerticalPosition - HEADER_LINE - menuVerticalOffset;
 
-  for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
+  for (uint32_t i=0; i<NUM_BODY_LINES; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     lcdNextPos = 0;
     LcdFlags attr = (index == i ? INVERS : 0);

@@ -149,7 +149,7 @@ void simuInit()
     simuSetTrim(i, false);
 
 #if defined(ROTARY_ENCODERS) || defined(ROTARY_ENCODER_NAVIGATION)
-  for (uint8_t i=0; i < DIM(rotencValue); i++)
+  for (uint32_t i=0; i < DIM(rotencValue); i++)
     rotencValue[i] = 0;
 #endif
 }

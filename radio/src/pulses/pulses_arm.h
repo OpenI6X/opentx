@@ -87,30 +87,17 @@ PACK(struct CrossfirePulsesData {
   uint8_t length;
 });
 
-union ModulePulsesData {
+// TODO Move AFHDS2A pulses here?
+union InternalModulePulsesData {
+#if defined(TARANIS_INTERNAL_PPM)
   PpmPulsesData<pulse_duration_t> ppm;
-#if defined(PXX2)
-  Pxx2Pulses pxx2;
 #endif
+} __ALIGNED(4);
+
+union ExternalModulePulsesData {
+  PpmPulsesData<pulse_duration_t> ppm;
 #if defined(CROSSFIRE)
   CrossfirePulsesData crossfire;
-#endif
-#if defined(PXX)
-#if defined(INTMODULE_USART) || defined(EXTMODULE_USART)
-  UartPxxPulses pxx_uart;
-#endif
-#if defined(PPM_PIN_SERIAL)
-  SerialPxxPulses pxx;
-#elif !defined(INTMODULE_USART) || !defined(EXTMODULE_USART)
-  PwmPxxPulses pxx;
-#endif
-#endif
-#if defined(DSM2)
-#if defined(PPM_PIN_SERIAL)
-  Dsm2SerialPulsesData dsm2;
-#else
-  Dsm2TimerPulsesData dsm2;
-#endif
 #endif
 } __ALIGNED(4);
 
@@ -122,8 +109,8 @@ union ModulePulsesData {
  * sizeof(ModulePulsesData). __ALIGNED is required for sizeof(ModulePulsesData) to be a multiple of the alignment.
  */
 
-/* TODO: internal pulsedata only needs 200 bytes vs 300 bytes for external, both use 300 byte since we have a common struct */
-extern ModulePulsesData modulePulsesData[NUM_MODULES];
+extern InternalModulePulsesData intmodulePulsesData;
+extern ExternalModulePulsesData extmodulePulsesData;
 
 union TrainerPulsesData {
   PpmPulsesData<trainer_pulse_duration_t> ppm;
@@ -132,13 +119,13 @@ union TrainerPulsesData {
 extern TrainerPulsesData trainerPulsesData;
 extern const uint16_t CRCTable[];
 
-bool setupPulses(uint8_t port);
+bool setupPulses(uint8_t module);
 void setupPulsesCrossfire();
-void setupPulsesDSM2(uint8_t port);
-void setupPulsesMultimodule(uint8_t port);
-void setupPulsesSbus(uint8_t port);
-void setupPulsesPXX(uint8_t port);
-void setupPulsesPPMModule(uint8_t port);
+void setupPulsesDSM2();
+void setupPulsesMultimodule();
+void setupPulsesSbus();
+void setupPulsesPXX();
+void setupPulsesPPMExternalModule();
 void setupPulsesPPMTrainer();
 void sendByteDsm2(uint8_t b);
 void putDsm2Flush();

@@ -130,7 +130,7 @@ void menuModelDisplay(event_t event)
 
   int8_t sub = menuVerticalPosition - HEADER_LINE;
 
-  for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
+  for (uint32_t i=0; i<NUM_BODY_LINES; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     int k = i + menuVerticalOffset;
     SKIP_HIDDEN_MENU_ROWS(k);

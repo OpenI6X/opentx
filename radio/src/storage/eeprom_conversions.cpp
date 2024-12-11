@@ -874,7 +874,7 @@ void ConvertModel_216_to_217(ModelData & model)
   memcpy(newModel.header.bitmap, oldModel.header.bitmap, LEN_BITMAP_NAME);
 #endif
 
-  for (uint8_t i=0; i<2; i++) {
+  for (uint32_t i=0; i<2; i++) {
     TimerData_v217 & timer = newModel.timers[i];
     if (oldModel.timers[i].mode >= TMRMODE_COUNT)
       timer.mode = TMRMODE_COUNT + ConvertSwitch_216_to_217(oldModel.timers[i].mode - TMRMODE_COUNT + 1) - 1;
@@ -1044,7 +1044,7 @@ void ConvertModel_217_to_218(ModelData & model)
   TRACE("Model %s conversion from v217 to v218", name);
 
   newModel.header = oldModel.header;
-  for (uint8_t i=0; i<MAX_TIMERS; i++) {
+  for (uint32_t i=0; i<MAX_TIMERS; i++) {
     if (oldModel.timers[i].mode >= TMRMODE_COUNT)
       newModel.timers[i].mode = TMRMODE_COUNT + ConvertSwitch_217_to_218(oldModel.timers[i].mode - TMRMODE_COUNT + 1) - 1;
     else
@@ -1197,7 +1197,7 @@ void ConvertModel_217_to_218(ModelData & model)
   newModel.potsWarnMode = oldModel.potsWarnMode;
   newModel.potsWarnEnabled = oldModel.potsWarnEnabled;
   memcpy(newModel.potsWarnPosition, oldModel.potsWarnPosition, sizeof(newModel.potsWarnPosition));
-  for (uint8_t i=0; i<MAX_TELEMETRY_SENSORS; i++) {
+  for (uint32_t i=0; i<MAX_TELEMETRY_SENSORS; i++) {
     newModel.telemetrySensors[i] = oldModel.telemetrySensors[i];
     if (newModel.telemetrySensors[i].unit > UNIT_WATTS)
       newModel.telemetrySensors[i].unit += 1;
@@ -1274,7 +1274,7 @@ bool eeConvert()
 #endif
 
   // Models conversion
-  for (uint8_t id=0; id<MAX_MODELS; id++) {
+  for (uint32_t id=0; id<MAX_MODELS; id++) {
 #if defined(COLORLCD)
 #elif LCD_W >= 212
     lcdDrawSolidHorizontalLine(61, 6*FH+5, 10+id*2, FORCE);

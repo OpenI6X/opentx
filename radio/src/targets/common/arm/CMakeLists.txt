@@ -7,6 +7,7 @@ option(TRACE_SD_CARD "Traces SD enabled" OFF)
 option(TRACE_FATFS "Traces FatFS enabled" OFF)
 option(TRACE_AUDIO "Traces audio enabled" OFF)
 option(DEBUG_TRACE_BUFFER "Debug Trace Screen" OFF)
+option(CROSSFIRE "Crossfire TX Module" ON)
 option(MULTIMODULE "DIY Multiprotocol TX Module (https://github.com/pascallanger/DIY-Multiprotocol-TX-Module)" OFF)
 option(SUPPORT_D16_EU_ONLY "XJT module only supports D16-EU and LR12-EU" OFF) # TODO rename to XJT_EU_ONLY
 option(DEBUG_INTERRUPTS "Count interrupts" OFF)
@@ -19,27 +20,33 @@ if(TIMERS EQUAL 3)
 else()
   add_definitions(-DTIMERS=2)
 endif()
+
 if(LOG_TELEMETRY)
   add_definitions(-DLOG_TELEMETRY)
 endif()
+
 if(TRACE_SD_CARD)
   add_definitions(-DTRACE_SD_CARD)
   set(DEBUG ON)
   set(DEBUG_TRACE_BUFFER ON)
 endif()
+
 if(TRACE_FATFS)
   add_definitions(-DTRACE_FATFS)
   set(DEBUG ON)
   set(DEBUG_TRACE_BUFFER ON)
 endif()
+
 if(TRACE_AUDIO)
   add_definitions(-DTRACE_AUDIO)
   set(DEBUG ON)
   set(DEBUG_TRACE_BUFFER ON)
 endif()
+
 if(DEBUG_TRACE_BUFFER)
   add_definitions(-DDEBUG_TRACE_BUFFER)
 endif()
+
 if(DEBUG_INTERRUPTS)
   add_definitions(-DDEBUG_INTERRUPTS)
   set(DEBUG ON)
@@ -47,14 +54,17 @@ if(DEBUG_INTERRUPTS)
     add_definitions(-DDEBUG_USB_INTERRUPTS)
   endif()
 endif()
+
 if(DEBUG_TASKS)
   add_definitions(-DDEBUG_TASKS)
   set(DEBUG ON)
 endif()
+
 if(DEBUG_TIMERS)
   add_definitions(-DDEBUG_TIMERS)
   set(DEBUG ON)
 endif()
+
 if(CLI)
   add_definitions(-DCLI)
   set(FIRMWARE_SRC ${FIRMWARE_SRC} cli.cpp)
@@ -62,25 +72,43 @@ if(CLI)
 elseif(DEBUG)
   set(SRC ${SRC} dump.cpp)
 endif()
+
 if(DEBUG)
   add_definitions(-DDEBUG)
 endif()
+
 if(SUPPORT_D16_EU_ONLY)
   add_definitions(-DMODULE_D16_EU_ONLY_SUPPORT)
 endif()
+
 if(HAPTIC)
   add_definitions(-DHAPTIC)
   set(SRC ${SRC} haptic.cpp)
   set(TARGET_SRC ${TARGET_SRC} haptic_driver.cpp)
 endif()
+
 if(MULTIMODULE)
   add_definitions(-DMULTIMODULE)
   set(SRC ${SRC} pulses/multi_arm.cpp telemetry/spektrum.cpp telemetry/flysky_ibus.cpp telemetry/multi.cpp)
 endif()
+
+if(CROSSFIRE)
+  add_definitions(-DCROSSFIRE)
+  set(PULSES_SRC
+    ${PULSES_SRC}
+    crossfire.cpp
+    )
+  set(SRC
+    ${SRC}
+    telemetry/crossfire.cpp
+    )
+endif()
+
 if(PCB STREQUAL I6X)
   set(SRC ${SRC} telemetry/flysky_ibus.cpp)
   add_definitions(-DTELEMETRY_FRSKY)
 endif()
+
 if(NOT PCB STREQUAL I6X)
 add_definitions(-DTELEMETRY_FRSKY -DTELEMETRY_FRSKY_SPORT -DGPS -DDSM2 -DPXX)
 endif()

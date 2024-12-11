@@ -225,8 +225,9 @@ void memswap(void *a, void *b, uint8_t size) {
 void generalDefault() {
   memclear(&g_eeGeneral, sizeof(g_eeGeneral));
   g_eeGeneral.version = EEPROM_VER;
+#if !defined(PCBI6X)
   g_eeGeneral.variant = EEPROM_VARIANT;
-
+#endif
 #if !defined(PCBHORUS)
   g_eeGeneral.contrast = LCD_CONTRAST_DEFAULT;
 #endif
@@ -367,7 +368,7 @@ void checkModelIdUnique(uint8_t index, uint8_t module) {
   memset(reusableBuffer.modelsetup.msg, 0, sizeof(reusableBuffer.modelsetup.msg));
 
   if (modelId != 0) {
-    for (uint8_t i = 0; i < MAX_MODELS; i++) {
+    for (uint32_t i = 0; i < MAX_MODELS; i++) {
       if (i != index) {
         if (modelId == modelHeaders[i].modelId[module]) {
           if ((WARNING_LINE_LEN - 4 - (name - reusableBuffer.modelsetup.msg)) > (signed)(modelHeaders[i].name[0] ? zlen(modelHeaders[i].name, LEN_MODEL_NAME) : sizeof(TR_MODEL) + 2)) {  // you cannot rely exactly on WARNING_LINE_LEN so using WARNING_LINE_LEN-2 (-2 for the ",")
@@ -415,7 +416,7 @@ uint8_t findNextUnusedModelId(uint8_t index, uint8_t module) {
       continue;
 
     uint8_t mask = 1;
-    for (uint8_t i = 1; i < (id & 7); i++)
+    for (uint32_t i = 1; i < (id & 7); i++)
       mask <<= 1;
 
     usedModelIds[id >> 3] |= mask;
@@ -527,7 +528,7 @@ int8_t getMovedSource(GET_MOVED_SOURCE_PARAMS) {
 
   static int16_t inputsStates[MAX_INPUTS];
   if (min <= MIXSRC_FIRST_INPUT) {
-    for (uint8_t i = 0; i < MAX_INPUTS; i++) {
+    for (uint32_t i = 0; i < MAX_INPUTS; i++) {
       if (abs(anas[i] - inputsStates[i]) > 512) {
         if (!isInputRecursive(i)) {
           result = MIXSRC_FIRST_INPUT + i;
@@ -539,7 +540,7 @@ int8_t getMovedSource(GET_MOVED_SOURCE_PARAMS) {
 
   static int16_t sourcesStates[NUM_STICKS + NUM_POTS + NUM_SLIDERS + NUM_MOUSE_ANALOGS];
   if (result == 0) {
-    for (uint8_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++) {
+    for (uint32_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++) {
       if (abs(calibratedAnalogs[i] - sourcesStates[i]) > 512) {
         result = MIXSRC_Rud + i;
         break;
@@ -564,7 +565,7 @@ int8_t getMovedSource(GET_MOVED_SOURCE_PARAMS) {
 
 #if defined(FLIGHT_MODES)
 uint8_t getFlightMode() {
-  for (uint8_t i = 1; i < MAX_FLIGHT_MODES; i++) {
+  for (uint32_t i = 1; i < MAX_FLIGHT_MODES; i++) {
     FlightModeData *phase = &g_model.flightModeData[i];
     if (phase->swtch && getSwitch(phase->swtch)) {
       return i;
@@ -581,7 +582,7 @@ trim_t getRawTrimValue(uint8_t phase, uint8_t idx) {
 
 int getTrimValue(uint8_t phase, uint8_t idx) {
   int result = 0;
-  for (uint8_t i = 0; i < MAX_FLIGHT_MODES; i++) {
+  for (uint32_t i = 0; i < MAX_FLIGHT_MODES; i++) {
     trim_t v = getRawTrimValue(phase, idx);
     if (v.mode == TRIM_MODE_NONE) {
       return result;
@@ -601,7 +602,7 @@ int getTrimValue(uint8_t phase, uint8_t idx) {
 }
 
 bool setTrimValue(uint8_t phase, uint8_t idx, int trim) {
-  for (uint8_t i = 0; i < MAX_FLIGHT_MODES; i++) {
+  for (uint32_t i = 0; i < MAX_FLIGHT_MODES; i++) {
     trim_t &v = flightModeAddress(phase)->trim[idx];
     if (v.mode == TRIM_MODE_NONE)
       return false;
@@ -623,7 +624,7 @@ bool setTrimValue(uint8_t phase, uint8_t idx, int trim) {
 #if defined(ROTARY_ENCODERS)
 uint8_t getRotaryEncoderFlightMode(uint8_t idx) {
   uint8_t phase = mixerCurrentFlightMode;
-  for (uint8_t i = 0; i < MAX_FLIGHT_MODES; i++) {
+  for (uint32_t i = 0; i < MAX_FLIGHT_MODES; i++) {
     if (phase == 0)
       return 0;
     int16_t value = flightModeAddress(phase)->rotaryEncoders[idx];
@@ -667,9 +668,9 @@ ls_telemetry_value_t maxTelemValue(source_t channel) {
 #define INAC_SWITCHES_SHIFT 8
 bool inputsMoved() {
   uint8_t sum = 0;
-  for (uint8_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++)
+  for (uint32_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++)
     sum += anaIn(i) >> INAC_STICKS_SHIFT;
-  for (uint8_t i = 0; i < NUM_SWITCHES; i++)
+  for (uint32_t i = 0; i < NUM_SWITCHES; i++)
     sum += getValue(MIXSRC_FIRST_SWITCH + i) >> INAC_SWITCHES_SHIFT;
 
   if (abs((int8_t)(sum - inactivity.sum)) > 1) {
@@ -1295,7 +1296,7 @@ uint16_t s_sum_samples_thr_10s;
 
 void evalTrims() {
   uint8_t phase = mixerCurrentFlightMode;
-  for (uint8_t i = 0; i < NUM_TRIMS; i++) {
+  for (uint32_t i = 0; i < NUM_TRIMS; i++) {
     // do trim -> throttle trim if applicable
     int16_t trim = getTrimValue(phase, i);
     if (trimsCheckTimer > 0) {
@@ -1445,7 +1446,7 @@ void doMixerPeriodicUpdates()
 
 #if defined(PXX) || defined(DSM2) || defined(PCBI6X)
     static uint8_t countRangecheck = 0;
-    for (uint8_t i = 0; i < NUM_MODULES; ++i) {
+    for (uint32_t i = 0; i < NUM_MODULES; ++i) {
 #if defined(MULTIMODULE)
       if (moduleState[i].mode != MODULE_MODE_NORMAL || (i == EXTERNAL_MODULE && multiModuleStatus.isBinding())) {
 #else
@@ -1570,8 +1571,9 @@ void opentxResume() {
 
   // removed to avoid the double warnings (throttle, switch, etc.)
   // opentxStart(OPENTX_START_NO_SPLASH | OPENTX_START_NO_CALIBRATION | OPENTX_START_NO_CHECKS);
-
+#if defined(AUDIO)
   referenceSystemAudioFiles();
+#endif
 
   if (!g_eeGeneral.unexpectedShutdown) {
     g_eeGeneral.unexpectedShutdown = 1;
@@ -1660,13 +1662,13 @@ void moveTrimsToOffsets()  // copy state of 3 primary to subtrim
   pauseMixerCalculations();
 
   evalFlightModeMixes(e_perout_mode_noinput, 0);  // do output loop - zero input sticks and trims
-  for (uint8_t i = 0; i < MAX_OUTPUT_CHANNELS; i++) {
+  for (uint32_t i = 0; i < MAX_OUTPUT_CHANNELS; i++) {
     zeros[i] = applyLimits(i, chans[i]);
   }
 
   evalFlightModeMixes(e_perout_mode_noinput - e_perout_mode_notrims, 0);  // do output loop - only trims
 
-  for (uint8_t i = 0; i < MAX_OUTPUT_CHANNELS; i++) {
+  for (uint32_t i = 0; i < MAX_OUTPUT_CHANNELS; i++) {
     int16_t output = applyLimits(i, chans[i]) - zeros[i];
     int16_t v = g_model.limitData[i].offset;
     if (g_model.limitData[i].revert)
@@ -1676,7 +1678,7 @@ void moveTrimsToOffsets()  // copy state of 3 primary to subtrim
   }
 
   // reset all trims, except throttle (if throttle trim)
-  for (uint8_t i = 0; i < NUM_TRIMS; i++) {
+  for (uint32_t i = 0; i < NUM_TRIMS; i++) {
     if (i != THR_STICK || !g_model.thrTrim) {
       int16_t original_trim = getTrimValue(mixerCurrentFlightMode, i);
       for (uint8_t fm = 0; fm < MAX_FLIGHT_MODES; fm++) {
@@ -1733,7 +1735,7 @@ void opentxInit()
     globalData.unexpectedShutdown = 1;
   }
 
-#if defined(SDCARD) && !defined(PCBMEGA2560)
+#if defined(SDCARD)
   // SDCARD related stuff, only done if not unexpectedShutdown
   if (!globalData.unexpectedShutdown) {
     sdInit();

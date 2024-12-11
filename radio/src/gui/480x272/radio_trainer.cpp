@@ -47,7 +47,7 @@ bool menuRadioTrainer(event_t event)
 
   y = MENU_CONTENT_TOP + FH;
 
-  for (uint8_t i=0; i<NUM_STICKS; i++) {
+  for (uint32_t i=0; i<NUM_STICKS; i++) {
     uint8_t chan = channel_order(i+1);
     TrainerMix * td = &g_eeGeneral.trainer.mix[chan-1];
 

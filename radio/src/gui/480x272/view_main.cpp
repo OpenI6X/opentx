@@ -46,7 +46,7 @@ void drawMainPots()
 
 void drawTrims(uint8_t flightMode)
 {
-  for (uint8_t i=0; i<4; i++) {
+  for (uint32_t i=0; i<4; i++) {
     static const coord_t x[4] = { TRIM_LH_X, TRIM_LV_X, TRIM_RV_X, TRIM_RH_X };
     static uint8_t vert[4] = {0, 1, 1, 0};
     unsigned int stickIndex = CONVERT_MODE(i);
@@ -210,7 +210,7 @@ bool menuMainView(event_t event)
     g_model.view = 0;
   }
 
-  for (uint8_t i=0; i<MAX_CUSTOM_SCREENS; i++) {
+  for (uint32_t i=0; i<MAX_CUSTOM_SCREENS; i++) {
     if (customScreens[i]) {
       if (i == g_model.view)
         customScreens[i]->refresh();

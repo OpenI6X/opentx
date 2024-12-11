@@ -56,7 +56,7 @@ void runPopupCurvePreset(event_t event)
     int8_t * points = curveAddress(s_curveChan);
     int k = 25 * reusableBuffer.curveEdit.preset;
     int dx = 2000 / (5+crv.points-1);
-    for (uint8_t i=0; i<5+crv.points; i++) {
+    for (uint32_t i=0; i<5+crv.points; i++) {
       int x = -1000 + i * dx;
       points[i] = div_and_round(div_and_round(k * x, 100), 10);
     }
@@ -180,7 +180,7 @@ void menuModelCurveOne(event_t event)
 
   uint8_t posY = FH+1;
   attr = (s_editMode > 0 ? INVERS|BLINK : INVERS);
-  for (uint8_t i=0; i<5+crv.points; i++) {
+  for (uint32_t i=0; i<5+crv.points; i++) {
     point_t point = getPoint(i);
     uint8_t selectionMode = 0;
     if (crv.type==CURVE_TYPE_CUSTOM) {

@@ -317,7 +317,7 @@ void A7105_Init(void)
 
 	A7105_Regs = (uint8_t*) AFHDS2A_A7105_regs;
 
-	for (uint8_t i = 0; i < 0x32; i++) {
+	for (uint32_t i = 0; i < 0x32; i++) {
 		uint8_t val = A7105_Regs[i];
 		if (val != 0xFF)
 			A7105_WriteReg(i, val);

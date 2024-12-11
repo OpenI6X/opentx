@@ -103,7 +103,7 @@ bool displayNumbersTelemetryScreen(FrSkyScreenData & screen)
   // Custom Screen with numbers
   uint8_t fields_count = 0;
   lcdDrawSolidVerticalLine(63, 8, 48);
-  for (uint8_t i=0; i<4; i++) {
+  for (uint32_t i=0; i<4; i++) {
     for (uint8_t j=0; j<NUM_LINE_ITEMS; j++) {
       source_t field = screen.lines[i].sources[j];
       if (field > 0) {

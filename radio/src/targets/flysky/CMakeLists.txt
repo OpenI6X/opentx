@@ -29,7 +29,6 @@ if(PCB STREQUAL I6X)
   set(AUX_SERIAL_DRIVER ../common/arm/stm32/aux_serial_driver.cpp)
   set(DEFAULT_TEMPLATE_SETUP "0" CACHE STRING "Default channel order")
 
-  add_definitions(-DCROSSFIRE)
   # add_definitions(-DNAVIGATION_POT1) # ~324B
   # add_definitions(-DNAVIGATION_POT2)
   add_definitions(-DSTM32F072)

@@ -86,14 +86,14 @@ void menuModelFlightModeOne(event_t event)
   if (s_currIdx == 0 && sub>=ITEM_MODEL_FLIGHT_MODE_SWITCH)
     sub += VERTICAL_SHIFT;
 
-  for (uint8_t k=0; k<LCD_LINES-1; k++) {
+  for (uint32_t k=0; k<LCD_LINES-1; k++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + k*FH;
     int8_t i = k + menuVerticalOffset;
 
     if (s_currIdx == 0 && i>=ITEM_MODEL_FLIGHT_MODE_SWITCH) i += VERTICAL_SHIFT;
     uint8_t attr = (sub==i ? (editMode>0 ? BLINK|INVERS : INVERS) : 0);
 #else
-  for (uint8_t i=0, k=0, y=PHASE_ONE_FIRST_LINE; i<ITEM_MODEL_FLIGHT_MODE_MAX; i++, k++, y+=FH) {
+  for (uint32_t i=0, k=0, y=PHASE_ONE_FIRST_LINE; i<ITEM_MODEL_FLIGHT_MODE_MAX; i++, k++, y+=FH) {
     if (s_currIdx == 0 && i==ITEM_MODEL_FLIGHT_MODE_SWITCH) i = ITEM_MODEL_FLIGHT_MODE_FADE_IN;
     uint8_t attr = (sub==k ? (editMode>0 ? BLINK|INVERS : INVERS) : 0);
 #endif
@@ -108,7 +108,7 @@ void menuModelFlightModeOne(event_t event)
 
       case ITEM_MODEL_FLIGHT_MODE_TRIMS:
         lcdDrawTextAlignedLeft(y, STR_TRIMS);
-        for (uint8_t t = 0; t < NUM_STICKS; t++) {
+        for (uint32_t t = 0; t < NUM_STICKS; t++) {
           drawTrimMode(MIXES_2ND_COLUMN + (t*2*FW), y, s_currIdx, t, menuHorizontalPosition == t ? attr : 0);
 #if defined(NAVIGATION_9X)
           if (s_editMode > 0 && attr && menuHorizontalPosition == t) {
@@ -250,7 +250,7 @@ void menuModelFlightModesAll(event_t event)
     lcdDrawSizedText(4*FW+NAME_OFS, y, p->name, sizeof(p->name), ZCHAR);
 #endif
     if (i == 0) {
-      for (uint8_t t=0; t<NUM_STICKS; t++) {
+      for (uint32_t t=0; t<NUM_STICKS; t++) {
 #if defined(PCBTARANIS) || defined(PCBI6X)
         drawTrimMode(TRIMS_POS+t*FW*2, y, i, t, 0);
 #else
@@ -261,12 +261,12 @@ void menuModelFlightModesAll(event_t event)
     else {
 #if defined(PCBTARANIS) || defined(PCBI6X)
       drawSwitch(SWITCH_POS, y, p->swtch, 0);
-      for (uint8_t t=0; t<NUM_STICKS; t++) {
+      for (uint32_t t=0; t<NUM_STICKS; t++) {
         drawTrimMode(TRIMS_POS+t*FW*2, y, i, t, 0);
       }
 #else
       drawSwitch((4+LEN_FLIGHT_MODE_NAME)*FW+SWITCH_OFS, y, p->swtch, 0);
-      for (uint8_t t=0; t<NUM_STICKS; t++) {
+      for (uint32_t t=0; t<NUM_STICKS; t++) {
         drawShortTrimMode((9+LEN_FLIGHT_MODE_NAME+t)*FW+TRIMS_OFS, y, i, t, 0);
       }
 #endif

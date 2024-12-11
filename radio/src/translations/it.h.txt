@@ -677,7 +677,7 @@
 #define TR_ADJUST_RTC          TR("Aggiusta RTC", INDENT "Aggiusta RTC")
 #define TR_GPS                 "GPS"
 #define TR_RXCHANNELORD        "Ordine ch RX"
-#define TR_STICKS              "Sticks"
+#define TR_STICKS              "Axis"
 #define TR_POTS                "Pot."
 #define TR_SWITCHES            "Interutt."
 #define TR_SWITCHES_DELAY      "Ritardo voce FV"

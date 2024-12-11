@@ -668,7 +668,7 @@
 #define TR_ADJUST_RTC          TR("Klok instellen", INDENT "Klok middels GPS instellen")
 #define TR_GPS                 "GPS"
 #define TR_RXCHANNELORD        TR("Kan.Volgorde", "Kanaalvolgorde")
-#define TR_STICKS              "Sticks"
+#define TR_STICKS              "Axis"
 #define TR_POTS                "Pots"
 #define TR_SWITCHES            TR("Switches","Schakelaars")
 #define TR_SWITCHES_DELAY      "Vertraging"

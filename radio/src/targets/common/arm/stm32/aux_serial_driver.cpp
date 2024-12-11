@@ -56,7 +56,7 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wor
 
   if (dma) {
 #if defined(SBUS_TRAINER)
-    auxSerialRxFifo.stream = AUX_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
+    auxSerialRxFifo.channel = AUX_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
     auxSerialRxFifo.clear();
     USART_ITConfig(AUX_SERIAL_USART, USART_IT_RXNE, DISABLE);
     USART_ITConfig(AUX_SERIAL_USART, USART_IT_TXE, DISABLE);
@@ -300,7 +300,7 @@ void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_Wo
   USART_InitStructure.USART_Mode = USART_Mode_Rx;
   USART_Init(AUX4_SERIAL_USART, &USART_InitStructure);
 
-    aux4SerialRxFifo.stream = AUX4_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
+    aux4SerialRxFifo.channel = AUX4_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
     aux4SerialRxFifo.clear();
     // USART_ITConfig(AUX4_SERIAL_USART, USART_IT_RXNE, DISABLE);
     AUX4_SERIAL_USART->CR1 &= ~(USART_CR1_RXNEIE /*| USART_CR1_TXEIE*/);

@@ -521,7 +521,7 @@ bool isTelemetryProtocolAvailable(int protocol) {
     return true;
   }
 #endif
-#if !defined(MULTIMODULE)
+#if !defined(MULTIMODULE) && !defined(PCBI6X)
   if (protocol == PROTOCOL_TELEMETRY_SPEKTRUM || protocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS || protocol == PROTOCOL_TELEMETRY_MULTIMODULE) {
     return false;
   }

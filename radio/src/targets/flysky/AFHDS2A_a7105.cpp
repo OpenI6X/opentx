@@ -149,7 +149,7 @@ void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type) {
         packet[13] = 0x00;
       }
       packet[14] = 0x00;
-      for (uint8_t i = 15; i < 37; i++) {
+      for (uint32_t i = 15; i < 37; i++) {
         packet[i] = 0xff;
       }
       packet[18] = 0x05;  // ?

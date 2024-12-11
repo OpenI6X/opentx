@@ -60,17 +60,9 @@ set(FIRMWARE_TARGET_SRC
   )
 
 if(NOT CPU_TYPE STREQUAL STM32F0)
- add_definitions(-DLUA_INPUTS -DCROSSFIRE)
-set(FIRMWARE_TARGET_SRC
-  ${FIRMWARE_TARGET_SRC}
-  ../common/arm/stm32/usb_bsp.c
-  ../common/arm/stm32/usbd_desc.c
-  ../common/arm/stm32/usbd_usr.cpp
-  ../common/arm/stm32/usb_driver.cpp
-  ../common/arm/stm32/flash_driver.cpp
-  ../common/arm/stm32/usbd_storage_msd.cpp
-  )
-else() # STM32F0
+ add_definitions(-DLUA_INPUTS)
+endif()
+
 set(FIRMWARE_TARGET_SRC
  ${FIRMWARE_TARGET_SRC}
  ../common/arm/stm32/usb_bsp.c
@@ -81,7 +73,6 @@ set(FIRMWARE_TARGET_SRC
  ../common/arm/stm32/flash_driver.cpp
  ../common/arm/stm32/usbd_storage_msd.cpp
  )
-endif()
 
 if(DEBUG OR CLI OR USB_SERIAL)
   set(STM32USB_SRC
@@ -93,6 +84,12 @@ if(DEBUG OR CLI OR USB_SERIAL)
     ../common/arm/stm32/usbd_cdc.cpp
   )
   add_definitions(-DUSB_SERIAL)
+
+#disable USB_SERIAL if it will exceed flash size
+if ((NOT TRANSLATIONS STREQUAL EN) AND DFPLAYER STREQUAL YES AND USB_MSD STREQUAL YES AND PCBI6X_ELRS STREQUAL YES AND PCBI6X_INAV STREQUAL YES AND USB_SERIAL STREQUAL YES)
+  message(WARNING "USB_SERIAL will be disabled")
+  remove_definitions(-DUSB_SERIAL)
+endif()
 endif()
 set(STM32USB_SRC
   ${STM32USB_SRC}
@@ -135,13 +132,3 @@ set(SRC
   io/bootloader_flash.cpp
   )
 endif()
-
-set(SRC
-  ${SRC}
-  telemetry/crossfire.cpp  
-  )
-
-set(PULSES_SRC
-  ${PULSES_SRC}
-  crossfire.cpp
-  )

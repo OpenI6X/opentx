@@ -49,10 +49,6 @@ void buzzerInit()
   GPIO_PinAFConfig(BUZZER_GPIO_PORT, BUZZER_GPIO_PinSource, GPIO_AF_2);
 }
 
-void referenceSystemAudioFiles()
-{
-}
-
 #define __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH()  do {SYSCFG->CFGR1 &= ~(SYSCFG_CFGR1_MEM_MODE); \
                                              SYSCFG->CFGR1 |= SYSCFG_CFGR1_MEM_MODE_0;  \
                                             }while(0)
@@ -95,26 +91,14 @@ void watchdogInit(unsigned int duration)
 
 void initBuzzerTimer()
 {
-   PWM_TIMER->PSC = 48 - 1; // 48MHz -> 1MHz
-   /* set counter mode */
-   PWM_TIMER->CR1 &= ~(TIM_CR1_DIR | TIM_CR1_CMS);
-   PWM_TIMER->CR1 |= TIM_CounterMode_Up;
-   /* Auto-Reload Register */
-   PWM_TIMER->ARR = 400; // count up to
-   /* Set Clock Division */
-   PWM_TIMER->CR1 &= ~ TIM_CR1_CKD;
-   PWM_TIMER->CR1 |= TIM_CKD_DIV1;
-   PWM_TIMER->CCR1 = 200; // ARR/2 = PWM duty 50%
-   /* Set repetition counter */
-   PWM_TIMER->RCR = 0;
-
-  // Timer output mode PWM
-  /* Select the Output Compare (OC) Mode 1 */
-  PWM_TIMER->CCMR1 |= (TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1M_1); // = TIM_OCMODE_PWM1
-  /* Reset and set the Output N Polarity level to LOW */
-  // TIM1->CCER &= ~TIM_CCER_CC1P; 
-  PWM_TIMER->CCER |= TIM_CCER_CC1P | TIM_CCER_CC1E; // = TIM_OCPOLARITY_LOW + enable Capture compare channel
-  /* Enable the main output */
+  PWM_TIMER->PSC = 48 - 1; // 48MHz -> 1MHz
+  PWM_TIMER->CR1 &= ~(TIM_CR1_DIR | TIM_CR1_CMS | TIM_CR1_CKD);
+  PWM_TIMER->CR1 |= TIM_CounterMode_Up | TIM_CKD_DIV1;
+  PWM_TIMER->ARR = 400; // count up to
+  PWM_TIMER->CCR1 = 200; // ARR/2 = PWM duty 50%
+  // PWM_TIMER->RCR = 0;
+  PWM_TIMER->CCMR1 |= TIM_OCMode_PWM1;
+  PWM_TIMER->CCER |= TIM_OCPolarity_Low | TIM_CCER_CC1E; // TIM_OCPOLARITY_LOW + enable Capture compare channel
   PWM_TIMER->BDTR |= TIM_BDTR_MOE;
 }
 

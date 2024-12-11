@@ -157,7 +157,7 @@ void writeHeader()
 #endif
 
 #if defined(PCBTARANIS) || defined(PCBHORUS)
-  for (uint8_t i=1; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS+1; i++) {
+  for (uint32_t i=1; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS+1; i++) {
     const char * p = STR_VSRCRAW + i * STR_VSRCRAW[0] + 2;
     for (uint8_t j=0; j<STR_VSRCRAW[0]-1; ++j) {
       if (!*p) break;
@@ -184,7 +184,7 @@ void writeHeader()
 uint32_t getLogicalSwitchesStates(uint8_t first)
 {
   uint32_t result = 0;
-  for (uint8_t i=0; i<32; i++) {
+  for (uint32_t i=0; i<32; i++) {
     result |= (getSwitch(SWSRC_FIRST_LOGICAL_SWITCH+first+i) << i);
   }
   return result;
@@ -269,7 +269,7 @@ void logsWrite()
       }
 #endif
 
-      for (uint8_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) {
+      for (uint32_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) {
         f_printf(&g_oLogFile, "%d,", calibratedAnalogs[i]);
       }
 

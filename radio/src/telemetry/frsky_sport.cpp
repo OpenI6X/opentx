@@ -249,7 +249,7 @@ void sportProcessTelemetryPacket(const uint8_t * packet)
             luaPacket.primId = primId;
             luaPacket.dataId = id;
             luaPacket.value = data;
-            for (uint8_t i=0; i<sizeof(SportTelemetryPacket); i++) {
+            for (uint32_t i=0; i<sizeof(SportTelemetryPacket); i++) {
               luaInputTelemetryFifo->push(luaPacket.raw[i]);
             }
           }
@@ -269,7 +269,7 @@ void sportProcessTelemetryPacket(const uint8_t * packet)
       luaPacket.primId = primId;
       luaPacket.dataId = id;
       luaPacket.value = data;
-      for (uint8_t i=0; i<sizeof(SportTelemetryPacket); i++) {
+      for (uint32_t i=0; i<sizeof(SportTelemetryPacket); i++) {
         luaInputTelemetryFifo->push(luaPacket.raw[i]);
       }
     }

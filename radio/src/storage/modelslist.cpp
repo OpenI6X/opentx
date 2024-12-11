@@ -103,7 +103,7 @@ void ModelCell::loadBitmap()
     char timer[LEN_TIMER_STRING];
     buffer->drawSizedText(5, 2, modelName, LEN_MODEL_NAME, SMLSIZE|TEXT_COLOR);
     getTimerString(timer, 0);
-    for (uint8_t i = 0; i < MAX_TIMERS; i++) {
+    for (uint32_t i = 0; i < MAX_TIMERS; i++) {
       if (partialmodel.timers[i].mode > 0 && partialmodel.timers[i].persistent) {
         getTimerString(timer, partialmodel.timers[i].value);
         break;
@@ -134,7 +134,7 @@ void ModelCell::save(FIL* file)
 
 void ModelCell::setRfData(ModelData* model)
 {
-  for (uint8_t i = 0; i < NUM_MODULES; i++) {
+  for (uint32_t i = 0; i < NUM_MODULES; i++) {
     modelId[i] = model->header.modelId[i];
     setRfModuleData(i, &(model->moduleData[i]));
     TRACE("<%s/%i> : %X,%X,%X",
@@ -532,7 +532,7 @@ uint8_t ModelsList::findNextUnusedModelId(uint8_t moduleIdx)
         uint8_t id = (*it)->modelId[moduleIdx];
 
         uint8_t mask = 1;
-        for (uint8_t i = 1; i < (id & 7); i++)
+        for (uint32_t i = 1; i < (id & 7); i++)
           mask <<= 1;
 
         usedModelIds[id >> 3] |= mask;
