@@ -137,7 +137,11 @@ extern const char STR_OPEN9X[];
   #define OFS_SWTYPES          (OFS_AUX_SERIAL_MODES + sizeof(TR_AUX_SERIAL_MODES))
   #define OFS_POTTYPES         (OFS_SWTYPES + sizeof(TR_SWTYPES))
   #define OFS_SLIDERTYPES      (OFS_POTTYPES + sizeof(TR_POTTYPES))
+#if NUM_SLIDERS > 0
   #define OFS_VTRIMINC         (OFS_SLIDERTYPES + sizeof(TR_SLIDERTYPES))
+#else
+  #define OFS_VTRIMINC         (OFS_SLIDERTYPES)
+#endif
 #else
   #define OFS_VTRIMINC         (OFS_TRNCHN + sizeof(TR_TRNCHN))
 #endif
