@@ -184,11 +184,11 @@ extern const char STR_OPEN9X[];
 #else
   #define OFS_VTMRMODES           (OFS_VSRCRAW + sizeof(TR_VSRCRAW))
 #endif
-#if defined(RTCCLOCK)
 #define OFS_DATETIME            (OFS_VTMRMODES + sizeof(TR_VTMRMODES))
+#if defined(RTCCLOCK)
 #define OFS_VPERSISTENT         (OFS_DATETIME + sizeof(TR_DATETIME))
 #else
-#define OFS_VPERSISTENT         (OFS_VTMRMODES + sizeof(TR_VTMRMODES))
+#define OFS_VPERSISTENT         (OFS_DATETIME)
 #endif
 #if !defined(PCBI6X)
   #define OFS_VLCD                (OFS_VPERSISTENT + sizeof(TR_VPERSISTENT))
@@ -220,7 +220,7 @@ extern const char STR_OPEN9X[];
   #define OFS_DSM_PROTOCOLS            (OFS_XJT_PROTOCOLS + sizeof(TR_XJT_PROTOCOLS))
   #define OFS_I6X_PROTOCOLS            (OFS_DSM_PROTOCOLS + sizeof(TR_DSM_PROTOCOLS))
 #else
-  #define OFS_I6X_PROTOCOLS            (OFS_TELEMETRY_PROTOCOLS /* + sizeof(TR_TELEMETRY_PROTOCOLS) */)
+  #define OFS_I6X_PROTOCOLS            (OFS_TELEMETRY_PROTOCOLS)
 #endif
 #if defined(MULTIMODULE)
   #define OFS_MULTI_PROTOCOLS   (OFS_I6X_PROTOCOLS + sizeof(TR_I6X_PROTOCOLS))
