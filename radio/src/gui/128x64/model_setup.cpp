@@ -1123,6 +1123,7 @@ void menuModelSetup(event_t event)
                     moduleState[EXTERNAL_MODULE].counter = CRSF_FRAME_MODELID;
                   modelHeaders[g_eeGeneral.currModel].modelId[moduleIdx] = g_model.header.modelId[moduleIdx];
                 }
+#if !defined(PCBI6X)
                 else if (event == EVT_KEY_LONG(KEY_ENTER)) {
                   killEvents(event);
                   uint8_t newVal = findNextUnusedModelId(g_eeGeneral.currModel, moduleIdx);
@@ -1131,6 +1132,7 @@ void menuModelSetup(event_t event)
                     storageDirty(EE_MODEL);
                   }
                 }
+#endif
               }
             }
           }
@@ -1443,7 +1445,7 @@ void menuModelSetup(event_t event)
   // some field just finished being edited
   if (old_editMode > 0 && s_editMode == 0) {
     switch(menuVerticalPosition) {
-#if defined(PCBTARANIS) /*|| defined(PCBI6X)*/ // disabled to save space
+#if defined(PCBTARANIS) || defined(PCBI6X) // disabled to save space
     case ITEM_MODEL_INTERNAL_MODULE_BIND + 1: // for some reason index was off by one
       if (menuHorizontalPosition == 0)
         checkModelIdUnique(g_eeGeneral.currModel, INTERNAL_MODULE);
