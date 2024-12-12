@@ -784,7 +784,7 @@ void menuModelSetup(event_t event)
           }
         }
         break;
-        case ITEM_MODEL_INTERNAL_MODULE_SUBTYPE:
+      case ITEM_MODEL_INTERNAL_MODULE_SUBTYPE:
         lcdDrawTextAlignedLeft(y, INDENT "Subtype");
         lcdDrawTextAtIndex(
           MODEL_SETUP_2ND_COLUMN, 
