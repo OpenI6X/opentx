@@ -448,15 +448,6 @@ void modelDefault(uint8_t id) {
   g_model.moduleData[INTERNAL_MODULE].channelsCount = defaultModuleChannels_M8(INTERNAL_MODULE);
 #elif defined(PCBI6X)
  g_model.moduleData[INTERNAL_MODULE].rfProtocol = RF_I6X_PROTO_OFF;
-//  g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_AFHDS2A_SPI;
-//  g_model.moduleData[INTERNAL_MODULE].channelsStart = 0;
-//  g_model.moduleData[INTERNAL_MODULE].channelsCount = MAX_OUTPUT_CHANNELS - 8;
-//  g_model.moduleData[INTERNAL_MODULE].subType = AFHDS2A_SUBTYPE_PWM_IBUS;
-//  g_model.moduleData[INTERNAL_MODULE].afhds2a.servoFreq = 50;
-//  #if defined(EEPROM)
-//    g_model.header.modelId[INTERNAL_MODULE] = findNextUnusedModelId(id, INTERNAL_MODULE);
-//    modelHeaders[id].modelId[INTERNAL_MODULE] = g_model.header.modelId[INTERNAL_MODULE];
-//  #endif
 #endif
 
 #if defined(PCBXLITE)
