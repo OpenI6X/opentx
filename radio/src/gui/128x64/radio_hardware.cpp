@@ -284,7 +284,7 @@ void menuRadioHardware(event_t event)
         }
         break;
 #endif // MENU_DIAG_ANAS_KEYS
-#if !defined(PCBI6X)
+#if defined(SDCARD)
       case ITEM_RADIO_BACKUP_EEPROM:
         lcdDrawTextAlignedLeft(y, BUTTON(STR_EEBACKUP), attr);
         if (attr && event == EVT_KEY_FIRST(KEY_ENTER)) {
@@ -292,7 +292,7 @@ void menuRadioHardware(event_t event)
           eepromBackup();
         }
         break;
-#endif // PCBI6X
+#endif
       case ITEM_RADIO_FACTORY_RESET:
         onFactoryResetConfirm(warningResult);
         if (LCD_W < 212)

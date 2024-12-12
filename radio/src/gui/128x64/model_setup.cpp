@@ -769,22 +769,15 @@ void menuModelSetup(event_t event)
 #if defined(PCBI6X) 
       case ITEM_MODEL_INTERNAL_MODULE_MODE:
         lcdDrawTextAlignedLeft(y, INDENT TR_MODE);
-        lcdDrawTextAtIndex(
-          MODEL_SETUP_2ND_COLUMN, 
-          y, 
-          STR_I6X_PROTOCOLS, 
-          1+g_model.moduleData[INTERNAL_MODULE].rfProtocol, 
-          attr);
+        lcdDrawTextAtIndex(MODEL_SETUP_2ND_COLUMN, y, STR_I6X_PROTOCOLS, 1+g_model.moduleData[INTERNAL_MODULE].rfProtocol, attr);
         if (attr) {
           g_model.moduleData[INTERNAL_MODULE].rfProtocol = 
-          checkIncDec(event, 
-                      g_model.moduleData[INTERNAL_MODULE].rfProtocol, 
-                      RF_I6X_PROTO_OFF, 
-                      RF_I6X_PROTO_LAST, 
-                      EE_MODEL, 
-                      isRfProtocolAvailable);
+          checkIncDec(event, g_model.moduleData[INTERNAL_MODULE].rfProtocol, RF_I6X_PROTO_OFF, RF_I6X_PROTO_LAST, EE_MODEL, isRfProtocolAvailable);
           if (checkIncDec_Ret) { // modified?
             g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_AFHDS2A_SPI;
+            g_model.moduleData[INTERNAL_MODULE].channelsStart = 0;
+            g_model.moduleData[INTERNAL_MODULE].channelsCount = MAX_OUTPUT_CHANNELS - 8; // 16
+            g_model.moduleData[INTERNAL_MODULE].afhds2a.servoFreq = 50;
             if (g_model.moduleData[INTERNAL_MODULE].rfProtocol == RF_PROTO_OFF){
               g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_NONE;
             }
@@ -1442,16 +1435,16 @@ void menuModelSetup(event_t event)
 
 #if defined(AFHDS2A)
   if (IS_RANGECHECK_ENABLE()) {
-    showMessageBox("RQly ");
-    lcdDrawNumber(16+4*FW, 5*FH, TELEMETRY_RSSI(), BOLD);
+    showMessageBox("RQly");
+    lcdDrawNumber(WARNING_LINE_X, 5*FH, TELEMETRY_RSSI(), BOLD);
   }
 #endif
 
   // some field just finished being edited
   if (old_editMode > 0 && s_editMode == 0) {
     switch(menuVerticalPosition) {
-#if defined(PCBTARANIS) || defined(PCBI6X)
-    case ITEM_MODEL_INTERNAL_MODULE_BIND:
+#if defined(PCBTARANIS) /*|| defined(PCBI6X)*/ // disabled to save space
+    case ITEM_MODEL_INTERNAL_MODULE_BIND + 1: // for some reason index was off by one
       if (menuHorizontalPosition == 0)
         checkModelIdUnique(g_eeGeneral.currModel, INTERNAL_MODULE);
       break;

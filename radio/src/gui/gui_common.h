@@ -150,8 +150,10 @@ const mm_protocol_definition *getMultiProtocolDefinition (uint8_t protocol);
 #define MULTIMODULE_OPTIONS_ROW         HIDDEN_ROW
 #endif
 
+#define MAX_RXNUM                      63
+
 #if defined(PCBI6X)
-#define MAX_RX_NUM(x)                  (isModuleA7105(x) ? 15 : 63)
+#define MAX_RX_NUM(x)                  (isModuleA7105(x) ? 15 : MAX_RXNUM)
 #else
 #define MAX_RX_NUM(x)                  (isModuleDSM2(x) ? 20 : isModuleMultimodule(x) ? MULTI_MAX_RX_NUM(x) : 63)
 #endif

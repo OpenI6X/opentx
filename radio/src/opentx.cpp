@@ -401,36 +401,29 @@ void checkModelIdUnique(uint8_t index, uint8_t module) {
   }
 }
 
-uint8_t findNextUnusedModelId(uint8_t index, uint8_t module) {
-  // assume 63 is the highest Model ID
-  // and use 64 bits
-  uint8_t usedModelIds[8];
+uint8_t findNextUnusedModelId(uint8_t index, uint8_t module)
+{
+  uint8_t usedModelIds[(MAX_RXNUM + 7) / 8];
   memset(usedModelIds, 0, sizeof(usedModelIds));
 
-  for (uint8_t mod_i = 0; mod_i < MAX_MODELS; mod_i++) {
-    if (mod_i == index)
+  for (uint8_t modelIndex = 0; modelIndex < MAX_MODELS; modelIndex++) {
+    if (modelIndex == index)
       continue;
 
-    uint8_t id = modelHeaders[mod_i].modelId[module];
+    uint8_t id = modelHeaders[modelIndex].modelId[module];
     if (id == 0)
       continue;
 
-    uint8_t mask = 1;
-    for (uint32_t i = 1; i < (id & 7); i++)
-      mask <<= 1;
-
-    usedModelIds[id >> 3] |= mask;
+    uint8_t mask = 1u << (id & 7u);
+    usedModelIds[id >> 3u] |= mask;
   }
 
-  uint8_t new_id = 1;
-  uint8_t tst_mask = 1;
-  for (; new_id < MAX_RX_NUM(module); new_id++) {
-    if (!(usedModelIds[new_id >> 3] & tst_mask)) {
+  for (uint8_t id = 1; id <= MAX_RX_NUM(module); id++) {
+    uint8_t mask = 1u << (id & 7u);
+    if (!(usedModelIds[id >> 3u] & mask)) {
       // found free ID
-      return new_id;
+      return id;
     }
-    if ((tst_mask <<= 1) == 0)
-      tst_mask = 1;
   }
 
   // failed finding something...
@@ -443,7 +436,7 @@ void modelDefault(uint8_t id) {
 
   applyDefaultTemplate();
 
-#if defined(LUA) && defined(PCBTARANIS)  //Horus uses menuModelWizard() for wizard
+#if defined(LUA) && defined(PCBTARANIS)  // Horus uses menuModelWizard() for wizard
   if (isFileAvailable(WIZARD_PATH "/" WIZARD_NAME)) {
     f_chdir(WIZARD_PATH);
     luaExec(WIZARD_NAME);
@@ -454,28 +447,26 @@ void modelDefault(uint8_t id) {
   g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_XJT;
   g_model.moduleData[INTERNAL_MODULE].channelsCount = defaultModuleChannels_M8(INTERNAL_MODULE);
 #elif defined(PCBI6X)
-  g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_AFHDS2A_SPI;
-  g_model.moduleData[INTERNAL_MODULE].channelsStart = 0;
-  g_model.moduleData[INTERNAL_MODULE].channelsCount = MAX_OUTPUT_CHANNELS;
-  g_model.moduleData[INTERNAL_MODULE].subType = AFHDS2A_SUBTYPE_PWM_IBUS;
-  g_model.moduleData[INTERNAL_MODULE].afhds2a.servoFreq = 50;
+ g_model.moduleData[INTERNAL_MODULE].rfProtocol = RF_I6X_PROTO_OFF;
+//  g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_AFHDS2A_SPI;
+//  g_model.moduleData[INTERNAL_MODULE].channelsStart = 0;
+//  g_model.moduleData[INTERNAL_MODULE].channelsCount = MAX_OUTPUT_CHANNELS - 8;
+//  g_model.moduleData[INTERNAL_MODULE].subType = AFHDS2A_SUBTYPE_PWM_IBUS;
+//  g_model.moduleData[INTERNAL_MODULE].afhds2a.servoFreq = 50;
+//  #if defined(EEPROM)
+//    g_model.header.modelId[INTERNAL_MODULE] = findNextUnusedModelId(id, INTERNAL_MODULE);
+//    modelHeaders[id].modelId[INTERNAL_MODULE] = g_model.header.modelId[INTERNAL_MODULE];
+//  #endif
 #endif
 
 #if defined(PCBXLITE)
   g_model.trainerMode = TRAINER_MODE_MASTER_BLUETOOTH;
 #endif
 
-#if defined(EEPROM)
-  for (int i = 0; i < NUM_MODULES; i++) {
-    modelHeaders[id].modelId[i] = g_model.header.modelId[i] = id + 1;
-  }
-  checkModelIdUnique(id, 0);
-#endif
-
 #if defined(FLIGHT_MODES) && defined(GVARS)
-  for (int p = 1; p < MAX_FLIGHT_MODES; p++) {
-    for (int i = 0; i < MAX_GVARS; i++) {
-      g_model.flightModeData[p].gvars[i] = GVAR_MAX + 1;
+  for (int fmIdx = 1; fmIdx < MAX_FLIGHT_MODES; fmIdx++) {
+    for (int gvarIdx = 0; gvarIdx < MAX_GVARS; gvarIdx++) {
+      g_model.flightModeData[fmIdx].gvars[gvarIdx] = GVAR_MAX + 1;
     }
   }
 #endif
