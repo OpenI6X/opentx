@@ -208,7 +208,6 @@ void disable_serial( uint32_t module_index);
 void init_module_timer( uint32_t module_index, uint32_t period, uint8_t state);
 void disable_module_timer( uint32_t module_index);
 
-//just to allow compilation
 void extmoduleSendNextFrame();
 
 // Trainer driver
@@ -420,8 +419,7 @@ void debugPutc(const char c);
 // Telemetry driver
 void telemetryPortInit(uint32_t baudrate, uint8_t mode);
 void telemetryPortSetDirectionOutput(void);
-//void sportSendBuffer(uint8_t * buffer, uint32_t count);
-void sportSendBuffer(const uint8_t* buffer, unsigned long count);
+void sportSendBuffer(const uint8_t* buffer, uint32_t count);
 uint8_t telemetryGetByte(uint8_t * byte);
 // extern uint32_t telemetryErrors;
 

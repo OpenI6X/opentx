@@ -124,7 +124,6 @@ void setupPulsesCrossfire();
 void setupPulsesDSM2();
 void setupPulsesMultimodule();
 void setupPulsesSbus();
-void setupPulsesPXX();
 void setupPulsesPPMExternalModule();
 void setupPulsesPPMTrainer();
 void sendByteDsm2(uint8_t b);

@@ -146,8 +146,6 @@
 void TIM15_IRQHandler(void);
 
 // Internal RF
-void EXTI2_3_IRQHandler(void);
-void TIM16_IRQHandler(void);
 
 #define READBIT(A, B) ((A >> (B & 7)) & 1)
 #define SETBIT(T, B, V) (T = V ? T | (1<<B) : T & ~(1<<B))
@@ -231,7 +229,11 @@ void disable_afhds2a(uint32_t port);
   #define INTMODULE_DMA_FLAG_TC         DMA_IT_TCIF5
   #define INTMODULE_TIMER_FREQ          (PERI2_FREQUENCY * TIMER_MULT_APB2)
 */
-#define INTMODULE_RCC_APB2Periph      (RCC_APB2Periph_TIM16 | RCC_APB2Periph_SPI1)
+#define INTMODULE_RCC_APB2Periph      (RCC_APB2Periph_TIM16 | RCC_APB2Periph_SPI1 | RCC_APB2Periph_SYSCFG)
+#define INTMODULE_TIMER               TIM16
+#define INTMODULE_TIMER_IRQn          TIM16_IRQn
+#define INTMODULE_TIMER_IRQHandler    TIM16_IRQHandler
+// #define INTMODULE_TIMER_FREQ          (PERI1_FREQUENCY * TIMER_MULT_APB1)
 
 // External Module
 #define EXTMODULE_PWR_GPIO            GPIOC

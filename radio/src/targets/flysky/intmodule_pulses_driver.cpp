@@ -23,17 +23,10 @@
 #include "opentx.h"
 
 static bool ahfds2aEnabled = false;
-/*----------------------PRT Timer----------------------------------------------*/
-inline void EnablePRTTim(void) {
-  SET_BIT(TIM16->CR1, TIM_CR1_CEN);
-}
-inline void DisablePRTTim(void) {
-  CLEAR_BIT(TIM16->CR1, TIM_CR1_CEN);
-}
 
 void intmoduleStop() {
   TRACE("intmoduleStop");
-  DisablePRTTim();
+  CLEAR_BIT(INTMODULE_TIMER->CR1, TIM_CR1_CEN);
   if (ahfds2aEnabled) {
     A7105_Sleep();
     ahfds2aEnabled = false;
@@ -41,14 +34,14 @@ void intmoduleStop() {
 }
 
 void initIntModuleTimer(uint16_t periodUs) {
-  CLEAR_BIT(TIM16->CR1, TIM_CR1_ARPE);   // Disable ARR Preload
-  CLEAR_BIT(TIM16->SMCR, TIM_SMCR_MSM);  // Disable Master Slave Mode
-  WRITE_REG(TIM16->PSC, 2);              // Prescaler
-  WRITE_REG(TIM16->ARR, 65535 - periodUs); // Preload, was: 61759 => 3776
-  SET_BIT(TIM16->DIER, TIM_DIER_UIE);    // Enable update interrupt (UIE)
+  CLEAR_BIT(INTMODULE_TIMER->CR1, TIM_CR1_ARPE);   // Disable ARR Preload
+  CLEAR_BIT(INTMODULE_TIMER->SMCR, TIM_SMCR_MSM);  // Disable Master Slave Mode
+  WRITE_REG(INTMODULE_TIMER->PSC, 2);              // Prescaler
+  WRITE_REG(INTMODULE_TIMER->ARR, 65535 - periodUs); // Preload, was: 61759 => 3776
+  SET_BIT(INTMODULE_TIMER->DIER, TIM_DIER_UIE);    // Enable update interrupt (UIE)
 
-  NVIC_SetPriority(TIM16_IRQn, 2);
-  NVIC_EnableIRQ(TIM16_IRQn);
+  NVIC_SetPriority(INTMODULE_TIMER_IRQn, 2);
+  NVIC_EnableIRQ(INTMODULE_TIMER_IRQn);
 }
 
 void intmoduleNoneStart() {
@@ -56,7 +49,7 @@ void intmoduleNoneStart() {
   initIntModuleTimer(50000); // 50 ms
   ahfds2aEnabled = false;
 
-  EnablePRTTim();
+  SET_BIT(INTMODULE_TIMER->CR1, TIM_CR1_CEN);
 }
 
 void initSPI1()
@@ -104,11 +97,6 @@ void intmoduleAfhds2aStart() {
   //RF_RF1 output
   RF_RF1_GPIO_PORT->MODER |= GPIO_MODER_MODER11_0;
 
-  /* SYSCFG clock enable */
-  SET_BIT(RCC->APB2ENR, RCC_APB2ENR_SYSCFGCOMPEN);
-  /* Delay after an RCC peripheral clock enabling */
-  tmpreg = READ_BIT(RCC->APB2ENR, RCC_APB2ENR_SYSCFGCOMPEN);
-  UNUSED(tmpreg);
   // RF_GIO1
   SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI2_PB;  // Set EXTI Source
   EXTI->FTSR |= EXTI_FTSR_TR2;                   // Falling edge
@@ -116,15 +104,14 @@ void intmoduleAfhds2aStart() {
   NVIC_SetPriority(EXTI2_3_IRQn, 2);
   NVIC_EnableIRQ(EXTI2_3_IRQn);
 
-  /*------------------Radio_Protocol_Timer_Init(3850 uS TIM16)------------------*/
   initIntModuleTimer(3850); // was: 3776 us
   ahfds2aEnabled = true;
   initAFHDS2A();
-  EnablePRTTim();
+  SET_BIT(INTMODULE_TIMER->CR1, TIM_CR1_CEN);
 }
 
-/*-------------handler for RADIO GIO2 (FALLING AGE)---------------------------*/
-void EXTI2_3_IRQHandler(void) {
+// handler for RADIO GIO2 (FALLING AGE)
+extern "C" void EXTI2_3_IRQHandler() {
   if (EXTI->PR & RF_GIO2_PIN) {
     WRITE_REG(EXTI->PR, RF_GIO2_PIN);
     DisableGIO();
@@ -132,9 +119,9 @@ void EXTI2_3_IRQHandler(void) {
     ActionAFHDS2A();
   }
 }
-/*------------handler for Radio_Protocol_Timer 3860 uS------------------------*/
-void TIM16_IRQHandler(void) {
-  WRITE_REG(TIM16->SR, ~(TIM_SR_UIF));  // Clear the update interrupt flag (UIF)
+
+extern "C" void INTMODULE_TIMER_IRQHandler() {
+  WRITE_REG(INTMODULE_TIMER->SR, ~(TIM_SR_UIF));  // Clear the update interrupt flag (UIF)
   setupPulses(INTERNAL_MODULE);
   if (ahfds2aEnabled) {
     SETBIT(RadioState, CALLER, TIM_CALL);

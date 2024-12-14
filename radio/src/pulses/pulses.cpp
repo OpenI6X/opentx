@@ -128,21 +128,6 @@ uint8_t getRequiredProtocol(uint8_t port) {
   return required_protocol;
 }
 
-void setupPulsesPXX(uint8_t port) {
-#if defined(PXX)
-#if defined(INTMODULE_USART) && defined(EXTMODULE_USART)
-  modulePulsesData[port].pxx_uart.setupFrame(port);
-#elif !defined(INTMODULE_USART) && !defined(EXTMODULE_USART)
-  modulePulsesData[port].pxx.setupFrame(port);
-#else
-  if (IS_UART_MODULE(port))
-    modulePulsesData[port].pxx_uart.setupFrame(port);
-  else
-    modulePulsesData[port].pxx.setupFrame(port);
-#endif
-#endif
-}
-
 bool setupPulses(uint8_t port) {
 //  TRACE_NOCRLF("sp%d", port);
   bool init_needed = false;
@@ -179,6 +164,7 @@ bool setupPulses(uint8_t port) {
         break;
 
       default:
+        TRACE("default! %d", moduleState[port].protocol);
         disable_no_pulses(port);
         break;
     }
@@ -236,6 +222,7 @@ bool setupPulses(uint8_t port) {
 
 #if defined(CROSSFIRE)
       case PROTOCOL_CHANNELS_CROSSFIRE:
+        TRACE("ext on at crsf");
         EXTERNAL_MODULE_ON();
         mixerSchedulerSetPeriod(EXTERNAL_MODULE, CROSSFIRE_PERIOD);
         send = true;

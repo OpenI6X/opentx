@@ -140,7 +140,7 @@ void telemetryPortSetDirectionInput() {
   TELEMETRY_DMA_Channel_RX->CCR |= DMA_CCR_EN;
 }
 
-void sportSendBuffer(const uint8_t* buffer, unsigned long count) {
+void sportSendBuffer(const uint8_t* buffer, uint32_t count) {
   telemetryPortSetDirectionOutput();
 
   DMA_DeInit(TELEMETRY_DMA_Channel_TX);

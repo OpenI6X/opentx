@@ -89,7 +89,7 @@ endif()
 
 if(MULTIMODULE)
   add_definitions(-DMULTIMODULE)
-  set(SRC ${SRC} pulses/multi_arm.cpp telemetry/spektrum.cpp telemetry/flysky_ibus.cpp telemetry/multi.cpp)
+  set(SRC ${SRC} pulses/multi.cpp telemetry/spektrum.cpp telemetry/flysky_ibus.cpp telemetry/multi.cpp)
 endif()
 
 if(CROSSFIRE)
@@ -170,8 +170,8 @@ set(FIRMWARE_SRC
 
 set(PULSES_SRC
   ${PULSES_SRC}
-  pulses_arm.cpp
-  ppm_arm.cpp
+  pulses.cpp
+  ppm.cpp
  ) 
 if(NOT CPU_TYPE STREQUAL STM32F0)
 set(PULSES_SRC
@@ -179,7 +179,7 @@ set(PULSES_SRC
   pxx.cpp
   pxx1.cpp
   pxx2.cpp
-  dsm2_arm.cpp
-  sbus_arm.cpp
+  dsm2.cpp
+  sbus.cpp
   )
 endif()
