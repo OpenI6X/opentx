@@ -142,9 +142,6 @@
 // Internal Module
 /*--------------interrupt handlers-------------------------------------------*/ 
 
-// PPM
-void TIM15_IRQHandler(void);
-
 // Internal module
 
 #define READBIT(A, B) ((A >> (B & 7)) & 1)

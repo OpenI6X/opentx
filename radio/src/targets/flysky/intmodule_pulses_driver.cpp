@@ -73,7 +73,6 @@ void initSPI1()
 
 void intmoduleAfhds2aStart() {
   TRACE("intmoduleAfhds2aStart");
-  // RF
   /**SPI1 GPIO Configuration
   PE13   ------> SPI1_SCK
   PE14   ------> SPI1_MISO
