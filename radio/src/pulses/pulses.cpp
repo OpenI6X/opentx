@@ -164,7 +164,6 @@ bool setupPulses(uint8_t port) {
         break;
 
       default:
-        TRACE("default! %d", moduleState[port].protocol);
         disable_no_pulses(port);
         break;
     }
@@ -222,7 +221,6 @@ bool setupPulses(uint8_t port) {
 
 #if defined(CROSSFIRE)
       case PROTOCOL_CHANNELS_CROSSFIRE:
-        TRACE("ext on at crsf");
         EXTERNAL_MODULE_ON();
         mixerSchedulerSetPeriod(EXTERNAL_MODULE, CROSSFIRE_PERIOD);
         send = true;
