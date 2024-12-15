@@ -145,7 +145,7 @@
 // PPM
 void TIM15_IRQHandler(void);
 
-// Internal RF
+// Internal module
 
 #define READBIT(A, B) ((A >> (B & 7)) & 1)
 #define SETBIT(T, B, V) (T = V ? T | (1<<B) : T & ~(1<<B))
@@ -207,32 +207,20 @@ void disable_afhds2a(uint32_t port);
 
 #define UID_BASE              ((uint32_t)0x1FFFF7ACU)       /*!< Unique device ID register base address */
 
- /* #define INTMODULE_PULSES
- PXX and DSM!!!!!
 
-  #define INTMODULE_RCC_AHB1Periph      (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_DMA2)
-  #define INTMODULE_RCC_APB1Periph      0
-  #define INTMODULE_RCC_APB2Periph      RCC_APB2Periph_TIM1
-  #define INTMODULE_PWR_GPIO            GPIOC
-  #define INTMODULE_PWR_GPIO_PIN        GPIO_Pin_6  // PC.06
-  #define INTMODULE_TX_GPIO             GPIOA
-  #define INTMODULE_TX_GPIO_PIN         GPIO_Pin_10 // PA.10
-  #define INTMODULE_TX_GPIO_PinSource   GPIO_PinSource10
-  #define INTMODULE_TIMER               TIM1
-  #define INTMODULE_TIMER_CC_IRQn       TIM1_CC_IRQn
-  #define INTMODULE_TIMER_CC_IRQHandler TIM1_CC_IRQHandler
-  #define INTMODULE_TX_GPIO_AF          GPIO_AF_TIM1
-  #define INTMODULE_DMA_CHANNEL         DMA_Channel_6
-  #define INTMODULE_DMA_STREAM          DMA2_Stream5
-  #define INTMODULE_DMA_STREAM_IRQn     DMA2_Stream5_IRQn
-  #define INTMODULE_DMA_STREAM_IRQHandler DMA2_Stream5_IRQHandler
-  #define INTMODULE_DMA_FLAG_TC         DMA_IT_TCIF5
-  #define INTMODULE_TIMER_FREQ          (PERI2_FREQUENCY * TIMER_MULT_APB2)
-*/
 #define INTMODULE_RCC_APB2Periph      (RCC_APB2Periph_TIM16 | RCC_APB2Periph_SPI1 | RCC_APB2Periph_SYSCFG)
 #define INTMODULE_TIMER               TIM16
 #define INTMODULE_TIMER_IRQn          TIM16_IRQn
 #define INTMODULE_TIMER_IRQHandler    TIM16_IRQHandler
+// #define INTMODULE_TX_GPIO             GPIOA
+// #define INTMODULE_TX_GPIO_PIN         GPIO_Pin_10 // PA.10
+// #define INTMODULE_TX_GPIO_PinSource   GPIO_PinSource10
+// #define INTMODULE_TX_GPIO_AF          GPIO_AF_TIM1
+// #define INTMODULE_DMA_CHANNEL         DMA_Channel_6
+// #define INTMODULE_DMA_STREAM          DMA2_Stream5
+// #define INTMODULE_DMA_STREAM_IRQn     DMA2_Stream5_IRQn
+// #define INTMODULE_DMA_STREAM_IRQHandler DMA2_Stream5_IRQHandler
+// #define INTMODULE_DMA_FLAG_TC         DMA_IT_TCIF5
 // #define INTMODULE_TIMER_FREQ          (PERI1_FREQUENCY * TIMER_MULT_APB1)
 
 // External Module
