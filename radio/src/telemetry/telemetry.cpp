@@ -65,13 +65,7 @@ void processTelemetryData(uint8_t data)
 void telemetryWakeup()
 {
   uint8_t requiredTelemetryProtocol = modelTelemetryProtocol();
-#if defined(REVX)
-  uint8_t requiredSerialInversion = g_model.moduleData[EXTERNAL_MODULE].invertedSerial;
-  if (telemetryProtocol != requiredTelemetryProtocol || serialInversion != requiredSerialInversion) {
-    serialInversion = requiredSerialInversion;
-#else
-   if (telemetryProtocol != requiredTelemetryProtocol) {
-#endif
+  if (telemetryProtocol != requiredTelemetryProtocol) {
     telemetryInit(requiredTelemetryProtocol);
   }
 
