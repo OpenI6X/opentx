@@ -66,9 +66,6 @@ struct BuzzerState {
 
 void playTone(uint16_t freq, uint16_t len, uint16_t pause = 0, uint8_t flags = 0, int8_t freqIncr = 0);
 void audioEvent(unsigned int index);
-void buzzerOn();
-void buzzerOff();
-void buzzerSound(uint8_t duration);
 void audioKeyPress();
 void audioKeyError();
 void audioTrimPress(int value);
