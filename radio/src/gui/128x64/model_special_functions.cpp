@@ -61,8 +61,8 @@ void onCustomFunctionsFileSelectionMenu(const char * result)
       POPUP_WARNING(func==FUNC_PLAY_SCRIPT ? STR_NO_SCRIPTS_ON_SD : STR_NO_SOUNDS_ON_SD);
     }
   }
-  else {
-    // The user choosed a file in the list
+  else if (result != STR_EXIT) {
+    // The user chosen a file in the list
     memcpy(cfn->play.name, result, sizeof(cfn->play.name));
     storageDirty(eeFlags);
   }
@@ -95,7 +95,7 @@ void onAdjustGvarSourceLongEnterPress(const char * result)
     CFN_PARAM(cfn) = 0;
     storageDirty(EE_MODEL);
   }
-  else {
+  else if (result != STR_EXIT) {
     onSourceLongEnterPress(result);
   }
 }
