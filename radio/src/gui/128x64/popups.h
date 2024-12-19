@@ -52,8 +52,6 @@ enum {
   MENU_OFFSET_EXTERNAL
 };
 
-#define DRAW_MESSAGE_BOX(title)        (warningText = title, drawMessageBox(), warningText = NULL)
-
 typedef void         (* PopupFunc)(event_t event);
 extern PopupFunc popupFunc;
 extern uint8_t popupMenuOffsetType;
