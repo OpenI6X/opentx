@@ -820,6 +820,7 @@
 #define TR_VOLTAGE             INDENT"Volts"
 #define TR_CURRENT             INDENT"Amperes"
 #define TR_SELECT_MODEL        "Selec. Modelo"
+#define TR_SELECT_MODE         "Seleção de modo"
 #define TR_CREATE_CATEGORY     "Create Category"
 #define TR_RENAME_CATEGORY     "Rename Category"
 #define TR_DELETE_CATEGORY     "Delete Category"

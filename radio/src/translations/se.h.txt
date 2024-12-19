@@ -830,6 +830,7 @@
 #define TR_VOLTAGE             INDENT"Volt"
 #define TR_CURRENT             INDENT"Ampere"
 #define TR_SELECT_MODEL        "Välj Modell"
+#define TR_SELECT_MODE         "Välj läge"
 #define TR_CREATE_CATEGORY     "Skapa Kategori"
 #define TR_RENAME_CATEGORY     "Byt Kat.namn"
 #define TR_DELETE_CATEGORY     "Ta Bort Kategori"

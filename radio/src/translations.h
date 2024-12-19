@@ -635,6 +635,7 @@ extern const char STR_PERSISTENT_MAH[];
 #define LEN_CALIB_FIELDS               PSIZE(TR_BATT_CALIB)
 
   extern const char STR_SELECT_MODEL[];
+  extern const char STR_SELECT_MODE[];
   extern const char STR_CREATE_CATEGORY[];
   extern const char STR_RENAME_CATEGORY[];
   extern const char STR_DELETE_CATEGORY[];
