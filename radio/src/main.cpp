@@ -59,6 +59,7 @@ void handleUsbConnection()
 #if defined(USB_SERIAL)
         POPUP_MENU_ADD_ITEM(STR_USB_SERIAL);
 #endif
+        POPUP_MENU_TITLE(STR_SELECT_MODE);
         POPUP_MENU_START(onUSBConnectMenu);
       }
       else {
