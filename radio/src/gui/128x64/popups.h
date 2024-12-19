@@ -24,6 +24,12 @@
 #include <inttypes.h>
 #include "buzzer.h"
 
+extern const char * warningText;
+extern const char * warningInfoText;
+extern uint8_t      warningInfoLength;
+extern uint8_t      warningResult;
+extern uint8_t      warningType;
+extern uint8_t      warningInfoFlags;
 
 #define MESSAGEBOX_X                   8
 #define MESSAGEBOX_Y                   8
@@ -37,59 +43,102 @@
 #define WARNING_LINE_X                 12
 #define WARNING_LINE_Y                 MESSAGEBOX_Y + 2
 
-void drawMessageBox();
-void showMessageBox(const char * title);
-void runPopupWarning(event_t event);
+#define POPUP_MENU_MAX_LINES         12
+#define MENU_MAX_DISPLAY_LINES       6
+#define MENU_LINE_LENGTH             (LEN_MODEL_NAME+12)
+
+enum {
+  MENU_OFFSET_INTERNAL,
+  MENU_OFFSET_EXTERNAL
+};
 
 #define DRAW_MESSAGE_BOX(title)        (warningText = title, drawMessageBox(), warningText = NULL)
 
-extern void (*popupFunc)(event_t event);
-extern uint8_t warningInfoFlags;
+typedef void         (* PopupFunc)(event_t event);
+extern PopupFunc popupFunc;
+extern uint8_t popupMenuOffsetType;
+
+extern uint16_t popupMenuOffset;
+extern const char * popupMenuItems[POPUP_MENU_MAX_LINES];
+extern uint16_t popupMenuItemsCount;
+typedef void         (* PopupMenuHandler)(const char * result);
+extern PopupMenuHandler popupMenuHandler;
+extern const char * popupMenuTitle;
+extern uint8_t popupMenuSelectedItem;
+
+// Message box
+void drawMessageBoxBackground(coord_t top, coord_t height);
+void drawMessageBox();
+void showMessageBox(const char * title);
+
+// Popup menu
+const char * runPopupMenu(event_t event);
+void runPopupWarning(event_t event);
+
+enum
+{
+  WARNING_TYPE_WAIT,
+  WARNING_TYPE_INFO,
+  WARNING_TYPE_ASTERISK,
+  WARNING_TYPE_CONFIRM,
+  WARNING_TYPE_INPUT
+};
 
 #if !defined(GUI)
   #define DISPLAY_WARNING(...)
   #define POPUP_WARNING(...)
   #define POPUP_CONFIRMATION(...)
   #define POPUP_INPUT(...)
-  #define WARNING_INFO_FLAGS           0
   #define SET_WARNING_INFO(...)
 #else
-  #define DISPLAY_WARNING              (*popupFunc)
-  #define POPUP_WARNING(s)             (warningText = s, warningInfoText = 0, popupFunc = runPopupWarning)
-  #define POPUP_CONFIRMATION(s)        (warningText = s, warningType = WARNING_TYPE_CONFIRM, warningInfoText = 0, popupFunc = runPopupWarning)
-  #define POPUP_INPUT(s, func)         (warningText = s, popupFunc = func)
-  #define WARNING_INFO_FLAGS           warningInfoFlags
-  #define SET_WARNING_INFO(info, len, flags) (warningInfoText = info, warningInfoLength = len, warningInfoFlags = flags)
+  #define DISPLAY_WARNING(evt)              (*popupFunc)(evt)
+  // #define POPUP_CONFIRMATION(s)        (warningText = s, warningType = WARNING_TYPE_CONFIRM, warningInfoText = 0, popupFunc = runPopupWarning)
+  // #define POPUP_INPUT(s, func)         (warningText = s, popupFunc = func)
 #endif
 
 
-#define POPUP_MENU_MAX_LINES         12
-#define MENU_MAX_DISPLAY_LINES       6
-#define MENU_LINE_LENGTH             (LEN_MODEL_NAME+12)
-
-
-enum {
-  MENU_OFFSET_INTERNAL,
-  MENU_OFFSET_EXTERNAL
-};
-extern uint8_t popupMenuOffsetType;
-
-extern uint16_t popupMenuOffset;
-extern const char * popupMenuItems[POPUP_MENU_MAX_LINES];
-extern uint16_t popupMenuItemsCount;
-const char * runPopupMenu(event_t event);
-typedef void         (* PopupMenuHandler)(const char * result);
-extern PopupMenuHandler popupMenuHandler;
-extern const char * popupMenuTitle;
-extern uint8_t popupMenuSelectedItem;
-
-inline void POPUP_MENU_ADD_ITEM(const char * s)
-{
-  popupMenuOffsetType = MENU_OFFSET_INTERNAL;
-  if (popupMenuItemsCount < POPUP_MENU_MAX_LINES) {
-    popupMenuItems[popupMenuItemsCount++] = s;
+  inline void POPUP_WARNING(const char * s)
+  {
+    warningText = s;
+    warningInfoText = nullptr;
+    warningType = WARNING_TYPE_ASTERISK;
+    popupFunc = runPopupWarning;
   }
-}
+
+ inline void POPUP_CONFIRMATION(const char * s/*, PopupMenuHandler handler*/)
+  {
+    if (s != warningText) {
+      // killAllEvents();
+      warningText = s;
+      warningInfoText = nullptr;
+      warningType = WARNING_TYPE_CONFIRM;
+      popupFunc = runPopupWarning;
+      // popupMenuHandler = handler;
+    }
+  }
+
+  inline void POPUP_INPUT(const char * s, PopupFunc func)
+  {
+    warningText = s;
+    warningInfoText = nullptr;
+    warningType = WARNING_TYPE_INPUT;
+    popupFunc = func;
+  }
+
+  inline void SET_WARNING_INFO(const char * info, uint8_t length, uint8_t flags)
+  {
+    warningInfoText = info;
+    warningInfoLength = length;
+    warningInfoFlags = flags;
+  }
+
+  inline void POPUP_MENU_ADD_ITEM(const char * s)
+  {
+    popupMenuOffsetType = MENU_OFFSET_INTERNAL;
+    if (popupMenuItemsCount < POPUP_MENU_MAX_LINES) {
+      popupMenuItems[popupMenuItemsCount++] = s;
+    }
+  }
 
 #if defined(SDCARD)
   #define POPUP_MENU_ADD_SD_ITEM(s)    POPUP_MENU_ADD_ITEM(s)

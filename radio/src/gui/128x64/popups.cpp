@@ -98,7 +98,7 @@ void runPopupWarning(event_t event)
   warningResult = false;
   drawMessageBox();
   if (warningInfoText) {
-    lcdDrawSizedText(WARNING_LINE_X, WARNING_LINE_Y+FH, warningInfoText, warningInfoLength, WARNING_INFO_FLAGS);
+    lcdDrawSizedText(WARNING_LINE_X, WARNING_LINE_Y+FH, warningInfoText, warningInfoLength, warningInfoFlags);
   }
   lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+4*FH+2, warningType == WARNING_TYPE_ASTERISK ? STR_EXIT : STR_POPUPS_ENTER_EXIT);
   switch (event) {
