@@ -345,8 +345,6 @@ void handleGui(event_t event) {
   }
 }
 
-bool inPopupMenu = false;
-
 void guiMain(event_t evt)
 {
 #if defined(LUA)
@@ -391,10 +389,6 @@ void guiMain(event_t evt)
   else if (popupMenuItemsCount > 0) {
     // popup menu is active display it on top of normal menus
     handleGui(0); // suppress events, they are handled by the popup
-    if (!inPopupMenu) {
-      TRACE("Popup Menu started");
-      inPopupMenu = true;
-    }
     const char * result = runPopupMenu(evt);
     if (result) {
       TRACE("popupMenuHandler(%s)", result);
@@ -403,10 +397,6 @@ void guiMain(event_t evt)
   }
   else {
     // normal menus
-    if (inPopupMenu) {
-      TRACE("Popup Menu ended");
-      inPopupMenu = false;
-    }
     handleGui(evt);
   }
 

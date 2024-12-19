@@ -116,7 +116,11 @@ const char * runPopupMenu(event_t event)
 #endif
     case EVT_KEY_BREAK(KEY_ENTER):
       result = popupMenuItems[popupMenuSelectedItem + (popupMenuOffsetType == MENU_OFFSET_INTERNAL ? popupMenuOffset : 0)];
-      // no break
+      popupMenuItemsCount = 0;
+      popupMenuSelectedItem = 0;
+      popupMenuOffset = 0;
+      popupMenuTitle = nullptr;
+      break;
 
 #if defined(CASE_EVT_ROTARY_LONG)
     CASE_EVT_ROTARY_LONG
@@ -125,6 +129,7 @@ const char * runPopupMenu(event_t event)
 #endif
 
     case EVT_KEY_BREAK(KEY_EXIT):
+      result = STR_EXIT;
       popupMenuItemsCount = 0;
       popupMenuSelectedItem = 0;
       popupMenuFlags = 0;

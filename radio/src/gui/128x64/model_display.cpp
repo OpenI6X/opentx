@@ -98,8 +98,8 @@ void onTelemetryScriptFileSelectionMenu(const char * result)
       POPUP_WARNING(STR_NO_SCRIPTS_ON_SD);
     }
   }
-  else {
-    // The user choosed a file in the list
+  else if (result != STR_EXIT) {
+    // The user chosen a file in the list
     memcpy(g_model.frsky.screens[screenIndex].script.file, result, sizeof(g_model.frsky.screens[screenIndex].script.file));
     storageDirty(EE_MODEL);
     LUA_LOAD_MODEL_SCRIPTS();
