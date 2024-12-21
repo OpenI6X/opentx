@@ -166,7 +166,14 @@ void killEvents(event_t event) {
   }
 }
 
-bool clearKeyEvents() {
+void killAllEvents()
+{
+  for (uint8_t key = 0; key < DIM(keys); key++) {
+    keys[key].killEvents();
+  }
+}
+
+bool waitKeysReleased() {
 
   // loop until all keys are up
 #if !defined(BOOT)

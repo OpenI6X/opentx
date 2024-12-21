@@ -79,7 +79,7 @@ void showAlertBox(const char * title, const char * text, const char * action, ui
   AUDIO_ERROR_MESSAGE(sound);
   lcdRefresh();
   lcdSetContrast();
-  clearKeyEvents();
+  waitKeysReleased();
   resetBacklightTimeout();
   checkBacklight();
 }

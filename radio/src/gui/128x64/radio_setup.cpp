@@ -614,7 +614,7 @@ void menuRadioSetup(event_t event)
           g_eeGeneral.stickMode = reusableBuffer.generalSettings.stickMode;
           checkThrottleStick();
           resumePulses();
-          clearKeyEvents();
+          waitKeysReleased();
         }
         break;
     }

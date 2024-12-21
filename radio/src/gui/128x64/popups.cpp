@@ -88,7 +88,7 @@ void showAlertBox(const char * title, const char * text, const char * action , u
   
   lcdRefresh();
   lcdSetContrast();
-  clearKeyEvents();
+  waitKeysReleased();
   resetBacklightTimeout();
   checkBacklight();
 }
@@ -101,6 +101,7 @@ void runPopupWarning(event_t event)
     lcdDrawSizedText(WARNING_LINE_X, WARNING_LINE_Y+FH, warningInfoText, warningInfoLength, warningInfoFlags);
   }
   lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+4*FH+2, warningType == WARNING_TYPE_ASTERISK ? STR_EXIT : STR_POPUPS_ENTER_EXIT);
+  
   switch (event) {
     case EVT_KEY_BREAK(KEY_ENTER):
       if (warningType == WARNING_TYPE_ASTERISK)
