@@ -97,7 +97,7 @@ enum
 
   inline void POPUP_WARNING(const char * s)
   {
-    killAllEvents();
+    // killAllEvents();
     warningText = s;
     warningInfoText = nullptr;
     warningType = WARNING_TYPE_ASTERISK;
@@ -107,7 +107,7 @@ enum
  inline void POPUP_CONFIRMATION(const char * s/*, PopupMenuHandler handler*/)
   {
     if (s != warningText) {
-      killAllEvents();
+      // killAllEvents();
       warningText = s;
       warningInfoText = nullptr;
       warningType = WARNING_TYPE_CONFIRM;
@@ -118,7 +118,7 @@ enum
 
   inline void POPUP_INPUT(const char * s, PopupFunc func)
   {
-    killAllEvents();
+    // killAllEvents();
     warningText = s;
     warningInfoText = nullptr;
     warningType = WARNING_TYPE_INPUT;
@@ -170,7 +170,7 @@ inline void POPUP_MENU_TITLE(const char * s)
 inline void POPUP_MENU_START(PopupMenuHandler handler)
 {
   if (handler != popupMenuHandler) {
-    // killAllEvents(); // not ported yet
+    // killAllEvents();
     AUDIO_KEY_PRESS();
     popupMenuHandler = handler;
   }
