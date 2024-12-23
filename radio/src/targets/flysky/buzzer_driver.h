@@ -24,7 +24,7 @@
 #define BUZZER_BUFFER_DURATION  (10) // ms
 
 #define BEEP_MIN_FREQ           (250)
-#define BEEP_MAX_FREQ           (14000)
+#define BEEP_MAX_FREQ           (15000)
 #define BEEP_DEFAULT_FREQ       (2250)
 #define BEEP_KEY_UP_FREQ        (BEEP_DEFAULT_FREQ+150)
 #define BEEP_KEY_DOWN_FREQ      (BEEP_DEFAULT_FREQ-150)

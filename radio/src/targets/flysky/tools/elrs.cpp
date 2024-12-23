@@ -428,8 +428,8 @@ static bool getSelectedOption(char * option, char * options, const uint8_t value
 }
 
 static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  const uint16_t valuesOffset = param->offset + param->nameLength + 2 /* min, max */;
-  uint8_t valuesLen = strlen((char*)&buffer[valuesOffset]);
+  const uint32_t valuesOffset = param->offset + param->nameLength + 2 /* min, max */;
+  const uint32_t valuesLen = strlen((char*)&buffer[valuesOffset]);
   char option[24];
   if (!getSelectedOption(option, (char*)&buffer[valuesOffset], param->value)) {
     option[0] = 'E';

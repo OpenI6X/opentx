@@ -21,11 +21,9 @@
 #include "opentx.h"
 
 #define STATUS_BAR_Y     (7*FH+1)
-#define TELEM_2ND_COLUMN (10*FW)
 #if defined(TELEMETRY_FRSKY)
 uint8_t selectedTelemView = 0;
 #endif
-
 
 #define BAR_LEFT    25
 #define BAR_WIDTH   100
