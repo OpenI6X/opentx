@@ -20,19 +20,6 @@
 
 #include "opentx.h"
 
-#if defined(PXX2)
-void menuRadioModulesVersion(event_t event)
-{
-  if (event == EVT_ENTRY) {
-    moduleSettings[INTERNAL_MODULE].mode = MODULE_MODE_GET_HARDWARE_INFO;
-    reusableBuffer.hardware.modules[INTERNAL_MODULE].step = -1;
-    reusableBuffer.hardware.modules[INTERNAL_MODULE].timeout = 0;
-  }
-
-  SIMPLE_SUBMENU("MODULES / RX VERSION", 0);
-}
-#endif
-
 enum MenuRadioVersionItems
 {
   ITEM_RADIO_VERSION_FIRST = HEADER_LINE - 1,
