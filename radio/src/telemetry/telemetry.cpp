@@ -31,29 +31,26 @@ TelemetryData telemetryData;
 
 uint8_t telemetryProtocol = 255;
 
-#if defined(PCBSKY9X) && defined(REVX)
-uint8_t serialInversion = 0;
-#endif
-
+volatile bool pendingTelemetryPollFrame = false;
 
 void processTelemetryData(uint8_t data)
 {
 #if defined(CROSSFIRE)
-  if (telemetryProtocol == PROTOCOL_PULSES_CROSSFIRE) {
+  if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
     processCrossfireTelemetryData(data);
     return;
   }
 #endif
 #if defined(MULTIMODULE)
-  if (telemetryProtocol == PROTOCOL_SPEKTRUM) {
+  if (telemetryProtocol == PROTOCOL_TELEMETRY_SPEKTRUM) {
     processSpektrumTelemetryData(data);
     return;
   }
-  if (telemetryProtocol == PROTOCOL_FLYSKY_IBUS) {
+  if (telemetryProtocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS) {
     processFlySkyTelemetryData(data);
     return;
   }
-  if (telemetryProtocol == PROTOCOL_MULTIMODULE) {
+  if (telemetryProtocol == PROTOCOL_TELEMETRY_MULTIMODULE) {
     processMultiTelemetryData(data);
     return;
   }
@@ -68,37 +65,48 @@ void processTelemetryData(uint8_t data)
 void telemetryWakeup()
 {
   uint8_t requiredTelemetryProtocol = modelTelemetryProtocol();
-#if defined(REVX)
-  uint8_t requiredSerialInversion = g_model.moduleData[EXTERNAL_MODULE].invertedSerial;
-  if (telemetryProtocol != requiredTelemetryProtocol || serialInversion != requiredSerialInversion) {
-    serialInversion = requiredSerialInversion;
-#else
-   if (telemetryProtocol != requiredTelemetryProtocol) {
-#endif
+  if (telemetryProtocol != requiredTelemetryProtocol) {
     telemetryInit(requiredTelemetryProtocol);
   }
 
-#if defined(STM32)
-  uint8_t data;
-  if (telemetryGetByte(&data)) {
-    LOG_TELEMETRY_WRITE_START();
-    do {
-      processTelemetryData(data);
-      LOG_TELEMETRY_WRITE_BYTE(data);
-    } while (telemetryGetByte(&data));
-  }
-#elif defined(PCBSKY9X)
-  if (telemetryProtocol == PROTOCOL_FRSKY_D_SECONDARY) {
+#if defined(CROSSFIRE)
+  if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
     uint8_t data;
-    while (telemetrySecondPortReceive(data)) {
-      processTelemetryData(data);
+    while (telemetryGetByte(&data)) {
+      processCrossfireTelemetryData(data); // TODO handle full frame as in EdgeTX
+      LOG_TELEMETRY_WRITE_BYTE(data);
     }
   }
-  else {
-    // Receive serial data here
-    rxPdcUsart(processTelemetryData);
-  }
 #endif
+
+  // Handle complete telemetry frame
+  if (pendingTelemetryPollFrame) {
+    pendingTelemetryPollFrame = false;
+   switch (telemetryProtocol) {
+#if defined(AFHDS2A)
+     case PROTOCOL_TELEMETRY_FLYSKY_IBUS:
+       processFlySkyTelemetryFrame(telemetryRxBuffer);
+     break;
+#endif
+#if defined(CROSSFIRE)
+    //  case PROTOCOL_TELEMETRY_CROSSFIRE:
+    //  {
+    //    uint8_t data;
+    //    uint8_t count = 0;
+    //    while (telemetryGetByte(&data)) {
+    //      processCrossfireTelemetryData(data); // TODO handle full frame as in EdgeTX
+    //      LOG_TELEMETRY_WRITE_BYTE(data);
+    //      count++;
+    //    }
+    //    TRACE("c%d", count);
+    //  }
+    //  break;
+#endif
+     default:
+//       TRACE("Unhandled telemetry %d", telemetryProtocol);
+     break;
+   }
+  }
 
 
   for (int i=0; i<MAX_TELEMETRY_SENSORS; i++) {
@@ -194,12 +202,6 @@ void telemetryInterrupt10ms()
 
   }
 
-#if defined(WS_HOW_HIGH)
-  if (wshhStreaming > 0) {
-    wshhStreaming--;
-  }
-#endif
-
   if (telemetryStreaming > 0) {
     telemetryStreaming--;
   }
@@ -227,20 +229,20 @@ void telemetryInit(uint8_t protocol)
 {
   telemetryProtocol = protocol;
   switch(telemetryProtocol){
-#if defined(TELEMETRY_FRSKY)
-  case PROTOCOL_FRSKY_D:
+#if defined(TELEMETRY_FRSKY) && !defined(PCBI6X)
+  case PROTOCOL_TELEMETRY_FRSKY_D:
 	  telemetryPortInit(FRSKY_D_BAUDRATE, TELEMETRY_SERIAL_DEFAULT);
 	  break;
 #endif
-#if (defined(AUX_SERIAL) || defined(PCBSKY9X)) && !defined(PCBI6X)
-  case PROTOCOL_FRSKY_D_SECONDARY:
+#if defined(AUX_SERIAL) && !defined(PCBI6X)
+  case PROTOCOL_TELEMETRY_FRSKY_D_SECONDARY:
 	  telemetryPortInit(0, TELEMETRY_SERIAL_DEFAULT);
-	  auxSerialTelemetryInit(PROTOCOL_FRSKY_D_SECONDARY);
+	  auxSerialTelemetryInit(PROTOCOL_TELEMETRY_FRSKY_D_SECONDARY);
   	  break;
 #endif
 #if defined(MULTIMODULE)
-  case PROTOCOL_MULTIMODULE:
-  case PROTOCOL_FLYSKY_IBUS:
+  case PROTOCOL_TELEMETRY_MULTIMODULE:
+  case PROTOCOL_TELEMETRY_FLYSKY_IBUS:
 	  // The DIY Multi module always speaks 100000 baud regardless of the telemetry protocol in use
 	  telemetryPortInit(MULTIMODULE_BAUDRATE, TELEMETRY_SERIAL_8E2);
 	  #if defined(LUA)
@@ -248,13 +250,13 @@ void telemetryInit(uint8_t protocol)
 	  outputTelemetryBufferTrigger = 0x7E;
 	  #endif
 	  break;
-  case PROTOCOL_SPEKTRUM:
+  case PROTOCOL_TELEMETRY_SPEKTRUM:
 	  // Spektrum's own small race RX (SPM4648) uses 125000 8N1, use the same since there is no real standard
 	  telemetryPortInit(125000, TELEMETRY_SERIAL_DEFAULT);
 	  break;
 #endif
 #if defined(CROSSFIRE)
-  case PROTOCOL_PULSES_CROSSFIRE:
+  case PROTOCOL_TELEMETRY_CROSSFIRE:
 	  telemetryPortInit(CROSSFIRE_BAUDRATE, TELEMETRY_SERIAL_DEFAULT);
 
 	  outputTelemetryBufferSize = 0;
@@ -264,7 +266,7 @@ void telemetryInit(uint8_t protocol)
 	  break;
 #endif
   default:
-#if defined(TELEMETRY_FRSKY)
+#if defined(TELEMETRY_FRSKY) && !defined(PCBI6X)
 	  telemetryPortInit(FRSKY_SPORT_BAUDRATE, TELEMETRY_SERIAL_WITHOUT_DMA);
 	  #if defined(LUA)
 	  outputTelemetryBufferSize = 0;
@@ -273,14 +275,6 @@ void telemetryInit(uint8_t protocol)
 #endif
 	  break;
   }
-#if defined(REVX) && !defined(SIMU)
-  if (serialInversion) {
-    setMFP();
-  }
-  else {
-    clearMFP();
-  }
-#endif
 }
 
 
@@ -304,7 +298,7 @@ void logTelemetryWriteByte(uint8_t data)
 }
 #endif
 
-uint8_t outputTelemetryBuffer[TELEMETRY_OUTPUT_FIFO_SIZE] __DMA;
+uint8_t outputTelemetryBuffer[TELEMETRY_OUTPUT_BUFFER_SIZE] __DMA;
 uint8_t outputTelemetryBufferSize = 0;
 uint8_t outputTelemetryBufferTrigger = 0;
 

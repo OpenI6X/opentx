@@ -361,11 +361,6 @@ long Open9xSim::onTimeout(FXObject*, FXSelector, void*)
     Coproc_maxtemp = 28;
 #endif
 
-#if defined(PCBSKY9X)
-    temperature = 31;
-    maxTemperature = 42;
-#endif
-
     updateKeysAndSwitches();
 
 #if defined(ROTARY_ENCODER_NAVIGATION)
@@ -584,11 +579,6 @@ uint16_t anaIn(uint8_t chan)
 #elif defined(PCBTARANIS)
   else if (chan == TX_VOLTAGE)
     return 1000;      //~7.4V
-#elif defined(PCBSKY9X)
-  else if (chan == TX_VOLTAGE)
-    return 5.1*1500/11.3;
-  else if (chan == TX_CURRENT)
-    return 100;
 #else
   else if (chan == TX_VOLTAGE)
     return 1500;

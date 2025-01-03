@@ -143,12 +143,6 @@ bool isSourceAvailable(int source) {
     return IS_POT_SLIDER_AVAILABLE(POT1 + source - MIXSRC_FIRST_POT);
   }
 
-#if defined(PCBSKY9X) && defined(REVX)
-  if (source == MIXSRC_REa) {
-    return false;
-  }
-#endif
-
 #if defined(PCBX10)
   if ((source >= MIXSRC_S3 && source <= MIXSRC_S4) || (source >= MIXSRC_MOUSE1 && source <= MIXSRC_MOUSE2))
     return false;
@@ -268,7 +262,7 @@ bool isSwitchAvailable(int swtch, SwitchContext context) {
     swtch = -swtch;
   }
 
-#if defined(PCBSKY9X) || defined(PCBI6X)
+#if defined(PCBI6X)
   if (swtch >= SWSRC_FIRST_SWITCH && swtch <= SWSRC_LAST_SWITCH) {
     UNUSED(negative);
     return true;
@@ -301,12 +295,6 @@ bool isSwitchAvailable(int swtch, SwitchContext context) {
     } else {
       return false;
     }
-  }
-#endif
-
-#if defined(PCBSKY9X) && defined(REVX)
-  if (swtch == SWSRC_REa) {
-    return false;
   }
 #endif
 
@@ -358,6 +346,11 @@ bool isSwitchAvailableInCustomFunctions(int swtch) {
 
 bool isSwitchAvailableInMixes(int swtch) {
   return isSwitchAvailable(swtch, MixesContext);
+}
+
+bool isSwitchAvailableForArming(int swtch)
+{
+  return isSwitchAvailable(swtch, ModelCustomFunctionsContext);
 }
 
 #if defined(COLORLCD)
@@ -515,27 +508,27 @@ bool isRfProtocolAvailable(int protocol) {
 
 bool isTelemetryProtocolAvailable(int protocol) {
 #if defined(PCBTARANIS)
-  if (protocol == PROTOCOL_FRSKY_D_SECONDARY && g_eeGeneral.auxSerialMode != UART_MODE_TELEMETRY) {
+  if (protocol == PROTOCOL_TELEMETRY_FRSKY_D_SECONDARY && g_eeGeneral.auxSerialMode != UART_MODE_TELEMETRY) {
     return false;
   }
 #endif
 
-  if (protocol == PROTOCOL_PULSES_CROSSFIRE) {
+  if (protocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
     return false;
   }
 #if defined(PCBI6X)
-  if (protocol == PROTOCOL_FLYSKY_IBUS) {
+  if (protocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS) {
     return true;
   }
 #endif
-#if !defined(MULTIMODULE)
-  if (protocol == PROTOCOL_SPEKTRUM || protocol == PROTOCOL_FLYSKY_IBUS || protocol == PROTOCOL_MULTIMODULE) {
+#if !defined(MULTIMODULE) && !defined(PCBI6X)
+  if (protocol == PROTOCOL_TELEMETRY_SPEKTRUM || protocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS || protocol == PROTOCOL_TELEMETRY_MULTIMODULE) {
     return false;
   }
 #endif
 
 #if defined(PCBHORUS)
-  if (protocol == PROTOCOL_FRSKY_D_SECONDARY) {
+  if (protocol == PROTOCOL_TELEMETRY_FRSKY_D_SECONDARY) {
     return false;
   }
 #endif

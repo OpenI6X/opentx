@@ -58,11 +58,7 @@ LogicalSwitchesFlightModeContext lswFm[MAX_FLIGHT_MODES];
 
 
 #if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
-#if defined(PCBX9E)
-tmr10ms_t switchesMidposStart[16];
-#else
-tmr10ms_t switchesMidposStart[6]; // TODO constant
-#endif
+tmr10ms_t switchesMidposStart[NUM_SWITCHES];
 uint64_t  switchesPos = 0;
 tmr10ms_t potsLastposStart[NUM_XPOTS];
 uint8_t   potsPos[NUM_XPOTS];
@@ -126,43 +122,15 @@ uint64_t check3PosSwitchPosition(uint8_t idx, uint8_t sw, bool startup)
 #define CHECK_2POS(sw)       newPos |= check2PosSwitchPosition(sw ## 0)
 #define CHECK_3POS(idx, sw)  newPos |= check3PosSwitchPosition(idx, sw ## 0, startup)
 
-void getSwitchesPosition(bool startup){
+void getSwitchesPosition(bool startup)
+{
   uint64_t newPos = 0;
-#if defined(PCBI6X)
-  CHECK_2POS(SW_SA);
-  CHECK_2POS(SW_SB);
-  CHECK_3POS(2, SW_SC);
-  CHECK_2POS(SW_SD);
-#else
+
   CHECK_3POS(0, SW_SA);
   CHECK_3POS(1, SW_SB);
   CHECK_3POS(2, SW_SC);
   CHECK_3POS(3, SW_SD);
-#if !defined(PCBX7) && !defined(PCBXLITE) 
-  CHECK_3POS(4, SW_SE);
-#endif
-#if !defined(PCBXLITE)
-  CHECK_2POS(SW_SF);
-#endif
-#if !defined(PCBX7) && !defined(PCBXLITE)
-  CHECK_3POS(5, SW_SG);
-#endif
-#if !defined(PCBXLITE)
-  CHECK_2POS(SW_SH);
-#endif
-#if defined(PCBX9E)
-  CHECK_3POS(6, SW_SI);
-  CHECK_3POS(7, SW_SJ);
-  CHECK_3POS(8, SW_SK);
-  CHECK_3POS(9, SW_SL);
-  CHECK_3POS(10, SW_SM);
-  CHECK_3POS(11, SW_SN);
-  CHECK_3POS(12, SW_SO);
-  CHECK_3POS(13, SW_SP);
-  CHECK_3POS(14, SW_SQ);
-  CHECK_3POS(15, SW_SR);
-#endif
-#endif
+
   switchesPos = newPos;
 
   for (int i=0; i<NUM_XPOTS; i++) {
@@ -425,7 +393,7 @@ bool getSwitch(swsrc_t swtch, uint8_t flags)
     result = true;
   }
   else if (cs_idx <= SWSRC_LAST_SWITCH) {
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
     if (flags & GETSWITCH_MIDPOS_DELAY)
       result = SWITCH_POSITION(cs_idx-SWSRC_FIRST_SWITCH);
     else
@@ -524,7 +492,7 @@ swsrc_t getMovedSwitch()
   // -4..-8 for all other switches if changed to false
   // 9 for Trainer switch if changed to true; Change to false is ignored
   swarnstate_t mask = 0x80;
-  for (uint8_t i=NUM_PSWITCH; i>1; i--) {
+  for (uint32_t i=NUM_PSWITCH; i>1; i--) {
     bool prev;
     prev = (switches_states & mask);
     // don't use getSwitch here to always get the proper value, even getSwitch manipulates
@@ -556,14 +524,14 @@ void checkSwitches()
   uint8_t bad_pots = 0, last_bad_pots = 0xff;
 #endif
 
-  while (1) {
+  while (true) {
 
 #if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
   #define GETADC_COUNT 1
 #endif
 
 #ifdef GETADC_COUNT
-    for (uint8_t i=0; i<GETADC_COUNT; i++) {
+    for (uint32_t i=0; i<GETADC_COUNT; i++) {
       GET_ADC_IF_MIXER_NOT_RUNNING();
     }
 #undef GETADC_COUNT
@@ -643,14 +611,10 @@ void checkSwitches()
     // first - display warning
 #if defined(PCBTARANIS) || defined(PCBHORUS)|| defined(PCBI6X)
     if ((last_bad_switches != switches_states) /*|| (last_bad_pots != bad_pots)*/) {
-#if defined(PCBI6X)
-      RAISE_ALERT(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP, last_bad_switches == 0xff ? AU_SWITCH_ALERT : AU_NONE);
-#else
       drawAlertBox(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP);
-      if (last_bad_switches == 0xff || last_bad_pots == 0xff) {
+      if (last_bad_switches == 0xff /*|| last_bad_pots == 0xff*/) {
         AUDIO_ERROR_MESSAGE(AU_SWITCH_ALERT);
       }
-#endif // PCBI6X
       int x = SWITCH_WARNING_LIST_X, y = SWITCH_WARNING_LIST_Y;
       int numWarnings = 0;
       for (int i=0; i<NUM_SWITCHES; ++i) {
@@ -739,9 +703,9 @@ void checkSwitches()
 #endif // PCBI6X
 #else
     if (last_bad_switches != switches_states) {
-      RAISE_ALERT(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP, last_bad_switches == 0xff ? AU_SWITCH_ALERT : AU_NONE);
+      RAISE_ALERT(STR_SWITCHWARN, nullptr, STR_PRESSANYKEYTOSKIP, last_bad_switches == 0xff ? AU_SWITCH_ALERT : AU_NONE);
       uint8_t x = 2;
-      for (uint8_t i=0; i<NUM_SWITCHES-1; i++) {
+      for (uint32_t i=0; i<NUM_SWITCHES-1; i++) {
         uint8_t attr;
         if (i == 0)
           attr = ((states & 0x03) != (switches_states & 0x03)) ? INVERS : 0;
@@ -755,7 +719,7 @@ void checkSwitches()
 
       lcdRefresh();
       lcdSetContrast();
-      clearKeyEvents();
+      waitKeysReleased();
 
       last_bad_switches = switches_states;
     }
@@ -776,7 +740,7 @@ void checkSwitches()
 void logicalSwitchesTimerTick()
 {
   for (uint8_t fm=0; fm<MAX_FLIGHT_MODES; fm++) {
-    for (uint8_t i=0; i<MAX_LOGICAL_SWITCHES; i++) {
+    for (uint32_t i=0; i<MAX_LOGICAL_SWITCHES; i++) {
       LogicalSwitchData * ls = lswAddress(i);
       if (ls->func == LS_FUNC_TIMER) {
         int16_t *lastValue = &LS_LAST_VALUE(fm, i);
@@ -877,7 +841,7 @@ void logicalSwitchesReset()
   memset(lswFm, 0, sizeof(lswFm));
 
   for (uint8_t fm=0; fm<MAX_FLIGHT_MODES; fm++) {
-    for (uint8_t i=0; i<MAX_LOGICAL_SWITCHES; i++) {
+    for (uint32_t i=0; i<MAX_LOGICAL_SWITCHES; i++) {
       LS_LAST_VALUE(fm, i) = CS_LAST_VALUE_INIT;
     }
   }

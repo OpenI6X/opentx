@@ -116,7 +116,6 @@ FillZerobss:
   str  r3, [r2]
   adds r2, r2, #4
 
-
 LoopFillZerobss:
   ldr r3, = _ebss
   cmp r2, r3
@@ -164,7 +163,7 @@ g_pfnVectors:
   .word Reset_Handler
 
   .word NMI_Handler
-  .word HardFault_HandlerAsm
+  .word HardFault_Handler
   .word 0
   .word 0
   .word 0
@@ -225,8 +224,17 @@ g_pfnVectors:
   .weak NMI_Handler
   .thumb_set NMI_Handler,Default_Handler
 
+  .weak HardFault_Handler
+  .thumb_set HardFault_Handler,Default_Handler
+
   .weak SVC_Handler
   .thumb_set SVC_Handler,Default_Handler
+
+  .weak PendSV_Handler
+  .thumb_set PendSV_Handler,Default_Handler
+
+  .weak SysTick_Handler
+  .thumb_set SysTick_Handler,Default_Handler
 
   .weak WWDG_IRQHandler
   .thumb_set WWDG_IRQHandler,Default_Handler
@@ -325,3 +333,4 @@ g_pfnVectors:
   .thumb_set USB_IRQHandler,Default_Handler
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+

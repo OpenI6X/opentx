@@ -36,7 +36,7 @@ void testFunc()
 }
 #endif
 
-#if !defined(PCBI6X)
+#if !defined(PCBI6X) || defined(DFPLAYER)
 PLAY_FUNCTION(playValue, source_t idx)
 {
   if (IS_FAI_FORBIDDEN(idx))
@@ -101,6 +101,14 @@ void playCustomFunctionFile(const CustomFunctionData * sd, uint8_t id)
     PLAY_FILE(filename, sd->func == FUNC_BACKGND_MUSIC ? PLAY_BACKGROUND : 0, id);
   }
 }
+#elif defined(DFPLAYER)
+void playCustomFunctionFile(const CustomFunctionData * sd, uint8_t id)
+{
+  uint16_t val = sd->all.val;
+ if (val != 0) { // Custom files start at DFPLAYER_CUSTOM_FILE_INDEX
+    PLAY_FILE(val, id);
+ }
+}
 #endif
 
 #if defined(VOICE) || defined(PCBI6X)
@@ -132,9 +140,11 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
   MASK_FUNC_TYPE newActiveFunctions  = 0;
   MASK_CFN_TYPE  newActiveSwitches = 0;
 
-#if !defined(PCBI6X)
+#if defined(DFPLAYER)
   uint8_t playFirstIndex = (functions == g_model.customFn ? 1 : 1+MAX_SPECIAL_FUNCTIONS);
   #define PLAY_INDEX   (i+playFirstIndex)
+#else
+  #define PLAY_INDEX   0
 #endif
 
 #if defined(ROTARY_ENCODERS) && defined(GVARS)
@@ -142,18 +152,18 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
 #endif
 
 #if defined(OVERRIDE_CHANNEL_FUNCTION)
-  for (uint8_t i=0; i<MAX_OUTPUT_CHANNELS; i++) {
+  for (uint32_t i=0; i<MAX_OUTPUT_CHANNELS; i++) {
     safetyCh[i] = OVERRIDE_CHANNEL_UNDEFINED;
   }
 #endif
 
 #if defined(GVARS)
-  for (uint8_t i=0; i<NUM_TRIMS; i++) {
+  for (uint32_t i=0; i<NUM_TRIMS; i++) {
     trimGvar[i] = -1;
   }
 #endif
 
-  for (uint8_t i=0; i<MAX_SPECIAL_FUNCTIONS; i++) {
+  for (uint32_t i=0; i<MAX_SPECIAL_FUNCTIONS; i++) {
     const CustomFunctionData * cfn = &functions[i];
     swsrc_t swtch = CFN_SWITCH(cfn);
     if (swtch) {
@@ -165,7 +175,7 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
         active &= (bool)CFN_ACTIVE(cfn);
       }
 
-      if (active || IS_PLAY_BOTH_FUNC(CFN_FUNC(cfn))) {
+      if (active) {
 
         switch (CFN_FUNC(cfn)) {
 
@@ -292,8 +302,10 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
 #endif
 #if defined(SDCARD) || defined(PCBI6X)
           case FUNC_PLAY_SOUND:
-          // case FUNC_PLAY_TRACK:
-          // case FUNC_PLAY_VALUE:
+#if defined(DFPLAYER)
+          case FUNC_PLAY_TRACK:
+          case FUNC_PLAY_VALUE:
+#endif
 #if defined(HAPTIC)
           case FUNC_HAPTIC:
 #endif
@@ -309,39 +321,43 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
                     AUDIO_PLAY(AU_SPECIAL_SOUND_FIRST + CFN_PARAM(cfn));
                   }
                 }
-//                 else if (CFN_FUNC(cfn) == FUNC_PLAY_VALUE) {
-//                   PLAY_VALUE(CFN_PARAM(cfn), PLAY_INDEX);
-//                 }
-// #if defined(HAPTIC)
-//                 else if (CFN_FUNC(cfn) == FUNC_HAPTIC) {
-//                   haptic.event(AU_SPECIAL_SOUND_LAST+CFN_PARAM(cfn));
-//                 }
-// #endif
-//                 else {
-//                   playCustomFunctionFile(cfn, PLAY_INDEX);
-//                 }
+#if defined(DFPLAYER)
+                else if (CFN_FUNC(cfn) == FUNC_PLAY_VALUE) {
+                  PLAY_VALUE(CFN_PARAM(cfn), PLAY_INDEX);
+                }
+#endif
+#if defined(HAPTIC)
+                else if (CFN_FUNC(cfn) == FUNC_HAPTIC) {
+                  haptic.event(AU_SPECIAL_SOUND_LAST+CFN_PARAM(cfn));
+                }
+#endif
+                else {
+#if defined(DFPLAYER)
+                  playCustomFunctionFile(cfn, PLAY_INDEX);
+#endif
+                }
               }
             }
             break;
           }
+#if !defined(PCBI6X)
+          case FUNC_BACKGND_MUSIC:
+            if (!(newActiveFunctions & (1 << FUNCTION_BACKGND_MUSIC))) {
+              newActiveFunctions |= (1 << FUNCTION_BACKGND_MUSIC);
+              if (!IS_PLAYING(PLAY_INDEX)) {
+                playCustomFunctionFile(cfn, PLAY_INDEX);
+              }
+            }
+            break;
 
-          // case FUNC_BACKGND_MUSIC:
-          //   if (!(newActiveFunctions & (1 << FUNCTION_BACKGND_MUSIC))) {
-          //     // newActiveFunctions |= (1 << FUNCTION_BACKGND_MUSIC);
-          //     // if (!IS_PLAYING(PLAY_INDEX)) {
-          //     //   playCustomFunctionFile(cfn, PLAY_INDEX);
-          //     // }
-          //   }
-          //   break;
-
-          // case FUNC_BACKGND_MUSIC_PAUSE:
-          //   // newActiveFunctions |= (1 << FUNCTION_BACKGND_MUSIC_PAUSE);
-          //   break;
-
+          case FUNC_BACKGND_MUSIC_PAUSE:
+            newActiveFunctions |= (1 << FUNCTION_BACKGND_MUSIC_PAUSE);
+            break;
+#endif
 #else
           case FUNC_PLAY_SOUND:
-          // case FUNC_PLAY_TRACK:
-          // case FUNC_PLAY_VALUE:
+          case FUNC_PLAY_TRACK:
+          case FUNC_PLAY_VALUE:
           {
             tmr10ms_t tmr10ms = get_tmr10ms();
             uint8_t repeatParam = CFN_PLAY_REPEAT(cfn);
@@ -351,15 +367,16 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
               if (CFN_FUNC(cfn) == FUNC_PLAY_SOUND) {
                 AUDIO_PLAY(AU_SPECIAL_SOUND_FIRST+param);
               }
-//               else if (CFN_FUNC(cfn) == FUNC_PLAY_VALUE) {
-//                 PLAY_VALUE(param, PLAY_INDEX);
-//               }
-//               else {
-// #if defined(GVARS)
-//                 if (CFN_FUNC(cfn) == FUNC_PLAY_TRACK && param > 250)
-//                   param = GVAR_VALUE(param-251, getGVarFlightMode(mixerCurrentFlightMode, param-251));
-// #endif
-//               }
+              else if (CFN_FUNC(cfn) == FUNC_PLAY_VALUE) {
+                PLAY_VALUE(param, PLAY_INDEX);
+              }
+              else {
+#if defined(GVARS)
+                if (CFN_FUNC(cfn) == FUNC_PLAY_TRACK && param > 250)
+                  param = GVAR_VALUE(param-251, getGVarFlightMode(mixerCurrentFlightMode, param-251));
+#endif
+                PUSH_CUSTOM_PROMPT(active ? param : param+1, PLAY_INDEX);
+              }
             }
             if (!active) {
               // PLAY_BOTH would change activeFnSwitches otherwise
@@ -367,7 +384,7 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
             }
             break;
           }
-#endif
+#endif // PCBI6X || SDCARD
 
 #if defined(TELEMETRY_FRSKY) && defined(VARIO)
           case FUNC_VARIO:
@@ -409,7 +426,6 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
             }
             break;
 #endif
-
 #if defined(DEBUG)
           case FUNC_TEST:
             testFunc();
@@ -444,7 +460,7 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
   functionsContext.activeFunctions  = newActiveFunctions;
 
 #if defined(ROTARY_ENCODERS) && defined(GVARS)
-  for (uint8_t i=0; i<ROTARY_ENCODERS; i++) {
+  for (uint32_t i=0; i<ROTARY_ENCODERS; i++) {
     rePreviousValues[i] = (rotencValue[i] / ROTARY_ENCODER_GRANULARITY);
   }
 #endif

@@ -149,7 +149,7 @@ void simuInit()
     simuSetTrim(i, false);
 
 #if defined(ROTARY_ENCODERS) || defined(ROTARY_ENCODER_NAVIGATION)
-  for (uint8_t i=0; i < DIM(rotencValue); i++)
+  for (uint32_t i=0; i < DIM(rotencValue); i++)
     rotencValue[i] = 0;
 #endif
 }
@@ -223,9 +223,6 @@ void simuSetKey(uint8_t key, bool state)
     KEY_CASE(KEY_LEFT, KEYS_GPIO_REG_LEFT, KEYS_GPIO_PIN_LEFT)
     KEY_CASE(KEY_UP, KEYS_GPIO_REG_UP, KEYS_GPIO_PIN_UP)
     KEY_CASE(KEY_DOWN, KEYS_GPIO_REG_DOWN, KEYS_GPIO_PIN_DOWN)
-#endif
-#if defined(PCBSKY9X) && !defined(REVX) && !defined(AR9X) && defined(ROTARY_ENCODERS)
-    KEY_CASE(BTN_REa, PIOB->PIO_PDSR, 0x40)
 #endif
   }
 }
@@ -307,14 +304,6 @@ void simuSetSwitch(uint8_t swtch, int8_t state)
   #endif
     SWITCH_3_CASE(6,  SWITCHES_GPIO_REG_G_L, SWITCHES_GPIO_REG_G_H, SWITCHES_GPIO_PIN_G_L, SWITCHES_GPIO_PIN_G_H)
     SWITCH_CASE  (7,  SWITCHES_GPIO_REG_H, SWITCHES_GPIO_PIN_H)
-#elif defined(PCBSKY9X)
-    SWITCH_3_CASE(0, PIOC->PIO_PDSR, PIOC->PIO_PDSR, 0x00004000, 0x00000800)
-    SWITCH_CASE(1, PIOC->PIO_PDSR, 1<<20)
-    SWITCH_CASE(2, PIOA->PIO_PDSR, 1<<15)
-    SWITCH_CASE(3, PIOC->PIO_PDSR, 1<<31)
-    SWITCH_CASE(4, PIOA->PIO_PDSR, 1<<2)
-    SWITCH_CASE(5, PIOC->PIO_PDSR, 1<<16)
-    SWITCH_CASE(6, PIOC->PIO_PDSR, 1<<8)
 #endif
 
     default:

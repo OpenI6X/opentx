@@ -80,7 +80,7 @@ bool menuCommonCalib(event_t event)
 {
   drawMenuTemplate(NULL, ICON_RADIO_CALIBRATION, NULL, OPTION_MENU_NO_FOOTER);
 
-  for (uint8_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS+NUM_MOUSE_ANALOGS; i++) { // get low and high vals for sticks and trims
+  for (uint32_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS+NUM_MOUSE_ANALOGS; i++) { // get low and high vals for sticks and trims
     int16_t vt = i<TX_VOLTAGE ? anaIn(i) : anaIn(i+1);
     reusableBuffer.calib.loVals[i] = min(vt, reusableBuffer.calib.loVals[i]);
     reusableBuffer.calib.hiVals[i] = max(vt, reusableBuffer.calib.hiVals[i]);
@@ -148,7 +148,7 @@ bool menuCommonCalib(event_t event)
       // SET MIDPOINT
       lcdDrawText(50, 3, STR_MENUCALIBRATION, MENU_TITLE_COLOR);
       lcdDrawText(50, 3+FH, STR_SETMIDPOINT, MENU_TITLE_COLOR);
-      for (uint8_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS+NUM_MOUSE_ANALOGS; i++) {
+      for (uint32_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS+NUM_MOUSE_ANALOGS; i++) {
         reusableBuffer.calib.loVals[i] = 15000;
         reusableBuffer.calib.hiVals[i] = -15000;
         reusableBuffer.calib.midVals[i] = i < TX_VOLTAGE ? anaIn(i) : anaIn(i+1);
@@ -163,7 +163,7 @@ bool menuCommonCalib(event_t event)
       // MOVE STICKS/POTS
       lcdDrawText(50, 3, STR_MENUCALIBRATION, MENU_TITLE_COLOR);
       lcdDrawText(50, 3+FH, STR_MOVESTICKSPOTS, MENU_TITLE_COLOR);
-      for (uint8_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS+NUM_MOUSE_ANALOGS; i++) {
+      for (uint32_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS+NUM_MOUSE_ANALOGS; i++) {
         if (abs(reusableBuffer.calib.loVals[i]-reusableBuffer.calib.hiVals[i]) > 50) {
           g_eeGeneral.calib[i].mid = reusableBuffer.calib.midVals[i];
           int16_t v = reusableBuffer.calib.midVals[i] - reusableBuffer.calib.loVals[i];

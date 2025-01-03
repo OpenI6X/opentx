@@ -20,29 +20,29 @@
 
 #include "trainer.h"
 
-int16_t ppmInput[MAX_TRAINER_CHANNELS];
-uint8_t ppmInputValidityTimer;
+int16_t trainerInput[MAX_TRAINER_CHANNELS];
+uint8_t trainerInputValidityTimer;
 uint8_t currentTrainerMode = 0xff;
 
 void checkTrainerSignalWarning()
 {
-  enum PpmInValidState_t {
-    PPM_IN_IS_NOT_USED=0,
-    PPM_IN_IS_VALID,
-    PPM_IN_INVALID
+  enum {
+    TRAINER_IN_IS_NOT_USED=0,
+    TRAINER_IN_IS_VALID,
+    TRAINER_IN_INVALID
   };
 
-  static uint8_t ppmInputValidState = PPM_IN_IS_NOT_USED;
+  static uint8_t trainerInputValidState = TRAINER_IN_IS_NOT_USED;
 
-  if (ppmInputValidityTimer && (ppmInputValidState == PPM_IN_IS_NOT_USED)) {
-    ppmInputValidState = PPM_IN_IS_VALID;
+  if (trainerInputValidityTimer && (trainerInputValidState == TRAINER_IN_IS_NOT_USED)) {
+    trainerInputValidState = TRAINER_IN_IS_VALID;
   }
-  else if (!ppmInputValidityTimer && (ppmInputValidState == PPM_IN_IS_VALID)) {
-    ppmInputValidState = PPM_IN_INVALID;
+  else if (!trainerInputValidityTimer && (trainerInputValidState == TRAINER_IN_IS_VALID)) {
+    trainerInputValidState = TRAINER_IN_INVALID;
     AUDIO_TRAINER_LOST();
   }
-  else if (ppmInputValidityTimer && (ppmInputValidState == PPM_IN_INVALID)) {
-    ppmInputValidState = PPM_IN_IS_VALID;
+  else if (trainerInputValidityTimer && (trainerInputValidState == TRAINER_IN_INVALID)) {
+    trainerInputValidState = TRAINER_IN_IS_VALID;
     AUDIO_TRAINER_BACK();
   }
 }

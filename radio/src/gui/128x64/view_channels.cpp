@@ -68,7 +68,7 @@ void menuChannelsViewCommon(event_t event)
   int16_t limits = 512 * 2;
 
 // Channels
-  for (uint8_t line = 0; line < 8; line++) {
+  for (uint32_t line = 0; line < 8; line++) {
     LimitData * ld = limitAddress(ch);
     const uint8_t y = 9 + line * 7;
     const int32_t val = reusableBuffer.viewChannels.mixersView ? ex_chans[ch] : channelOutputs[ch];

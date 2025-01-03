@@ -50,23 +50,4 @@ void menuRadioVersion(event_t event)
   lcdDrawText(FW, y, vers_stamp, SMLSIZE);
   y += 5 * (FH - 1);
 
-#if defined(COPROCESSOR)
-  if (Coproc_valid == 1) {
-    lcdDrawTextAlignedLeft(y, "CoPr:");
-    lcdDraw8bitsNumber(10*FW, y, Coproc_read);
-  }
-  else {
-     lcdDrawTextAlignedLeft(y, "CoPr: ---");
-  }
-  y += FH;
-#endif
-
-#if defined(PXX2)
-  lcdDrawText(0, y, BUTTON("Modules / RX version"), menuVerticalPosition == ITEM_RADIO_MODULES_VERSION ? INVERS : 0);
-  y += FH;
-  if (menuVerticalPosition == ITEM_RADIO_MODULES_VERSION && event == EVT_KEY_BREAK(KEY_ENTER)) {
-    s_editMode = EDIT_SELECT_FIELD;
-    pushMenu(menuRadioModulesVersion);
-  }
-#endif
 }

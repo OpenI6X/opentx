@@ -41,7 +41,7 @@ enum ModuleSettingsMode
   extern uint8_t dsm2BindTimer;
 #endif
 
-  #define IS_PPM_PROTOCOL(protocol)          (protocol==PROTO_PPM)
+  #define IS_PPM_PROTOCOL(protocol)          (protocol==PROTOCOL_CHANNELS_PPM)
 
 #if defined(PXX)
   #define IS_PXX_PROTOCOL(protocol)          (protocol==PROTO_PXX)
@@ -62,7 +62,7 @@ enum ModuleSettingsMode
 #endif
 
 #if defined(MULTIMODULE)
-  #define IS_MULTIMODULE_PROTOCOL(protocol)  (protocol==PROTO_MULTIMODULE)
+  #define IS_MULTIMODULE_PROTOCOL(protocol)  (protocol==PROTOCOL_CHANNELS_MULTIMODULE)
   #if !defined(DSM2)
      #error You need to enable DSM2 = PPM for MULTIMODULE support
   #endif
@@ -70,7 +70,7 @@ enum ModuleSettingsMode
   #define IS_MULTIMODULE_PROTOCOL(protocol)  (0)
 #endif
 
-  #define IS_SBUS_PROTOCOL(protocol)         (protocol == PROTO_SBUS)
+  #define IS_SBUS_PROTOCOL(protocol)         (protocol == PROTOCOL_CHANNELS_SBUS)
 
   #include "pulses_arm.h"
 

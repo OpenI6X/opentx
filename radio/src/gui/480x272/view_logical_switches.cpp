@@ -91,7 +91,7 @@ bool menuLogicalSwitchesMonitor(event_t event)
 {
   char lsString[] = "L64";
   lcdColorTable[CUSTOM_COLOR_INDEX] = RGB(160, 160, 160);
-  for (uint8_t i = 0; i < MAX_LOGICAL_SWITCHES; i++) {
+  for (uint32_t i = 0; i < MAX_LOGICAL_SWITCHES; i++) {
     LcdFlags attr = (menuHorizontalPosition == i ? INVERS : 0) | LEFT;
     LogicalSwitchData * cs = lswAddress(i);
     strAppendSigned(&lsString[1], i + 1, 2);

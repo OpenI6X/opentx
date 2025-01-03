@@ -28,12 +28,12 @@
 #define SYSTEM_TICKS_01US   ((CFG_CPU_FREQ + 5000000) / 10000000)     // number of system ticks in 0.1us (rounding needed for sys frequencies that are not multiple of 10MHz)
 
 #if defined(STM32F0)
-void delaysInit(void)
-{
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
-}
+// void delaysInit(void)
+// {
+//     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
+// }
 
-void delay_01us(uint16_t nb)
+void delay_01us(uint32_t nb)
 {
     TIM6->SR = 0;
     TIM6->PSC = 0;
@@ -42,7 +42,7 @@ void delay_01us(uint16_t nb)
     TIM6->CR1 |= TIM_CR1_CEN;
     while (!(TIM6->SR & TIM_SR_UIF));
 }
-void delay_us(uint16_t nb)
+void delay_us(uint32_t nb)
 {
     TIM6->SR = 0;
     TIM6->PSC = 0;
@@ -57,14 +57,14 @@ void delaysInit(void)
   DWT->CYCCNT = 0;
   DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
-void delay_01us(uint16_t nb)
+void delay_01us(uint32_t nb)
 {
   volatile uint32_t dwtStart = DWT->CYCCNT;
   volatile uint32_t dwtTotal = (SYSTEM_TICKS_01US * nb) - 10;
   while ((DWT->CYCCNT - dwtStart) < dwtTotal);
 
 }
-void delay_us(uint16_t nb)
+void delay_us(uint32_t nb)
 {
   volatile uint32_t dwtStart = DWT->CYCCNT;
   volatile uint32_t dwtTotal = (SYSTEM_TICKS_1US * nb) - 10;

@@ -7,7 +7,6 @@ include_directories(${STM32LIB_DIR}/CMSIS/include)
 add_definitions(-DSTM32F0)
 set(STM32LIB_SRC
   ${STM32LIB_SRC}
-  CMSIS/Device/ST/STM32F0xx/Source/Templates/gcc_ride7/startup_stm32f072.s
   STM32F0xx_StdPeriph_Driver/src/stm32f0xx_crs.c
   STM32F0xx_StdPeriph_Driver/src/stm32f0xx_misc.c
   STM32F0xx_StdPeriph_Driver/src/stm32f0xx_gpio.c

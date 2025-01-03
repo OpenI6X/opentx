@@ -109,14 +109,11 @@
 #define LEN_COUNTRYCODES       TR("\002", "\007")
 #define TR_COUNTRYCODES        TR("US""JP""EU", "Amerika""Japan\0 ""Europa\0")
 
-#if defined(PCBI6X)
-#define LEN_USBDETECTMODES             "\004"
-#define TR_USBDETECTMODES              "Auto""Once"
-#endif
-
 #define LEN_USBMODES           TR("\006", "\010")
-#if defined(PCBI6X)
+#if !defined(USB_SERIAL)
 #define TR_USBMODES                    TR("Ask\0  ""Joyst\0""Storag", "Ask\0    ""Joystick""Storage\0")
+#elif !defined(USB_MSD)
+#define TR_USBMODES                    TR("Ask\0  ""Joyst\0""Serial", "Ask\0    ""Joystick""Serial\0 ")
 #else
 #define TR_USBMODES            TR("Ask\0  ""Joyst\0""Storag""Serial", "Ask\0    ""Joystick""Storage\0""Serial\0 ")
 #endif
@@ -168,8 +165,6 @@
   #define TR_RETA123           "RETA1234LRLR"
 #elif defined(PCBTARANIS) || defined(REVX)
   #define TR_RETA123           "RETA123LR"
-#elif defined(PCBSKY9X)
-  #define TR_RETA123           "RETA123a"
 #else
   #define TR_RETA123           "RETA123"
 #endif
@@ -203,11 +198,6 @@
 
 #define LEN_POSNEG             "\003"
 #define TR_POSNEG              "POS""NEG"
-
-#if defined(PCBSKY9X) && defined(REVX)
-  #define LEN_VOUTPUT_TYPE     "\011"
-  #define TR_VOUTPUT_TYPE      "OpenDrain""PushPull\0"
-#endif
 
 #define LEN_VCURVEFUNC         "\003"
 #define TR_VCURVEFUNC          "---""x>0""x<0""|x|""f>0""f<0""|f|"
@@ -264,11 +254,7 @@
 #endif
 
 #if defined(VOICE)
-  #if defined(PCBSKY9X)
-    #define TR_PLAY_TRACK      "Play\0     "
-  #else
-    #define TR_PLAY_TRACK      "Play Track"
-  #endif
+  #define TR_PLAY_TRACK      "Play Track"
   #define TR_PLAY_BOTH         "Play Both\0"
   #define TR_PLAY_VALUE        TR("Play Val\0 ", "Play Value")
 #else
@@ -319,7 +305,7 @@
 
 #define TR_SF_RESERVE         "[reserve]\0"
 
-  #define TR_VFSWFUNC          TR_SF_SAFETY "Trainer\0  ""Inst. Trim""Reset\0    ""Set \0     " TR_ADJUST_GVAR "Volume\0   " "SetFailsfe" "RangeCheck" "ModuleBind" TR_SOUND /*TR_PLAY_TRACK TR_PLAY_VALUE*/ TR_SF_RESERVE TR_SF_PLAY_SCRIPT TR_SF_RESERVE /*TR_SF_BG_MUSIC*/ TR_VVARIO TR_HAPTIC /*TR_SDCLOGS*/ "Backlight\0" TR_SF_SCREENSHOT TR_SF_TEST
+#define TR_VFSWFUNC          TR_SF_SAFETY "Trainer\0  ""Inst. Trim""Reset\0    ""Set \0     " TR_ADJUST_GVAR "Volume\0   " "SetFailsfe" "RangeCheck" "ModuleBind" TR_SOUND /*TR_PLAY_TRACK TR_PLAY_VALUE*/ TR_SF_RESERVE TR_SF_PLAY_SCRIPT TR_SF_RESERVE /*TR_SF_BG_MUSIC*/ TR_VVARIO TR_HAPTIC /*TR_SDCLOGS*/ "Backlight\0" TR_SF_SCREENSHOT TR_SF_TEST
 
 #define LEN_VFSWRESET          TR("\004", "\012")
 
@@ -455,10 +441,6 @@
 #elif defined(PCBTARANIS)
   #define TR_POTS_VSRCRAW              "\310S1\0""\310S2\0""\310S3\0""\311LS\0""\311RS\0"
   #define TR_SW_VSRCRAW                "\312SA\0""\312SB\0""\312SC\0""\312SD\0""\312SE\0""\312SF\0""\312SG\0""\312SH\0"
-#elif defined(PCBSKY9X)
-  #define TR_POTS_VSRCRAW              "P1\0 ""P2\0 ""P3\0 "
-  #define TR_SW_VSRCRAW                "3POS" "THR\0""RUD\0""ELE\0""AIL\0""GEA\0""TRN\0"
-  #define TR_9X_3POS_SWITCHES          "ID0""ID1""ID2"
 #else
   #define TR_POTS_VSRCRAW              "P1\0 ""P2\0 ""P3\0 "
   #define TR_SW_VSRCRAW                "3POS"
@@ -473,13 +455,8 @@
   #define TR_TRIMS_SWITCHES    TR("tRl""tRr""tEd""tEu""tTd""tTu""tAl""tAr", "\313Rl""\313Rr""\313Ed""\313Eu""\313Td""\313Tu""\313Al""\313Ar")
 #endif
 
-#if defined(PCBSKY9X)
-  #define TR_ROTARY_ENCODERS   "REa\0"
-  #define TR_ROTENC_SWITCHES   "REa"
-#else
-  #define TR_ROTARY_ENCODERS
-  #define TR_ROTENC_SWITCHES
-#endif
+#define TR_ROTARY_ENCODERS
+#define TR_ROTENC_SWITCHES
 
 #if !defined(PCBTARANIS) && !defined(PCBHORUS)  && !defined(PCBI6X)
   #define TR_2POS_SWITCHES     "THR""RUD""ELE""AIL""GEA""TRN"
@@ -490,8 +467,6 @@
 #if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
   // only special switches here
   #define TR_VSWITCHES         "---" TR_TRIMS_SWITCHES TR_ON_ONE_SWITCHES
-#elif defined(PCBSKY9X)
-  #define TR_VSWITCHES         "---" TR_9X_3POS_SWITCHES TR_2POS_SWITCHES TR_TRIMS_SWITCHES TR_ROTENC_SWITCHES TR_ON_ONE_SWITCHES
 #else
   #define TR_VSWITCHES         "---" TR_9X_3POS_SWITCHES TR_2POS_SWITCHES TR_TRIMS_SWITCHES TR_ROTENC_SWITCHES TR_LOGICALSW TR_ON_ONE_SWITCHES
 #endif
@@ -558,7 +533,7 @@
 #if defined(PCBTARANIS) || defined(PCBHORUS)
   #define TR_ENTER             "[ENTER]"
 #elif defined(PCBI6X)
-  #define TR_ENTER                     "[ OK ]"
+  #define TR_ENTER                     "[OK]"
 #else
   #define TR_ENTER             "[MENU]"
 #endif
@@ -587,8 +562,8 @@
 #define TR_MODELNAME           "Modelnaam"
 #define TR_PHASENAME           "Modus"
 #define TR_MIXNAME             "Mix Naam"
-#define TR_INPUTNAME           "Input Naam"
-#define TR_EXPONAME            "Lijn Naam"
+#define TR_INPUTNAME           "Input"
+#define TR_EXPONAME            "Naam"
 #define TR_BITMAP              "Modelafbeelding"
 #define TR_TIMER               TR("Timer", "Timer ")
 #define TR_ELIMITS             TR("E.Limits", "Extended Limits")
@@ -599,9 +574,6 @@
 #define TR_TTRIM               TR("T-Trim", INDENT "Trim Idle Only")
 #define TR_BEEPCTR             TR("Ctr Beep", "Center Beep")
 #define TR_USE_GLOBAL_FUNCS    TR("Glob.Funcs", "Globale Functies")
-#if defined(PCBSKY9X) && defined(REVX)
-  #define TR_OUTPUT_TYPE       INDENT "Output"
-#endif
 #define TR_PROTO               TR(INDENT "Proto", INDENT "Protocol")
   #define TR_PPMFRAME          INDENT "PPM frame"
 #define TR_REFRESHRATE               TR(INDENT "Refresh", INDENT "Refresh rate")
@@ -696,7 +668,7 @@
 #define TR_ADJUST_RTC          TR("Klok instellen", INDENT "Klok middels GPS instellen")
 #define TR_GPS                 "GPS"
 #define TR_RXCHANNELORD        TR("Kan.Volgorde", "Kanaalvolgorde")
-#define TR_STICKS              "Sticks"
+#define TR_STICKS              "Axis"
 #define TR_POTS                "Pots"
 #define TR_SWITCHES            TR("Switches","Schakelaars")
 #define TR_SWITCHES_DELAY      "Vertraging"
@@ -844,6 +816,7 @@
 #define TR_VOLTAGE             TR(INDENT "Spg", INDENT "Spanningsbron")  //9XR-Pro
 #define TR_CURRENT             TR(INDENT "Stroom", INDENT "Stroombron")
 #define TR_SELECT_MODEL        "Kies Model"
+#define TR_SELECT_MODE                 "Select mode"
 #define TR_CREATE_CATEGORY     "Create Category"
 #define TR_RENAME_CATEGORY     "Rename Category"
 #define TR_DELETE_CATEGORY     "Delete Category"
@@ -917,7 +890,10 @@
 #define TR_FORMATTING          "Formatteren..."
 #define TR_TEMP_CALIB          "Temp.  Calib."
 #define TR_TIME                "Tijd:"
-#define TR_MAXBAUDRATE         "Max bauds"
+#define TR_MAXBAUDRATE         "Baudrate"
+#define TR_CRSF_ARMING_MODE            "Arm using"
+#define LEN_CRSF_ARMING_MODES          "\006"
+#define TR_CRSF_ARMING_MODES           TR_CH "5\0  " TR_SWITCH
 
 #define TR_BLUETOOTH            "Bluetooth"
 #define TR_BLUETOOTH_DISC       "Discover"
@@ -966,7 +942,6 @@
 #define TR_MENUSENSOR          "SENSOR"
 #define TR_SENSOR              "SENSOR"
 #define TR_COUNTRYCODE         "Landcode"
-#define TR_USBDETECT           "USB Detect"
 #define TR_USBMODE             "USB Mode"
 #define TR_VOICELANG           "Taal"
 #define TR_UNITSSYSTEM         "Eenheden"
@@ -1198,9 +1173,9 @@
 //TODO: translation
 #define TR_INVERTED_SERIAL     INDENT "Invert"
 #define TR_IGNORE_INSTANCE     TR(INDENT "Neg. ID ","Negeer ID's")
-#define TR_DISCOVER_SENSORS    INDENT "Ontdek nieuwe sensors"
+#define TR_DISCOVER_SENSORS    INDENT "Ontdek nieuwe"
 #define TR_STOP_DISCOVER_SENSORS INDENT "Stop ontdekking"
-#define TR_DELETE_ALL_SENSORS  INDENT "Wis alle sensors"
+#define TR_DELETE_ALL_SENSORS  INDENT "Wis alle"
 #define TR_CONFIRMDELETE       "Echt alles wissen?"
 #define TR_SELECT_WIDGET       "Widget kiezen"
 #define TR_REMOVE_WIDGET       "Widget wissen"
@@ -1246,6 +1221,12 @@
 #define ZSTR_ALT               "Alt"
 #define ZSTR_TEMP1             "Tmp1"
 #define ZSTR_TEMP2             "Tmp2"
+#define ZSTR_PRES                      "Pres"
+#define ZSTR_ODO1                      "Odo1"
+#define ZSTR_ODO2                      "Odo2"
+#define ZSTR_TXV                       "TX_V"
+#define ZSTR_DIST                      "Dist"
+#define ZSTR_ARM                       "Arm"
 #define ZSTR_RPM               "RPM"
 #define ZSTR_FUEL              "Fuel"
 #define ZSTR_VSPD              "VSpd"

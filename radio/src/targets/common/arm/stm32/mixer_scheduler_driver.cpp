@@ -36,8 +36,11 @@ void mixerSchedulerStart()
   MIXER_SCHEDULER_TIMER->EGR   = TIM_EGR_UG;   // reset timer
 
   NVIC_EnableIRQ(MIXER_SCHEDULER_TIMER_IRQn);
+#if defined(STM32F0)
+  NVIC_SetPriority(MIXER_SCHEDULER_TIMER_IRQn, 3);
+#else
   NVIC_SetPriority(MIXER_SCHEDULER_TIMER_IRQn, 8);
-
+#endif
   MIXER_SCHEDULER_TIMER->SR   &= TIM_SR_UIF;   // clear interrupt flag
   MIXER_SCHEDULER_TIMER->CR1  |= TIM_CR1_CEN;
   

@@ -44,7 +44,7 @@ typedef uint8_t display_t;
 #define BLINK                          0x01
 #define INVERS                         0x02
 #if defined(BOLD_FONT)
-  #define BOLD                         0x40
+  #define BOLD                         0x40u
 #else
   #define BOLD                         0x00
 #endif
@@ -53,10 +53,9 @@ typedef uint8_t display_t;
 #define CENTERED                       0x20
 #define CONDENSED                      0x08
 #define FIXEDWIDTH                     0x10
-/* lcd puts flags */
 /* no 0x80 here because of "GV"1 which is aligned LEFT */
 /* no 0x10 here because of "MODEL"01 which uses LEADING0 */
-#define ZCHAR                          0x80
+#define ZCHAR                          0x80u
 
 /* lcdDrawNumber additional flags */
 #define LEADING0                       0x10
@@ -97,11 +96,6 @@ extern coord_t lcdNextPos;
 
 #define DISPLAY_END                    (displayBuf + DISPLAY_BUFFER_SIZE)
 #define ASSERT_IN_DISPLAY(p)           assert((p) >= displayBuf && (p) < DISPLAY_END)
-
-#if defined(PCBSKY9X)
-  extern volatile uint8_t lcdLock ;
-  extern volatile uint32_t lcdInputs ;
-#endif
 
 void lcdDrawChar(coord_t x, coord_t y, const unsigned char c);
 void lcdDrawChar(coord_t x, coord_t y, const unsigned char c, LcdFlags flags);

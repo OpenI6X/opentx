@@ -37,8 +37,8 @@ void onModelCustomScriptMenu(const char *result)
       POPUP_WARNING(STR_NO_SCRIPTS_ON_SD);
     }
   }
-  else {
-    // The user choosed a lua file in the list
+  else if (result) {
+    // The user chosen a lua file in the list
     copySelection(sd.file, result, sizeof(sd.file));
     memset(sd.inputs, 0, sizeof(sd.inputs));
     storageDirty(EE_MODEL);

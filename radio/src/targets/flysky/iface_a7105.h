@@ -22,10 +22,13 @@
 #define RX_EN            0b00000001
 #define TXRX_OFF         0b00000011
 #define AFHDS2A_NUMFREQ	 16
-#define RADIO_PPM_CENTER 1500
 
 #define AFHDS2A_TXPACKET_SIZE 38
 #define AFHDS2A_RXPACKET_SIZE 37
+
+#define AFHDS2A_TELEM_MIRROR_BAUDRATE 115200
+
+#define AFHDS2A_PERIOD 3850
 
 //#define FORCE_AFHDS2A_TUNING 0
 enum A7105_POWER
@@ -69,21 +72,18 @@ enum A7105_POWER
 //#define	CH15	14
 //#define	CH16	15
 
-extern uint8_t protocol_flags,protocol_flags2;
+extern uint8_t protocol_flags;
 extern uint8_t protocol;
 extern uint8_t prev_power; // unused power value
 
-#define RX_RSSI 0
-#define RX_Err  1
-#define RX_IntV 2
-#define RX_ExtV 3
-#define RX_Temp 4
-#define RX_RPM  5
+// #define RX_RSSI 0
+// #define RX_Err  1
+// #define RX_IntV 2
+// #define RX_ExtV 3
+// #define RX_Temp 4
+// #define RX_RPM  5
 
-// extern int16_t telem_AFHDS2A[6];
-// extern uint8_t telem_status;
-
-extern uint8_t  packet[AFHDS2A_TXPACKET_SIZE];
+extern volatile bool pendingTelemetryPollFrame;
 
 //#define NUM_CHN 16
 //// Servo data
@@ -105,11 +105,7 @@ extern uint8_t  phase;
 extern uint8_t  bind_phase;
 extern uint8_t  hopping_frequency[AFHDS2A_NUMFREQ];
 extern uint8_t  hopping_frequency_no;
-//extern uint8_t  rx_tx_addr[4];
-//extern uint8_t  rx_id[5];
 extern uint8_t  option;   // option value should be between 0 and 70 which gives a value between 50 and 400Hz
-extern uint8_t  RX_num;
-extern uint8_t  sub_protocol;
 extern volatile uint8_t RadioState;
 
 #define BIND_IN_PROGRESS	protocol_flags &= ~_BV(7)
@@ -226,13 +222,13 @@ enum ePhase {
 void A7105_Sleep(void);
 void A7105_Init(void);
 void A7105_AdjustLOBaseFreq(void);
-void A7105_ReadData(uint8_t len);
+void A7105_ReadData(uint8_t * data, uint8_t len);
 uint8_t A7105_ReadReg(uint8_t address);
 void A7105_WriteReg(uint8_t address, uint8_t data);
 void A7105_SetPower();
 void A7105_SetTxRxMode(uint8_t mode);
 void A7105_Strobe(uint8_t address);
-void A7105_WriteData(uint8_t len, uint8_t channel);
+void A7105_WriteData(uint8_t * data, uint8_t len, uint8_t channel);
 void A7105_AntSwitch(void);
 
 #endif

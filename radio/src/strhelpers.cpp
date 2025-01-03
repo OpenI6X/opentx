@@ -28,7 +28,7 @@ char hex2zchar(uint8_t hex)
   return (hex >= 10 ? hex-9 : 27+hex);
 }
 
-char idx2char(int8_t idx)
+char zchar2char(int8_t idx)
 {
   if (idx == 0) return ' ';
   if (idx < 0) {
@@ -44,7 +44,7 @@ char idx2char(int8_t idx)
   return ' ';
 }
 
-int8_t char2idx(char c)
+int8_t char2zchar(char c)
 {
   if (c == '_') return 37;
 #if LEN_SPECIAL_CHARS > 0
@@ -63,14 +63,14 @@ void str2zchar(char * dest, const char * src, int size)
 {
   memset(dest, 0, size);
   for (int c=0; c<size && src[c]; c++) {
-    dest[c] = char2idx(src[c]);
+    dest[c] = char2zchar(src[c]);
   }
 }
 
 int zchar2str(char * dest, const char * src, int size)
 {
   for (int c=0; c<size; c++) {
-    dest[c] = idx2char(src[c]);
+    dest[c] = zchar2char(src[c]);
   }
   do {
     dest[size--] = '\0';
@@ -122,7 +122,7 @@ char * strcat_zchar(char * dest, const char * name, uint8_t size, const char * d
         len = i+1;
       if (len) {
         if (dest[i])
-          dest[i] = idx2char(dest[i]);
+          dest[i] = zchar2char(dest[i]);
         else
           dest[i] = '_';
       }
@@ -241,13 +241,6 @@ char * getSwitchPositionName(char * dest, swsrc_t idx)
     idx = -idx;
   }
 
-#if defined(PCBSKY9X)
-  #define IDX_TRIMS_IN_STR_VSWITCHES   (1+SWSRC_LAST_SWITCH)
-  #define IDX_ON_IN_STR_VSWITCHES      (IDX_TRIMS_IN_STR_VSWITCHES+SWSRC_LAST_TRIM-SWSRC_FIRST_TRIM+2)
-  if (idx <= SWSRC_LAST_SWITCH) {
-    getStringAtIndex(s, STR_VSWITCHES, idx);
-  }
-#else
   #define IDX_TRIMS_IN_STR_VSWITCHES   (1)
   #define IDX_ON_IN_STR_VSWITCHES      (IDX_TRIMS_IN_STR_VSWITCHES+SWSRC_LAST_TRIM-SWSRC_FIRST_TRIM+1)
   if (idx <= SWSRC_LAST_SWITCH) {
@@ -272,7 +265,6 @@ char * getSwitchPositionName(char * dest, swsrc_t idx)
     *s++ = "\300-\301"[swinfo.rem];
     *s = '\0';
   }
-#endif // PCBSKY9X
 
 #if NUM_XPOTS > 0
   else if (idx <= SWSRC_LAST_MULTIPOS_SWITCH) {

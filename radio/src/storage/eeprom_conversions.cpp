@@ -51,11 +51,6 @@ enum Mix216Sources {
   MIXSRC216_LAST_POT = MIXSRC216_P3,
 #endif
 
-#if defined(PCBSKY9X)
-  MIXSRC216_REa,
-  MIXSRC216_LAST_ROTARY_ENCODER = MIXSRC216_REa,
-#endif
-
   MIXSRC216_MAX,
 
   MIXSRC216_CYC1,
@@ -497,7 +492,7 @@ PACK(typedef struct {
   uint8_t nPotsToWarn; \
   int8_t potPosition[NUM_POTS+NUM_SLIDERS]; \
   uint8_t spare[2];
-#elif defined(PCBSKY9X) || defined(PCBI6X)
+#elif defined(PCBI6X)
 #define MODELDATA_EXTRA_216 \
   uint8_t externalModule; \
   ModuleData_v216 moduleData[NUM_MODULES+1]; \
@@ -852,16 +847,6 @@ void ConvertRadioData_217_to_218(RadioData & settings)
   memcpy(settings.bluetoothName, settings_v217.bluetoothName, sizeof(settings.bluetoothName));
 #endif
 
-#if defined(PCBSKY9X)
-  settings.txCurrentCalibration = settings_v217.txCurrentCalibration;
-  settings.temperatureWarn = settings_v217.temperatureWarn;
-  settings.mAhWarn = settings_v217.mAhWarn;
-  settings.mAhUsed = settings_v217.mAhUsed;
-  settings.temperatureCalib = settings_v217.temperatureCalib;
-  settings.optrexDisplay = settings_v217.optrexDisplay;
-  settings.sticksGain = settings_v217.sticksGain;
-  settings.rotarySteps = settings_v217.rotarySteps;
-#endif
 }
 
 void ConvertModel_216_to_217(ModelData & model)
@@ -889,7 +874,7 @@ void ConvertModel_216_to_217(ModelData & model)
   memcpy(newModel.header.bitmap, oldModel.header.bitmap, LEN_BITMAP_NAME);
 #endif
 
-  for (uint8_t i=0; i<2; i++) {
+  for (uint32_t i=0; i<2; i++) {
     TimerData_v217 & timer = newModel.timers[i];
     if (oldModel.timers[i].mode >= TMRMODE_COUNT)
       timer.mode = TMRMODE_COUNT + ConvertSwitch_216_to_217(oldModel.timers[i].mode - TMRMODE_COUNT + 1) - 1;
@@ -1059,7 +1044,7 @@ void ConvertModel_217_to_218(ModelData & model)
   TRACE("Model %s conversion from v217 to v218", name);
 
   newModel.header = oldModel.header;
-  for (uint8_t i=0; i<MAX_TIMERS; i++) {
+  for (uint32_t i=0; i<MAX_TIMERS; i++) {
     if (oldModel.timers[i].mode >= TMRMODE_COUNT)
       newModel.timers[i].mode = TMRMODE_COUNT + ConvertSwitch_217_to_218(oldModel.timers[i].mode - TMRMODE_COUNT + 1) - 1;
     else
@@ -1177,9 +1162,6 @@ void ConvertModel_217_to_218(ModelData & model)
     newModel.flightModeData[i].swtch = ConvertSwitch_217_to_218(oldModel.flightModeData[i].swtch);
     newModel.flightModeData[i].fadeIn = oldModel.flightModeData[i].fadeIn;
     newModel.flightModeData[i].fadeOut = oldModel.flightModeData[i].fadeOut;
-#if defined(PCBSKY9X)
-    memcpy(newModel.flightModeData[i].rotaryEncoders, oldModel.flightModeData[i].rotaryEncoders, sizeof(newModel.flightModeData[i].rotaryEncoders));
-#endif
     memcpy(newModel.flightModeData[i].gvars, oldModel.flightModeData[i].gvars, sizeof(newModel.flightModeData[i].gvars));
   }
   newModel.thrTraceSrc = oldModel.thrTraceSrc;
@@ -1215,7 +1197,7 @@ void ConvertModel_217_to_218(ModelData & model)
   newModel.potsWarnMode = oldModel.potsWarnMode;
   newModel.potsWarnEnabled = oldModel.potsWarnEnabled;
   memcpy(newModel.potsWarnPosition, oldModel.potsWarnPosition, sizeof(newModel.potsWarnPosition));
-  for (uint8_t i=0; i<MAX_TELEMETRY_SENSORS; i++) {
+  for (uint32_t i=0; i<MAX_TELEMETRY_SENSORS; i++) {
     newModel.telemetrySensors[i] = oldModel.telemetrySensors[i];
     if (newModel.telemetrySensors[i].unit > UNIT_WATTS)
       newModel.telemetrySensors[i].unit += 1;
@@ -1262,9 +1244,6 @@ bool eeConvert()
   int conversionVersionStart = g_eeGeneral.version;
 
   // Information to the user and wait for key press
-#if defined(PCBSKY9X)
-  g_eeGeneral.optrexDisplay = 0;
-#endif
   g_eeGeneral.backlightMode = e_backlight_mode_on;
   g_eeGeneral.backlightBright = 0;
   g_eeGeneral.contrast = 25;
@@ -1295,7 +1274,7 @@ bool eeConvert()
 #endif
 
   // Models conversion
-  for (uint8_t id=0; id<MAX_MODELS; id++) {
+  for (uint32_t id=0; id<MAX_MODELS; id++) {
 #if defined(COLORLCD)
 #elif LCD_W >= 212
     lcdDrawSolidHorizontalLine(61, 6*FH+5, 10+id*2, FORCE);

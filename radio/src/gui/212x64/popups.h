@@ -31,7 +31,6 @@
 void drawMessageBox(const char * title);
 void showMessageBox(const char * title);
 void runPopupWarning(event_t event);
-#define DRAW_MESSAGE_BOX(title)        drawMessageBox(title)
 
 extern void (*popupFunc)(event_t event);
 extern uint8_t warningInfoFlags;
@@ -40,11 +39,10 @@ extern uint8_t warningInfoFlags;
 #define POPUP_WARNING(s)               (warningText = s, warningInfoText = 0, popupFunc = runPopupWarning)
 #define POPUP_CONFIRMATION(s)          (warningText = s, warningType = WARNING_TYPE_CONFIRM, warningInfoText = 0, popupFunc = runPopupWarning)
 #define POPUP_INPUT(s, func)           (warningText = s, popupFunc = func)
-#define WARNING_INFO_FLAGS             warningInfoFlags
 #define SET_WARNING_INFO(info, len, flags) (warningInfoText = info, warningInfoLength = len, warningInfoFlags = flags)
 
 #define POPUP_MENU_ADD_ITEM(s)         do { popupMenuOffsetType = MENU_OFFSET_INTERNAL; if (popupMenuItemsCount < POPUP_MENU_MAX_LINES) popupMenuItems[popupMenuItemsCount++] = s; } while (0)
-#define POPUP_MENU_SELECT_ITEM(s)      s_menu_item =  (s > 0 ? (s < popupMenuItemsCount ? s : popupMenuItemsCount) : 0)
+#define POPUP_MENU_SELECT_ITEM(s)      popupMenuSelectedItem =  (s > 0 ? (s < popupMenuItemsCount ? s : popupMenuItemsCount) : 0)
 #define POPUP_MENU_START(func)         do { popupMenuHandler = (func); AUDIO_KEY_PRESS(); } while (0)
 #define POPUP_MENU_MAX_LINES           12
 #define MENU_MAX_DISPLAY_LINES         6
@@ -59,7 +57,7 @@ enum {
   MENU_OFFSET_EXTERNAL
 };
 extern uint8_t popupMenuOffsetType;
-extern uint8_t s_menu_item;
+extern uint8_t popupMenuSelectedItem;
 const char * runPopupMenu(event_t event);
 extern void (*popupMenuHandler)(const char * result);
 

@@ -122,7 +122,7 @@ uint8_t * lcdLoadBitmap(uint8_t * bmp, const char * filename, uint16_t width, ui
       f_close(&bmpFile);
       return NULL;
     }
-    for (uint8_t i=0; i<16; i++) {
+    for (uint32_t i=0; i<16; i++) {
       palette[i] = buf[4*i] >> 4;
     }
   }

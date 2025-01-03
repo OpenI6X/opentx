@@ -38,7 +38,8 @@ void storageDirty(uint8_t msk) {
 #endif
 }
 
-void preModelLoad() {
+void preModelLoad()
+{
   watchdogSuspend(500 /*5s*/);
 
 #if defined(SDCARD)
@@ -51,18 +52,9 @@ void preModelLoad() {
 
   pauseMixerCalculations();
 }
-#if defined(PCBTARANIS) || defined(PCBHORUS)
-static void fixUpModel() {
-  // Ensure that when rfProtocol is RF_PROTO_OFF the type of the module is MODULE_TYPE_NONE
-  if (g_model.moduleData[INTERNAL_MODULE].type == MODULE_TYPE_XJT && g_model.moduleData[INTERNAL_MODULE].rfProtocol == RF_PROTO_OFF)
-    g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_NONE;
-}
-#endif
 
-void postModelLoad(bool alarms) {
-#if defined(PCBTARANIS) || defined(PCBHORUS)
-  fixUpModel();
-#endif
+void postModelLoad(bool alarms)
+{
   AUDIO_FLUSH();
   flightReset(false);
 
@@ -106,7 +98,8 @@ void postModelLoad(bool alarms) {
   SEND_FAILSAFE_1S();
 }
 
-void storageFlushCurrentModel() {
+void storageFlushCurrentModel()
+{
   saveTimers();
 
   for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {

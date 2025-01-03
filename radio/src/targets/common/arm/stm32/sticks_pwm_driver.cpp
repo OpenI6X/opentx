@@ -96,7 +96,7 @@ extern "C" void PWM_IRQHandler(void)
   static uint8_t  timer_capture_states[NUM_PWMSTICKS];
   static uint32_t timer_capture_rising_time[NUM_PWMSTICKS];
 
-  for (uint8_t i=0; i<NUM_PWMSTICKS; i++) {
+  for (uint32_t i=0; i<NUM_PWMSTICKS; i++) {
     if (PWM_TIMER->SR & (TIM_DIER_CC1IE << i)) {
       uint32_t capture = TIM_GetCapture_Stick(i);
       pwm_interrupt_count++; // overflow may happen but we only use this to detect PWM / ADC on radio startup

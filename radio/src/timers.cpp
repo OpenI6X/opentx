@@ -45,7 +45,7 @@ void timerSet(int idx, int val)
 
 void restoreTimers()
 {
-  for (uint8_t i=0; i<TIMERS; i++) {
+  for (uint32_t i=0; i<TIMERS; i++) {
     if (g_model.timers[i].persistent) {
       timersStates[i].val = g_model.timers[i].value;
     }
@@ -54,7 +54,7 @@ void restoreTimers()
 
 void saveTimers()
 {
-  for (uint8_t i=0; i<TIMERS; i++) {
+  for (uint32_t i=0; i<TIMERS; i++) {
     if (g_model.timers[i].persistent) {
       TimerState *timerState = &timersStates[i];
       if (g_model.timers[i].value != (uint16_t)timerState->val) {
@@ -69,7 +69,7 @@ void saveTimers()
 
 void evalTimers(int16_t throttle, uint8_t tick10ms)
 {
-  for (uint8_t i=0; i<TIMERS; i++) {
+  for (uint32_t i=0; i<TIMERS; i++) {
     tmrmode_t timerMode = g_model.timers[i].mode;
     tmrstart_t timerStart = g_model.timers[i].start;
     TimerState * timerState = &timersStates[i];

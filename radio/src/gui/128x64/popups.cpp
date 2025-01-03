@@ -30,8 +30,8 @@ uint8_t         warningInfoFlags = ZCHAR;
 
 void drawMessageBox()
 {
-  lcdDrawFilledRect(10, 16, LCD_W-20, 40, SOLID, ERASE);
-  lcdDrawRect(10, 16, LCD_W-20, 40);
+  lcdDrawFilledRect(MESSAGEBOX_X - 1, MESSAGEBOX_Y - 1, MESSAGEBOX_W + 2, 48 + 2, SOLID, ERASE);
+  lcdDrawRect(MESSAGEBOX_X, MESSAGEBOX_Y, MESSAGEBOX_W, 48);
   lcdDrawSizedText(WARNING_LINE_X, WARNING_LINE_Y, warningText, WARNING_LINE_LEN);
   // could be a place for a warningInfoText
 }
@@ -52,9 +52,9 @@ void drawAlertBox(const char * title, const char * text, const char * action)
 {
   lcdClear();
 
-#if defined(PCBI6X_ELRSV3) && defined(TRANSLATIONS_PT) // not enough flash space
+#if defined(DEBUG) || (defined(PCBI6X_ELRS) && defined(TRANSLATIONS_PT)) // saves ~140B
   lcdDrawRect(2, 2, 32 - 4, 32 - 4);
-  lcdDrawText(11, 6, "x", DBLSIZE);
+  lcdDrawChar(11, 6, 'x', DBLSIZE);
 #else
   lcdDraw1bitBitmap(2, 0, ASTERISK_BITMAP, 0, 0);
 #endif
@@ -88,7 +88,7 @@ void showAlertBox(const char * title, const char * text, const char * action , u
   
   lcdRefresh();
   lcdSetContrast();
-  clearKeyEvents();
+  waitKeysReleased();
   resetBacklightTimeout();
   checkBacklight();
 }
@@ -98,9 +98,10 @@ void runPopupWarning(event_t event)
   warningResult = false;
   drawMessageBox();
   if (warningInfoText) {
-    lcdDrawSizedText(WARNING_LINE_X, WARNING_LINE_Y+FH, warningInfoText, warningInfoLength, WARNING_INFO_FLAGS);
+    lcdDrawSizedText(WARNING_LINE_X, WARNING_LINE_Y+FH, warningInfoText, warningInfoLength, warningInfoFlags);
   }
-  lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+2*FH, warningType == WARNING_TYPE_ASTERISK ? STR_EXIT : STR_POPUPS_ENTER_EXIT);
+  lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+4*FH+2, warningType == WARNING_TYPE_ASTERISK ? STR_EXIT : STR_POPUPS_ENTER_EXIT);
+  
   switch (event) {
     case EVT_KEY_BREAK(KEY_ENTER):
       if (warningType == WARNING_TYPE_ASTERISK)

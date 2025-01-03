@@ -27,24 +27,18 @@
 enum usbMode {
   USB_UNSELECTED_MODE,
   USB_JOYSTICK_MODE,
+#if defined(USB_MSD)
   USB_MASS_STORAGE_MODE,
+#endif
   USB_SERIAL_MODE,
-#if defined(USB_SERIAL) && !defined(PCBI6X)
-  USB_MAX_MODE = USB_SERIAL_MODE
-#elif defined(PCBI6X) && !defined(PCBI6X_USB_MSD)
-  USB_MAX_MODE = USB_JOYSTICK_MODE
-#else
+#if defined(USB_SERIAL)
+  USB_MAX_MODE=USB_SERIAL_MODE
+#elif defined(USB_MSD)
   USB_MAX_MODE = USB_MASS_STORAGE_MODE
+#else
+  USB_MAX_MODE = USB_JOYSTICK_MODE
 #endif
 };
-
-#if defined(PCBI6X)
-enum usbDetect {
-  USB_DETECT_AUTO,
-  USB_DETECT_ON,
-  USB_MAX_DETECT = USB_DETECT_ON
-};
-#endif
 
 int usbPlugged();
 void usbInit();

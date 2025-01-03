@@ -154,21 +154,26 @@ PACK(struct CustomFunctionData {
   int16_t swtch : 9;
   uint16_t func : 7;
   PACK(union {
+#if !defined(PCBI6X) // SDCARD + VOICE
     NOBACKUP(PACK(struct {
       char name[LEN_FUNCTION_NAME];
     }) play);
-
+#endif
     PACK(struct {
       int16_t val;
       uint8_t mode;
       uint8_t param;
+#if !defined(PCBI6X) // SDCARD + VOICE
       NOBACKUP(CFN_SPARE_TYPE spare);
+#endif
     })
     all;
 
     NOBACKUP(PACK(struct {
       int32_t val1;
+#if !defined(PCBI6X) // SDCARD + VOICE
       NOBACKUP(CFN_SPARE_TYPE val2);
+#endif
     }) clear);
   });
   uint8_t active;
@@ -431,15 +436,6 @@ PACK(struct ModuleData {
       int8_t optionValue;
     } multi);
     NOBACKUP(struct {
-      uint8_t power : 2;  // 0=10 mW, 1=100 mW, 2=500 mW, 3=1W
-      uint8_t spare1 : 2;
-      uint8_t receiver_telem_off : 1;     // false = receiver telem enabled
-      uint8_t receiver_channel_9_16 : 1;  // false = pwm out 1-8, true 9-16
-      uint8_t external_antenna : 1;       // false = internal antenna, true = external antenna
-      uint8_t fast : 1;                   // TODO: to be used later by external module (fast means serial @ high speed)
-      uint8_t spare2;
-    } pxx);
-    NOBACKUP(struct {
       uint8_t spare1 : 6;
       uint8_t noninverted : 1;
       uint8_t spare2 : 1;
@@ -448,6 +444,11 @@ PACK(struct ModuleData {
     NOBACKUP(struct {
       uint16_t servoFreq; // 50 - 400
     } afhds2a);
+    NOBACKUP(struct {
+      int16_t crsfArmingTrigger:10;
+      int16_t crsfArmingMode:1;
+      int16_t spare1:5;
+    } crsf);
   };
 
   // Helper functions to set both of the rfProto protocol at the same time
@@ -570,15 +571,6 @@ PACK(struct CustomScreenData {
 #define MODELDATA_EXTRA                            \
   NOBACKUP(uint8_t spare : 3);                     \
   NOBACKUP(uint8_t trainerMode : 3);               \
-  uint8_t potsWarnMode : 2;                        \
-  ModuleData moduleData[NUM_MODULES + 1];          \
-  char inputNames[MAX_INPUTS][LEN_INPUT_NAME];     \
-  uint8_t potsWarnEnabled;                         \
-  int8_t potsWarnPosition[NUM_POTS + NUM_SLIDERS]; \
-  uint8_t rxBattAlarms[2];
-#elif defined(PCBSKY9X)
-#define MODELDATA_EXTRA                            \
-  uint8_t spare : 6;                               \
   uint8_t potsWarnMode : 2;                        \
   ModuleData moduleData[NUM_MODULES + 1];          \
   char inputNames[MAX_INPUTS][LEN_INPUT_NAME];     \
@@ -720,21 +712,6 @@ PACK(struct TrainerData {
   char anaNames[NUM_STICKS + NUM_POTS + NUM_SLIDERS][LEN_ANA_NAME]; \
   uint8_t receiverId[16][4]; /* AFHDS2A RxNum */                    \
   BLUETOOTH_FIELDS
-#elif defined(PCBSKY9X)
-#define EXTRA_GENERAL_FIELDS                                        \
-  EXTRA_GENERAL_FIELDS_ARM                                          \
-  int8_t txCurrentCalibration;                                      \
-  int8_t temperatureWarn;                                           \
-  uint8_t mAhWarn;                                                  \
-  uint16_t mAhUsed;                                                 \
-  int8_t temperatureCalib;                                          \
-  uint8_t optrexDisplay;                                            \
-  uint8_t sticksGain;                                               \
-  uint8_t rotarySteps;                                              \
-  char switchNames[NUM_SWITCHES][LEN_SWITCH_NAME];                  \
-  char anaNames[NUM_STICKS + NUM_POTS + NUM_SLIDERS][LEN_ANA_NAME]; \
-                                                                    \
-#define EXTRA_GENERAL_FIELDS EXTRA_GENERAL_FIELDS_ARM
 #endif
 
 #if defined(PCBHORUS)
@@ -755,7 +732,7 @@ PACK(struct TrainerData {
 
 PACK(struct RadioData {
   NOBACKUP(uint8_t version);
-  NOBACKUP(uint16_t variant);
+  NOBACKUP(uint16_t variant); // not used on PCBI6X, reuse for swconfig_t?
   CalibData calib[NUM_CALIBRATED_ANALOGS];
   NOBACKUP(uint16_t chkSum);
   N_HORUS_FIELD(int8_t currModel);
@@ -874,24 +851,11 @@ static inline void check_struct() {
   CHKSIZE(CurveData, 4);
   CHKSIZE(CustomScreenData, 610);
   CHKSIZE(Topbar::PersistentData, 216);
-#elif defined(PCBSKY9X)
-  CHKSIZE(MixData, 20);
-  CHKSIZE(ExpoData, 17);
-  CHKSIZE(LimitData, 11);
-  CHKSIZE(CustomFunctionData, 9);
-  CHKSIZE(FlightModeData, 38);
-  CHKSIZE(TimerData, 11);
-  CHKSIZE(SwashRingData, 8);
-  CHKSIZE(FrSkyBarData, 5);
-  CHKSIZE(FrSkyLineData, 2);
-  CHKSIZE(FrSkyTelemetryData, 88);
-  CHKSIZE(ModelHeader, 12);
-  CHKTYPE(CurveData, 4);
 #elif defined(PCBI6X)
   CHKSIZE(LimitData, 11);
   CHKSIZE(MixData, 20);
   CHKSIZE(ExpoData, 17);
-  CHKSIZE(CustomFunctionData, 9);
+  CHKSIZE(CustomFunctionData, 7);
   CHKSIZE(FlightModeData, 36);
   CHKSIZE(TimerData, 11);
   CHKSIZE(SwashRingData, 8);
@@ -932,8 +896,8 @@ static inline void check_struct() {
   CHKSIZE(TrainerData, 16);
 
 #if defined(PCBI6X)
-  CHKSIZE(RadioData, 291);
-  CHKSIZE(ModelData, 2765);
+  CHKSIZE(RadioData, 318);
+  CHKSIZE(ModelData, 2848);
 #elif defined(PCBXLITE)
   CHKSIZE(RadioData, 844);
   CHKSIZE(ModelData, 6025);
@@ -946,9 +910,6 @@ static inline void check_struct() {
 #elif defined(PCBX9D)
   CHKSIZE(RadioData, 872);
   CHKSIZE(ModelData, 6507);
-#elif defined(PCBSKY9X)
-  CHKSIZE(RadioData, 727);
-  CHKSIZE(ModelData, 5188);
 #elif defined(PCBHORUS)
   CHKSIZE(RadioData, 847);
   CHKSIZE(ModelData, 9380);

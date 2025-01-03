@@ -38,17 +38,22 @@
   #include "multi.h"
 #endif
 #if defined(PCBI6X)
+  #include "iface_a7105.h"
   #include "flysky_ibus.h"
 #endif
 
 enum TelemetryProtocol
 {
-  TELEM_PROTO_FRSKY_D,
-  TELEM_PROTO_FRSKY_SPORT,
-  TELEM_PROTO_CROSSFIRE,
-  TELEM_PROTO_SPEKTRUM,
-  TELEM_PROTO_LUA,
-  TELEM_PROTO_FLYSKY_IBUS,
+  PROTOCOL_TELEMETRY_FIRST,
+  PROTOCOL_TELEMETRY_FRSKY_SPORT = PROTOCOL_TELEMETRY_FIRST,
+  PROTOCOL_TELEMETRY_FRSKY_D,
+  PROTOCOL_TELEMETRY_FRSKY_D_SECONDARY,
+  PROTOCOL_TELEMETRY_CROSSFIRE,
+  PROTOCOL_TELEMETRY_SPEKTRUM,
+  PROTOCOL_TELEMETRY_FLYSKY_IBUS,
+  PROTOCOL_TELEMETRY_MULTIMODULE,
+  PROTOCOL_TELEMETRY_LAST=PROTOCOL_TELEMETRY_MULTIMODULE,
+  PROTOCOL_TELEMETRY_LUA,
 };
 
 void telemetryInit(uint8_t protocol);
@@ -80,13 +85,9 @@ struct TelemetryData {
   uint16_t xjtVersion;
   bool varioHighPrecision;
 };
-extern uint8_t telemetryProtocol;
+
 extern TelemetryData telemetryData;
 extern uint8_t telemetryStreaming; // >0 (true) == data is streaming in. 0 = no data detected for some time
-
-#if defined(WS_HOW_HIGH)
-extern uint8_t wshhStreaming;
-#endif
 
 enum TelemetryStates {
   TELEMETRY_INIT,
@@ -99,10 +100,10 @@ extern uint8_t telemetryState;
 #define TELEMETRY_SERIAL_DEFAULT       0
 #define TELEMETRY_SERIAL_8E2           1
 #define TELEMETRY_SERIAL_WITHOUT_DMA   2
-#define TELEMETRY_OUTPUT_FIFO_SIZE     16
+#define TELEMETRY_OUTPUT_BUFFER_SIZE   64
 #define TELEMETRY_AVERAGE_COUNT        3
 
-#if defined(CROSSFIRE) || defined(MULTIMODULE)
+#if defined(CROSSFIRE) || defined(MULTIMODULE) || defined(AFHDS2A)
 #define TELEMETRY_RX_PACKET_SIZE       128
 // multi module Spektrum telemetry is 18 bytes, FlySky is 37 bytes
 #else
@@ -111,7 +112,7 @@ extern uint8_t telemetryState;
 
 extern uint8_t telemetryRxBuffer[TELEMETRY_RX_PACKET_SIZE];
 extern uint8_t telemetryRxBufferCount;
-extern uint8_t outputTelemetryBuffer[TELEMETRY_OUTPUT_FIFO_SIZE] __DMA;
+extern uint8_t outputTelemetryBuffer[TELEMETRY_OUTPUT_BUFFER_SIZE] __DMA;
 extern uint8_t outputTelemetryBufferSize;
 extern uint8_t outputTelemetryBufferTrigger;
 extern uint8_t telemetryProtocol;
@@ -192,20 +193,19 @@ PACK(struct CellValue
 #define IS_DISTANCE_UNIT(unit)         ((unit) == UNIT_METERS || (unit) == UNIT_FEET)
 #define IS_SPEED_UNIT(unit)            ((unit) >= UNIT_KTS && (unit) <= UNIT_MPH)
 
-#define IS_FRSKY_D_PROTOCOL()          (telemetryProtocol == PROTOCOL_FRSKY_D)
 #if defined (MULTIMODULE)
 #define IS_D16_MULTI()                 ((g_model.moduleData[EXTERNAL_MODULE].getMultiProtocol(false) == MM_RF_PROTO_FRSKY) && (g_model.moduleData[EXTERNAL_MODULE].subType == MM_RF_FRSKY_SUBTYPE_D16 || g_model.moduleData[EXTERNAL_MODULE].subType == MM_RF_FRSKY_SUBTYPE_D16_8CH))
-#define IS_FRSKY_SPORT_PROTOCOL()      (telemetryProtocol == PROTOCOL_FRSKY_SPORT || (telemetryProtocol == PROTOCOL_MULTIMODULE && IS_D16_MULTI()))
+#define IS_FRSKY_SPORT_PROTOCOL()      (telemetryProtocol == PROTOCOL_TELEMETRY_FRSKY_SPORT || (telemetryProtocol == PROTOCOL_TELEMETRY_MULTIMODULE && IS_D16_MULTI()))
 #else
-#define IS_FRSKY_SPORT_PROTOCOL()      (telemetryProtocol == PROTOCOL_FRSKY_SPORT)
+#define IS_FRSKY_SPORT_PROTOCOL()      (telemetryProtocol == PROTOCOL_TELEMETRY_FRSKY_SPORT)
 #endif
-#define IS_SPEKTRUM_PROTOCOL()         (telemetryProtocol == PROTOCOL_SPEKTRUM)
+#define IS_SPEKTRUM_PROTOCOL()         (telemetryProtocol == PROTOCOL_TELEMETRY_SPEKTRUM)
 
 inline uint8_t modelTelemetryProtocol()
 {
 #if defined(CROSSFIRE)
   if (g_model.moduleData[EXTERNAL_MODULE].type == MODULE_TYPE_CROSSFIRE) {
-    return PROTOCOL_PULSES_CROSSFIRE;
+    return PROTOCOL_TELEMETRY_CROSSFIRE;
   }
 #endif
      
@@ -215,17 +215,16 @@ inline uint8_t modelTelemetryProtocol()
   
 #if defined(MULTIMODULE)
   if (!IS_INTERNAL_MODULE_ENABLED() && g_model.moduleData[EXTERNAL_MODULE].type == MODULE_TYPE_MULTIMODULE) {
-    return PROTOCOL_MULTIMODULE;
+    return PROTOCOL_TELEMETRY_MULTIMODULE;
   }
 #endif
 
-#if defined(PCBI6X)
-  if (IS_INTERNAL_MODULE_ENABLED()) {
-    return PROTOCOL_FLYSKY_IBUS;
-  }
-#endif
   // default choice
-  return PROTOCOL_FRSKY_SPORT;
+#if defined(PCBI6X)
+    return PROTOCOL_TELEMETRY_FLYSKY_IBUS;
+#else
+  return PROTOCOL_TELEMETRY_FRSKY_SPORT;
+#endif
 }
 
 #if defined(LOG_TELEMETRY) && !defined(SIMU)

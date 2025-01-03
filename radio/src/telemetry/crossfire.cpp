@@ -43,7 +43,7 @@ const CrossfireSensor crossfireSensors[] = {
     {GPS_ID, 0, ZSTR_GPS, UNIT_GPS_LATITUDE, 0},
     {GPS_ID, 0, ZSTR_GPS, UNIT_GPS_LONGITUDE, 0},
     {GPS_ID, 2, ZSTR_GSPD, UNIT_KMH, 1},
-    {GPS_ID, 3, ZSTR_HDG, UNIT_DEGREE, 3},
+    {GPS_ID, 3, ZSTR_HDG, UNIT_DEGREE, 2},
     {GPS_ID, 4, ZSTR_ALT, UNIT_METERS, 0},
     {GPS_ID, 5, ZSTR_SATELLITES, UNIT_RAW, 0},
     {ATTITUDE_ID, 0, ZSTR_PITCH, UNIT_RADIANS, 3},
@@ -54,6 +54,8 @@ const CrossfireSensor crossfireSensors[] = {
     {BARO_ALT_ID, 0, ZSTR_ALT, UNIT_METERS, 2},
     {0, 0, "UNKNOWN", UNIT_RAW, 0},
 };
+
+CrossfireModuleStatus crossfireModuleStatus = {0};
 
 const CrossfireSensor &getCrossfireSensor(uint8_t id, uint8_t subId) {
   if (id == LINK_ID)
@@ -80,7 +82,7 @@ const CrossfireSensor &getCrossfireSensor(uint8_t id, uint8_t subId) {
 
 void processCrossfireTelemetryValue(uint8_t index, int32_t value) {
   const CrossfireSensor &sensor = crossfireSensors[index];
-  setTelemetryValue(TELEM_PROTO_CROSSFIRE, sensor.id, 0, sensor.subId, value, sensor.unit, sensor.precision);
+  setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id, 0, sensor.subId, value, sensor.unit, sensor.precision);
 }
 
 bool checkCrossfireTelemetryFrameCRC() {
@@ -98,7 +100,7 @@ bool getCrossfireTelemetryValue(uint8_t index, int32_t &value) {
   bool result = false;
   uint8_t *byte = &telemetryRxBuffer[index];
   value = (*byte & 0x80) ? -1 : 0;
-  for (uint8_t i = 0; i < N; i++) {
+  for (uint32_t i = 0; i < N; i++) {
     value <<= 8;
     if (*byte != 0xff) {
       result = true;
@@ -109,11 +111,6 @@ bool getCrossfireTelemetryValue(uint8_t index, int32_t &value) {
 }
 
 void processCrossfireTelemetryFrame() {
-  if (!checkCrossfireTelemetryFrameCRC()) {
-    TRACE("[XF] CRC error");
-    telemetryErrors++;
-    return;
-  }
 
   if (telemetryState == TELEMETRY_INIT && moduleState[EXTERNAL_MODULE].counter != CRSF_FRAME_MODELID_SENT) {
     moduleState[EXTERNAL_MODULE].counter = CRSF_FRAME_MODELID;
@@ -223,7 +220,7 @@ void processCrossfireTelemetryFrame() {
       const CrossfireSensor &sensor = crossfireSensors[FLIGHT_MODE_INDEX];
       auto textLength = min<int>(16, telemetryRxBuffer[1]);
       telemetryRxBuffer[textLength] = '\0';
-      setTelemetryText(TELEM_PROTO_CROSSFIRE, sensor.id, 0, sensor.subId, (const char *)telemetryRxBuffer + 3);
+      setTelemetryText(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id, 0, sensor.subId, (const char *)telemetryRxBuffer + 3);
       break;
     }
 
@@ -246,12 +243,34 @@ void processCrossfireTelemetryFrame() {
     default:
 #if defined(LUA)
       if (luaInputTelemetryFifo && luaInputTelemetryFifo->hasSpace(telemetryRxBufferCount - 2)) {
-        for (uint8_t i = 1; i < telemetryRxBufferCount - 1; i++) {
+        for (uint32_t i = 1; i < telemetryRxBufferCount - 1; i++) {
           // destination address and CRC are skipped
           luaInputTelemetryFifo->push(telemetryRxBuffer[i]);
         }
       }
 #else
+      if (id == DEVICE_INFO_ID && telemetryRxBuffer[4] == MODULE_ADDRESS) {
+        uint8_t nameSize = telemetryRxBuffer[1] - 18;
+        // strncpy((char *)&crossfireModuleStatus.name, (const char *)&telemetryRxBuffer[5], CRSF_NAME_MAXSIZE);
+        // crossfireModuleStatus.name[CRSF_NAME_MAXSIZE -1] = 0; // For some reason, GH din't like strlcpy
+        if (strncmp((const char *) &telemetryRxBuffer[5 + nameSize], "ELRS", 4) == 0)
+          crossfireModuleStatus.isELRS = true;
+        crossfireModuleStatus.major = telemetryRxBuffer[14 + nameSize];
+        crossfireModuleStatus.minor = telemetryRxBuffer[15 + nameSize];
+        // crossfireModuleStatus.revision = telemetryRxBuffer[16 + nameSize];
+        crossfireModuleStatus.queryCompleted = true;
+      }
+
+      ModuleData *md = &g_model.moduleData[EXTERNAL_MODULE];
+
+      if (!CRSF_ELRS_MIN_VER(4, 0) &&
+          (md->crsf.crsfArmingMode != ARMING_MODE_CH5 || md->crsf.crsfArmingMode != SWSRC_NONE)) {
+        md->crsf.crsfArmingMode = ARMING_MODE_CH5;
+        md->crsf.crsfArmingTrigger = SWSRC_NONE;
+
+        storageDirty(EE_MODEL);
+      }
+
       // <Device address 0><Frame length 1><Type 2><Payload 3><CRC>
       // destination address and CRC are skipped
       runCrossfireTelemetryCallback(telemetryRxBuffer[2], telemetryRxBuffer + 2, telemetryRxBuffer[1] - 1);
@@ -264,7 +283,49 @@ bool isCrossfireOutputBufferAvailable() {
   return outputTelemetryBufferSize == 0;
 }
 
+bool crossfireLenIsSane(uint8_t len)
+{
+  // packet len must be at least 3 bytes (type+payload+crc) and 2 bytes < MAX (hdr+len)
+  return (len > 2 && len < TELEMETRY_RX_PACKET_SIZE-1);
+}
+
+void crossfireTelemetrySeekStart(uint8_t *rxBuffer, uint8_t &rxBufferCount)
+{
+  // Bad telemetry packets frequently are just truncated packets, with the start
+  // of a new packet contained in the data. This causes multiple packet drops as
+  // the parser tries to resync.
+  // Search through the rxBuffer for a sync byte, shift the contents if found
+  // and reduce rxBufferCount
+  for (uint32_t idx=1; idx<rxBufferCount; ++idx) {
+    uint8_t data = rxBuffer[idx];
+    if (data == RADIO_ADDRESS || data == UART_SYNC) {
+      uint8_t remain = rxBufferCount - idx;
+      // If there's at least 2 bytes, check the length for validity too
+      if (remain > 1 && !crossfireLenIsSane(rxBuffer[idx+1]))
+        continue;
+
+      TRACE("Found 0x%02x with %u remain", data, remain);
+      // copy the data to the front of the buffer
+      for (uint8_t src=idx; src<rxBufferCount; ++src) {
+        rxBuffer[src-idx] = rxBuffer[src];
+      }
+
+      rxBufferCount = remain;
+      return;
+    } // if found sync
+  }
+
+  // Not found, clear the buffer
+  rxBufferCount = 0;
+}
+
 void processCrossfireTelemetryData(uint8_t data) {
+
+#if !defined(DEBUG) && defined(USB_SERIAL)
+  if (getSelectedUsbMode() == USB_SERIAL_MODE) {
+    usbSerialPutc(data);
+  }
+#endif
 
 #if defined(AUX_SERIAL)
   if (g_eeGeneral.auxSerialMode == UART_MODE_TELEMETRY_MIRROR) {
@@ -273,31 +334,32 @@ void processCrossfireTelemetryData(uint8_t data) {
 #endif
 
   if (telemetryRxBufferCount == 0 && data != RADIO_ADDRESS) {
-    TRACE("[XF] address 0x%02X error", data);
-    telemetryErrors++;
+    TRACE("[XF] addr 0x%02X err", data);
     return;
   }
 
-  if (telemetryRxBufferCount == 1 && (data < 2 || data > TELEMETRY_RX_PACKET_SIZE - 2)) {
-    TRACE("[XF] length 0x%02X error", data);
+  if (telemetryRxBufferCount == 1 && !crossfireLenIsSane(data)) {
+    TRACE("[XF] len 0x%02X err", data);
     telemetryRxBufferCount = 0;
-    telemetryErrors++;
     return;
   }
 
   if (telemetryRxBufferCount < TELEMETRY_RX_PACKET_SIZE) {
     telemetryRxBuffer[telemetryRxBufferCount++] = data;
   } else {
-    TRACE("[XF] array size %d error", telemetryRxBufferCount);
+    TRACE("[XF] arr size %d err", telemetryRxBufferCount);
     telemetryRxBufferCount = 0;
-    telemetryErrors++;
   }
 
-  if (telemetryRxBufferCount > 4) {
-    uint8_t length = telemetryRxBuffer[1];
-    if (length + 2 == telemetryRxBufferCount) {
+  // telemetryRxBuffer[1] holds the packet length-2, check if the whole packet was received
+  while (telemetryRxBufferCount > 4 && (telemetryRxBuffer[1]+2) == telemetryRxBufferCount) {
+    if (checkCrossfireTelemetryFrameCRC()) {
       processCrossfireTelemetryFrame();
       telemetryRxBufferCount = 0;
+    }
+    else {
+      TRACE("[XF] CRC err");
+      crossfireTelemetrySeekStart(telemetryRxBuffer, telemetryRxBufferCount); // adjusts telemetryRxBufferCount
     }
   }
 }
@@ -314,10 +376,11 @@ void crossfireSetDefault(int index, uint8_t id, uint8_t subId) {
     unit = UNIT_GPS;
   uint8_t prec = min<uint8_t>(2, sensor.precision);
   telemetrySensor.init(sensor.name, unit, prec);
+#if defined(SDCARD) // no sdcard logs on i6X
   if (id == LINK_ID) {
     telemetrySensor.logs = true;
   }
-
+#endif
   storageDirty(EE_MODEL);
 }
 
@@ -332,18 +395,18 @@ void registerCrossfireTelemetryCallback(void (*callback)(uint8_t, uint8_t*, uint
 }
 
 inline void runCrossfireTelemetryCallback(uint8_t command, uint8_t* data, uint8_t length) {
-  if (crossfireTelemetryCallback != 0) {
+  if (crossfireTelemetryCallback != nullptr) {
     crossfireTelemetryCallback(command, data, length);
   }
 }
 
-bool crossfireTelemetryPush(uint8_t command, uint8_t *data, uint8_t length) {
+bool crossfireTelemetryPush(uint8_t command, uint8_t *data, uint32_t length) {
   // TRACE("crsfPush %x", command);
   if (isCrossfireOutputBufferAvailable()) {
     telemetryOutputPushByte(MODULE_ADDRESS);
     telemetryOutputPushByte(2 + length);  // 1(COMMAND) + data length + 1(CRC)
     telemetryOutputPushByte(command);     // COMMAND
-    for (int i = 0; i < length; i++) {
+    for (uint32_t i = 0; i < length; i++) {
       telemetryOutputPushByte(data[i]);
     }
 #if defined(PCBI6X)

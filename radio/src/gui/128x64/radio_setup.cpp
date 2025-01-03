@@ -59,7 +59,7 @@ enum MenuRadioSetupItems {
   ITEM_SETUP_BEEP_VOLUME,
   ITEM_SETUP_BEEP_LENGTH,
   ITEM_SETUP_SPEAKER_PITCH,
-  // ITEM_SETUP_WAV_VOLUME,
+  CASE_DFPLAYER(ITEM_SETUP_WAV_VOLUME)
   // ITEM_SETUP_BACKGROUND_VOLUME,
   CASE_VARIO(ITEM_SETUP_VARIO_LABEL)
   CASE_VARIO(ITEM_SETUP_VARIO_VOLUME)
@@ -70,11 +70,9 @@ enum MenuRadioSetupItems {
   CASE_HAPTIC(ITEM_SETUP_HAPTIC_MODE)
   CASE_HAPTIC(ITEM_SETUP_HAPTIC_LENGTH)
   CASE_HAPTIC(ITEM_SETUP_HAPTIC_STRENGTH)
-  ITEM_SETUP_CONTRAST,
   ITEM_SETUP_ALARMS_LABEL,
   ITEM_SETUP_BATTERY_WARNING,
   CASE_CAPACITY(ITEM_SETUP_CAPACITY_WARNING)
-  CASE_PCBSKY9X(ITEM_SETUP_TEMPERATURE_WARNING)
   ITEM_SETUP_INACTIVITY_ALARM,
   ITEM_SETUP_MEMORY_WARNING,
   ITEM_SETUP_ALARM_WARNING,
@@ -85,12 +83,11 @@ enum MenuRadioSetupItems {
   ITEM_SETUP_BACKLIGHT_LABEL,
   ITEM_SETUP_BACKLIGHT_MODE,
   ITEM_SETUP_BACKLIGHT_DELAY,
-#if defined(PCBI6X_BACKLIGHT_MOD)
   ITEM_SETUP_BRIGHTNESS,
-#endif
   CASE_PWM_BACKLIGHT(ITEM_SETUP_BACKLIGHT_BRIGHTNESS_OFF)
   CASE_PWM_BACKLIGHT(ITEM_SETUP_BACKLIGHT_BRIGHTNESS_ON)
   ITEM_SETUP_FLASH_BEEP,
+  ITEM_SETUP_CONTRAST,
   CASE_SPLASH_PARAM(ITEM_SETUP_DISABLE_SPLASH)
   #if defined(PXX2)
     ITEM_RADIO_OWNER_ID,
@@ -103,9 +100,6 @@ enum MenuRadioSetupItems {
   // ITEM_SETUP_IMPERIAL,
   IF_FAI_CHOICE(ITEM_SETUP_FAI)
   ITEM_SETUP_SWITCHES_DELAY,
-#if defined(PCBI6X) && !defined(PCBI6X_USB_VBUS)
-  ITEM_SETUP_USB_ENABLE,
-#endif
   CASE_STM32(ITEM_SETUP_USB_MODE)
   ITEM_SETUP_RX_CHANNEL_ORD,
   ITEM_SETUP_STICK_MODE_LABELS,
@@ -145,7 +139,7 @@ void menuRadioSetup(event_t event)
     HEADER_LINE_COLUMNS CASE_RTCLOCK(2) CASE_RTCLOCK(2) CASE_BATTGRAPH(1) 
     LABEL(SOUND), CASE_AUDIO(0)
     CASE_BUZZER(0)
-    /*0,*/ 0, 0, 0, /*0,*/ CASE_AUDIO(0)
+    /*0,*/ 0, 0, 0, CASE_DFPLAYER(0) CASE_AUDIO(0)
     CASE_VARIO(LABEL(VARIO))
     CASE_VARIO(0)
     CASE_VARIO(0)
@@ -155,20 +149,18 @@ void menuRadioSetup(event_t event)
     CASE_HAPTIC(0)
     CASE_HAPTIC(0)
     CASE_HAPTIC(0)
-    0, LABEL(ALARMS), 0, CASE_CAPACITY(0)
-    CASE_PCBSKY9X(0)
+    LABEL(ALARMS), 0, CASE_CAPACITY(0)
     0, 0, 0,
 #if defined(PWR_BUTTON_SOFT)
     0, /* rssi poweroff alarm */
 #endif
     IF_ROTARY_ENCODERS(0)
     LABEL(BACKLIGHT), 0, 0,
-#if defined(PCBI6X_BACKLIGHT_MOD)
-    0,
-#endif
+    0, /* backlight */
     CASE_PWM_BACKLIGHT(0)
     CASE_PWM_BACKLIGHT(0)
     0, /* alarm */
+    0, // Contrast
     CASE_SPLASH_PARAM(0)
 #if defined(PXX2)
     0 /* owner registration ID */,
@@ -181,9 +173,6 @@ void menuRadioSetup(event_t event)
     IF_FAI_CHOICE(0)
     0,
     CASE_STM32(0) // USB mode
-#if defined(PCBI6X) && !defined(PCBI6X_USB_VBUS)
-    0,
-#endif
     0,
     COL_TX_MODE, 0, 1/*to force edit mode*/});
 
@@ -193,7 +182,7 @@ void menuRadioSetup(event_t event)
 
   uint8_t sub = menuVerticalPosition - HEADER_LINE;
 
-  for (uint8_t i=0; i<LCD_LINES-1; i++) {
+  for (uint32_t i=0; i<LCD_LINES-1; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     uint8_t k = i + menuVerticalOffset;
     uint8_t blink = ((s_editMode>0) ? BLINK|INVERS : INVERS);
@@ -205,7 +194,7 @@ void menuRadioSetup(event_t event)
         lcdDrawTextAlignedLeft(y, STR_DATE);
         lcdDrawChar(RADIO_SETUP_DATE_COLUMN, y, '-');
         lcdDrawChar(RADIO_SETUP_DATE_COLUMN+3*FW-2, y, '-');
-        for (uint8_t j=0; j<3; j++) {
+        for (uint32_t j=0; j<3; j++) {
           uint8_t rowattr = (menuHorizontalPosition==j ? attr : 0);
           switch (j) {
             case 0:
@@ -236,7 +225,7 @@ void menuRadioSetup(event_t event)
       case ITEM_SETUP_TIME:
         lcdDrawTextAlignedLeft(y, STR_TIME);
         lcdDrawChar(RADIO_SETUP_TIME_COLUMN+1, y, ':'); lcdDrawChar(RADIO_SETUP_TIME_COLUMN+3*FW-2, y, ':');
-        for (uint8_t j=0; j<3; j++) {
+        for (uint32_t j=0; j<3; j++) {
           uint8_t rowattr = (menuHorizontalPosition==j ? attr : 0);
           switch (j) {
             case 0:
@@ -313,9 +302,22 @@ void menuRadioSetup(event_t event)
       case ITEM_SETUP_BEEP_VOLUME:
         SLIDER_5POS(y, g_eeGeneral.beepVolume, STR_BEEP_VOLUME, event, attr);
         break;
-      // case ITEM_SETUP_WAV_VOLUME:
-      //   SLIDER_5POS(y, g_eeGeneral.wavVolume, STR_WAV_VOLUME, event, attr);
-      //   break;
+#if defined(DFPLAYER)
+      case ITEM_SETUP_WAV_VOLUME:
+      {
+        lcdDrawTextAlignedLeft(y, STR_WAV_VOLUME);
+        uint32_t vol = g_eeGeneral.wavVolume;
+        drawSlider(RADIO_SETUP_2ND_COLUMN, y, vol, 4, attr);
+        if (attr) {
+          CHECK_INCDEC_GENVAR(event, vol, 0, 4);
+          if (checkIncDec_Ret) {
+            g_eeGeneral.wavVolume = vol;
+            dfplayerSetVolume(g_eeGeneral.wavVolume);
+          }
+        }
+        break;
+      }
+#endif
       // case ITEM_SETUP_BACKGROUND_VOLUME:
       //   SLIDER_5POS(y, g_eeGeneral.backgroundVolume, STR_BG_VOLUME, event, attr);
       //   break;
@@ -428,14 +430,6 @@ void menuRadioSetup(event_t event)
         break;
 #endif
 
-#if defined(PCBSKY9X)
-      case ITEM_SETUP_TEMPERATURE_WARNING:
-        lcdDrawTextAlignedLeft(y, STR_TEMPWARNING);
-        drawValueWithUnit(RADIO_SETUP_2ND_COLUMN, y, g_eeGeneral.temperatureWarn, UNIT_TEMPERATURE, attr|LEFT) ;
-        if(attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.temperatureWarn, 0, 120); // 0 means no alarm
-        break;
-#endif
-
       case ITEM_SETUP_INACTIVITY_ALARM:
         lcdDrawTextAlignedLeft(y, STR_INACTIVITYALARM);
         lcdDrawNumber(RADIO_SETUP_2ND_COLUMN, y, g_eeGeneral.inactivityTimer, attr|LEFT);
@@ -470,7 +464,6 @@ void menuRadioSetup(event_t event)
         lcdDrawChar(lcdLastRightPos, y, 's');
         if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.lightAutoOff, 0, 600/5);
         break;
-#if defined(PCBI6X_BACKLIGHT_MOD)
       case ITEM_SETUP_BRIGHTNESS:
         lcdDrawTextAlignedLeft(y, STR_BRIGHTNESS);
         lcdDrawNumber(RADIO_SETUP_2ND_COLUMN, y, 100-g_eeGeneral.backlightBright, attr|LEFT) ;
@@ -480,7 +473,6 @@ void menuRadioSetup(event_t event)
           g_eeGeneral.backlightBright = 100 - b;
         }
         break;
-#endif
 #if defined(PWM_BACKLIGHT)
       case ITEM_SETUP_BACKLIGHT_BRIGHTNESS_OFF:
         lcdDrawTextAlignedLeft(y, STR_BLOFFBRIGHTNESS);
@@ -518,7 +510,7 @@ void menuRadioSetup(event_t event)
 #endif
 
 #if defined(TELEMETRY_FRSKY) && defined(GPS)
-#if !defined(PCBI6X)
+#if defined(RTCLOCK)
       case ITEM_SETUP_TIMEZONE:
         lcdDrawTextAlignedLeft(y, STR_TIMEZONE);
         lcdDrawNumber(RADIO_SETUP_2ND_COLUMN, y, g_eeGeneral.timezone, attr|LEFT);
@@ -577,11 +569,6 @@ void menuRadioSetup(event_t event)
         lcdDrawText(lcdLastRightPos, y, STR_MS, attr);
         if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.switchesDelay, -15, 100-15);
         break;
-#if defined(PCBI6X) && !defined(PCBI6X_USB_VBUS)
-      case ITEM_SETUP_USB_ENABLE:
-        globalData.usbDetect = editChoice(RADIO_SETUP_2ND_COLUMN, y, STR_USBDETECT, STR_USBDETECTMODES, globalData.usbDetect, USB_DETECT_AUTO, USB_MAX_DETECT, attr, event);
-        break;
-#endif
 #if defined(STM32)
       case ITEM_SETUP_USB_MODE:
         g_eeGeneral.USBMode = editChoice(RADIO_SETUP_2ND_COLUMN, y, STR_USBMODE, STR_USBMODES, g_eeGeneral.USBMode, USB_UNSELECTED_MODE, USB_MAX_MODE, attr, event);
@@ -589,7 +576,7 @@ void menuRadioSetup(event_t event)
 #endif
       case ITEM_SETUP_RX_CHANNEL_ORD:
         lcdDrawTextAlignedLeft(y, STR_RXCHANNELORD); // RAET->AETR
-        for (uint8_t i=1; i<=4; i++) {
+        for (uint32_t i=1; i<=4; i++) {
           putsChnLetter(RADIO_SETUP_2ND_COLUMN - FW + i*FW, y, channelOrder(i), attr);
         }
         if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.templateSetup, 0, 23);
@@ -597,7 +584,7 @@ void menuRadioSetup(event_t event)
 
       case ITEM_SETUP_STICK_MODE_LABELS:
         lcdDrawTextAlignedLeft(y, STR_MODE);
-        for (uint8_t i=0; i<4; i++) {
+        for (uint32_t i=0; i<4; i++) {
           lcdDraw1bitBitmap(5*FW+i*(4*FW+2), y, sticks, i, 0);
 #if defined(FRSKY_STICKS) && !defined(PCBTARANIS)
           if (g_eeGeneral.stickReverse & (1<<i)) {
@@ -616,7 +603,7 @@ void menuRadioSetup(event_t event)
 
       case ITEM_SETUP_STICK_MODE:
         lcdDrawChar(2*FW, y, '1'+reusableBuffer.generalSettings.stickMode, attr);
-        for (uint8_t i=0; i<NUM_STICKS; i++) {
+        for (uint32_t i=0; i<NUM_STICKS; i++) {
           drawSource((5*FW-3)+i*(4*FW+2), y, MIXSRC_Rud + *(modn12x3 + 4*reusableBuffer.generalSettings.stickMode + i), 0);
         }
         if (attr && s_editMode>0) {
@@ -627,7 +614,7 @@ void menuRadioSetup(event_t event)
           g_eeGeneral.stickMode = reusableBuffer.generalSettings.stickMode;
           checkThrottleStick();
           resumePulses();
-          clearKeyEvents();
+          waitKeysReleased();
         }
         break;
     }

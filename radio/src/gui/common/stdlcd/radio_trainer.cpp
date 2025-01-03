@@ -47,7 +47,7 @@ void menuRadioTrainer(event_t event)
 
   y = MENU_HEADER_HEIGHT + 1 + FH;
 
-  for (uint8_t i=HEADER_LINE; i<HEADER_LINE+NUM_STICKS; i++) {
+  for (uint32_t i=HEADER_LINE; i<HEADER_LINE+NUM_STICKS; i++) {
     uint8_t chan = channelOrder(i+1-HEADER_LINE);
     TrainerMix * td = &g_eeGeneral.trainer.mix[chan-1];
 
@@ -86,19 +86,19 @@ void menuRadioTrainer(event_t event)
   if (attr)
     s_editMode = 0;
   lcdDrawText(0*FW, MENU_HEADER_HEIGHT+1+6*FH, STR_CAL, attr);
-  for (uint8_t i=0; i<4; i++) {
+  for (uint32_t i=0; i<4; i++) {
     uint8_t x = (i*TRAINER_CALIB_COLUMN_WIDTH + 16) * FW/2;
 #if defined (PPM_UNIT_PERCENT_PREC1)
-    lcdDrawNumber(x, MENU_HEADER_HEIGHT+1+6*FH, (ppmInput[i]-g_eeGeneral.trainer.calib[i])*2, PREC1|RIGHT);
+    lcdDrawNumber(x, MENU_HEADER_HEIGHT+1+6*FH, (trainerInput[i]-g_eeGeneral.trainer.calib[i])*2, PREC1|RIGHT);
 #else
-    lcdDrawNumber(x, MENU_HEADER_HEIGHT+1+6*FH, (ppmInput[i]-g_eeGeneral.trainer.calib[i])/5, RIGHT);
+    lcdDrawNumber(x, MENU_HEADER_HEIGHT+1+6*FH, (trainerInput[i]-g_eeGeneral.trainer.calib[i])/5, RIGHT);
 #endif
   }
 
   if (attr) {
     s_editMode = 0;
     if (event==EVT_KEY_LONG(KEY_ENTER)){
-      memcpy(g_eeGeneral.trainer.calib, ppmInput, sizeof(g_eeGeneral.trainer.calib));
+      memcpy(g_eeGeneral.trainer.calib, trainerInput, sizeof(g_eeGeneral.trainer.calib));
       storageDirty(EE_GENERAL);
       AUDIO_WARNING1();
     }

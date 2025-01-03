@@ -287,14 +287,7 @@ bool eeLoadGeneral()
   if (g_eeGeneral.version != EEPROM_VER)
   {
     TRACE("EEPROM version %d instead of %d", g_eeGeneral.version, EEPROM_VER);
-#if defined(PCBSKY9X)
-    if (!eeConvert())
-    {
-      return false;
-    }
-#else
     return false;
-#endif
   }
   return true;
 }
@@ -508,11 +501,6 @@ const char *eeBackupModel(uint8_t i_fileSrc)
     return SDCARD_ERROR(result);
   }
 
-#if defined(PCBSKY9X)
-  strcpy(statusLineMsg, "File ");
-  strcpy(statusLineMsg + 5, &buf[sizeof(MODELS_PATH)]);
-#endif
-
   uint16_t size = eeModelSize(i_fileSrc);
 
   *(uint32_t *)&buf[0] = OTX_FOURCC;
@@ -543,10 +531,6 @@ const char *eeBackupModel(uint8_t i_fileSrc)
   }
 
   f_close(&archiveFile);
-
-#if defined(PCBSKY9X)
-  showStatusLine();
-#endif
 
   return NULL;
 }

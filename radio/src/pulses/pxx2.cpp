@@ -55,7 +55,7 @@ void Pxx2Pulses::setupFrame(uint8_t port)
     // CMD/Resp
     addByte(1);
     // primID (1 byte) + dataID (2 bytes) + value (4 bytes)
-    for (uint8_t i=0; i<7; i++) {
+    for (uint32_t i=0; i<7; i++) {
       addByte(outputTelemetryBuffer[i]);
     }
     outputTelemetryBufferTrigger = 0x00;

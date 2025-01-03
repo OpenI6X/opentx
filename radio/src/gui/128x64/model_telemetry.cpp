@@ -105,6 +105,8 @@ enum MenuModelTelemetryFrskyItems {
 
 #if defined (PCBTARANIS)
   #define TELEMETRY_TYPE_SHOW_TELEMETRY  (! IS_INTERNAL_MODULE_ENABLED() && g_model.moduleData[EXTERNAL_MODULE].type == MODULE_TYPE_PPM) ? (uint8_t)0 : HIDDEN_ROW
+#elif defined(PCBI6X) // no telemetry input implemented
+  #define TELEMETRY_TYPE_SHOW_TELEMETRY  HIDDEN_ROW
 #else
   #define TELEMETRY_TYPE_SHOW_TELEMETRY  (g_model.moduleData[EXTERNAL_MODULE].type == MODULE_TYPE_PPM) ? (uint8_t)0 : HIDDEN_ROW
 #endif
@@ -164,7 +166,7 @@ void menuModelSensor(event_t event)
 
   int8_t sub = menuVerticalPosition;
 
-  for (uint8_t i=0; i<LCD_LINES-1; i++) {
+  for (uint32_t i=0; i<LCD_LINES-1; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     uint8_t k = i + menuVerticalOffset;
 
@@ -436,7 +438,7 @@ void menuModelTelemetryFrsky(event_t event)
       break;
   }
 
-  for (uint8_t i=0; i<LCD_LINES-1; i++) {
+  for (uint32_t i=0; i<LCD_LINES-1; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     uint8_t k = i + menuVerticalOffset;
     for (int j=0; j<=k; j++) {
@@ -458,6 +460,9 @@ void menuModelTelemetryFrsky(event_t event)
       if (telemetryItems[index].isFresh()) {
         lcdDrawChar(17*FW, y, '*');
       }
+#if 0 // draw telemetry sensor ID
+      lcdDrawNumber(LCD_W, y, g_model.telemetrySensors[index].instance, RIGHT);
+#endif
       TelemetryItem & telemetryItem = telemetryItems[index];
       if (telemetryItem.isAvailable()) {
         bool isOld = telemetryItem.isOld();
@@ -487,6 +492,7 @@ void menuModelTelemetryFrsky(event_t event)
     else
 
     switch (k) {
+#if !defined(PCBI6X) // no telemetry input implemented
       case ITEM_TELEMETRY_PROTOCOL_TYPE:
         lcdDrawTextAlignedLeft(y, STR_TELEMETRY_TYPE);
         lcdDrawTextAtIndex(TELEM_COL2, y, STR_TELEMETRY_PROTOCOLS, g_model.telemetryProtocol, attr);
@@ -494,7 +500,7 @@ void menuModelTelemetryFrsky(event_t event)
           g_model.telemetryProtocol = checkIncDec(event, g_model.telemetryProtocol, PROTOCOL_TELEMETRY_FIRST, PROTOCOL_TELEMETRY_LAST, EE_MODEL, isTelemetryProtocolAvailable);
         }
         break;
-
+#endif
 #if defined(REVX)
       case ITEM_TELEMETRY_INVERTED_SERIAL:
         ON_OFF_MENU_ITEM(g_model.moduleData[EXTERNAL_MODULE].invertedSerial, TELEM_COL2, y, STR_INVERTED_SERIAL, attr, event);
@@ -546,12 +552,12 @@ void menuModelTelemetryFrsky(event_t event)
 
       case ITEM_TELEMETRY_RSSI_LABEL:
 #if defined(MULTIMODULE)
-        if (telemetryProtocol == PROTOCOL_MULTIMODULE &&
+        if (telemetryProtocol == PROTOCOL_TELEMETRY_MULTIMODULE &&
           g_model.moduleData[EXTERNAL_MODULE].getMultiProtocol(false) == MM_RF_PROTO_FS_AFHDS2A)
           lcdDrawTextAlignedLeft(y, "RSNR");
         else
 #endif
-        lcdDrawTextAlignedLeft(y, "RSSI");
+        lcdDrawTextAlignedLeft(y, "RQly");
         break;
 
       case ITEM_TELEMETRY_RSSI_ALARM1:

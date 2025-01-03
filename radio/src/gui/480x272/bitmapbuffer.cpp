@@ -624,7 +624,7 @@ BitmapBuffer * BitmapBuffer::load_bmp(const char * filename)
       f_close(&imgFile);
       return nullptr;
     }
-    for (uint8_t i=0; i<16; i++) {
+    for (uint32_t i=0; i<16; i++) {
       palette[i] = buf[4*i];
     }
   }

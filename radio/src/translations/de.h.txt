@@ -107,14 +107,11 @@
 #define LEN_COUNTRYCODES       TR("\002", "\007")
 #define TR_COUNTRYCODES        TR("US""JP""EU", "Amerika""Japan\0 ""Europa\0")
 
-#if defined(PCBI6X)
-#define LEN_USBDETECTMODES             TR("\004", "\004")
-#define TR_USBDETECTMODES              TR("Auto""Once", "Auto""Once")
-#endif
-
 #define LEN_USBMODES           TR("\006", "\010")
-#if defined(PCBI6X)
+#if !defined(USB_SERIAL)
 #define TR_USBMODES            TR("Fragen""Joyst\0""Storag", "Fragen\0 ""Joystick""Speicher")
+#elif !defined(USB_MSD)
+#define TR_USBMODES            TR("Fragen""Joyst\0""Serial", "Fragen\0 ""Joystick""Serial\0 ")
 #else
 #define TR_USBMODES            TR("Fragen""Joyst\0""Storag""Serial", "Fragen\0 ""Joystick""Speicher""Seriell\0")
 #endif
@@ -166,8 +163,6 @@
   #define TR_RETA123           "SHGQ1234LRLR"
 #elif defined(PCBTARANIS) || defined(REVX)
   #define TR_RETA123           "SHGQ123LR"
-#elif defined(PCBSKY9X)
-  #define TR_RETA123           "SHGQ123a"
 #else
   #define TR_RETA123           "SHGQ123"
 #endif
@@ -201,11 +196,6 @@
 
 #define LEN_POSNEG             "\003"
 #define TR_POSNEG              "POS""NEG"
-
-#if defined(PCBSKY9X) && defined(REVX)
-  #define LEN_VOUTPUT_TYPE     "\011"
-  #define TR_VOUTPUT_TYPE      "OpenDrain""PushPull\0"
-#endif
 
 #define LEN_VCURVEFUNC         "\003"
 #define TR_VCURVEFUNC          "---""x>0""x<0""|x|""f>0""f<0""|f|"
@@ -262,17 +252,18 @@
 #endif
 
 #if defined(VOICE)
-  #if defined(PCBSKY9X)
-    #define TR_PLAY_TRACK      "Spiel\0    "
-  #else
-    #define TR_PLAY_TRACK      "Sag Text\0 "
-  #endif
+  #define TR_PLAY_TRACK      "Sag Text\0 "
   #define TR_PLAY_BOTH         "Sag Beide "
   #define TR_PLAY_VALUE        TR("Sag Wert\0 ", "Sag Wert  ")
 #else
-  #define TR_PLAY_TRACK        "[Sag Text]"
   #define TR_PLAY_BOTH         "[SagBeide]"
+#if defined(DFPLAYER)
+  #define TR_PLAY_TRACK      "Sag Text\0 "
+  #define TR_PLAY_VALUE      "Sag Wert\0 "
+#else
+  #define TR_PLAY_TRACK        "[Sag Text]"
   #define TR_PLAY_VALUE        "[Sag Wert]"
+#endif
 #endif
 
 #define TR_SF_BG_MUSIC        "StartMusik""Stop Musik"
@@ -317,7 +308,7 @@
 
 #define TR_SF_RESERVE         "[reserve]\0"
 
-  #define TR_VFSWFUNC          TR_SF_SAFETY "Lehrer \0  ""Inst. Trim""Rücksetz.\0""Setze \0   " TR_ADJUST_GVAR "Lautstr.\0 " "SetFailsfe" "RangeCheck" "ModuleBind" TR_SOUND /*TR_PLAY_TRACK TR_PLAY_VALUE*/ TR_SF_RESERVE TR_SF_PLAY_SCRIPT TR_SF_RESERVE /*TR_SF_BG_MUSIC*/ TR_VVARIO TR_HAPTIC /*TR_SDCLOGS*/ "LCD Licht\0" TR_SF_SCREENSHOT TR_SF_TEST
+#define TR_VFSWFUNC          TR_SF_SAFETY "Lehrer \0  ""Inst. Trim""Rücksetz.\0""Setze \0   " TR_ADJUST_GVAR "Lautstr.\0 " "SetFailsfe" "RangeCheck" "ModuleBind" TR_SOUND TR_PLAY_TRACK TR_PLAY_VALUE TR_SF_RESERVE TR_SF_PLAY_SCRIPT TR_SF_RESERVE /*TR_SF_BG_MUSIC*/ TR_VVARIO TR_HAPTIC /*TR_SDCLOGS*/ "LCD Licht\0" TR_SF_SCREENSHOT TR_SF_TEST
 
 #define LEN_VFSWRESET          TR("\004", "\011")
 
@@ -470,10 +461,6 @@
 #elif defined(PCBTARANIS)
   #define TR_POTS_VSRCRAW              "\310S1\0""\310S2\0""\310S3\0""\311LS\0""\311RS\0"
   #define TR_SW_VSRCRAW                "\312SA\0""\312SB\0""\312SC\0""\312SD\0""\312SE\0""\312SF\0""\312SG\0""\312SH\0"
-#elif defined(PCBSKY9X)
-  #define TR_POTS_VSRCRAW              "P1\0 ""P2\0 ""P3\0 "
-  #define TR_SW_VSRCRAW                "3POS" "THR\0""RUD\0""ELE\0""AIL\0""GEA\0""TRN\0"
-  #define TR_9X_3POS_SWITCHES          "ID0""ID1""ID2"
 #else
   #define TR_POTS_VSRCRAW              "P1\0 ""P2\0 ""P3\0 "
   #define TR_SW_VSRCRAW                "3POS"
@@ -488,13 +475,8 @@
   #define TR_TRIMS_SWITCHES    TR("tRl""tRr""tEd""tEu""tTd""tTu""tAl""tAr", "\313Rl""\313Rr""\313Ed""\313Eu""\313Td""\313Tu""\313Al""\313Ar")
 #endif
 
-#if defined(PCBSKY9X)
-  #define TR_ROTARY_ENCODERS   "DGa\0"
-  #define TR_ROTENC_SWITCHES   "DGa"
-#else
-  #define TR_ROTARY_ENCODERS
-  #define TR_ROTENC_SWITCHES
-#endif
+#define TR_ROTARY_ENCODERS
+#define TR_ROTENC_SWITCHES
 
 #if !defined(PCBTARANIS) && !defined(PCBHORUS)  && !defined(PCBI6X)
   #define TR_2POS_SWITCHES     "THR""RUD""ELE""AIL""GEA""TRN"
@@ -505,8 +487,6 @@
 #if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
   // only special switches here
   #define TR_VSWITCHES         "---" TR_TRIMS_SWITCHES TR_ON_ONE_SWITCHES
-#elif defined(PCBSKY9X)
-  #define TR_VSWITCHES         "---" TR_9X_3POS_SWITCHES TR_2POS_SWITCHES TR_TRIMS_SWITCHES TR_ROTENC_SWITCHES TR_ON_ONE_SWITCHES
 #else
   #define TR_VSWITCHES         "---" TR_9X_3POS_SWITCHES TR_2POS_SWITCHES TR_TRIMS_SWITCHES TR_ROTENC_SWITCHES TR_LOGICALSW TR_ON_ONE_SWITCHES
 #endif
@@ -568,7 +548,7 @@
 #if defined(PCBTARANIS) || defined(PCBHORUS)
   #define TR_ENTER                     "[ENTER]"
 #elif defined(PCBI6X)
-  #define TR_ENTER                     "[ OK ]"
+  #define TR_ENTER                     "[OK]"
 #else
   #define TR_ENTER                     "[MENU]"
 #endif
@@ -598,7 +578,7 @@
 #define TR_PHASENAME           "Phase-Name"
 #define TR_MIXNAME             "Mix-Name"
 #define TR_INPUTNAME           "Input"
-  #define TR_EXPONAME          "Info"
+  #define TR_EXPONAME          "Name"
 #define TR_BITMAP              "Modellfoto"
 #define TR_TIMER               TR("Timer", "Timer ")  // für Timer1 Timer2 Timer3
 #define TR_ELIMITS             TR("Erw. Limit", "Erw. Wege auf 150%")
@@ -609,9 +589,6 @@
 #define TR_TTRIM 	       			 TR("Gastrim", INDENT "Gas-Leerlauftrim")
 #define TR_BEEPCTR             TR("Mitt.Piep", "Mittelstell. -Pieps")
 #define TR_USE_GLOBAL_FUNCS    TR("Glob. Funkt.", "Globale Funkt verw.")
-#if defined(PCBSKY9X) && defined(REVX)
-  #define TR_OUTPUT_TYPE       INDENT "Output"
-#endif
 #define TR_PROTO               TR(INDENT "Protok.", INDENT "Protokoll")
   #define TR_PPMFRAME          INDENT "PPM frame"
 #define TR_REFRESHRATE               TR(INDENT "Refresh", INDENT "Refresh rate")
@@ -848,6 +825,7 @@
 #define TR_VOLTAGE             TR(INDENT "Spg", INDENT "Spannungsquelle")  //9XR-Pro
 #define TR_CURRENT             TR(INDENT "Strom", INDENT "Stromquelle")
 #define TR_SELECT_MODEL        "Modell auswählen"
+#define TR_SELECT_MODE         "Wähle Mode"
 #define TR_CREATE_CATEGORY     "Modelltyp erzeugen"
 #define TR_RENAME_CATEGORY     "Modelltyp umbenennen"
 #define TR_DELETE_CATEGORY     "Modelltyp löschen"
@@ -921,7 +899,10 @@
 #define TR_FORMATTING          "Formatierung..."
 #define TR_TEMP_CALIB          "Temp.  abgl."
 #define TR_TIME                "Uhrzeit:"
-#define TR_MAXBAUDRATE         "Max Baud"
+#define TR_MAXBAUDRATE         "Baudrate"
+#define TR_CRSF_ARMING_MODE            "Arm via"
+#define LEN_CRSF_ARMING_MODES          "\006"
+#define TR_CRSF_ARMING_MODES           TR_CH "5\0  " TR_SWITCH
 
 #define TR_BLUETOOTH            "Bluetooth"
 #define TR_BLUETOOTH_DISC       "Discover"
@@ -970,7 +951,6 @@
 #define TR_MENUSENSOR          "SENSOR"
 #define TR_SENSOR              "SENSOR"
 #define TR_COUNTRYCODE         "Landescode"
-#define TR_USBDETECT           "USB Detect"
 #define TR_USBMODE             "USB Modus"
 #define TR_VOICELANG           "Sprach-Ansagen"
 #define TR_UNITSSYSTEM         "Einheiten"
@@ -1027,8 +1007,8 @@
 #define TR_LOWALARM            INDENT "Warnungsschwelle"
 #define TR_CRITICALALARM       INDENT "Kritischer Alarm"
 #define TR_RSSIALARM_WARN      "Telemetry"
-#define TR_NO_RSSIALARM        "Audiowarnungen ausgeschaltet"
-#define TR_DISABLE_ALARM       INDENT "Audiowarnungen ausschalten"
+#define TR_NO_RSSIALARM        "RSSI Alarms AUS"
+#define TR_DISABLE_ALARM       INDENT "Alarme AUS"
 #define TR_ENABLE_POPUP        "Freigabe Popup-Fenster"
 #define TR_DISABLE_POPUP       "Sperren  Popup-Fenster"
 #define TR_POPUP               "Popup"
@@ -1199,7 +1179,7 @@
 #define TR_DISCOVER_SENSORS    INDENT "Start Sensorsuche"
 #define TR_STOP_DISCOVER_SENSORS INDENT "Stop Sensorsuche"
 #define TR_DELETE_ALL_SENSORS  INDENT "Lösche alle Sensoren"
-#define TR_CONFIRMDELETE       "Wirklich alle " LCDW_128_480_LINEBREAK "löschen ?"
+#define TR_CONFIRMDELETE       "Wirklich alle " LCDW_128_480_LINEBREAK "löschen?"
 #define TR_SELECT_WIDGET       "Widget auswählen"  // grafisches Element
 #define TR_REMOVE_WIDGET       "Widget löschen"
 #define TR_WIDGET_SETTINGS     "Widget einstellen"
@@ -1243,6 +1223,12 @@
 #define ZSTR_ALT               "Alt"
 #define ZSTR_TEMP1             "Tmp1"
 #define ZSTR_TEMP2             "Tmp2"
+#define ZSTR_PRES                      "Pres"
+#define ZSTR_ODO1                      "Odo1"
+#define ZSTR_ODO2                      "Odo2"
+#define ZSTR_TXV                       "TX_V"
+#define ZSTR_DIST                      "Dist"
+#define ZSTR_ARM                       "Arm"
 #define ZSTR_RPM               "RPM"
 #define ZSTR_FUEL              "Fuel"
 #define ZSTR_VSPD              "VSpd"

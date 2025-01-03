@@ -73,7 +73,7 @@ class WidgetsContainer: public WidgetsContainerInterface
     virtual ~WidgetsContainer()
     {
       if (widgets) {
-        for (uint8_t i=0; i<N; i++) {
+        for (uint32_t i=0; i<N; i++) {
           delete widgets[i];
         }
         free(widgets);

@@ -116,11 +116,11 @@ void bluetoothProcessTrainerFrame(const uint8_t * bluetoothBuffer)
 
   for (uint8_t channel=0, i=1; channel<8; channel+=2, i+=3) {
     // +-500 != 512, but close enough.
-    ppmInput[channel] = bluetoothBuffer[i] + ((bluetoothBuffer[i+1] & 0xf0) << 4) - 1500;
-    ppmInput[channel+1] = ((bluetoothBuffer[i+1] & 0x0f) << 4) + ((bluetoothBuffer[i+2] & 0xf0) >> 4) + ((bluetoothBuffer[i+2] & 0x0f) << 8) - 1500;
+    trainerInput[channel] = bluetoothBuffer[i] + ((bluetoothBuffer[i+1] & 0xf0) << 4) - 1500;
+    trainerInput[channel+1] = ((bluetoothBuffer[i+1] & 0x0f) << 4) + ((bluetoothBuffer[i+2] & 0xf0) >> 4) + ((bluetoothBuffer[i+2] & 0x0f) << 8) - 1500;
   }
 
-  ppmInputValidityTimer = PPM_IN_VALID_TIMEOUT;
+  trainerInputValidityTimer = TRAINER_IN_VALID_TIMEOUT;
 }
 
 void bluetoothAppendTrainerByte(uint8_t data)
@@ -280,7 +280,7 @@ void bluetoothWakeup(void)
         uint8_t len = ZLEN(g_eeGeneral.bluetoothName);
         if (len > 0) {
           for (int i = 0; i < len; i++) {
-            *cur++ = idx2char(g_eeGeneral.bluetoothName[i]);
+            *cur++ = zchar2char(g_eeGeneral.bluetoothName[i]);
           }
         }
         else {
@@ -380,7 +380,7 @@ void bluetoothWakeup()
       uint8_t len = ZLEN(g_eeGeneral.bluetoothName);
       if (len > 0) {
         for (int i = 0; i < len; i++) {
-          *cur++ = idx2char(g_eeGeneral.bluetoothName[i]);
+          *cur++ = zchar2char(g_eeGeneral.bluetoothName[i]);
         }
       }
       else {

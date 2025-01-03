@@ -276,7 +276,7 @@ void menuTraceBuffer(event_t event)
   lcdDrawText(14*FW, FH, "Event");
   lcdDrawText(20*FW, FH, "Data");
 
-  for (uint8_t i=0; i<LCD_LINES-2; i++) {
+  for (uint32_t i=0; i<LCD_LINES-2; i++) {
     y = 1 + (i+2)*FH;
     k = i+menuVerticalOffset;
 

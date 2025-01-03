@@ -37,24 +37,10 @@
   #define SWITCH_SIMU(a, b)  (b)
 #endif
 
-#if defined(PCBSKY9X)
-  #define IS_PCBSKY9X        true
-  #define CASE_PCBSKY9X(x)   x,
-#else
-  #define IS_PCBSKY9X        false
-  #define CASE_PCBSKY9X(x)
-#endif
-
 #if defined(STM32)
   #define CASE_STM32(x)     x,
 #else
   #define CASE_STM32(x)
-#endif
-
-#if defined(VARIO)
-  #define CASE_VARIO(x) x,
-#else
-  #define CASE_VARIO(x)
 #endif
 
 #if defined(LUA)
@@ -79,6 +65,12 @@
   #define CASE_AUDIO(x) x,
 #else
   #define CASE_AUDIO(x)
+#endif
+
+#if defined(DFPLAYER)
+  #define CASE_DFPLAYER(x) x,
+#else
+  #define CASE_DFPLAYER(x)
 #endif
 
 #if defined(PWM_BACKLIGHT)
@@ -165,12 +157,7 @@
   #define CASE_PCBX9E(x)
 #endif
 
-#if defined(PCBSKY9X) && !defined(AR9X) && !defined(REVA)
-  #define TX_CAPACITY_MEASUREMENT
-  #define CASE_CAPACITY(x) x,
-#else
   #define CASE_CAPACITY(x)
-#endif
 
 #if ROTARY_ENCODERS > 0
   #define ROTARY_ENCODER_NAVIGATION
@@ -202,8 +189,18 @@
   #define IS_SLAVE_TRAINER()           (g_model.trainerMode == TRAINER_MODE_SLAVE)
 #endif
 
-#if defined(PCBI6X_ELRSV3) || defined(LUA) || defined(PXX2) || defined(MULTIMODULE)
+#if defined(LUA) || defined(PXX2) || defined(MULTIMODULE) || defined(PCBI6X)
   #define RADIO_TOOLS
+#endif
+
+#if defined(PCBI6X_ELRS)
+#if defined(CRSF_EXTENDED_TYPES)
+#define CTOOL_DATA_SIZE (552 + 44 + 216 + 8) // 820
+#else
+#define CTOOL_DATA_SIZE (552 + 44 + 180 + 8) // 784
+#endif
+#else
+#define CTOOL_DATA_SIZE 512 // minimize RAM usage for non PCBI6X_ELRS builds
 #endif
 
 // RESX range is used for internal calculation; The menu says -100.0 to 100.0; internally it is -1024 to 1024 to allow some optimizations
@@ -429,8 +426,8 @@ extern InactivityData inactivity;
 #endif
 
 char hex2zchar(uint8_t hex);
-char idx2char(int8_t idx);
-int8_t char2idx(char c);
+char zchar2char(int8_t idx);
+int8_t char2zchar(char c);
 void str2zchar(char *dest, const char *src, int size);
 int zchar2str(char *dest, const char *src, int size);
 
@@ -544,9 +541,7 @@ bool setTrimValue(uint8_t phase, uint8_t idx, int trim);
   void incRotaryEncoder(uint8_t idx, int8_t inc);
 #endif
 
-#if   defined(PCBSKY9X)
-  #define ROTARY_ENCODER_GRANULARITY (2 << g_eeGeneral.rotarySteps)
-#elif defined(PCBHORUS)
+#if defined(PCBHORUS)
   #define ROTARY_ENCODER_GRANULARITY (1)
 #else
   #define ROTARY_ENCODER_GRANULARITY (2)
@@ -570,13 +565,12 @@ extern uint8_t trimsDisplayMask;
 void flightReset(uint8_t check=true);
 
 PACK(struct GlobalData {
-  uint8_t unexpectedShutdown:1;
-  uint8_t sdcardPresent:1;
 #if defined(PCBI6X)
-  uint8_t usbDetect:1;
-  uint8_t spare:5;
+  uint8_t unexpectedShutdown;
+  uint8_t cToolRunning;
 #else
-  uint8_t spare:6;
+  uint8_t unexpectedShutdown:1;
+  uint8_t spare:7;
 #endif
 });
 
@@ -607,8 +601,6 @@ extern uint16_t maxMixerDuration;
   uint16_t getTmr16KHz();
 #elif defined(STM32)
   static inline uint16_t getTmr2MHz() { return TIMER_2MHz_TIMER->CNT; }
-#elif defined(PCBSKY9X)
-  static inline uint16_t getTmr2MHz() { return TC1->TC_CHANNEL[0].TC_CV; }
 #else
   uint16_t getTmr16KHz();
 #endif
@@ -993,10 +985,6 @@ enum AUDIO_SOUNDS {
   AU_SERVO_KO,
   AU_RX_OVERLOAD,
   AU_MODEL_STILL_POWERED,
-#if defined(PCBSKY9X)
-  AU_TX_MAH_HIGH,
-  AU_TX_TEMP_HIGH,
-#endif
   AU_ERROR,
   AU_WARNING1,
   AU_WARNING2,
@@ -1021,6 +1009,9 @@ enum AUDIO_SOUNDS {
   AU_SLIDER3_MIDDLE,
   AU_SLIDER4_MIDDLE,
 #endif
+#elif defined(PCBI6X)
+  AU_POT1_MIDDLE,
+  AU_POT2_MIDDLE,
 #else
   AU_POT1_MIDDLE,
   AU_POT2_MIDDLE,
@@ -1076,11 +1067,6 @@ enum AUDIO_SOUNDS {
 
 #if defined(RTCLOCK)
 #include "rtc.h"
-#endif
-
-#if defined(REVX)
-void setMFP();
-void clearMFP();
 #endif
 
 extern uint8_t requiredSpeakerVolume;
@@ -1176,11 +1162,13 @@ union ReusableBuffer
     uint8_t stickMode;
   } generalSettings;
 
+#if defined(SDCARD)
   struct {
     char filename[TEXT_FILENAME_MAXLEN];
     char lines[NUM_BODY_LINES][LCD_COLS + 1];
     int linesCount;
   } viewText;
+#endif
 
   struct {
     bool longNames;
@@ -1200,6 +1188,10 @@ union ReusableBuffer
 #if defined(STM32)
   // Data for the USB mass storage driver. If USB mass storage runs no menu is not allowed to be displayed
   uint8_t MSC_BOT_Data[MSC_MEDIA_PACKET];
+#endif
+
+#if defined(RADIO_TOOLS)
+  uint8_t cToolData[CTOOL_DATA_SIZE];
 #endif
 };
 
@@ -1261,7 +1253,7 @@ enum TelemetryViews {
   TELEMETRY_VIEW_MAX = TELEMETRY_CUSTOM_SCREEN_4
 };
 
-extern uint8_t s_frsky_view;
+extern uint8_t selectedTelemView;
 #endif
 
 #define EARTH_RADIUSKM ((uint32_t)6371)

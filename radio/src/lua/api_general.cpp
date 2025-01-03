@@ -374,7 +374,7 @@ static int luaSportTelemetryPop(lua_State * L)
 
   if (luaInputTelemetryFifo->size() >= sizeof(SportTelemetryPacket)) {
     SportTelemetryPacket packet;
-    for (uint8_t i=0; i<sizeof(packet); i++) {
+    for (uint32_t i=0; i<sizeof(packet); i++) {
       luaInputTelemetryFifo->pop(packet.raw[i]);
     }
     lua_pushnumber(L, packet.physicalId);
@@ -466,7 +466,7 @@ static int luaCrossfireTelemetryPop(lua_State * L)
     luaInputTelemetryFifo->pop(data); // command
     lua_pushnumber(L, data);
     lua_newtable(L);
-    for (uint8_t i=1; i<length-1; i++) {
+    for (uint32_t i=1; i<length-1; i++) {
       luaInputTelemetryFifo->pop(data);
       lua_pushinteger(L, i);
       lua_pushinteger(L, data);
@@ -1061,7 +1061,7 @@ static int luaSetTelemetryValue(lua_State * L)
     zname[3] = hex2zchar((id & 0x000f) >> 0);
   }
   if (id | subId | instance) {
-    int index = setTelemetryValue(TELEM_PROTO_LUA, id, subId, instance, value, unit, prec);
+    int index = setTelemetryValue(PROTOCOL_TELEMETRY_LUA, id, subId, instance, value, unit, prec);
     if (index >= 0) {
       TelemetrySensor &telemetrySensor = g_model.telemetrySensors[index];
       telemetrySensor.id = id;

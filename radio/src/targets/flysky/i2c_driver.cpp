@@ -245,16 +245,3 @@ void eepromWaitEepromStandbyState(void)
     i2cInit();
   }
 }
-
-void i2c_test() {
-  static uint8_t temp[128];
-  uint8_t i;
-  for (i = 0; i < 128; i++) {
-    temp[i] = i;
-  }
-  DUMP(temp, 128);
-  eepromWriteBlock(temp, 10, 128);
-  memset(temp, 0, 128);
-  eepromReadBlock(temp, 10, 128);
-  DUMP(temp, 128);
-}

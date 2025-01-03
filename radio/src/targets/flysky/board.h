@@ -23,6 +23,7 @@
 
 #include "stddef.h"
 #include "stdbool.h"
+#include "flysky_gimbal_driver.h"
 
 #if defined(__cplusplus) && !defined(SIMU)
 extern "C" {
@@ -74,12 +75,10 @@ extern "C" {
 }
 #endif
 
-#if defined(STM32F0)
 #define VECTOR_TABLE_SIZE (48)                    // 31 positive vectors, 0 vector, 7 negative vectors and 9 extra
 #define SYSCFG_CFGR1_MEM_MODE__MAIN_FLASH      0  // x0: Main Flash memory mapped at 0x0000 0000
 #define SYSCFG_CFGR1_MEM_MODE__SYSTEM_FLASH    1  // 01: System Flash memory mapped at 0x0000 0000
 #define SYSCFG_CFGR1_MEM_MODE__SRAM            3  // 11: Embedded SRAM mapped at 0x0000 0000
-#endif
 
 #define FLASHSIZE                       0x20000  // 128 kb
 #define BOOTLOADER_SIZE                 0x4000   //  16 kb
@@ -91,17 +90,13 @@ extern "C" {
 #define PERI1_FREQUENCY               48000000
 #define PERI2_FREQUENCY               48000000
 
-#define TIMER_MULT_APB1                 1 //2
-#define TIMER_MULT_APB2                 1 //2
-
-#define strcpy_P strcpy
-#define strcat_P strcat
+#define TIMER_MULT_APB1                 1
+#define TIMER_MULT_APB2                 1
 
 #define BATTERY_WARN                  45 // 4.5V
 #define BATTERY_MIN                   43 // 4.3V
 #define BATTERY_MAX                   60 // 6.0V
 
-//maybe bind?
 #define IS_SHIFT_KEY(index)             (false)
 #define IS_SHIFT_PRESSED()              (false)
 
@@ -119,20 +114,13 @@ void init5msTimer();
 #ifdef __cplusplus
 extern "C" {
 #endif
-void delaysInit(void);
-void delay_01us(uint16_t nb);
-void delay_us(uint16_t nb);
+// void delaysInit(void);
+void delay_01us(uint32_t nb);
+void delay_us(uint32_t nb);
 void delay_ms(uint32_t ms);
 #ifdef __cplusplus
 }
 #endif
-
-// #if !defined(BOOT)
-// #define usbPlugged() (false)
-// #define usbStarted() (false)
-// #define getSelectedUsbMode() (USB_UNSELECTED_MODE)
-// #endif
-
 
 // CPU Unique ID
 #define LEN_CPU_UID                     (3*8+2)
@@ -174,6 +162,10 @@ uint32_t sdMounted(void);
 #define BUZZER_HEARTBEAT buzzerHeartbeat
 #endif
 
+#if defined(DFPLAYER)
+#include "dfplayer_driver.h"
+#endif
+
 // Flash Write driver
 #define FLASH_PAGESIZE 256
 void unlockFlash(void);
@@ -185,31 +177,27 @@ uint32_t isBootloaderStart(const uint8_t * buffer);
 // Pulses driver
 #define INTERNAL_MODULE_ON()            {}
 #define INTERNAL_MODULE_OFF()           {}
+#ifdef EXTPWR_INVERT
+#define EXTERNAL_MODULE_OFF()           EXTMODULE_PWR_GPIO->BSRR = EXTMODULE_PWR_GPIO_PIN // GPIO_SetBits(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN)
+#define EXTERNAL_MODULE_ON()            EXTMODULE_PWR_GPIO->BRR = EXTMODULE_PWR_GPIO_PIN // GPIO_ResetBits(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN)
+#else
 #define EXTERNAL_MODULE_ON()            EXTMODULE_PWR_GPIO->BSRR = EXTMODULE_PWR_GPIO_PIN // GPIO_SetBits(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN)
 #define EXTERNAL_MODULE_OFF()           EXTMODULE_PWR_GPIO->BRR = EXTMODULE_PWR_GPIO_PIN // GPIO_ResetBits(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN)
-#define IS_INTERNAL_MODULE_ON()         (false)
-#define IS_EXTERNAL_MODULE_ON()         (GPIO_ReadInputDataBit(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN) == Bit_SET)
-#if defined(INTMODULE_USART)
-  #define IS_UART_MODULE(port)          (port == INTERNAL_MODULE)
-#else
-  #define IS_UART_MODULE(port)          false
 #endif
+
+#define IS_EXTERNAL_MODULE_ON()         (GPIO_ReadInputDataBit(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN) == Bit_SET)
+
 
 void init_no_pulses(uint32_t port);
 void disable_no_pulses(uint32_t port);
 void init_ppm( uint32_t module_index );
 void disable_ppm( uint32_t module_index );
-void init_pxx( uint32_t module_index );
-void disable_pxx( uint32_t module_index );
 void init_serial( uint32_t module_index, uint32_t baudrate, uint32_t period);
 void disable_serial( uint32_t module_index);
 void init_module_timer( uint32_t module_index, uint32_t period, uint8_t state);
 void disable_module_timer( uint32_t module_index);
 
-//jsut to allow compilation
-void setupPulsesSbus(uint8_t port);
 void extmoduleSendNextFrame();
-//void intmoduleSendNextFrame();
 
 // Trainer driver
 #define SLAVE_MODE()                    (false) // (g_model.trainerMode == TRAINER_MODE_SLAVE)
@@ -362,9 +350,8 @@ void adcInit(void);
 void adcRead(void);
 extern uint16_t adcValues[NUM_ANALOGS];
 uint16_t getAnalogValue(uint8_t index);
+uint16_t* getAnalogValues();
 uint16_t getBatteryVoltage();   // returns current battery voltage in 10mV steps
-
-#define BATT_SCALE                    150
 
 #if defined(__cplusplus) && !defined(SIMU)
 extern "C" {
@@ -414,7 +401,6 @@ void i2cInit(void);
 void eepromReadBlock(uint8_t * buffer, size_t address, size_t size);
 void eepromWriteBlock(uint8_t * buffer, size_t address, size_t size);
 uint8_t eepromIsTransferComplete();
-void i2c_test();
 
 // Debug driver
 void debugPutc(const char c);
@@ -422,24 +408,14 @@ void debugPutc(const char c);
 // Telemetry driver
 void telemetryPortInit(uint32_t baudrate, uint8_t mode);
 void telemetryPortSetDirectionOutput(void);
-//void sportSendBuffer(uint8_t * buffer, uint32_t count);
-void sportSendBuffer(const uint8_t* buffer, unsigned long count);
+void sportSendBuffer(const uint8_t* buffer, uint32_t count);
 uint8_t telemetryGetByte(uint8_t * byte);
-extern uint32_t telemetryErrors;
+// extern uint32_t telemetryErrors;
 
-#define HAS_SPORT_UPDATE_CONNECTOR()  false
-
-// Sport update driver
-#define sportUpdateInit()
-#define SPORT_UPDATE_POWER_ON()         EXTERNAL_MODULE_ON()
-#define SPORT_UPDATE_POWER_OFF()        EXTERNAL_MODULE_OFF()
+extern volatile bool pendingTelemetryPollFrame;
 
 // Audio driver
 void initBuzzerTimer(void);
-void audioInit(void);
-void audioEnd(void);
-void dacStart(void);
-void dacStop(void);
 
 #define VOLUME_LEVEL_MAX  23
 #define VOLUME_LEVEL_DEF  12
@@ -448,15 +424,6 @@ void setScaledVolume(uint8_t volume);
 void setVolume(uint8_t volume);
 int32_t getVolume(void);
 #endif
-void audioConsumeCurrentBuffer();
-void setSampleRate(uint32_t frequency);
-void referenceSystemAudioFiles();
-#define audioDisableIrq()               __disable_irq()
-#define audioEnableIrq()                __enable_irq()
-
-// Haptic driver
-void hapticInit(void);
-void hapticOff(void);
 
 // Second serial port driver
 #if defined(AUX_SERIAL_GPIO)
@@ -469,6 +436,29 @@ void auxSerialPutc(char c);
 void auxSerialSbusInit(void);
 void auxSerialStop(void);
 #endif
+
+#if defined(FLYSKY_GIMBAL)
+#define AUX4_SERIAL
+#define AUX4_SERIAL_BAUDRATE FLYSKY_HALL_BAUDRATE // 921600
+#define AUX4_SERIAL_RXFIFO_SIZE HALLSTICK_BUFF_SIZE // 128
+void flysky_gimbal_init();
+#endif
+#if defined(DFPLAYER)
+#define AUX3_SERIAL
+#define AUX3_SERIAL_BAUDRATE DFPLAYER_BAUDRATE
+#endif
+
+#if defined(AUX3_SERIAL)
+void aux3SerialInit(void);
+void aux3SerialPutc(char c);
+#endif
+
+#if defined(AUX4_SERIAL)
+void aux4SerialInit(void);
+void aux4SerialStop(void);
+void aux4SerialSetIdleCb(void (*cb)());
+#endif
+
 #define USART_FLAG_ERRORS (USART_FLAG_ORE | USART_FLAG_PE) // | USART_FLAG_FE, USART_FLAG_NE
 
 // LCD driver
@@ -492,9 +482,7 @@ void checkTrainerSettings(void);
 
 #if defined(__cplusplus)
 //#include "fifo.h"
-#if defined(AUX_SERIAL_DMA_Channel_RX)
 #include "dmafifo.h"
-#endif // AUX_SERIAL_DMA_Channel_RX
 
 #if defined(CROSSFIRE)
 #define TELEMETRY_FIFO_SIZE             128
@@ -503,10 +491,10 @@ void checkTrainerSettings(void);
 #endif
 
 // extern Fifo<uint8_t, TELEMETRY_FIFO_SIZE> telemetryFifo;
-#if defined(AUX_SERIAL_DMA_Channel_RX)
 extern DMAFifo<32> auxSerialRxFifo;
-#endif // AUX_SERIAL_DMA_Channel_RX
+#if defined(AUX4_SERIAL)
+extern DMAFifo<AUX4_SERIAL_RXFIFO_SIZE> aux4SerialRxFifo;
 #endif
-
+#endif
 
 #endif // _BOARD_H_

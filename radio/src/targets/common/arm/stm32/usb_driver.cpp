@@ -49,17 +49,16 @@ void setSelectedUsbMode(int mode)
 
 int usbPlugged()
 {
+  // if connected prevent false reads on USB DM pin
+  if (usbStarted()) {
+    return 1;
+  }
+
   // debounce
   static uint8_t debounced_state = 0;
   static uint8_t last_state = 0;
 
-#if defined(PCBI6X) && !defined(PCBI6X_USB_VBUS)
-  if(globalData.usbDetect == USB_DETECT_ON) {
-    return 1;
-  }
-#endif
-
-  if (GPIO_ReadInputDataBit(USB_GPIO, USB_GPIO_PIN_VBUS)) {
+  if (!GPIO_ReadInputDataBit(USB_GPIO, USB_GPIO_PIN_DM)) {
     if (last_state) {
       debounced_state = 1;
     }
@@ -95,6 +94,15 @@ extern "C" void OTG_FS_IRQHandler()
 
 void usbInit()
 {
+  // USB DP/DM as connection detect
+  GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitStructure.GPIO_Pin = USB_GPIO_PIN_DM;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(USB_GPIO, &GPIO_InitStructure);
+
   // Initialize hardware
 #if defined(STM32F0)
   USB_BSP_Init(&USB_Device_dev);
@@ -117,7 +125,7 @@ void usbStart()
 #endif
       break;
 #endif
-#if defined(USB_SERIAL) && !defined(PCBI6X)
+#if defined(USB_SERIAL)
     case USB_SERIAL_MODE:
       // initialize USB as CDC device (virtual serial port)
 #if defined(STM32F0)
@@ -127,7 +135,7 @@ void usbStart()
 #endif
       break;
 #endif
-#if !defined(PCBI6X) || defined(PCBI6X_USB_MSD)
+#if defined(USB_MSD)
     default:
     case USB_MASS_STORAGE_MODE:
       // initialize USB as MSC device
@@ -207,15 +215,6 @@ void usbJoystickUpdate()
 #endif
 
     }
-
-#if defined(PCBI6X)
-    // HID_Buffer index 8 & 9 causes mess. Looks like clock issue but cannot confirm.
-    // i reduced buttons to 16 so it will affect only one analog and remapped it [3] -> [5]
-    HID_Buffer[12] = HID_Buffer[8]; // ch[3] remap to ch[5]  // channel 5 void
-    HID_Buffer[13] = HID_Buffer[9];
-    HID_Buffer[8] = 0;
-    HID_Buffer[9] = 0;
-#endif
 
 #if defined(STM32F0)
     USBD_HID_SendReport(&USB_Device_dev, HID_Buffer, HID_IN_PACKET);

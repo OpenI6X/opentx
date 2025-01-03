@@ -160,7 +160,7 @@ bool menuStatsAnalogs(event_t event)
 {
   SIMPLE_MENU("Analogs", STATS_ICONS, menuTabStats, e_StatsAnalogs, 1);
 
-  for (uint8_t i=0; i<NUM_ANALOGS; i++) {
+  for (uint32_t i=0; i<NUM_ANALOGS; i++) {
     coord_t y = MENU_CONTENT_TOP + (i/2)*FH;
     coord_t x = MENUS_MARGIN_LEFT + (i & 1 ? LCD_W/2 : 0);
     lcdDrawNumber(x, y, i+1, LEADING0|LEFT, 2, NULL, ":");
@@ -219,7 +219,7 @@ bool menuStatsTraces(event_t event)
   lcdDrawText(STATS_TRACES_EVENT_POS, MENU_TITLE_TOP+2, "Event", MENU_TITLE_COLOR);
   lcdDrawText(STATS_TRACES_DATA_POS, MENU_TITLE_TOP+2, "Data", MENU_TITLE_COLOR);
 
-  for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
+  for (uint32_t i=0; i<NUM_BODY_LINES; i++) {
     coord_t y = MENU_CONTENT_TOP + i * FH;
     k = i+menuVerticalOffset;
 

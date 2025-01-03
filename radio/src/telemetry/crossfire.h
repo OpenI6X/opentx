@@ -28,6 +28,7 @@
 #define BROADCAST_ADDRESS              0x00
 #define RADIO_ADDRESS                  0xEA
 #define MODULE_ADDRESS                 0xEE
+#define RECEIVER_ADDRESS               0xEC
 
 // Frame id
 #define GPS_ID                         0x02
@@ -49,6 +50,7 @@
 #define UART_SYNC                      0xC8
 #define SUBCOMMAND_CRSF                0x10
 #define COMMAND_MODEL_SELECT_ID        0x05
+#define SUBCOMMAND_CRSF_BIND           0x01
 
 struct CrossfireSensor {
   const uint8_t id;
@@ -102,22 +104,38 @@ enum CrossfireFrames{
 void registerCrossfireTelemetryCallback(void (*callback)(uint8_t, uint8_t*, uint8_t));
 void runCrossfireTelemetryCallback(uint8_t command, uint8_t* data, uint8_t length);
 
+struct CrossfireModuleStatus
+{
+    uint8_t major;
+    uint8_t minor;
+//    uint8_t revision;
+    // char name[CRSF_NAME_MAXSIZE];
+    bool queryCompleted;
+    bool isELRS;
+};
+
+extern CrossfireModuleStatus crossfireModuleStatus;
+
 void processCrossfireTelemetryData(uint8_t data);
 void crossfireSetDefault(int index, uint8_t id, uint8_t subId);
 bool isCrossfireOutputBufferAvailable();
 uint8_t createCrossfireModelIDFrame(uint8_t * frame);
 
 const uint32_t CROSSFIRE_BAUDRATES[] = {
-  115200,
   400000,
+  115200,
   921600,
   1870000,
+//  3750000,
+//  5250000,
 };
 const uint8_t CROSSFIRE_PERIODS[] = {
+  4,
   16,
-  4,
-  4,
-  4,
+  2,
+  2,
+//  2,
+//  2,
 };
 
 #define CROSSFIRE_BAUDRATE    CROSSFIRE_BAUDRATES[g_eeGeneral.telemetryBaudrate]
@@ -125,8 +143,15 @@ const uint8_t CROSSFIRE_PERIODS[] = {
 
 #define CROSSFIRE_TELEM_MIRROR_BAUDRATE   115200
 
+#define CRSF_ELRS_MIN_VER(maj, min) \
+        (crossfireModuleStatus.isELRS \
+         && crossfireModuleStatus.major >= maj)
+/*       && (crossfireModuleStatus.major > maj \
+          || (crossfireModuleStatus.major == maj \
+           && crossfireModuleStatus.minor >= min))) */
+
 #if !defined(LUA)
-bool crossfireTelemetryPush(uint8_t command, uint8_t *data, uint8_t length);
+bool crossfireTelemetryPush(uint8_t command, uint8_t *data, uint32_t length);
 #endif
 
 #endif // _CROSSFIRE_H_

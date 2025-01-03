@@ -79,7 +79,7 @@ void showAlertBox(const char * title, const char * text, const char * action, ui
   AUDIO_ERROR_MESSAGE(sound);
   lcdRefresh();
   lcdSetContrast();
-  clearKeyEvents();
+  waitKeysReleased();
   resetBacklightTimeout();
   checkBacklight();
 }
@@ -89,7 +89,7 @@ void runPopupWarning(event_t event)
   drawMessageBox(warningText);
 
   if (warningInfoText) {
-    lcdDrawSizedText(WARNING_LINE_X, WARNING_LINE_Y+FH, warningInfoText, warningInfoLength, WARNING_INFO_FLAGS);
+    lcdDrawSizedText(WARNING_LINE_X, WARNING_LINE_Y+FH, warningInfoText, warningInfoLength, warningInfoFlags);
   }
 
   lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+2*FH, warningType == WARNING_TYPE_ASTERISK ? STR_EXIT : STR_POPUPS_ENTER_EXIT);

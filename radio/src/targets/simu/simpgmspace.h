@@ -165,41 +165,6 @@ extern SysTick_Type systick;
 #define DMA2_Stream7 (&dma2_stream7)
 #undef DMA2
 #define DMA2 (&dma2)
-#elif defined(PCBSKY9X)
-extern Pmc pmc;
-#undef PMC
-#define PMC (&pmc)
-extern Ssc ssc;
-#undef SSC
-#define SSC (&ssc)
-extern Pio Pioa, Piob, Pioc;
-extern Twi Twio;
-extern Dacc dacc;
-extern Usart Usart0;
-extern Adc Adc0;
-#undef ADC
-#define ADC (&Adc0)
-#undef USART0
-#define USART0 (&Usart0)
-#undef USART1
-#define USART1 (&Usart0)
-#undef USART2
-#define USART2 (&Usart0)
-#undef USART3
-#define USART3 (&Usart0)
-#undef PIOA
-#define PIOA (&Pioa)
-#undef PIOB
-#define PIOB (&Piob)
-#undef PIOC
-#define PIOC (&Pioc)
-#undef TWI0
-#define TWI0 (&Twio)
-#undef DACC
-#define DACC (&dacc)
-extern Pwm pwm;
-#undef PWM
-#define PWM (&pwm)
 #endif
 
 #if defined(EEPROM_SIZE)

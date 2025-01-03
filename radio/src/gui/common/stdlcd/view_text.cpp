@@ -110,7 +110,7 @@ void readModelNotes()
   char *buf = strcat_modelname(&reusableBuffer.viewText.filename[sizeof(MODELS_PATH)], g_eeGeneral.currModel);
   strcpy(buf, TEXT_EXT);
 
-  clearKeyEvents();
+  waitKeysReleased();
   event_t event = EVT_ENTRY;
   while (event != EVT_KEY_BREAK(KEY_EXIT)) {
     lcdRefreshWait();
@@ -157,7 +157,7 @@ void menuTextView(event_t event)
   }
 
   for (int i=0; i<LCD_LINES-1; i++) {
-    lcdDrawText(0, i*FH+FH+1, reusableBuffer.viewText.lines[i], FIXEDWIDTH);
+    lcdDrawTextAlignedLeft(i*FH+FH+1, reusableBuffer.viewText.lines[i], FIXEDWIDTH);
   }
 
   char * title = reusableBuffer.viewText.filename;
@@ -175,6 +175,7 @@ void menuTextView(event_t event)
   #endif
 }
 
+#if defined(SDCARD)
 void pushMenuTextView(const char *filename)
 {
   if (strlen(filename) < TEXT_FILENAME_MAXLEN) {
@@ -182,6 +183,7 @@ void pushMenuTextView(const char *filename)
     pushMenu(menuTextView);
   }
 }
+#endif
 
 #undef EVT_KEY_NEXT_LINE
 #undef EVT_KEY_PREVIOUS_LINE

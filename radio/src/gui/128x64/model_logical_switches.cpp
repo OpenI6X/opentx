@@ -235,7 +235,7 @@ void onLogicalSwitchesMenu(const char *result)
     pushMenu(menuModelLogicalSwitchOne);
   }
 #if defined(SDCARD)
-  if (result == STR_COPY) {
+  else if (result == STR_COPY) {
 
     clipboard.type = CLIPBOARD_TYPE_CUSTOM_SWITCH;
     clipboard.data.csw = *cs;
@@ -282,7 +282,7 @@ void menuModelLogicalSwitches(event_t event)
     POPUP_MENU_START(onLogicalSwitchesMenu);
   }
 
-  for (uint8_t i=0; i<LCD_LINES-1; i++) {
+  for (uint32_t i=0; i<LCD_LINES-1; i++) {
     y = 1 + (i+1)*FH;
     k = i + menuVerticalOffset;
     LogicalSwitchData * cs = lswAddress(k);

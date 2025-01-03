@@ -31,11 +31,12 @@ enum FrSkyDataState {
   STATE_DATA_XOR,
 };
 
-#if defined(PXX2)
-#include "io/pxx2.h"
-#define FRSKY_SPORT_BAUDRATE      PXX2_BAUDRATE
-#else
 #define FRSKY_SPORT_BAUDRATE      57600
+
+#if defined(PCBI6X)
+#define FRSKY_TELEM_MIRROR_BAUDRATE   115200
+#else
+#define FRSKY_TELEM_MIRROR_BAUDRATE   FRSKY_SPORT_BAUDRATE
 #endif
 
 #define FRSKY_D_BAUDRATE          9600

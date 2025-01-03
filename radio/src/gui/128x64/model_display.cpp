@@ -50,13 +50,15 @@ enum MenuModelDisplayItems {
 #else
   #define DISPLAY_COL2                (8*FW)
 #endif
-#define DISPLAY_COL3                  (17*FW+2)
+#define DISPLAY_COL3                  (15*FW+2)
 
 inline uint8_t SCREEN_TYPE_COLUMNS(uint8_t screenIndex)
 {
+#if defined(LUA)
   if (TELEMETRY_SCREEN_TYPE(screenIndex) == TELEMETRY_SCREEN_TYPE_SCRIPT)
     return 1;
   else
+#endif
     return 0;
 }
 
@@ -96,8 +98,8 @@ void onTelemetryScriptFileSelectionMenu(const char * result)
       POPUP_WARNING(STR_NO_SCRIPTS_ON_SD);
     }
   }
-  else {
-    // The user choosed a file in the list
+  else if (result != STR_EXIT) {
+    // The user chosen a file in the list
     memcpy(g_model.frsky.screens[screenIndex].script.file, result, sizeof(g_model.frsky.screens[screenIndex].script.file));
     storageDirty(EE_MODEL);
     LUA_LOAD_MODEL_SCRIPTS();
@@ -128,7 +130,7 @@ void menuModelDisplay(event_t event)
 
   int8_t sub = menuVerticalPosition - HEADER_LINE;
 
-  for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
+  for (uint32_t i=0; i<NUM_BODY_LINES; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     int k = i + menuVerticalOffset;
     SKIP_HIDDEN_MENU_ROWS(k);

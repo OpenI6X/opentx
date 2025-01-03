@@ -454,7 +454,7 @@ bool menuRadioSetup(event_t event)
       {
         lcdDrawText(MENUS_MARGIN_LEFT, y, STR_RXCHANNELORD); // RAET->AETR
         char s[5];
-        for (uint8_t i=0; i<4; i++) {
+        for (uint32_t i=0; i<4; i++) {
           s[i] = STR_RETA123[channel_order(i+1)];
         }
         s[4] = '\0';
@@ -469,7 +469,7 @@ bool menuRadioSetup(event_t event)
         char s[2] = " ";
         s[0] = '1'+reusableBuffer.generalSettings.stickMode;
         lcdDrawText(RADIO_SETUP_2ND_COLUMN, y, s, attr);
-        for (uint8_t i=0; i<4; i++) {
+        for (uint32_t i=0; i<4; i++) {
           drawSource(RADIO_SETUP_2ND_COLUMN + 40 + 50*i, y, MIXSRC_Rud + *(modn12x3 + 4*reusableBuffer.generalSettings.stickMode + i));
         }
         if (attr && s_editMode>0) {

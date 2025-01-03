@@ -725,7 +725,7 @@ void drawTrimMode(coord_t x, coord_t y, uint8_t phase, uint8_t idx, LcdFlags att
   }
 }
 
-void drawValueWithUnit(coord_t x, coord_t y, int val, uint8_t unit, LcdFlags att)
+void drawValueWithUnit(coord_t x, coord_t y, int32_t val, uint8_t unit, LcdFlags att)
 {
   // convertUnit(val, unit);
   lcdDrawNumber(x, y, val, att & (~NO_UNIT));
@@ -922,7 +922,7 @@ void lcdDraw1bitBitmap(coord_t x, coord_t y, const unsigned char * img, uint8_t 
   bool    inv  = (att & INVERS) ? true : (att & BLINK ? BLINK_ON_PHASE : false);
   q += idx*w*hb;
   for (uint8_t yb = 0; yb < hb; yb++) {
-    for (uint8_t i=0; i<w; i++) {
+    for (uint32_t i=0; i<w; i++) {
       uint8_t b = *(q++);
       uint8_t val = inv ? ~b : b;
       for (int k=0; k<8; k++) {

@@ -348,7 +348,7 @@ bool sdListFiles(const char * path, const char * extension, const uint8_t maxlen
           lastpopupMenuOffset++;
         }
         else {
-          for (uint8_t i=0; i<MENU_MAX_DISPLAY_LINES; i++) {
+          for (uint32_t i=0; i<MENU_MAX_DISPLAY_LINES; i++) {
             char * line = reusableBuffer.modelsel.menu_bss[i];
             if (line[0] == '\0' || strcasecmp(fno.fname, line) < 0) {
               if (i < MENU_MAX_DISPLAY_LINES-1) memmove(reusableBuffer.modelsel.menu_bss[i+1], line, sizeof(reusableBuffer.modelsel.menu_bss[i]) * (MENU_MAX_DISPLAY_LINES-1-i));
@@ -358,7 +358,7 @@ bool sdListFiles(const char * path, const char * extension, const uint8_t maxlen
             }
           }
         }
-        for (uint8_t i=0; i<min(popupMenuItemsCount, (uint16_t)MENU_MAX_DISPLAY_LINES); i++) {
+        for (uint32_t i=0; i<min(popupMenuItemsCount, (uint16_t)MENU_MAX_DISPLAY_LINES); i++) {
           popupMenuItems[i] = reusableBuffer.modelsel.menu_bss[i];
         }
 
@@ -373,7 +373,7 @@ bool sdListFiles(const char * path, const char * extension, const uint8_t maxlen
             break;
           }
         }
-        for (uint8_t i=0; i<min(popupMenuItemsCount, (uint16_t)MENU_MAX_DISPLAY_LINES); i++) {
+        for (uint32_t i=0; i<min(popupMenuItemsCount, (uint16_t)MENU_MAX_DISPLAY_LINES); i++) {
           popupMenuItems[i] = reusableBuffer.modelsel.menu_bss[i];
         }
       }

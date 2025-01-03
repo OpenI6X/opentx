@@ -140,12 +140,12 @@ void readKeysAndTrims()
 {
   uint8_t index = 0;
   uint32_t keys_input = readKeys();
-  for (uint8_t i = 1; i != uint8_t(1 << TRM_BASE); i <<= 1) {
+  for (uint32_t i = 1; i != uint8_t(1 << TRM_BASE); i <<= 1) {
     keys[index++].input(keys_input & i);
   }
 
   uint32_t trims_input = readTrims();
-  for (uint8_t i = 1; i != uint8_t(1 << 8); i <<= 1) {
+  for (uint32_t i = 1; i != uint8_t(1 << 8); i <<= 1) {
     keys[index++].input(trims_input & i);
   }
 

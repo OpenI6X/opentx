@@ -58,17 +58,6 @@
   #define MAX_INPUTS                   32
   #define MAX_TRAINER_CHANNELS         16
   #define MAX_TELEMETRY_SENSORS        32
-#elif defined(PCBSKY9X)
-  #define MAX_MODELS                   60
-  #define MAX_OUTPUT_CHANNELS          32 // number of real output channels CH1-CH32
-  #define MAX_FLIGHT_MODES             9
-  #define MAX_MIXERS                   64
-  #define MAX_EXPOS                    32
-  #define MAX_LOGICAL_SWITCHES         64
-  #define MAX_SPECIAL_FUNCTIONS        64 // number of functions assigned to switches
-  #define MAX_INPUTS                   32
-  #define MAX_TRAINER_CHANNELS         16
-  #define MAX_TELEMETRY_SENSORS        32
 #elif defined(PCBI6X)
   #define MAX_MODELS                   16
   #define MAX_OUTPUT_CHANNELS          16 // number of real output channels CH1-CH16
@@ -76,11 +65,11 @@
   #define MAX_MIXERS                   32 
   #define MAX_EXPOS                    14
   #define MAX_LOGICAL_SWITCHES         12
-  #define MAX_SPECIAL_FUNCTIONS        11 // number of functions assigned to switches
+  #define MAX_SPECIAL_FUNCTIONS        18 // number of functions assigned to switches, 20B each
   #define MAX_TRAINER_CHANNELS         16
   #define MAX_INPUTS                   16
-  #define MAX_TELEMETRY_SENSORS        26 // 48b each
-  #define MAX_SCRIPTS				           0
+  #define MAX_TELEMETRY_SENSORS        30 // 48B each
+  #define MAX_SCRIPTS				   0
 #else
   #define MAX_MODELS                   16
   #define MAX_OUTPUT_CHANNELS          16 // number of real output channels CH1-CH16
@@ -145,7 +134,7 @@ enum CurveType {
   #define MAX_CURVE_POINTS             512
 #endif
 
-#if defined(PCBTARANIS) || defined(PCBSKY9X) || defined(PCBHORUS) || defined(PCBI6X)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
   #define NUM_MODULES                  2
 #else
   #define NUM_MODULES                  1
@@ -153,16 +142,8 @@ enum CurveType {
 
 #define XPOTS_MULTIPOS_COUNT           6
 
-#if defined(PCBSKY9X) && defined(REVX)
-  #define MAX_ROTARY_ENCODERS          1
-  #define NUM_ROTARY_ENCODERS          0
-#elif defined(PCBSKY9X)
-  #define MAX_ROTARY_ENCODERS          1
-  #define NUM_ROTARY_ENCODERS          1
-#else
-  #define MAX_ROTARY_ENCODERS          0
-  #define NUM_ROTARY_ENCODERS          0
-#endif
+#define MAX_ROTARY_ENCODERS          0
+#define NUM_ROTARY_ENCODERS          0
 
 #if defined(COLORLCD)
 enum MainViews {
@@ -207,6 +188,14 @@ enum BeeperMode {
     TRAINER_MODULE,
     FLASHING_MODULE,
   };
+
+  enum ArmingMode {
+  ARMING_MODE_FIRST = 0,
+  ARMING_MODE_CH5 = ARMING_MODE_FIRST,
+  ARMING_MODE_SWITCH = 1,
+  ARMING_MODE_LAST = ARMING_MODE_SWITCH,
+};
+
   enum TrainerMode {
     TRAINER_MODE_MASTER_TRAINER_JACK,
 #if !defined(PCBI6X)
@@ -222,12 +211,6 @@ enum BeeperMode {
     TRAINER_MODE_SLAVE_BLUETOOTH,
 #endif
   };
-#elif defined(PCBSKY9X)
-  enum ModuleIndex {
-    EXTERNAL_MODULE,
-    EXTRA_MODULE,
-    TRAINER_MODULE
-  };
 #endif
 
 #if defined(BLUETOOTH)
@@ -235,15 +218,17 @@ enum BeeperMode {
 #elif defined(PCBX7) || defined(PCBXLITE)
   #define TRAINER_MODE_MAX()             TRAINER_MODE_MASTER_CPPM_EXTERNAL_MODULE
 #elif defined(PCBI6X)
-  #define TRAINER_MODE_MAX()             TRAINER_MODE_MASTER_BATTERY_COMPARTMENT
+  #if defined(SBUS_TRAINER)
+    #define TRAINER_MODE_MAX()             TRAINER_MODE_MASTER_BATTERY_COMPARTMENT
+  #else
+    #define TRAINER_MODE_MAX()             TRAINER_MODE_MASTER_TRAINER_JACK
+  #endif
 #else
   #define TRAINER_MODE_MAX()             HAS_WIRELESS_TRAINER_HARDWARE() ? TRAINER_MODE_MASTER_BATTERY_COMPARTMENT : TRAINER_MODE_MASTER_CPPM_EXTERNAL_MODULE
 #endif
 
 #if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
 #define IS_INTERNAL_MODULE_ENABLED() (g_model.moduleData[INTERNAL_MODULE].type != MODULE_TYPE_NONE)
-#elif defined(PCBSKY9X)
-  #define IS_INTERNAL_MODULE_ENABLED() (false)
 #endif
 #define IS_EXTERNAL_MODULE_ENABLED() (g_model.moduleData[EXTERNAL_MODULE].type != MODULE_TYPE_NONE)
 
@@ -258,7 +243,7 @@ enum UartModes {
 #if !defined(PCBI6X)
   UART_MODE_TELEMETRY,
 #endif
-#if defined(SBUS)
+#if defined(SBUS_TRAINER)
   UART_MODE_SBUS_TRAINER,
 #endif
 #if defined(LUA)
@@ -346,6 +331,8 @@ enum TelemetryScreenType {
   TELEMETRY_SCREEN_TYPE_BARS,
   TELEMETRY_SCREEN_TYPE_SCRIPT,
 #if defined(LUA)
+  TELEMETRY_SCREEN_TYPE_MAX = TELEMETRY_SCREEN_TYPE_SCRIPT
+#elif defined(PCBI6X)
   TELEMETRY_SCREEN_TYPE_MAX = TELEMETRY_SCREEN_TYPE_SCRIPT
 #else
   TELEMETRY_SCREEN_TYPE_MAX = TELEMETRY_SCREEN_TYPE_BARS
@@ -495,10 +482,6 @@ enum SwitchSources {
   SWSRC_TrimT6Up,
 #endif
 
-#if defined(PCBSKY9X)
-  SWSRC_REa,
-#endif
-
   SWSRC_FIRST_LOGICAL_SWITCH,
   SWSRC_SW1 = SWSRC_FIRST_LOGICAL_SWITCH,
   SWSRC_SW2,
@@ -603,11 +586,6 @@ enum MixSources {
 #if defined(PCBHORUS)
   MIXSRC_MOUSE1,                        LUA_EXPORT("jsx", "Joystick X")
   MIXSRC_MOUSE2,                        LUA_EXPORT("jsy", "Joystick Y")
-#endif
-
-#if defined(PCBSKY9X)
-  MIXSRC_REa,
-  MIXSRC_LAST_ROTARY_ENCODER = MIXSRC_REa,
 #endif
 
   MIXSRC_MAX,
@@ -756,8 +734,8 @@ enum Functions {
   // then the other functions
   FUNC_FIRST_WITHOUT_ENABLE,
   FUNC_PLAY_SOUND = FUNC_FIRST_WITHOUT_ENABLE,
-//  FUNC_PLAY_TRACK,
-//  FUNC_PLAY_VALUE,
+  FUNC_PLAY_TRACK,
+  FUNC_PLAY_VALUE,
   FUNC_RESERVE4,
   FUNC_PLAY_SCRIPT,
   FUNC_RESERVE5,
@@ -788,7 +766,7 @@ enum TimerModes {
 enum CountDownModes {
   COUNTDOWN_SILENT,
   COUNTDOWN_BEEPS,
-#if defined(VOICE)
+#if defined(VOICE) || defined(DFPLAYER)
   COUNTDOWN_VOICE,
 #endif
 #if defined(HAPTIC)

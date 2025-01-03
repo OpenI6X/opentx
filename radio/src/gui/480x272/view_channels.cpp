@@ -179,7 +179,7 @@ bool menuChannelsMonitor(event_t event, uint8_t page)
   drawChannelsMonitorLegend(x, STR_MONITOR_MIXER_DESC, BARGRAPH2_COLOR);
 
   x = X_OFFSET;
-  for (uint8_t i = 0; i < 8; i++, channel++, y += ROW_HEIGHT) {
+  for (uint32_t i = 0; i < 8; i++, channel++, y += ROW_HEIGHT) {
     if (i == 4) {
       x = 1 + LCD_W / 2 + X_OFFSET;
       y = Y_OFFSET;

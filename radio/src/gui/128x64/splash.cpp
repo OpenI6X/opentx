@@ -36,7 +36,7 @@ void drawSplash()
 {
   lcdClear();
 #if defined(PCBI6X)
-  lcdDraw1bitBitmap(8, 16, splash_lbm, 0, 0);
+  lcdDraw1bitBitmap(10, 16, splash_lbm, 0, 0);
 #else
   lcdDraw1bitBitmap(0, 0, splash_lbm, 0, 0);
 #endif

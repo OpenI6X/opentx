@@ -45,40 +45,38 @@ void disable_afhds2a(uint32_t port) {
 
 void init_ppm(uint32_t port) {
   if (port == EXTERNAL_MODULE) {
-    TRACE("Init PPM");
+    TRACE("init_ppm");
     extmodulePpmStart();
   }
 }
 
 void disable_ppm(uint32_t port) {
   if (port == EXTERNAL_MODULE) {
-    TRACE("Disable PPM");
+    TRACE("disable_ppm");
     extmoduleStop();
   }
 }
 
 void init_no_pulses(uint32_t port) {
-  TRACE("Init no pulses");
-  if (port == INTERNAL_MODULE) {    
+  TRACE("init_no_pulses %d", port);
+  if (port == INTERNAL_MODULE) {
     intmoduleNoneStart();
-  }else{
-    extmoduleTimerStart(18000, false);
   }
+//   else {
+    extmoduleTimerStart(18000, false);
+//   }
 }
 
 void disable_no_pulses(uint32_t port) {
+  TRACE("disable_no_pulses %d", port);
   if (port == INTERNAL_MODULE) {
-    TRACE("Disable no pulses internal");
     intmoduleStop();
   } else {
-    TRACE("Disable no pulses external");
     extmoduleStop();
   }
 }
 
-void init_sbusOut(uint32_t module_index) {}
-void disable_sbusOut(uint32_t module_index) {}
-void setupPulsesSbus(uint8_t port) {}
+void setupPulsesSbus() {}
 
 void init_serial(uint32_t port, uint32_t baudrate, uint32_t period_half_us) {
 }
@@ -88,7 +86,7 @@ void disable_serial(uint32_t port) {
 
 void init_module_timer(uint32_t port, uint32_t period, uint8_t state) {
   if (port == EXTERNAL_MODULE) {
-    TRACE("init_module_timer period %d", period);
+    TRACE("init_module_timer period %d, %d", period, state);
     extmoduleTimerStart(period, state);
   }
 }

@@ -24,9 +24,9 @@
 #include <stdint.h>
 
 #define MIXER_SCHEDULER_DEFAULT_PERIOD_US  4000u // 4ms
-#define MIXER_SCHEDULER_JOYSTICK_PERIOD_US 2000u // 2ms
+#define MIXER_SCHEDULER_JOYSTICK_PERIOD_US 4000u // 4ms
 
-#define MIN_REFRESH_RATE      1750 /* us */
+#define MIN_REFRESH_RATE      850 /* us */
 #define MAX_REFRESH_RATE     50000 /* us */
 
 #if !defined(SIMU)

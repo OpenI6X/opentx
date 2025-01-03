@@ -35,7 +35,7 @@
 #define WARN_MEM (!(g_eeGeneral.warnOpts & WARN_MEM_BIT))
 #define BEEP_VAL ((g_eeGeneral.warnOpts & WARN_BVAL_BIT) >> 3)
 
-#define EEPROM_VER 221
+#define EEPROM_VER 222
 #define FIRST_CONV_EEPROM_VER 216
 
 #define GET_PPM_POLARITY(idx) g_model.moduleData[idx].ppm.pulsePol
@@ -53,10 +53,11 @@
 #define IS_TRAINER_EXTERNAL_MODULE() false
 #endif
 
-#define IS_PLAY_FUNC(func) ((func) == FUNC_PLAY_SOUND /* && func <= FUNC_PLAY_VALUE*/)
-
-#define IS_PLAY_BOTH_FUNC(func) (0)
-#define IS_VOLUME_FUNC(func) ((func) == FUNC_VOLUME)
+#if defined(DFPLAYER)
+#define IS_PLAY_FUNC(func) ((func) >= FUNC_PLAY_SOUND && func <= FUNC_PLAY_VALUE)
+#else
+#define IS_PLAY_FUNC(func) ((func) == FUNC_PLAY_SOUND)
+#endif
 
 #if defined(GVARS)
 #define IS_ADJUST_GV_FUNC(func) ((func) == FUNC_ADJUST_GVAR)
@@ -85,7 +86,11 @@
 #define CFN_PLAY_REPEAT_NOSTART 0xFF
 #define CFN_GVAR_MODE(p) ((p)->all.mode)
 #define CFN_PARAM(p) ((p)->all.val)
+#if defined(PCBI6X)
+#define CFN_RESET(p) ((p)->active = 0, (p)->clear.val1 = 0)
+#else
 #define CFN_RESET(p) ((p)->active = 0, (p)->clear.val1 = 0, (p)->clear.val2 = 0)
+#endif
 #define CFN_GVAR_CST_MIN -GVAR_MAX
 #define CFN_GVAR_CST_MAX GVAR_MAX
 #define MODEL_GVAR_MIN(idx) (CFN_GVAR_CST_MIN + g_model.gvars[idx].min)
@@ -244,48 +249,6 @@ enum TelemetrySensorFormula {
   TELEM_FORMULA_LAST = TELEM_FORMULA_DIST
 };
 
-enum VarioSource {
-#if !defined(TELEMETRY_FRSKY_SPORT)
-  VARIO_SOURCE_ALTI,
-  VARIO_SOURCE_ALTI_PLUS,
-#endif
-  VARIO_SOURCE_VSPEED,
-  VARIO_SOURCE_A1,
-  VARIO_SOURCE_A2,
-#if defined(TELEMETRY_FRSKY_SPORT)
-  VARIO_SOURCE_DTE,
-#endif
-  VARIO_SOURCE_COUNT,
-  VARIO_SOURCE_LAST = VARIO_SOURCE_COUNT - 1
-};
-
-enum FrskyUsrProtocols {
-  USR_PROTO_NONE,
-  USR_PROTO_FRSKY,
-  USR_PROTO_WS_HOW_HIGH,
-  USR_PROTO_LAST = USR_PROTO_WS_HOW_HIGH,
-};
-
-enum FrskyCurrentSource {
-  FRSKY_CURRENT_SOURCE_NONE,
-  FRSKY_CURRENT_SOURCE_A1,
-  FRSKY_CURRENT_SOURCE_A2,
-  FRSKY_CURRENT_SOURCE_A3,
-  FRSKY_CURRENT_SOURCE_A4,
-  FRSKY_CURRENT_SOURCE_FAS,
-  FRSKY_CURRENT_SOURCE_LAST = FRSKY_CURRENT_SOURCE_FAS
-};
-
-enum FrskyVoltsSource {
-  FRSKY_VOLTS_SOURCE_A1,
-  FRSKY_VOLTS_SOURCE_A2,
-  FRSKY_VOLTS_SOURCE_A3,
-  FRSKY_VOLTS_SOURCE_A4,
-  FRSKY_VOLTS_SOURCE_FAS,
-  FRSKY_VOLTS_SOURCE_CELLS,
-  FRSKY_VOLTS_SOURCE_LAST = FRSKY_VOLTS_SOURCE_CELLS
-};
-
 enum SwashType {
   SWASH_TYPE_NONE,
   SWASH_TYPE_120,
@@ -307,44 +270,29 @@ enum SwashType {
 
 #define IS_MANUAL_RESET_TIMER(idx) (g_model.timers[idx].persistent == 2)
 
-#if !defined(PCBSKY9X)
 #define TIMER_COUNTDOWN_START(x) (g_model.timers[x].countdownStart > 0 ? 5 : 10 - g_model.timers[x].countdownStart * 10)
-#else
-#define TIMER_COUNTDOWN_START(x) 10
-#endif
 
-enum Protocols {
-  PROTO_PPM,
-#if defined(PXX) || defined(DSM2) || defined(IRPROTOS)
+enum ChannelsProtocols {
+  PROTOCOL_CHANNELS_UNINITIALIZED,
+  PROTOCOL_CHANNELS_NONE,
+  PROTOCOL_CHANNELS_PPM,
+#if defined(PXX) || defined(DSM2)
   PROTO_PXX,
 #endif
-#if defined(DSM2) || defined(IRPROTOS)
+#if defined(DSM2)
   PROTO_DSM2_LP45,
   PROTO_DSM2_DSM2,
   PROTO_DSM2_DSMX,
 #endif
-#if defined(CROSSFIRE)
-  PROTO_CROSSFIRE,
-#endif
-#if defined(IRPROTOS)
-  // only used on AVR
-  // we will need 4 bits for proto :(
-  PROTO_SILV,
-  PROTO_TRAC09,
-  PROTO_PICZ,
-  PROTO_SWIFT,
-#endif
-#if defined(MULTIMODULE)
-  PROTO_MULTIMODULE,
-#endif
-  PROTO_SBUS,
+  PROTOCOL_CHANNELS_CROSSFIRE,
+  PROTOCOL_CHANNELS_MULTIMODULE,
+  PROTOCOL_CHANNELS_SBUS,
 #if defined(PXX2)
   PROTO_PXX2,
 #endif
 #if defined(PCBI6X)
-  PROTO_AFHDS2A_SPI,
+  PROTOCOL_CHANNELS_AFHDS2A_SPI
 #endif
-  PROTO_NONE
 };
 
 #if defined(PXX2)
@@ -352,7 +300,7 @@ enum Protocols {
 #elif defined(PXX)
 #define PROTO_PXX_EXTERNAL_MODULE PROTO_PXX
 #else
-#define PROTO_PXX_EXTERNAL_MODULE PROTO_NONE
+#define PROTO_PXX_EXTERNAL_MODULE PROTOCOL_CHANNELS_NONE
 #endif
 
 enum XJTRFProtocols {
@@ -541,25 +489,11 @@ enum ThrottleSources {
   THROTTLE_SOURCE_CH1,
 };
 
-enum TelemetryType {
-  PROTOCOL_TELEMETRY_FIRST,
-  PROTOCOL_FRSKY_SPORT = PROTOCOL_TELEMETRY_FIRST,
-  PROTOCOL_FRSKY_D,
-  PROTOCOL_FRSKY_D_SECONDARY,
-  PROTOCOL_PULSES_CROSSFIRE,
-  PROTOCOL_SPEKTRUM,
-  PROTOCOL_FLYSKY_IBUS,
-  PROTOCOL_MULTIMODULE,
-  PROTOCOL_TELEMETRY_LAST = PROTOCOL_MULTIMODULE
-};
-
 enum DisplayTrims {
   DISPLAY_TRIMS_NEVER,
   DISPLAY_TRIMS_CHANGE,
   DISPLAY_TRIMS_ALWAYS
 };
-
-#define TOTAL_EEPROM_USAGE (sizeof(ModelData) * MAX_MODELS + sizeof(RadioData))
 
 extern RadioData g_eeGeneral;
 extern ModelData g_model;

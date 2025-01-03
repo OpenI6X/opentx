@@ -27,8 +27,6 @@ ModelData g_model;
 Clipboard clipboard;
 #endif
 
-uint8_t unexpectedShutdown = 0;
-
 GlobalData globalData;
 
 uint16_t maxMixerDuration; // step = 0.01ms
@@ -101,10 +99,8 @@ void per10ms()
     noHighlightCounter--;
 #endif
 
-  if (trimsCheckTimer)
-    trimsCheckTimer--;
-  if (ppmInputValidityTimer)
-    ppmInputValidityTimer--;
+  if (trimsCheckTimer) trimsCheckTimer--;
+  if (trainerInputValidityTimer) trainerInputValidityTimer--;
 
   if (trimsDisplayTimer)
     trimsDisplayTimer--;
@@ -229,8 +225,9 @@ void memswap(void *a, void *b, uint8_t size) {
 void generalDefault() {
   memclear(&g_eeGeneral, sizeof(g_eeGeneral));
   g_eeGeneral.version = EEPROM_VER;
+#if !defined(PCBI6X)
   g_eeGeneral.variant = EEPROM_VARIANT;
-
+#endif
 #if !defined(PCBHORUS)
   g_eeGeneral.contrast = LCD_CONTRAST_DEFAULT;
 #endif
@@ -279,10 +276,12 @@ void generalDefault() {
   g_eeGeneral.lightAutoOff = 2;
   g_eeGeneral.inactivityTimer = 10;
 
+#if defined(VOICE) // PCBI6X no voice
   g_eeGeneral.ttsLanguage[0] = 'e';
   g_eeGeneral.ttsLanguage[1] = 'n';
   g_eeGeneral.wavVolume = 2;
   g_eeGeneral.backgroundVolume = 1;
+#endif
 
   for (int i = 0; i < NUM_STICKS; ++i) {
     g_eeGeneral.trainer.mix[i].mode = 2;
@@ -303,16 +302,8 @@ void generalDefault() {
   strcpy(g_eeGeneral.themeName, theme->getName());
   theme->init();
 #endif
-#if defined(PCBI6X)
-  for (uint8_t i = 0; i < NUM_CALIBRATED_ANALOGS; ++i) {
-    g_eeGeneral.calib[i].mid = 0x400;
-    g_eeGeneral.calib[i].spanNeg = 0x300;
-    g_eeGeneral.calib[i].spanPos = 0x300;
-  }
-  g_eeGeneral.chkSum = evalChkSum();
-#else
+
   g_eeGeneral.chkSum = 0xFFFF;
-#endif
 }
 
 uint16_t evalChkSum() {
@@ -343,11 +334,11 @@ void defaultInputs() {
 
 #if defined(TRANSLATIONS_CZ)
     for (int c = 0; c < 4; c++) {
-      g_model.inputNames[i][c] = char2idx(STR_INPUTNAMES[1 + 4 * (stick_index - 1) + c]);
+      g_model.inputNames[i][c] = char2zchar(STR_INPUTNAMES[1 + 4 * (stick_index - 1) + c]);
     }
 #else
     for (int c = 0; c < 3; c++) {
-      g_model.inputNames[i][c] = char2idx(STR_VSRCRAW[2 + 4 * stick_index + c]);
+      g_model.inputNames[i][c] = char2zchar(STR_VSRCRAW[2 + 4 * stick_index + c]);
     }
 #if LEN_INPUT_NAME > 3
     g_model.inputNames[i][3] = '\0';
@@ -377,7 +368,7 @@ void checkModelIdUnique(uint8_t index, uint8_t module) {
   memset(reusableBuffer.modelsetup.msg, 0, sizeof(reusableBuffer.modelsetup.msg));
 
   if (modelId != 0) {
-    for (uint8_t i = 0; i < MAX_MODELS; i++) {
+    for (uint32_t i = 0; i < MAX_MODELS; i++) {
       if (i != index) {
         if (modelId == modelHeaders[i].modelId[module]) {
           if ((WARNING_LINE_LEN - 4 - (name - reusableBuffer.modelsetup.msg)) > (signed)(modelHeaders[i].name[0] ? zlen(modelHeaders[i].name, LEN_MODEL_NAME) : sizeof(TR_MODEL) + 2)) {  // you cannot rely exactly on WARNING_LINE_LEN so using WARNING_LINE_LEN-2 (-2 for the ",")
@@ -410,36 +401,29 @@ void checkModelIdUnique(uint8_t index, uint8_t module) {
   }
 }
 
-uint8_t findNextUnusedModelId(uint8_t index, uint8_t module) {
-  // assume 63 is the highest Model ID
-  // and use 64 bits
-  uint8_t usedModelIds[8];
+uint8_t findNextUnusedModelId(uint8_t index, uint8_t module)
+{
+  uint8_t usedModelIds[(MAX_RXNUM + 7) / 8];
   memset(usedModelIds, 0, sizeof(usedModelIds));
 
-  for (uint8_t mod_i = 0; mod_i < MAX_MODELS; mod_i++) {
-    if (mod_i == index)
+  for (uint8_t modelIndex = 0; modelIndex < MAX_MODELS; modelIndex++) {
+    if (modelIndex == index)
       continue;
 
-    uint8_t id = modelHeaders[mod_i].modelId[module];
+    uint8_t id = modelHeaders[modelIndex].modelId[module];
     if (id == 0)
       continue;
 
-    uint8_t mask = 1;
-    for (uint8_t i = 1; i < (id & 7); i++)
-      mask <<= 1;
-
-    usedModelIds[id >> 3] |= mask;
+    uint8_t mask = 1u << (id & 7u);
+    usedModelIds[id >> 3u] |= mask;
   }
 
-  uint8_t new_id = 1;
-  uint8_t tst_mask = 1;
-  for (; new_id < MAX_RX_NUM(module); new_id++) {
-    if (!(usedModelIds[new_id >> 3] & tst_mask)) {
+  for (uint8_t id = 1; id <= MAX_RX_NUM(module); id++) {
+    uint8_t mask = 1u << (id & 7u);
+    if (!(usedModelIds[id >> 3u] & mask)) {
       // found free ID
-      return new_id;
+      return id;
     }
-    if ((tst_mask <<= 1) == 0)
-      tst_mask = 1;
   }
 
   // failed finding something...
@@ -452,7 +436,7 @@ void modelDefault(uint8_t id) {
 
   applyDefaultTemplate();
 
-#if defined(LUA) && defined(PCBTARANIS)  //Horus uses menuModelWizard() for wizard
+#if defined(LUA) && defined(PCBTARANIS)  // Horus uses menuModelWizard() for wizard
   if (isFileAvailable(WIZARD_PATH "/" WIZARD_NAME)) {
     f_chdir(WIZARD_PATH);
     luaExec(WIZARD_NAME);
@@ -462,31 +446,18 @@ void modelDefault(uint8_t id) {
 #if defined(PCBTARANIS) || defined(PCBHORUS)
   g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_XJT;
   g_model.moduleData[INTERNAL_MODULE].channelsCount = defaultModuleChannels_M8(INTERNAL_MODULE);
-#elif defined(PCBSKY9X)
-  g_model.moduleData[EXTERNAL_MODULE].type = MODULE_TYPE_PPM;
 #elif defined(PCBI6X)
-  g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_AFHDS2A_SPI;
-  g_model.moduleData[INTERNAL_MODULE].channelsStart = 0;
-  g_model.moduleData[INTERNAL_MODULE].channelsCount = MAX_OUTPUT_CHANNELS;
-  g_model.moduleData[INTERNAL_MODULE].subType = AFHDS2A_SUBTYPE_PWM_IBUS;
-  g_model.moduleData[INTERNAL_MODULE].afhds2a.servoFreq = 50;
+ g_model.moduleData[INTERNAL_MODULE].rfProtocol = RF_I6X_PROTO_OFF;
 #endif
 
 #if defined(PCBXLITE)
   g_model.trainerMode = TRAINER_MODE_MASTER_BLUETOOTH;
 #endif
 
-#if defined(EEPROM)
-  for (int i = 0; i < NUM_MODULES; i++) {
-    modelHeaders[id].modelId[i] = g_model.header.modelId[i] = id + 1;
-  }
-  checkModelIdUnique(id, 0);
-#endif
-
 #if defined(FLIGHT_MODES) && defined(GVARS)
-  for (int p = 1; p < MAX_FLIGHT_MODES; p++) {
-    for (int i = 0; i < MAX_GVARS; i++) {
-      g_model.flightModeData[p].gvars[i] = GVAR_MAX + 1;
+  for (int fmIdx = 1; fmIdx < MAX_FLIGHT_MODES; fmIdx++) {
+    for (int gvarIdx = 0; gvarIdx < MAX_GVARS; gvarIdx++) {
+      g_model.flightModeData[fmIdx].gvars[gvarIdx] = GVAR_MAX + 1;
     }
   }
 #endif
@@ -539,7 +510,7 @@ int8_t getMovedSource(GET_MOVED_SOURCE_PARAMS) {
 
   static int16_t inputsStates[MAX_INPUTS];
   if (min <= MIXSRC_FIRST_INPUT) {
-    for (uint8_t i = 0; i < MAX_INPUTS; i++) {
+    for (uint32_t i = 0; i < MAX_INPUTS; i++) {
       if (abs(anas[i] - inputsStates[i]) > 512) {
         if (!isInputRecursive(i)) {
           result = MIXSRC_FIRST_INPUT + i;
@@ -551,7 +522,7 @@ int8_t getMovedSource(GET_MOVED_SOURCE_PARAMS) {
 
   static int16_t sourcesStates[NUM_STICKS + NUM_POTS + NUM_SLIDERS + NUM_MOUSE_ANALOGS];
   if (result == 0) {
-    for (uint8_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++) {
+    for (uint32_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++) {
       if (abs(calibratedAnalogs[i] - sourcesStates[i]) > 512) {
         result = MIXSRC_Rud + i;
         break;
@@ -576,7 +547,7 @@ int8_t getMovedSource(GET_MOVED_SOURCE_PARAMS) {
 
 #if defined(FLIGHT_MODES)
 uint8_t getFlightMode() {
-  for (uint8_t i = 1; i < MAX_FLIGHT_MODES; i++) {
+  for (uint32_t i = 1; i < MAX_FLIGHT_MODES; i++) {
     FlightModeData *phase = &g_model.flightModeData[i];
     if (phase->swtch && getSwitch(phase->swtch)) {
       return i;
@@ -593,7 +564,7 @@ trim_t getRawTrimValue(uint8_t phase, uint8_t idx) {
 
 int getTrimValue(uint8_t phase, uint8_t idx) {
   int result = 0;
-  for (uint8_t i = 0; i < MAX_FLIGHT_MODES; i++) {
+  for (uint32_t i = 0; i < MAX_FLIGHT_MODES; i++) {
     trim_t v = getRawTrimValue(phase, idx);
     if (v.mode == TRIM_MODE_NONE) {
       return result;
@@ -613,7 +584,7 @@ int getTrimValue(uint8_t phase, uint8_t idx) {
 }
 
 bool setTrimValue(uint8_t phase, uint8_t idx, int trim) {
-  for (uint8_t i = 0; i < MAX_FLIGHT_MODES; i++) {
+  for (uint32_t i = 0; i < MAX_FLIGHT_MODES; i++) {
     trim_t &v = flightModeAddress(phase)->trim[idx];
     if (v.mode == TRIM_MODE_NONE)
       return false;
@@ -635,7 +606,7 @@ bool setTrimValue(uint8_t phase, uint8_t idx, int trim) {
 #if defined(ROTARY_ENCODERS)
 uint8_t getRotaryEncoderFlightMode(uint8_t idx) {
   uint8_t phase = mixerCurrentFlightMode;
-  for (uint8_t i = 0; i < MAX_FLIGHT_MODES; i++) {
+  for (uint32_t i = 0; i < MAX_FLIGHT_MODES; i++) {
     if (phase == 0)
       return 0;
     int16_t value = flightModeAddress(phase)->rotaryEncoders[idx];
@@ -679,9 +650,9 @@ ls_telemetry_value_t maxTelemValue(source_t channel) {
 #define INAC_SWITCHES_SHIFT 8
 bool inputsMoved() {
   uint8_t sum = 0;
-  for (uint8_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++)
+  for (uint32_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++)
     sum += anaIn(i) >> INAC_STICKS_SHIFT;
-  for (uint8_t i = 0; i < NUM_SWITCHES; i++)
+  for (uint32_t i = 0; i < NUM_SWITCHES; i++)
     sum += getValue(MIXSRC_FIRST_SWITCH + i) >> INAC_SWITCHES_SHIFT;
 
   if (abs((int8_t)(sum - inactivity.sum)) > 1) {
@@ -755,12 +726,6 @@ void doSplash() {
     resetBacklightTimeout();
     drawSplash();
 
-#if defined(PCBSKY9X)
-    tmr10ms_t curTime = get_tmr10ms() + 10;
-    uint8_t contrast = 10;
-    lcdSetRefVolt(contrast);
-#endif
-
     getADC();  // init ADC array
 
     inputsMoved();
@@ -796,16 +761,6 @@ void doSplash() {
       if (!secondSplash && get_tmr10ms() >= tgtime - 200) {
         secondSplash = true;
         drawSecondSplash();
-      }
-#endif
-
-#if defined(PCBSKY9X)
-      if (curTime < get_tmr10ms()) {
-        curTime += 10;
-        if (contrast < g_eeGeneral.contrast) {
-          contrast += 1;
-          lcdSetRefVolt(contrast);
-        }
       }
 #endif
 
@@ -884,6 +839,9 @@ void checkAll() {
 
   // we don't check the throttle stick if the radio is not calibrated
   if (g_eeGeneral.chkSum == evalChkSum())
+#if defined(FLYSKY_GIMBAL) // delay necessary for the throttle check to successfully detect when serial flysky gimbal throttle is not at zero
+    RTOS_WAIT_MS(23);
+#endif    
     checkThrottleStick();
 
   checkSwitches();
@@ -894,13 +852,13 @@ void checkAll() {
   checkSDVersion();
 #endif
 
-#if !defined(PCBI6X)
+#if defined(SDCARD)
   if (g_model.displayChecklist && modelHasNotes()) {
     readModelNotes();
   }
 #endif
 
-  if (!clearKeyEvents()) {
+  if (!waitKeysReleased()) {
     showMessageBox(STR_KEYSTUCK);
     tmr10ms_t tgtime = get_tmr10ms() + 500;
     while (tgtime != get_tmr10ms()) {
@@ -1021,12 +979,14 @@ void alert(const char *title, const char *msg, uint8_t sound) {
 
     wdt_reset();
 
+#if !defined(PCBI6X) // no software controlled power on i6X
     const uint32_t pwr_check = pwrCheck();
     if (pwr_check == e_power_off) {
       drawSleepBitmap();
       boardOff();
       return;  // only happens in SIMU, required for proper shutdown
     }
+#endif
 #if defined(PWR_BUTTON_PRESS)
     else if (pwr_check == e_power_press) {
       refresh = true;
@@ -1318,7 +1278,7 @@ uint16_t s_sum_samples_thr_10s;
 
 void evalTrims() {
   uint8_t phase = mixerCurrentFlightMode;
-  for (uint8_t i = 0; i < NUM_TRIMS; i++) {
+  for (uint32_t i = 0; i < NUM_TRIMS; i++) {
     // do trim -> throttle trim if applicable
     int16_t trim = getTrimValue(phase, i);
     if (trimsCheckTimer > 0) {
@@ -1351,12 +1311,6 @@ void doMixerCalculations() {
   DEBUG_TIMER_START(debugTimerGetSwitches);
   getSwitchesPosition(!s_mixer_first_run_done);
   DEBUG_TIMER_STOP(debugTimerGetSwitches);
-
-#if defined(PCBSKY9X) && !defined(REVA) && !defined(SIMU)
-  Current_analogue = (Current_analogue * 31 + s_anaFilt[8]) >> 5;
-  if (Current_analogue > Current_max)
-    Current_max = Current_analogue;
-#endif
 
   DEBUG_TIMER_START(debugTimerEvalMixes);
   evalMixes(tick10ms);
@@ -1428,8 +1382,9 @@ void doMixerPeriodicUpdates()
       s_cnt_1s += 1;
 
       logicalSwitchesTimerTick();
+#if defined(SBUS_TRAINER)
       checkTrainerSignalWarning();
-
+#endif
       if (s_cnt_1s >= 10) {  // 1sec
         s_cnt_1s -= 10;
         sessionTimer += 1;
@@ -1438,15 +1393,9 @@ void doMixerPeriodicUpdates()
           AUDIO_INACTIVITY();
 
 #if defined(AUDIO) || defined(PCBI6X)
-        if (mixWarning & 1)
-          if ((sessionTimer & 0x03) == 0)
-            AUDIO_MIX_WARNING(1);
-        if (mixWarning & 2)
-          if ((sessionTimer & 0x03) == 1)
-            AUDIO_MIX_WARNING(2);
-        if (mixWarning & 4)
-          if ((sessionTimer & 0x03) == 2)
-            AUDIO_MIX_WARNING(3);
+        if (mixWarning & 1) if ((sessionTimer & 0x03) == 0) AUDIO_MIX_WARNING(1);
+        if (mixWarning & 2) if ((sessionTimer & 0x03) == 1) AUDIO_MIX_WARNING(2);
+        if (mixWarning & 4) if ((sessionTimer & 0x03) == 2) AUDIO_MIX_WARNING(3);
 #endif
 
         val = s_sum_samples_thr_1s / s_cnt_samples_thr_1s;
@@ -1479,7 +1428,7 @@ void doMixerPeriodicUpdates()
 
 #if defined(PXX) || defined(DSM2) || defined(PCBI6X)
     static uint8_t countRangecheck = 0;
-    for (uint8_t i = 0; i < NUM_MODULES; ++i) {
+    for (uint32_t i = 0; i < NUM_MODULES; ++i) {
 #if defined(MULTIMODULE)
       if (moduleState[i].mode != MODULE_MODE_NORMAL || (i == EXTERNAL_MODULE && multiModuleStatus.isBinding())) {
 #else
@@ -1517,12 +1466,6 @@ void opentxStart(const uint8_t startOptions = OPENTX_START_DEFAULT_ARGS) {
 
 #if defined(DEBUG_TRACE_BUFFER)
   trace_event(trace_start, 0x12345678);
-#endif
-
-#if defined(PCBSKY9X) && defined(SDCARD) && !defined(SIMU)
-  for (int i = 0; i < 500 && !Card_initialized; i++) {
-    RTOS_WAIT_MS(2);  // 2ms
-  }
 #endif
 
 #if defined(NIGHTLY_BUILD_WARNING)
@@ -1568,9 +1511,11 @@ void opentxClose(uint8_t shutdown) {
 
   saveAllData();
 
+#if !defined(PCBI6X)
   while (IS_PLAYING(ID_PLAY_PROMPT_BASE + AU_BYE)) {
     RTOS_WAIT_MS(10);
   }
+#endif
 
   RTOS_WAIT_MS(100);
 
@@ -1587,13 +1532,6 @@ void saveAllData() {
     g_eeGeneral.globalTimer += sessionTimer;
     sessionTimer = 0;
   }
-
-#if defined(PCBSKY9X)
-  uint32_t mAhUsed = g_eeGeneral.mAhUsed + Current_used * (488 + g_eeGeneral.txCurrentCalibration) / 8192 / 36;
-  if (g_eeGeneral.mAhUsed != mAhUsed) {
-    g_eeGeneral.mAhUsed = mAhUsed;
-  }
-#endif
 
   g_eeGeneral.unexpectedShutdown = 0;
   storageDirty(EE_GENERAL);
@@ -1615,8 +1553,9 @@ void opentxResume() {
 
   // removed to avoid the double warnings (throttle, switch, etc.)
   // opentxStart(OPENTX_START_NO_SPLASH | OPENTX_START_NO_CALIBRATION | OPENTX_START_NO_CHECKS);
-
+#if defined(AUDIO)
   referenceSystemAudioFiles();
+#endif
 
   if (!g_eeGeneral.unexpectedShutdown) {
     g_eeGeneral.unexpectedShutdown = 1;
@@ -1705,13 +1644,13 @@ void moveTrimsToOffsets()  // copy state of 3 primary to subtrim
   pauseMixerCalculations();
 
   evalFlightModeMixes(e_perout_mode_noinput, 0);  // do output loop - zero input sticks and trims
-  for (uint8_t i = 0; i < MAX_OUTPUT_CHANNELS; i++) {
+  for (uint32_t i = 0; i < MAX_OUTPUT_CHANNELS; i++) {
     zeros[i] = applyLimits(i, chans[i]);
   }
 
   evalFlightModeMixes(e_perout_mode_noinput - e_perout_mode_notrims, 0);  // do output loop - only trims
 
-  for (uint8_t i = 0; i < MAX_OUTPUT_CHANNELS; i++) {
+  for (uint32_t i = 0; i < MAX_OUTPUT_CHANNELS; i++) {
     int16_t output = applyLimits(i, chans[i]) - zeros[i];
     int16_t v = g_model.limitData[i].offset;
     if (g_model.limitData[i].revert)
@@ -1721,7 +1660,7 @@ void moveTrimsToOffsets()  // copy state of 3 primary to subtrim
   }
 
   // reset all trims, except throttle (if throttle trim)
-  for (uint8_t i = 0; i < NUM_TRIMS; i++) {
+  for (uint32_t i = 0; i < NUM_TRIMS; i++) {
     if (i != THR_STICK || !g_model.thrTrim) {
       int16_t original_trim = getTrimValue(mixerCurrentFlightMode, i);
       for (uint8_t fm = 0; fm < MAX_FLIGHT_MODES; fm++) {
@@ -1764,7 +1703,6 @@ void opentxInit()
 #endif
 
 #if defined(EEPROM)
-  TRACE("storageReadRadioSettings");
   storageReadRadioSettings();
 #endif
 
@@ -1779,7 +1717,7 @@ void opentxInit()
     globalData.unexpectedShutdown = 1;
   }
 
-#if defined(SDCARD) && !defined(PCBMEGA2560)
+#if defined(SDCARD)
   // SDCARD related stuff, only done if not unexpectedShutdown
   if (!globalData.unexpectedShutdown) {
     sdInit();
@@ -1788,7 +1726,6 @@ void opentxInit()
 #endif
 
 #if defined(EEPROM)
-  TRACE("storageReadCurrentModel");
   storageReadCurrentModel();
 #endif
 
@@ -1850,16 +1787,11 @@ void opentxInit()
   audioQueue.start();
 #endif
 
+#if defined(DFPLAYER)
+  dfplayerSetVolume(g_eeGeneral.wavVolume);
+#endif
+
   BACKLIGHT_ENABLE();
-
-#if defined(PCBSKY9X)
-  // Set ADC gains here
-  setSticksGain(g_eeGeneral.sticksGain);
-#endif
-
-#if defined(PCBSKY9X) && defined(BLUETOOTH)
-  btInit();
-#endif
 
 #if defined(PCBHORUS)
   loadTheme();
@@ -1874,7 +1806,7 @@ void opentxInit()
   if (!globalData.unexpectedShutdown) {
     opentxStart();
   }
-  TRACE("start done");
+
   // TODO Horus does not need this
   if (!g_eeGeneral.unexpectedShutdown) {
     g_eeGeneral.unexpectedShutdown = 1;
@@ -2041,6 +1973,10 @@ uint32_t pwrCheck() {
     pwr_press_time = 0;
   }
 
+  return e_power_on;
+}
+#elif defined(PCBI6X) // no software controlled power on i6X
+uint32_t pwrCheck() {
   return e_power_on;
 }
 #else

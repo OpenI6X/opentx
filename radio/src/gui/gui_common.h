@@ -51,6 +51,7 @@ bool isSourceAvailableInResetSpecialFunction(int index);
 bool isSourceAvailableInGlobalResetSpecialFunction(int index);
 bool isSwitchAvailableInLogicalSwitches(int swtch);
 bool isSwitchAvailableInCustomFunctions(int swtch);
+bool isSwitchAvailableForArming(int swtch);
 bool isSwitchAvailableInMixes(int swtch);
 bool isSwitchAvailableInTimers(int swtch);
 bool isR9MModeAvailable(int mode);
@@ -89,7 +90,7 @@ void drawFlightMode(coord_t x, coord_t y, int8_t idx, LcdFlags att=0);
 swsrc_t checkIncDecMovedSwitch(swsrc_t val);
 
 #include "telemetry/telemetry_sensors.h"
-void drawValueWithUnit(coord_t x, coord_t y, int val, uint8_t unit, LcdFlags flags);
+void drawValueWithUnit(coord_t x, coord_t y, int32_t val, uint8_t unit, LcdFlags flags);
 void drawCurveRef(coord_t x, coord_t y, CurveRef & curve, LcdFlags flags=0);
 void drawDate(coord_t x, coord_t y, TelemetryItem & telemetryItem, LcdFlags flags=0);
 void drawTelemScreenDate(coord_t x, coord_t y, source_t sensor, LcdFlags flags=0);
@@ -149,8 +150,10 @@ const mm_protocol_definition *getMultiProtocolDefinition (uint8_t protocol);
 #define MULTIMODULE_OPTIONS_ROW         HIDDEN_ROW
 #endif
 
+#define MAX_RXNUM                      63
+
 #if defined(PCBI6X)
-#define MAX_RX_NUM(x)                  (isModuleA7105(x) ? 15 : 63)
+#define MAX_RX_NUM(x)                  (isModuleA7105(x) ? 15 : MAX_RXNUM)
 #else
 #define MAX_RX_NUM(x)                  (isModuleDSM2(x) ? 20 : isModuleMultimodule(x) ? MULTI_MAX_RX_NUM(x) : 63)
 #endif

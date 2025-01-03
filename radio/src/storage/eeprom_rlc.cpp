@@ -112,7 +112,7 @@ void eepromCheck()
   blkid_t blk ;
 
   blkid_t blocksCount;
-  for (uint8_t i=0; i<=MAXFILES; i++) {
+  for (uint32_t i=0; i<=MAXFILES; i++) {
     blocksCount = 0;
     blkid_t blk = (i==MAXFILES ? eeFs.freeList : eeFs.files[i].startBlk);
     blkid_t lastBlk = 0;
@@ -467,7 +467,7 @@ const char * eeBackupModel(uint8_t i_fileSrc)
       len = i+1;
     if (len) {
       if (buf[i])
-        buf[i] = idx2char(buf[i]);
+        buf[i] = zchar2char(buf[i]);
       else
         buf[i] = '_';
     }
@@ -773,7 +773,7 @@ bool eeLoadGeneral()
   theFile.openRlc(FILE_GENERAL);
   if (theFile.readRlc((uint8_t*)&g_eeGeneral, 3) == 3 && g_eeGeneral.version == EEPROM_VER) {
     theFile.openRlc(FILE_GENERAL);
-    if (theFile.readRlc((uint8_t*)&g_eeGeneral, sizeof(g_eeGeneral)) <= sizeof(g_eeGeneral) && g_eeGeneral.variant == EEPROM_VARIANT) {
+    if (theFile.readRlc((uint8_t*)&g_eeGeneral, sizeof(g_eeGeneral)) <= sizeof(g_eeGeneral) /*&& g_eeGeneral.variant == EEPROM_VARIANT*/) {
       return true;
     }
   }

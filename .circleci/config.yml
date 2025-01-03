@@ -3,68 +3,9 @@
 version: 2.1
 
 jobs:
-  sonar-scan:
-    docker:
-      - image: cimg/python:3.10.4
-    steps:
-      - checkout
-      - run:
-          name: Build
-          command: |
-            wget https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2 -P /tmp
-            tar -C /tmp -xjf /tmp/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
-            export PATH=$PATH:/tmp/gcc-arm-none-eabi-4_7-2013q3/bin
-            pip3 install pillow libclang-py3 pyqt5
-            sudo apt-get update -y
-            sudo apt-get install -y libclang-6.0-dev
-            curl -L -O https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
-            unzip -o build-wrapper-linux-x86.zip
-            build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw_output ./tools/commit-tests.sh -Wno-error
-      - sonarcloud/scan
-
-  build-elrsv3:
-    docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.0.0
-    steps:
-      - checkout
-      - run: |
-          python3 ./tools/build-flysky.py -bI6X_ELRSV3 -tALL $PWD/
-      - store_artifacts:
-          path: output
-
-  build-elrsv3-backlight:
-    docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.0.0
-    steps:
-      - checkout
-      - run: |
-          python3 ./tools/build-flysky.py -bI6X_ELRSV3_BACKLIGHT_MOD -tALL $PWD/
-      - store_artifacts:
-          path: output
-
-  build-heli:
-    docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.0.0
-    steps:
-      - checkout
-      - run: |
-          python3 ./tools/build-flysky.py -bI6X_HELI -tALL $PWD/
-      - store_artifacts:
-          path: output
-
-  build-heli-backlight:
-    docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.0.0
-    steps:
-      - checkout
-      - run: |
-          python3 ./tools/build-flysky.py -bI6X_HELI_BACKLIGHT_MOD -tALL $PWD/
-      - store_artifacts:
-          path: output
-
   build-std:
     docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.0.0
+      - image: ajjjjjjjj/opentx-docker-i6x:1.4.0
     steps:
       - checkout
       - run: |
@@ -72,98 +13,76 @@ jobs:
       - store_artifacts:
           path: output
 
-  build-std-backlight:
+  build-std-dfplayer:
     docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.0.0
+      - image: ajjjjjjjj/opentx-docker-i6x:1.4.0
     steps:
       - checkout
       - run: |
-          python3 ./tools/build-flysky.py -bI6X_BACKLIGHT_MOD -tALL $PWD/
+          python3 ./tools/build-flysky.py -bI6X_DFPLAYER -tALL $PWD/
+      - store_artifacts:
+          path: output
+
+  build-heli:
+    docker:
+      - image: ajjjjjjjj/opentx-docker-i6x:1.4.0
+    steps:
+      - checkout
+      - run: |
+          python3 ./tools/build-flysky.py -bI6X_HELI -tALL $PWD/
+      - store_artifacts:
+          path: output
+
+  build-heli-dfplayer:
+    docker:
+      - image: ajjjjjjjj/opentx-docker-i6x:1.4.0
+    steps:
+      - checkout
+      - run: |
+          python3 ./tools/build-flysky.py -bI6X_HELI_DFPLAYER -tALL $PWD/
       - store_artifacts:
           path: output
 
   build-en:
     docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.0.0
+      - image: ajjjjjjjj/opentx-docker-i6x:1.4.0
     steps:
       - checkout
       - run: |
-          python3 ./tools/build-flysky.py -bI6X_ELRSV3_BACKLIGHT_MOD -bI6X_HELI -bI6X -tEN $PWD/
+          python3 ./tools/build-flysky.py -bI6X_DFPLAYER -bI6X_HELI -bI6X -tEN $PWD/
       - store_artifacts:
           path: output
-
-#  publish-github-release:
-#    docker:
-#      - image: cibuilds/github:0.13
-#    steps:
-#      - attach_workspace:
-#          at: /tmp
-#      - run:
-#          name: "Publish Release on GitHub"
-#          command: |
-#            ls -la
-#            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete nightly-latest $CIRCLE_ARTIFACTS/
-
-#orbs:
-#  sonarcloud: sonarsource/sonarcloud@1.0.3
 
 workflows:
   openi6x-release-workflow:
     jobs:
-#      - sonar-scan:
-#          context: SonarCloud
       - build-en:
           filters:
             branches:
               ignore:
                 - master
-#          requires:
-#            - sonar-scan
-      - build-elrsv3:
-          filters:
-            branches:
-              only:
-                - master
-#          requires:
-#            - sonar-scan
-      - build-elrsv3-backlight:
-          filters:
-            branches:
-              only:
-                - master
-#          requires:
-#            - sonar-scan
-      - build-heli:
-          filters:
-            branches:
-              only:
-                - master
-#          requires:
-#            - sonar-scan
-      - build-heli-backlight:
-          filters:
-            branches:
-              only:
-                - master
-#          requires:
-#            - sonar-scan
+                - /.*-maintenance/
       - build-std:
           filters:
             branches:
               only:
                 - master
-      - build-std-backlight:
+                - /.*-maintenance/
+      - build-std-dfplayer:
           filters:
             branches:
               only:
                 - master
-#          requires:
-#            - sonar-scan
-#      - publish-github-release:
-##          filters:
-##            branches:
-##              only: master
-#          requires:
-#            - build-elrsv3
-#            - build-gvars
-#            - build-heli
+                - /.*-maintenance/
+      - build-heli:
+          filters:
+            branches:
+              only:
+                - master
+                - /.*-maintenance/
+      - build-heli-dfplayer:
+          filters:
+            branches:
+              only:
+                - master
+                - /.*-maintenance/

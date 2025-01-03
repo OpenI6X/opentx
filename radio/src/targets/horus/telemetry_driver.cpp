@@ -179,7 +179,7 @@ extern "C" void TELEMETRY_DMA_TX_IRQHandler(void)
     // clear TC flag before enabling interrupt
     TELEMETRY_USART->SR &= ~USART_SR_TC;
     TELEMETRY_USART->CR1 |= USART_CR1_TCIE;
-    if (telemetryProtocol == PROTOCOL_FRSKY_SPORT) {
+    if (telemetryProtocol == PROTOCOL_TELEMETRY_FRSKY_SPORT) {
       outputTelemetryBufferSize = 0;
       outputTelemetryBufferTrigger = 0x7E;
     }
@@ -209,7 +209,7 @@ extern "C" void TELEMETRY_USART_IRQHandler(void)
     else {
       telemetryNoDMAFifo.push(data);
 #if defined(LUA)
-      if (telemetryProtocol == PROTOCOL_FRSKY_SPORT) {
+      if (telemetryProtocol == PROTOCOL_TELEMETRY_FRSKY_SPORT) {
         static uint8_t prevdata;
         if (prevdata == 0x7E && outputTelemetryBufferSize > 0 && data == outputTelemetryBufferTrigger) {
           sportSendBuffer(outputTelemetryBuffer, outputTelemetryBufferSize);

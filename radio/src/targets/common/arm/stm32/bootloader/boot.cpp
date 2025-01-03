@@ -97,7 +97,7 @@ void interrupt10ms(void) {
 
   uint8_t index = 0;
   uint8_t in = readKeys();
-  for (uint8_t i = 1; i != uint8_t(1 << TRM_BASE); i <<= 1) {
+  for (uint32_t i = 1; i != uint8_t(1 << TRM_BASE); i <<= 1) {
     uint8_t value = (in & i);
     keys[index].input(value);
     ++index;

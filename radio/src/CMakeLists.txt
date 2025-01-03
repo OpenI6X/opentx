@@ -3,7 +3,8 @@ include(Bitmaps)
 
 set(PCB_TYPES X7 XLITE X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X I6X)
 set(GUI_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL)
-set(TTS_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL RU)
+#set(TTS_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL RU)
+set(TTS_LANGUAGES EN) # i6X dfplayer
 
 set(PCB "X9D+" CACHE STRING "Radio type, one of: ${PCB_TYPES}")
 set_property(CACHE PCB PROPERTY STRINGS ${PCB_TYPES})
@@ -48,7 +49,8 @@ option(FRSKY_STICKS "Reverse sticks for FrSky sticks" OFF)
 option(NANO "Use nano newlib and binalloc")
 option(NIGHTLY_BUILD_WARNING "Warn this is a nightly build" OFF)
 option(MODULE_R9M_FLEX_FW "Add R9M options for non certified firmwwares" OFF)
-option(PXX2 "Enable PXX v2 support" OFF)
+option(EXTPWR_INVERT "Enable inverted pwr enable on PC13" OFF)
+option(CRSF_FULLDUPLEX "Enable CRSF full duplex mode with RX on PA15" OFF)
 
 # since we reset all default CMAKE compiler flags for firmware builds, provide an alternate way for user to specify additional flags.
 set(FIRMWARE_C_FLAGS "" CACHE STRING "Additional flags for firmware target c compiler (note: all CMAKE_C_FLAGS[_*] are ignored for firmware/bootloader).")
@@ -334,8 +336,12 @@ if(MODULE_R9M_FLEX_FW)
   add_definitions(-DMODULE_R9M_FLEX_FW)
 endif()
 
-if(PXX2)
-  add_definitions(-DPXX2)
+if(EXTPWR_INVERT)
+  add_definitions(-DEXTPWR_INVERT)
+endif()
+
+if(CRSF_FULLDUPLEX)
+  add_definitions(-DCRSF_FULLDUPLEX)
 endif()
 
 set(SRC
@@ -378,8 +384,6 @@ endforeach()
 foreach(FILE ${PULSES_SRC})
   set(SRC ${SRC} pulses/${FILE})
 endforeach()
-
-add_definitions(-DCORRECT_NEGATIVE_SHIFTS)
 
 if(NOT MSVC)
   set(WARNING_FLAGS "${WARNING_FLAGS} -Wall -Wno-address-of-packed-member -Wno-strict-aliasing -Wformat -Wreturn-type -Wunused -Wuninitialized -Wunknown-pragmas -Wno-switch -Wtype-limits")
@@ -450,7 +454,7 @@ if(NOT MSVC)
     set(CMAKE_SYSTEM_VERSION 1)
     set(CMAKE_ASM_COMPILE_OBJECT "<CMAKE_ASM_COMPILER> -o <OBJECT> <SOURCE>")
 
-    set(COMMON_FLAGS "-mcpu=${MCU} -mthumb -fomit-frame-pointer -fverbose-asm -Wa,-ahlms=firmware.lst -O${OPT} -flto -gdwarf-2 -DHSE_VALUE=${HSE_VALUE} -fno-exceptions -fdata-sections -ffunction-sections ${WARNING_FLAGS}")
+    set(COMMON_FLAGS "-mcpu=${MCU} -mthumb -fomit-frame-pointer -fverbose-asm -Wa,-ahlms=firmware.lst -O${OPT} -flto=auto -gdwarf-2 -DHSE_VALUE=${HSE_VALUE} -fno-exceptions -fdata-sections -ffunction-sections ${WARNING_FLAGS}")
     set(COMMON_FLAGS "${COMMON_FLAGS} ${FPU_FLAGS}")
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -Wimplicit")

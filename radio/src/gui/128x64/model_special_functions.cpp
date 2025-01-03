@@ -61,8 +61,8 @@ void onCustomFunctionsFileSelectionMenu(const char * result)
       POPUP_WARNING(func==FUNC_PLAY_SCRIPT ? STR_NO_SCRIPTS_ON_SD : STR_NO_SOUNDS_ON_SD);
     }
   }
-  else {
-    // The user choosed a file in the list
+  else if (result != STR_EXIT) {
+    // The user chosen a file in the list
     memcpy(cfn->play.name, result, sizeof(cfn->play.name));
     storageDirty(eeFlags);
   }
@@ -95,7 +95,7 @@ void onAdjustGvarSourceLongEnterPress(const char * result)
     CFN_PARAM(cfn) = 0;
     storageDirty(EE_MODEL);
   }
-  else {
+  else if (result != STR_EXIT) {
     onSourceLongEnterPress(result);
   }
 }
@@ -187,13 +187,13 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
 #endif
 #endif // PCBTARANIS, PCBI6X
 
-  for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
+  for (uint32_t i=0; i<NUM_BODY_LINES; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     uint8_t k = i+menuVerticalOffset;
 
     CustomFunctionData * cfn = &functions[k];
     uint8_t func = CFN_FUNC(cfn);
-    for (uint8_t j=0; j<5; j++) {
+    for (uint32_t j=0; j<5; j++) {
       uint8_t attr = ((sub==k && menuHorizontalPosition==j) ? ((s_editMode>0) ? BLINK|INVERS : INVERS) : 0);
       uint8_t active = (attr && (s_editMode>0 || p1valdiff));
       switch (j) {
@@ -332,6 +332,15 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
             }
             break;
           }
+#endif // SDCARD
+#if defined(DFPLAYER)
+          else if (func == FUNC_PLAY_TRACK) {
+            val_min = DFPLAYER_CUSTOM_FILE_INDEX;
+            val_max = DFPLAYER_LAST_FILE_INDEX;
+            if (val_displayed < val_min) val_displayed = val_min;
+            // lcdDrawNumber(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, val_displayed, attr|LEFT);
+            editChoice(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, "", audioNames, val_displayed, DFPLAYER_CUSTOM_FILE_INDEX, DFPLAYER_LAST_FILE_INDEX, attr, event);
+          }
           else if (func == FUNC_PLAY_VALUE) {
             val_max = MIXSRC_LAST_TELEM;
             drawSource(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, val_displayed, attr);
@@ -340,7 +349,7 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
               INCDEC_ENABLE_CHECK(functionsContext == &globalFunctionsContext ? isSourceAvailableInGlobalFunctions : isSourceAvailable);
             }
           }
-#endif // SDCARD
+#endif // SDCARD || DFPLAYER
 #if !defined(PCBI6X)
           else if (func == FUNC_VOLUME) {
             val_max = MIXSRC_LAST_CH;

@@ -240,7 +240,7 @@ void menuModelExpoOne(event_t event)
 
   coord_t y = MENU_HEADER_HEIGHT + 1;
 
-  for (uint8_t i=0; i<EXPO_FIELD_MAX+1; i++) {
+  for (uint32_t i=0; i<EXPO_FIELD_MAX+1; i++) {
     uint8_t attr = (sub==i ? (s_editMode>0 ? BLINK|INVERS : INVERS) : 0);
     switch (i) {
       case EXPO_FIELD_NAME:
@@ -271,7 +271,7 @@ void menuModelExpoOne(event_t event)
             CHECK_INCDEC_MODELVAR_ZERO(event, ed->curveParam, CURVE_BASE+MAX_CURVES-1);
             if (ed->curveParam) ed->curveMode = MODE_CURVE;
             if (ed->curveParam>=CURVE_BASE && event==EVT_KEY_LONG(KEY_ENTER)) {
-              s_curveChan = ed->curveParam - CURVE_BASE;
+              s_currIdxSubMenu = ed->curveParam - CURVE_BASE;
               pushMenu(menuModelCurveOne);
             }
           }
@@ -361,13 +361,13 @@ void drawOffsetBar(uint8_t x, uint8_t y, MixData * md)
   }
   lcdDrawSolidVerticalLine(x+GAUGE_WIDTH/2-1, y, GAUGE_HEIGHT+1);
   if (barMin == -101) {
-    for (uint8_t i=0; i<3; ++i) {
+    for (uint32_t i=0; i<3; ++i) {
       lcdDrawPoint(x+i, y+4-i);
       lcdDrawPoint(x+3+i, y+4-i);
     }
   }
   if (barMax == 101) {
-    for (uint8_t i=0; i<3; ++i) {
+    for (uint32_t i=0; i<3; ++i) {
       lcdDrawPoint(x+GAUGE_WIDTH-8+i, y+4-i);
       lcdDrawPoint(x+GAUGE_WIDTH-5+i, y+4-i);
     }
@@ -404,17 +404,17 @@ void menuModelMixOne(event_t event)
         editSingleName(COLUMN_X+MIXES_2ND_COLUMN, y, STR_MIXNAME, md2->name, sizeof(md2->name), event, attr);
         break;
       case MIX_FIELD_SOURCE:
-        drawFieldLabel(COLUMN_X, y, STR_SOURCE);
+        lcdDrawTextAlignedLeft(y, STR_SOURCE);
         drawSource(COLUMN_X+MIXES_2ND_COLUMN, y, md2->srcRaw, STREXPANDED|attr);
         if (attr) CHECK_INCDEC_MODELSOURCE(event, md2->srcRaw, 1, MIXSRC_LAST);
         break;
       case MIX_FIELD_WEIGHT:
-        drawFieldLabel(COLUMN_X, y, STR_WEIGHT);
+        lcdDrawTextAlignedLeft(y, STR_WEIGHT);
         gvarWeightItem(COLUMN_X+MIXES_2ND_COLUMN, y, md2, attr|LEFT, event);
         break;
       case MIX_FIELD_OFFSET:
       {
-        drawFieldLabel(COLUMN_X, y, STR_OFFSET);
+        lcdDrawTextAlignedLeft(y, STR_OFFSET);
         u_int8int16_t offset;
         MD_OFFSET_TO_UNION(md2, offset);
         offset.word = GVAR_MENU_ITEM(COLUMN_X+MIXES_2ND_COLUMN, y, offset.word, GV_RANGELARGE_OFFSET_NEG, GV_RANGELARGE_OFFSET, attr|LEFT, 0, event);
@@ -427,7 +427,7 @@ void menuModelMixOne(event_t event)
       {
         uint8_t not_stick = (md2->srcRaw > NUM_STICKS);
         int8_t carryTrim = -md2->carryTrim;
-        drawFieldLabel(COLUMN_X, y, STR_TRIM);
+        lcdDrawTextAlignedLeft(y, STR_TRIM);
         lcdDrawTextAtIndex((not_stick ? COLUMN_X+MIXES_2ND_COLUMN : COLUMN_X+6*FW-3), y, STR_VMIXTRIMS, (not_stick && carryTrim == 0) ? 0 : carryTrim+1, menuHorizontalPosition==0 ? attr : 0);
         if (attr && menuHorizontalPosition==0 && (not_stick || editMode>0)) md2->carryTrim = -checkIncDecModel(event, carryTrim, not_stick ? TRIM_ON : -TRIM_OFF, -TRIM_AIL);
         if (!not_stick) {
@@ -443,13 +443,13 @@ void menuModelMixOne(event_t event)
 
       case MIX_FIELD_CURVE:
       {
-        drawFieldLabel(COLUMN_X, y, STR_CURVE);
+        lcdDrawTextAlignedLeft(y, STR_CURVE);
         int8_t curveParam = md2->curveParam;
         if (md2->curveMode == MODE_CURVE) {
           drawCurveName(COLUMN_X+MIXES_2ND_COLUMN, y, curveParam, attr);
           if (attr) {
             if (event==EVT_KEY_LONG(KEY_ENTER) && (curveParam<0 || curveParam>=CURVE_BASE)){
-              s_curveChan = (curveParam<0 ? -curveParam-1 : curveParam-CURVE_BASE);
+              s_currIdxSubMenu = (curveParam<0 ? -curveParam-1 : curveParam-CURVE_BASE);
               pushMenu(menuModelCurveOne);
             }
             else {
@@ -482,7 +482,7 @@ void menuModelMixOne(event_t event)
         md2->swtch = editSwitch(COLUMN_X+MIXES_2ND_COLUMN, y, md2->swtch, attr, event);
         break;
       case MIX_FIELD_WARNING:
-        drawFieldLabel(COLUMN_X+MIXES_2ND_COLUMN, y, STR_MIXWARNING);
+        lcdDrawTextAlignedLeft(y, STR_MIXWARNING);
         if (md2->mixWarn)
           lcdDrawNumber(COLUMN_X+MIXES_2ND_COLUMN, y, md2->mixWarn, attr|LEFT);
         else

@@ -127,12 +127,12 @@ void drawGauge(coord_t x, coord_t y, coord_t w, coord_t h, int32_t val, int32_t 
 
 void title(const char * s)
 {
-  lcdDrawText(0, 0, s, INVERS);
+  lcdDrawTextAlignedLeft(0, s, INVERS);
 }
 
 choice_t editChoice(coord_t x, coord_t y, const char * label, const char *values, choice_t value, choice_t min, choice_t max, LcdFlags attr, event_t event)
 {
-  drawFieldLabel(x, y, label);
+  lcdDrawTextAlignedLeft(y, label);
   if (values) lcdDrawTextAtIndex(x, y, values, value-min, attr);
   if (attr & (~RIGHT)) value = checkIncDec(event, value, min, max, (menuVerticalPositions[0] == 0) ? EE_MODEL : EE_GENERAL);
   return value;
@@ -146,7 +146,7 @@ uint8_t editCheckBox(uint8_t value, coord_t x, coord_t y, const char *label, Lcd
 
 swsrc_t editSwitch(coord_t x, coord_t y, swsrc_t value, LcdFlags attr, event_t event)
 {
-  drawFieldLabel(x, y, STR_SWITCH);
+  lcdDrawTextAlignedLeft(y, STR_SWITCH);
   drawSwitch(x,  y, value, attr);
   if (attr & (~RIGHT)) CHECK_INCDEC_MODELSWITCH(event, value, SWSRC_FIRST_IN_MIXES, SWSRC_LAST_IN_MIXES, isSwitchAvailableInMixes);
   return value;

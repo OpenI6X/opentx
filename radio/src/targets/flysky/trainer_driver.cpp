@@ -38,6 +38,7 @@ void stop_trainer_capture()
   // nothing to do because it would stop EXTMODULE_TIMER
 }
 
+#if defined(SBUS_TRAINER)
 int sbusGetByte(uint8_t * byte)
 {
   switch (currentTrainerMode) {
@@ -49,3 +50,4 @@ int sbusGetByte(uint8_t * byte)
       return false;
   }
 }
+#endif

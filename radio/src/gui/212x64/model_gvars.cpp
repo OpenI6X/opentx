@@ -91,13 +91,13 @@ void menuModelGVarOne(event_t event)
         break;
 
       case GVAR_FIELD_MIN:
-        lcdDrawText(0, y, STR_MIN);
+        lcdDrawTextAlignedLeft(y, STR_MIN);
         drawGVarValue(GVAR_2ND_COLUMN, y, s_currIdx, GVAR_MIN+gvar->min, LEFT|attr);
         if (attr) gvar->min = checkIncDec(event, GVAR_MIN+gvar->min, GVAR_MIN, GVAR_MAX-gvar->max, EE_MODEL) - GVAR_MIN;
         break;
 
       case GVAR_FIELD_MAX:
-        lcdDrawText(0, y, STR_MAX);
+        lcdDrawTextAlignedLeft(y, STR_MAX);
         drawGVarValue(GVAR_2ND_COLUMN, y, s_currIdx, GVAR_MAX-gvar->max, LEFT|attr);
         if (attr) gvar->max = GVAR_MAX - checkIncDec(event, GVAR_MAX-gvar->max, GVAR_MIN+gvar->min, GVAR_MAX, EE_MODEL);
         break;

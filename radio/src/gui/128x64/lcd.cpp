@@ -66,7 +66,7 @@ void lcdPutPattern(coord_t x, coord_t y, const uint8_t * pattern, uint8_t width,
       }
       else if (i<=width) {
         uint8_t skip = true;
-        for (uint8_t j=0; j<lines; j++) {
+        for (uint32_t j=0; j<lines; j++) {
           b[j] = *(pattern++); /*top byte*/
           if (b[j] != 0xff) {
             skip = false;
@@ -74,7 +74,7 @@ void lcdPutPattern(coord_t x, coord_t y, const uint8_t * pattern, uint8_t width,
         }
         if (skip) {
           if (flags & FIXEDWIDTH) {
-            for (uint8_t j=0; j<lines; j++) {
+            for (uint32_t j=0; j<lines; j++) {
               b[j] = 0;
             }
           }
@@ -129,7 +129,7 @@ uint8_t getPatternWidth(const PatternData * pattern)
   uint8_t lines = (pattern->height+7)/8;
   const uint8_t * data = pattern->data;
   for (int8_t i=0; i<pattern->width; i++) {
-    for (uint8_t j=0; j<lines; j++) {
+    for (uint32_t j=0; j<lines; j++) {
       if (data[j] != 0xff) {
         result += 1;
         break;
@@ -292,7 +292,7 @@ uint8_t getTextWidth(const char * s, uint8_t len, LcdFlags flags)
 {
   uint8_t width = 0;
   for (int i=0; len==0 || i<len; ++i) {
-    unsigned char c = (flags & ZCHAR) ? idx2char(*s) : *s;
+    unsigned char c = (flags & ZCHAR) ? zchar2char(*s) : *s;
     if (!c) {
       break;
     }
@@ -328,7 +328,7 @@ void lcdDrawSizedText(coord_t x, coord_t y, const char * s, uint8_t len, LcdFlag
     switch (flags & ZCHAR) {
 #if !defined(BOOT)
       case ZCHAR:
-        c = idx2char(*s);
+        c = zchar2char(*s);
         break;
 #endif
       default:
@@ -588,10 +588,10 @@ void drawTelemetryTopBar()
 {
   putsModelName(0, 0, g_model.header.name, g_eeGeneral.currModel, 0);
   uint8_t att = (IS_TXBATT_WARNING() ? BLINK : 0);
-  putsVBat(14*FW,0,att);
+  putsVBat(10*FW-1,0,att);
   if (g_model.timers[0].mode) {
     att = (timersStates[0].val<0 ? BLINK : 0);
-    drawTimer(17*FW+5*FWNUM+1, 0, timersStates[0].val, att, att);
+    drawTimer(13*FW+5, 0, timersStates[0].val, att, att);
   }
   lcdInvertLine(0);
 }
@@ -694,11 +694,11 @@ void drawSource(coord_t x, coord_t y, uint32_t idx, LcdFlags att)
     idx = idx - MIXSRC_Rud;
     if (ZEXIST(g_eeGeneral.anaNames[idx])) {
       if (idx < MIXSRC_FIRST_POT-MIXSRC_Rud )
-        lcdDrawChar(x, y, '\307', att); // stick symbol
+        lcdDrawText(x, y, "\307", att); // stick symbol
       else if (idx <= MIXSRC_LAST_POT-MIXSRC_Rud )
-        lcdDrawChar(x, y, '\310', att); // pot symbol
+        lcdDrawText(x, y, "\310", att); // pot symbol
       else
-        lcdDrawChar(x, y, '\311', att); // slider symbol
+        lcdDrawText(x, y, "\311", att); // slider symbol
       lcdDrawSizedText(lcdNextPos, y, g_eeGeneral.anaNames[idx], LEN_ANA_NAME, ZCHAR|att);
     }
     else {
@@ -708,7 +708,7 @@ void drawSource(coord_t x, coord_t y, uint32_t idx, LcdFlags att)
   else if (idx >= MIXSRC_FIRST_SWITCH && idx <= MIXSRC_LAST_SWITCH) {
     idx = idx-MIXSRC_FIRST_SWITCH;
     if (ZEXIST(g_eeGeneral.switchNames[idx])) {
-      lcdDrawChar(x, y, '\312', att); //switch symbol
+      lcdDrawText(x, y, "\312", att); //switch symbol
       lcdDrawSizedText(lcdNextPos, y, g_eeGeneral.switchNames[idx], LEN_SWITCH_NAME, ZCHAR|att);
     }
     else {
@@ -838,7 +838,7 @@ void putsRotaryEncoderMode(coord_t x, coord_t y, uint8_t phase, uint8_t idx, Lcd
 }
 #endif
 
-void drawValueWithUnit(coord_t x, coord_t y, int val, uint8_t unit, LcdFlags att)
+void drawValueWithUnit(coord_t x, coord_t y, int32_t val, uint8_t unit, LcdFlags att)
 {
   // convertUnit(val, unit);
   lcdDrawNumber(x, y, val, att & (~NO_UNIT));
@@ -869,21 +869,28 @@ void drawGPSCoord(coord_t x, coord_t y, int32_t value, const char * direction, L
       lcdLastRightPos += 3;
     }
   }
+#if !defined(PCBI6X) // GPS format setting disabled
   else {
     absvalue /= 10000;
     lcdDrawNumber(lcdLastRightPos+FW, y, absvalue, att|LEFT|PREC2); // mm.mmm
   }
+#endif
   lcdDrawSizedText(lcdLastRightPos+1, y, direction + (value>=0 ? 0 : 1), 1);
+}
+
+void drawTime(coord_t x, coord_t y, TelemetryItem & telemetryItem, LcdFlags att)
+{
+  lcdDrawNumber(x, y, telemetryItem.datetime.hour, att|LEADING0, 2);
+  lcdDrawText(lcdNextPos, y, ":", att);
+  lcdDrawNumber(lcdNextPos, y, telemetryItem.datetime.min, att|LEADING0, 2);
+  lcdDrawText(lcdNextPos, y, ":", att);
+  lcdDrawNumber(lcdNextPos, y, telemetryItem.datetime.sec, att|LEADING0, 2);
 }
 
 void drawDate(coord_t x, coord_t y, TelemetryItem & telemetryItem, LcdFlags att)
 {
   if (BLINK_ON_PHASE) {
-     lcdDrawNumber(x, y, telemetryItem.datetime.hour, att|LEADING0, 2);
-     lcdDrawText(lcdNextPos, y, ":", att);
-     lcdDrawNumber(lcdNextPos, y, telemetryItem.datetime.min, att|LEADING0, 2);
-     lcdDrawText(lcdNextPos, y, ":", att);
-     lcdDrawNumber(lcdNextPos, y, telemetryItem.datetime.sec, att|LEADING0, 2);
+     drawTime(x, y, telemetryItem, att);
   }
   else {
     lcdDrawNumber(x, y, telemetryItem.datetime.year, att|LEADING0|LEFT, 4);
@@ -938,11 +945,7 @@ void drawTelemScreenDate(coord_t x, coord_t y, source_t sensor, LcdFlags att)
   sensor = (sensor-MIXSRC_FIRST_TELEM) / 3;
 	TelemetryItem & telemetryItem = telemetryItems[sensor];
 
-  lcdDrawNumber(x, y, telemetryItem.datetime.hour, att|LEADING0, 2);
-  lcdDrawText(lcdNextPos, y, ":", att);
-  lcdDrawNumber(lcdNextPos, y, telemetryItem.datetime.min, att|LEADING0, 2);
-  lcdDrawText(lcdNextPos, y, ":", att);
-  lcdDrawNumber(lcdNextPos, y, telemetryItem.datetime.sec, att|LEADING0, 2);
+  drawTime(x, y, telemetryItem, att);
 
   lcdDrawNumber(x-29, y, telemetryItem.datetime.month, att|LEADING0|LEFT, 2);
   lcdDrawChar(lcdNextPos, y, '-', att);
@@ -952,7 +955,7 @@ void drawTelemScreenDate(coord_t x, coord_t y, source_t sensor, LcdFlags att)
 void drawGPSPosition(coord_t x, coord_t y, int32_t longitude, int32_t latitude, LcdFlags flags)
 {
   if (flags & DBLSIZE) {
-    x -= (g_eeGeneral.gpsFormat == 0 ? 62 : 61);
+    x -= 62; // (g_eeGeneral.gpsFormat == 0 ? 62 : 61);
     flags &= ~0x0F00; // TODO constant
     drawGPSCoord(x, y, latitude, "NS", flags);
     drawGPSCoord(x, y+FH, longitude, "EW", flags);
@@ -983,7 +986,7 @@ void lcdDraw1bitBitmap(coord_t x, coord_t y, const uint8_t * img, uint8_t idx, L
   uint8_t hb = ((*q++) + 7) / 8;
   bool inv = (att & INVERS) ? true : (att & BLINK ? BLINK_ON_PHASE : false);
   q += idx*w*hb;
-  for (uint8_t yb = 0; yb < hb; yb++) {
+  for (uint32_t yb = 0; yb < hb; yb++) {
     uint8_t *p = &displayBuf[(y / 8 + yb) * LCD_W + x];
     for (coord_t i=0; i<w; i++){
       uint8_t b = *q++;

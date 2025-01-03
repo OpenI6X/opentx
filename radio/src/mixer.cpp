@@ -147,7 +147,7 @@ void applyExpos(int16_t * anas, uint8_t mode, uint8_t ovwrIdx, int16_t ovwrValue
 {
   int8_t cur_chn = -1;
 
-  for (uint8_t i=0; i<MAX_EXPOS; i++) {
+  for (uint32_t i=0; i<MAX_EXPOS; i++) {
 #if defined(BOLD_FONT)
     if (mode==e_perout_mode_normal) swOn[i].activeExpo = false;
 #endif
@@ -261,16 +261,8 @@ int16_t applyLimits(uint8_t channel, int32_t value)
     value = (int32_t) value * tmp;   //  div by 1024*256 -> output = -1024..1024
 #endif
 
-#ifdef CORRECT_NEGATIVE_SHIFTS
-    int8_t sign = (value<0?1:0);
-    value -= sign;
-    tmp = value>>16;   // that's quite tricky: the shiftright 16 operation is assmbled just with addressmove; just forget the two least significant bytes;
-    tmp >>= 2;   // now one simple shift right for two bytes does the rest
-    tmp += sign;
-#else
-    tmp = value>>16;   // that's quite tricky: the shiftright 16 operation is assmbled just with addressmove; just forget the two least significant bytes;
-    tmp >>= 2;   // now one simple shift right for two bytes does the rest
-#endif
+    // Round away from 0
+    tmp = (value + (value < 0 ? (1<<17)-1 : (1<<17))) >> 18;
 
     ofs += tmp;  // ofs can to added directly because already recalculated,
   }
@@ -321,7 +313,7 @@ getvalue_t getValue(mixsrc_t i)
   }
 #endif
 
-#if defined(PCBGRUVIN9X) || defined(PCBMEGA2560) || defined(ROTARY_ENCODERS)
+#if defined(ROTARY_ENCODERS)
   else if (i <= MIXSRC_LAST_ROTARY_ENCODER) {
     return getRotaryEncoder(i-MIXSRC_REa);
   }
@@ -367,7 +359,7 @@ getvalue_t getValue(mixsrc_t i)
     return getSwitch(SWSRC_FIRST_LOGICAL_SWITCH+i-MIXSRC_FIRST_LOGICAL_SWITCH) ? 1024 : -1024;
   }
   else if (i <= MIXSRC_LAST_TRAINER) {
-    int16_t x = ppmInput[i-MIXSRC_FIRST_TRAINER];
+    int16_t x = trainerInput[i-MIXSRC_FIRST_TRAINER];
     if (i<MIXSRC_FIRST_TRAINER+NUM_CAL_PPM) {
       x -= g_eeGeneral.trainer.calib[i-MIXSRC_FIRST_TRAINER];
     }
@@ -421,7 +413,7 @@ void evalInputs(uint8_t mode)
 {
   BeepANACenter anaCenter = 0;
 
-  for (uint8_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) {
+  for (uint32_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) {
     // normalization [0..2048] -> [-1024..1024]
     uint8_t ch = (i < NUM_STICKS ? CONVERT_MODE(i) : i);
     int16_t v = anaIn(i);
@@ -471,7 +463,7 @@ void evalInputs(uint8_t mode)
         TrainerMix* td = &g_eeGeneral.trainer.mix[ch];
         if (td->mode) {
           uint8_t chStud = td->srcChn;
-          int32_t vStud  = (ppmInput[chStud]- g_eeGeneral.trainer.calib[chStud]);
+          int32_t vStud  = (trainerInput[chStud]- g_eeGeneral.trainer.calib[chStud]);
           vStud *= td->studWeight;
           vStud /= 50;
           switch (td->mode) {
@@ -491,7 +483,7 @@ void evalInputs(uint8_t mode)
   }
 
 #if defined(ROTARY_ENCODERS)
-  for (uint8_t i=0; i<NUM_ROTARY_ENCODERS; i++) {
+  for (uint32_t i=0; i<NUM_ROTARY_ENCODERS; i++) {
     if (getRotaryEncoder(i) == 0) {
       anaCenter |= ((BeepANACenter)1 << (NUM_STICKS+NUM_POTS+NUM_SLIDERS+NUM_MOUSE_ANALOGS+i));
     }
@@ -499,7 +491,7 @@ void evalInputs(uint8_t mode)
 #endif
 
 #if NUM_MOUSE_ANALOGS > 0
-  for (uint8_t i=0; i<NUM_MOUSE_ANALOGS; i++) {
+  for (uint32_t i=0; i<NUM_MOUSE_ANALOGS; i++) {
     uint8_t ch = NUM_STICKS+NUM_POTS+NUM_SLIDERS+i;
     int16_t v = anaIn(MOUSE1+i);
     CalibData * calib = &g_eeGeneral.calib[ch];
@@ -634,7 +626,7 @@ void evalFlightModeMixes(uint8_t mode, uint8_t tick10ms)
   do {
     bitfield_channels_t passDirtyChannels = 0;
 
-    for (uint8_t i=0; i<MAX_MIXERS; i++) {
+    for (uint32_t i=0; i<MAX_MIXERS; i++) {
 #if defined(BOLD_FONT)
       if (mode == e_perout_mode_normal && pass == 0)
         swOn[i].activeMix = 0;
@@ -950,7 +942,7 @@ void evalMixes(uint8_t tick10ms)
       if (flightModesFade & ((ACTIVE_PHASES_TYPE)1 << p)) {
         mixerCurrentFlightMode = p;
         evalFlightModeMixes(p==fm ? e_perout_mode_normal : e_perout_mode_inactive_flight_mode, p==fm ? tick10ms : 0);
-        for (uint8_t i=0; i<MAX_OUTPUT_CHANNELS; i++)
+        for (uint32_t i=0; i<MAX_OUTPUT_CHANNELS; i++)
           sum_chans512[i] += limit<int32_t>(-0x6fff, chans[i] >> 4, 0x6fff) * fp_act[p];
         weight += fp_act[p];
       }
@@ -980,7 +972,7 @@ void evalMixes(uint8_t tick10ms)
   }
 
   //========== LIMITS ===============
-  for (uint8_t i=0; i<MAX_OUTPUT_CHANNELS; i++) {
+  for (uint32_t i=0; i<MAX_OUTPUT_CHANNELS; i++) {
     // chans[i] holds data from mixer.   chans[i] = v*weight => 1024*256
     // later we multiply by the limit (up to 100) and then we need to normalize
     // at the end chans[i] = chans[i]/256 =>  -1024..1024

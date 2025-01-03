@@ -70,13 +70,13 @@ void drawOffsetBar(uint8_t x, uint8_t y, MixData * md)
   }
   lcdDrawSolidVerticalLine(x+gaugeWidth/2-1, y, gaugeHeight+1);
   if (barMin == -101) {
-    for (uint8_t i=0; i<3; ++i) {
+    for (uint32_t i=0; i<3; ++i) {
       lcdDrawPoint(x+i, y+4-i);
       lcdDrawPoint(x+3+i, y+4-i);
     }
   }
   if (barMax == 101) {
-    for (uint8_t i=0; i<3; ++i) {
+    for (uint32_t i=0; i<3; ++i) {
       lcdDrawPoint(x+gaugeWidth-8+i, y+4-i);
       lcdDrawPoint(x+gaugeWidth-5+i, y+4-i);
     }
@@ -92,11 +92,6 @@ void menuModelMixOne(event_t event)
   }
 #elif defined(NAVIGATION_XLITE)
   if (event == EVT_KEY_LONG(KEY_SHIFT)) {
-    pushMenu(menuChannelsView);
-    killEvents(event);
-  }
-#elif defined(PCBI6X)
-  if (event == EVT_KEY_LONG(KEY_RIGHT)) {
     pushMenu(menuChannelsView);
     killEvents(event);
   }
@@ -170,7 +165,7 @@ void menuModelMixOne(event_t event)
         break;
 
       case MIX_FIELD_WARNING:
-        drawFieldLabel(MIXES_2ND_COLUMN, y, STR_MIXWARNING);
+        lcdDrawTextAlignedLeft(y, STR_MIXWARNING);
         if (md2->mixWarn)
           lcdDrawNumber(MIXES_2ND_COLUMN, y, md2->mixWarn, attr|LEFT);
         else

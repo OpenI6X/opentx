@@ -24,11 +24,6 @@ void processFrskyTelemetryData(uint8_t data)
 {
   static uint8_t dataState = STATE_DATA_IDLE;
 
-#if defined(PCBSKY9X) && defined(BLUETOOTH)
-  // TODO if (g_model.bt_telemetry)
-  btPushByte(data);
-#endif
-
 #if defined(AUX_SERIAL)
   if (g_eeGeneral.auxSerialMode == UART_MODE_TELEMETRY_MIRROR) {
     auxSerialPutc(data);

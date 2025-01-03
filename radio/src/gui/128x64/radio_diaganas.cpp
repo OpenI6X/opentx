@@ -26,15 +26,13 @@ void menuRadioDiagAnalogs(event_t event)
 // TODO enum
 #if defined(TX_CAPACITY_MEASUREMENT)
   #define ANAS_ITEMS_COUNT 3
-#elif defined(PCBSKY9X)
-  #define ANAS_ITEMS_COUNT 2
 #else
   #define ANAS_ITEMS_COUNT 1
 #endif
 
   SIMPLE_SUBMENU(STR_MENU_RADIO_ANALOGS, HEADER_LINE+ANAS_ITEMS_COUNT);
 
-  for (uint8_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) {
+  for (uint32_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) {
 #if (NUM_STICKS+NUM_POTS+NUM_SLIDERS) > 9
     coord_t y = MENU_HEADER_HEIGHT + 1 + (i/3)*FH;
     const uint8_t x_coord[] = {0, 70, 154};
@@ -47,7 +45,7 @@ void menuRadioDiagAnalogs(event_t event)
     drawStringWithIndex(x, y, "A", i+1);
     lcdDrawChar(lcdNextPos, y, ':');
 #endif
-    lcdDrawHexNumber(x+3*FW-1, y, anaIn(i));
+    lcdDrawNumber(x+3*FW-1, y, anaIn(i), LEADING0|LEFT, 4);
     lcdDrawNumber(x+10*FW-1, y, (int16_t)calibratedAnalogs[CONVERT_MODE(i)]*25/256, RIGHT);
   }
 

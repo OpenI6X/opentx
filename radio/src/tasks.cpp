@@ -74,6 +74,7 @@ bool isModuleSynchronous(uint8_t moduleIdx) {
 
 void sendSynchronousPulses(uint8_t runMask) {
   if ((runMask & (1 << EXTERNAL_MODULE)) && isModuleSynchronous(EXTERNAL_MODULE)) {
+    // Only for CRSF currently (guarded by returned value)
     if (setupPulses(EXTERNAL_MODULE)) {
       extmoduleSendNextFrame();
     }
@@ -91,7 +92,7 @@ void execMixerFrequentActions()
     DEBUG_TIMER_STOP(debugTimerTelemetryWakeup);
   }
 
-#if defined(SBUS)
+#if defined(SBUS_TRAINER)
   if (g_eeGeneral.auxSerialMode == UART_MODE_SBUS_TRAINER) {
     processSbusInput();
   }
@@ -163,11 +164,12 @@ TASK_FUNCTION(mixerTask) {
         usbJoystickUpdate();
       }
 #endif
+
       /**
-       * This is a workaround for PCBI6X
+       * Workaround for PCBI6X:
        * When HEART_WDT_CHECK (int + ext module) == 7
-       * then it fails if heartbeat is up to 3 on internal module.
-       * because pulses logic is custom i have made this condition also custom.
+       * then it fails if heartbeat is up to 3 on only internal module,
+       * because PPM init fails for some users.
        */
       if (heartbeat == HEART_WDT_CHECK || heartbeat == 3) {
         wdt_reset();
@@ -220,7 +222,9 @@ TASK_FUNCTION(menusTask) {
       RTOS_WAIT_TICKS(MENU_TASK_PERIOD_TICKS - runtime);
     }
 
+#if !defined(PCBI6X) // no software controlled power on i6X
     resetForcePowerOffRequest();
+#endif
   }
 
 #if defined(PCBX9E)
@@ -231,11 +235,13 @@ TASK_FUNCTION(menusTask) {
   ledOff();
 #endif
 
+#if !defined(PCBI6X) // no software controlled power on i6X
   drawSleepBitmap();
   opentxClose();
   boardOff();  // Only turn power off if necessary
 
   TASK_RETURN();
+#endif
 }
 
 void tasksStart() {
@@ -252,7 +258,7 @@ void tasksStart() {
   RTOS_CREATE_TASK(audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE, AUDIO_TASK_PRIO);
 #endif
 
-#if !defined(PCBI6X)
+#if defined(VOICE)
   RTOS_CREATE_MUTEX(audioMutex);
 #endif
   RTOS_CREATE_MUTEX(mixerMutex);

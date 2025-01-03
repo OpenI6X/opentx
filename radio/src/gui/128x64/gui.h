@@ -35,9 +35,6 @@
   #define HEADER_LINE_COLUMNS          0,
 #endif
 
-#define COLUMN_X                       0
-#define drawFieldLabel(x, y, str)      lcdDrawTextAlignedLeft(y, str)
-
 #define NUM_BODY_LINES                 (LCD_LINES-1)
 #define MENU_HEADER_HEIGHT             FH
 #define MENU_INIT_VPOS                 0
@@ -263,10 +260,6 @@ void editSingleName(coord_t x, coord_t y, const char * label, char * name, uint8
 uint8_t editDelay(coord_t y, event_t event, uint8_t attr, const char * str, uint8_t delay);
 #define EDIT_DELAY(x, y, event, attr, str, delay) editDelay(y, event, attr, str, delay)
 
-#define WARNING_TYPE_ASTERISK          0
-#define WARNING_TYPE_CONFIRM           1
-#define WARNING_TYPE_INPUT             2
-
 extern const char * warningText;
 extern const char * warningInfoText;
 extern uint8_t         warningInfoLength;
@@ -279,7 +272,7 @@ extern uint8_t s_copyMode;
 extern int8_t s_copySrcRow;
 extern int8_t s_copyTgtOfs;
 extern uint8_t s_currIdx;
-extern uint8_t s_curveChan;
+extern uint8_t s_currIdxSubMenu;
 extern uint8_t s_copySrcIdx;
 extern uint8_t s_copySrcCh;
 extern int8_t s_currCh;
@@ -379,6 +372,7 @@ void drawGauge(coord_t x, coord_t y, coord_t w, coord_t h, int32_t val, int32_t 
 void drawAlertBox(const char * title, const char * text, const char * action);
 #endif
 
+void drawAlertBox(const char * title, const char * text, const char * action);
 void showAlertBox(const char * title, const char * text, const char * action , uint8_t sound);
 
 #define SET_SCROLLBAR_X(x)
@@ -386,7 +380,7 @@ void showAlertBox(const char * title, const char * text, const char * action , u
 
 #define IS_MAIN_VIEW_DISPLAYED()       menuHandlers[0] == menuMainView
 #if defined(TELEMETRY_FRSKY)
-#define IS_TELEMETRY_VIEW_DISPLAYED()  menuHandlers[0] == menuViewTelemetryFrsky
+#define IS_TELEMETRY_VIEW_DISPLAYED()  menuHandlers[0] == menuViewTelemetry
 #else
 #define IS_TELEMETRY_VIEW_DISPLAYED()  false
 #endif

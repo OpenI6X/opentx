@@ -139,9 +139,6 @@ const char * getFileExtension(const char * filename, uint8_t size=0, uint8_t ext
 #elif defined(PCBX9D) || defined(PCBX9DP)
   #define OTX_FOURCC 0x3378746F // otx for Taranis X9D
   #define O9X_FOURCC 0x3378396F // o9x for Taranis X9D
-#elif defined(PCBSKY9X)
-  #define OTX_FOURCC 0x3278746F // otx for sky9x
-  #define O9X_FOURCC 0x3278396F // o9x for sky9x
 #endif
 
 bool isFileAvailable(const char * filename, bool exclDir = false);

@@ -55,7 +55,7 @@ void onModelSelectMenu(const char * result)
     SET_WARNING_INFO(modelHeaders[sub].name, sizeof(g_model.header.name), ZCHAR);
   }
 #if defined(SDCARD)
-  else {
+  else if (result != STR_EXIT) {
     // The user choosed a file on SD to restore
     storageCheck(true);
     POPUP_WARNING(eeRestoreModel(sub, (char *)result));
@@ -319,7 +319,7 @@ void menuModelSelect(event_t event)
 
   TITLE(STR_MENUMODELSEL);
 
-  for (uint8_t i=0; i<NUM_BODY_LINES; i++) {
+  for (uint32_t i=0; i<NUM_BODY_LINES; i++) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     uint8_t k = i+menuVerticalOffset;
 

@@ -98,7 +98,7 @@ void menuModelLogicalSwitches(event_t event)
     POPUP_MENU_START(onLogicalSwitchesMenu);
   }
 
-  for (uint8_t i=0; i<NUM_BODY_LINES; ++i) {
+  for (uint32_t i=0; i<NUM_BODY_LINES; ++i) {
     coord_t y = MENU_HEADER_HEIGHT + 1 + i*FH;
     k = i+menuVerticalOffset;
     LcdFlags attr = (sub==k ? ((s_editMode>0) ? BLINK|INVERS : INVERS)  : 0);
