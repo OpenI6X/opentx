@@ -900,7 +900,7 @@
 #define TR_TEMP_CALIB          "Temp.  abgl."
 #define TR_TIME                "Uhrzeit:"
 #define TR_MAXBAUDRATE         "Baudrate"
-#define TR_CRSF_ARMING_MODE            "Armen via"
+#define TR_CRSF_ARMING_MODE            "Arm via"
 #define LEN_CRSF_ARMING_MODES          "\006"
 #define TR_CRSF_ARMING_MODES           TR_CH "5\0  " TR_SWITCH
 
