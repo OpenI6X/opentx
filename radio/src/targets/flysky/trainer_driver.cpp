@@ -37,8 +37,8 @@ void init_trainer_capture() {
 void stop_trainer_capture()
 {
   // disable PPM input capture
-  CLEAR_BIT(EXTMODULE_TIMER->CCER, TIM_CCER_CC1E);
   CLEAR_BIT(EXTMODULE_TIMER->DIER, TIM_DIER_CC1IE);
+  CLEAR_BIT(EXTMODULE_TIMER->CCER, TIM_CCER_CC1E);
 
   // Keep timer running because PPM OUT uses the same timer
   // NVIC_DisableIRQ(EXTMODULE_TIMER_IRQn);

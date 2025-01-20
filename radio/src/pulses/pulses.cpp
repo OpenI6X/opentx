@@ -223,7 +223,7 @@ void stopPulsesInternalModule()
 {
   if (moduleState[INTERNAL_MODULE].protocol != PROTOCOL_CHANNELS_UNINITIALIZED) {
     mixerSchedulerSetPeriod(INTERNAL_MODULE, 0);
-    intmoduleStop(); // was disable_afhds2a(INTERNAL_MODULE);
+    intmoduleStop();
     moduleState[INTERNAL_MODULE].protocol = PROTOCOL_CHANNELS_NONE;
   }
 }
