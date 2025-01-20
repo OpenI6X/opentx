@@ -960,6 +960,7 @@
 #define TR_USBMODE             "USB Mode"
 #define TR_VOICELANG           "Röstspråk"
 #define TR_UNITSSYSTEM         "Enheter"
+#define TR_UNITS_PPM           "PPM-enheter"
 #define TR_EDIT                "Redigera"
 #define TR_INSERT_BEFORE       "Addera Före"
 #define TR_INSERT_AFTER        "Addera Efter"

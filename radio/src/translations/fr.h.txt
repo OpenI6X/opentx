@@ -957,6 +957,7 @@
 #define TR_USBMODE                     "USB Mode"
 #define TR_VOICELANG                   TR("Langue voix", "Langue annonces vocales")
 #define TR_UNITSSYSTEM                 "Unités"
+#define TR_UNITS_PPM                   "PPM Units"
 #define TR_EDIT                        "Editer"
 #define TR_INSERT_BEFORE               "Insérer avant"
 #define TR_INSERT_AFTER                "Insérer après"

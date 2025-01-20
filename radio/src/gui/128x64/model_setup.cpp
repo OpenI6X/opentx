@@ -1421,9 +1421,8 @@ void menuModelFailsafe(event_t event)
   const uint8_t channelStart = g_model.moduleData[g_moduleIdx].channelsStart;
   const int lim = (g_model.extendedLimits ? (512 * LIMIT_EXT_PERCENT / 100) : 512) * 2;
   uint8_t wbar = LCD_W - FW * 4 - FWNUM * 4;
-#if defined(PPM_UNIT_PERCENT_PREC1)
+  if (g_eeGeneral.ppmunit == PPM_PERCENT_PREC1)
   wbar -= 6;
-#endif
 
   if (event == EVT_KEY_LONG(KEY_ENTER)) {
     killEvents(event);
@@ -1497,13 +1496,13 @@ void menuModelFailsafe(event_t event)
       failsafeValue = 0;
     }
     else {
-#if defined(PPM_UNIT_US)
-      lcdDrawNumber(xValue, y, PPM_CH_CENTER(ch)+failsafeValue/2, RIGHT|flags);
-#elif defined(PPM_UNIT_PERCENT_PREC1)
-      lcdDrawNumber(xValue, y, calcRESXto1000(failsafeValue), RIGHT|PREC1|flags);
-#else
-      lcdDrawNumber(xValue, y, calcRESXto1000(failsafeValue)/10, RIGHT|flags);
-#endif
+      if (g_eeGeneral.ppmunit == PPM_US) {
+        lcdDrawNumber(xValue, y, PPM_CH_CENTER(ch)+failsafeValue/2, RIGHT|flags);
+      } else if (g_eeGeneral.ppmunit == PPM_PERCENT_PREC1) {
+        lcdDrawNumber(xValue, y, calcRESXto1000(failsafeValue), RIGHT|PREC1|flags);
+      } else {
+        lcdDrawNumber(xValue, y, calcRESXto1000(failsafeValue)/10, RIGHT|flags);
+      }
     }
 
     // Gauge

@@ -954,6 +954,7 @@
 #define TR_USBMODE             "USB Modus"
 #define TR_VOICELANG           "Sprach-Ansagen"
 #define TR_UNITSSYSTEM         "Einheiten"
+#define TR_UNITS_PPM           "PPM Einheiten"
 #define TR_EDIT                "Zeile Editieren"
 #define TR_INSERT_BEFORE       "Neue Zeile davor"
 #define TR_INSERT_AFTER        "Neue Zeile danach"

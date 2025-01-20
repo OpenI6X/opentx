@@ -941,6 +941,7 @@
 #define TR_USBMODE             "USB Mode"
 #define TR_VOICELANG           "Jazyk hlasu"
 #define TR_UNITSSYSTEM         "Jednotky"
+#define TR_UNITS_PPM           "PPM jednotky"
 #define TR_EDIT                "Upravit"
 #define TR_INSERT_BEFORE       "Vložit před"
 #define TR_INSERT_AFTER        "Vložit za"
