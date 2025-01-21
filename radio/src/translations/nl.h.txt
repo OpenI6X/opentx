@@ -620,29 +620,29 @@
 #define TR_CV                  "CV"
 #define TR_GV                  TR("G", "GV")
 #define TR_ACHANNEL            "A\004kanaal"
-#define TR_RANGE               INDENT "Bereik"
-#define TR_CENTER              INDENT "Centreer"
+#define TR_RANGE               "Bereik"
+#define TR_CENTER              "Centreer"
 #define TR_BAR                 "Balk"
-#define TR_ALARM               INDENT "Alarm"
+#define TR_ALARM               "Alarm"
 #define TR_USRDATA             "Data berekenen uit"
 #define TR_BLADES              "Bladen"
 
 #define TR_SCREEN              "Scherm\001"
 #define TR_SOUND_LABEL         "Geluid-"
-#define TR_LENGTH              INDENT "Duur"
-#define TR_BEEP_LENGTH         INDENT "Piep-Lengte"
-#define TR_SPKRPITCH           INDENT "Piep-Freq. +/-"
+#define TR_LENGTH              "Duur"
+#define TR_BEEP_LENGTH         "Piep-Lengte"
+#define TR_SPKRPITCH           "Piep-Freq. +/-"
 #define TR_HAPTIC_LABEL        "Haptic"
-#define TR_HAPTICSTRENGTH      INDENT "Sterkte"
+#define TR_HAPTICSTRENGTH      "Sterkte"
 #define TR_CONTRAST            "LCD-Kontrast"
 #define TR_ALARMS_LABEL        "Alarm"
 #define TR_BATTERY_RANGE       TR("Accu Bereik", "Accu Spngs-Bereik") // Symbol Akku Ladezustand
 
-#define TR_BATTERYWARNING      INDENT "Accu laag"
-#define TR_INACTIVITYALARM     TR(INDENT "Inactiviteit", INDENT "Inactiviteit na") //9XR-Pro
-#define TR_MEMORYWARNING       INDENT "Geheugen laag"
-#define TR_ALARMWARNING        TR(INDENT "Al Geluid uit?", INDENT "Al het geluid uit?")
-#define TR_RSSISHUTDOWNALARM   TR(INDENT "Rssi Shutdown", INDENT "Check Rssi on Shutdown")
+#define TR_BATTERYWARNING      "Accu laag"
+#define TR_INACTIVITYALARM     TR("Inactiviteit", INDENT "Inactiviteit na") //9XR-Pro
+#define TR_MEMORYWARNING       "Geheugen laag"
+#define TR_ALARMWARNING        TR("Al Geluid uit?", INDENT "Al het geluid uit?")
+#define TR_RSSISHUTDOWNALARM   TR("Rssi Shutdown", INDENT "Check Rssi on Shutdown")
 #define TR_MODEL_STILL_POWERED "Model still powered"
 #define TR_MODEL_SHUTDOWN              "Shutdown ?"
 #define TR_PRESS_ENTER_TO_CONFIRM      "Press enter to confirm"
@@ -654,7 +654,7 @@
 #define TR_BEEPCOUNTDOWN       INDENT "Countdown"
 #define TR_PERSISTENT          TR(INDENT "Vasth.", INDENT "Vasthouden")
 #define TR_BACKLIGHT_LABEL     "LCD-Verlichting"
-#define TR_BLDELAY             INDENT "Duur"
+#define TR_BLDELAY             "Duur"
 #define TR_BLONBRIGHTNESS      INDENT "Aan-Helderheid"
 #define TR_BLOFFBRIGHTNESS     INDENT "Uit-Helderheid"
 #define TR_BLCOLOR             INDENT "Kleur"
@@ -805,9 +805,9 @@
 #define TR_LONGITUDE           "Longitude"
 #define TR_GPSCOORD            TR("GPS-coord.", "GPS-coordinaten format")
 #define TR_VARIO               "Variometer"
-#define TR_PITCH_AT_ZERO       INDENT "Laagste Toon"
-#define TR_PITCH_AT_MAX        INDENT "Hoogste Toon"
-#define TR_REPEAT_AT_ZERO      INDENT "Herhalen bij 0"
+#define TR_PITCH_AT_ZERO       "Laagste Toon"
+#define TR_PITCH_AT_MAX        "Hoogste Toon"
+#define TR_REPEAT_AT_ZERO      "Herhalen bij 0"
 #define TR_POWEROFF            "\027Uitschakelen..."
 #define TR_SHUTDOWN            "Afsluiten"
 #define TR_SAVEMODEL           "Bewaar Model-instellingen"
@@ -850,9 +850,9 @@
 #define TR_NO_FAILSAFE         TR("Failsafe niet ing.", "Failsafe niet ingesteld")
 #define TR_KEYSTUCK            "Toets klemt"
 #define TR_INVERT_THR          TR("Gas omdraaien?", "Volgas achter?")
-#define TR_SPEAKER_VOLUME      INDENT "Volume"
+#define TR_SPEAKER_VOLUME      "Volume"
 #define TR_LCD                 "LCD"
-#define TR_BRIGHTNESS          INDENT "Helderheid"
+#define TR_BRIGHTNESS          "Helderheid"
 #define TR_CPU_TEMP            "CPU-Temp.\016>"
 #define TR_CPU_CURRENT         "Stroom\022>"
 #define TR_CPU_MAH             "Verbruik"
@@ -988,18 +988,18 @@
 #define TR_VALUE               "Waarde"
 #define TR_TOPLCDTIMER         "Top LCD Timer"
 #define TR_UNIT                "Eenheid"
-#define TR_TELEMETRY_NEWSENSOR INDENT "Sensor toevoegen ..."
+#define TR_TELEMETRY_NEWSENSOR "Sensor toevoegen ..."
 #define TR_CHANNELRANGE        TR(INDENT "Kanalen", INDENT "Uitgangs Kanalen")  //wg 9XR-Pro
 #define TR_ANTENNASELECTION    TR(INDENT "Antenna", INDENT "Antenna selection")
 #define TR_ANTENNACONFIRM1     "Antennes wisselen?"
 #define TR_ANTENNACONFIRM2     TR("Check antenna", "Is er zeker een antenne geplaatst!")
 #define TR_R9MFLEXWARN1                "Requires non"
 #define TR_R9MFLEXWARN2                "certified R9M firm."
-#define TR_LOWALARM            INDENT "Waarschuwing"
-#define TR_CRITICALALARM       INDENT "Kritiek Alarm"
+#define TR_LOWALARM            "Waarschuwing"
+#define TR_CRITICALALARM       "Kritiek Alarm"
 #define TR_RSSIALARM_WARN             TR("RSSI","TELEMETRY RSSI")
-#define TR_NO_RSSIALARM                TR(INDENT "Alarms disabled", INDENT "Telemetry alarms disabled")
-#define TR_DISABLE_ALARM               TR(INDENT "Disable alarms", INDENT "Disable telemetry alarms")
+#define TR_NO_RSSIALARM                TR("Alarms disabled", INDENT "Telemetry alarms disabled")
+#define TR_DISABLE_ALARM               TR("Disable alarms", INDENT "Disable telemetry alarms")
 #define TR_ENABLE_POPUP        "Inschakelen Popups"
 #define TR_DISABLE_POPUP       "Uitschakelen Popups"
 #define TR_POPUP               "Popup"

@@ -640,27 +640,27 @@
 #define TR_CV                          "CB"
 #define TR_GV                          TR("G", "VG")
 #define TR_ACHANNEL                    "A"
-#define TR_RANGE                       INDENT "Plage"
-#define TR_CENTER                      INDENT "Centre"
+#define TR_RANGE                       "Plage"
+#define TR_CENTER                      "Centre"
 #define TR_BAR                         "Barre"
-#define TR_ALARM                       INDENT "Alarme"
+#define TR_ALARM                       "Alarme"
 #define TR_USRDATA                     "Données"
-#define TR_BLADES                      INDENT "Pales/Pôles"
+#define TR_BLADES                      "Pales/Pôles"
 #define TR_SCREEN                      "Ecran "
 #define TR_SOUND_LABEL                 "Son"
-#define TR_LENGTH                      INDENT "Durée"
-#define TR_BEEP_LENGTH                 INDENT "Durée bips"
-#define TR_SPKRPITCH                   INDENT "Tonalité"
+#define TR_LENGTH                      "Durée"
+#define TR_BEEP_LENGTH                 "Durée bips"
+#define TR_SPKRPITCH                    "Tonalité"
 #define TR_HAPTIC_LABEL                "Vibreur"
-#define TR_HAPTICSTRENGTH              INDENT "Force"
+#define TR_HAPTICSTRENGTH              "Force"
 #define TR_CONTRAST                    "Contraste"
 #define TR_ALARMS_LABEL                "Alarmes"
 #define TR_BATTERY_RANGE               "Plage batterie"
-#define TR_BATTERYWARNING              TR(INDENT "Batterie", INDENT "Batterie faible")
-#define TR_INACTIVITYALARM             INDENT "Inactivité"
-#define TR_MEMORYWARNING               INDENT "Mémoire pleine"
-#define TR_ALARMWARNING                TR(INDENT "Silence", INDENT "Sons désactivés")
-#define TR_RSSISHUTDOWNALARM           TR(INDENT "RSSI extinction", INDENT "Vérif RSSI à l'extinction")
+#define TR_BATTERYWARNING              TR("Batterie", INDENT "Batterie faible")
+#define TR_INACTIVITYALARM             "Inactivité"
+#define TR_MEMORYWARNING               "Mémoire pleine"
+#define TR_ALARMWARNING                TR("Silence", INDENT "Sons désactivés")
+#define TR_RSSISHUTDOWNALARM           TR("RSSI extinction", INDENT "Vérif RSSI à l'extinction")
 #define TR_MODEL_STILL_POWERED         TR("Modèle allumé", "Modèle encore allumé")
 #define TR_MODEL_SHUTDOWN              "Eteindre ?"
 #define TR_PRESS_ENTER_TO_CONFIRM      "Presser [Enter] pour confirmer"
@@ -672,7 +672,7 @@
 #define TR_BEEPCOUNTDOWN               TR(INDENT "Bip fin", INDENT "Compte à rebours")
 #define TR_PERSISTENT                  TR(INDENT "Persist.", INDENT "Persistant")
 #define TR_BACKLIGHT_LABEL             "Rétroéclairage"
-#define TR_BLDELAY                     INDENT "Durée"
+#define TR_BLDELAY                     "Durée"
 #define TR_BLONBRIGHTNESS              INDENT "Luminosité ON"
 #define TR_BLOFFBRIGHTNESS             INDENT "Luminosité OFF"
 #define TR_BLCOLOR                     INDENT "Couleur"
@@ -818,9 +818,9 @@
 #define TR_LONGITUDE                   "Longitude"
 #define TR_GPSCOORD                    TR("Coordonnées", "Coordonnées GPS")
 #define TR_VARIO                       TR("Vario", "Variomètre")
-#define TR_PITCH_AT_ZERO               INDENT "Tonalité au zéro"
-#define TR_PITCH_AT_MAX                INDENT "Tonalité au max"
-#define TR_REPEAT_AT_ZERO              TR(INDENT "Interv. au zéro", INDENT "Intervalle au zéro")
+#define TR_PITCH_AT_ZERO               "Tonalité au zéro"
+#define TR_PITCH_AT_MAX                "Tonalité au max"
+#define TR_REPEAT_AT_ZERO              TR("Interv. au zéro", INDENT "Intervalle au zéro")
 #define TR_POWEROFF                    "\037\120ARRET..."
 #define TR_SHUTDOWN                    "ARRET EN COURS"
 #define TR_SAVEMODEL                   "Sauvegarde modèle..."
@@ -863,9 +863,9 @@
 #define TR_NO_FAILSAFE                 TR3("Failsafe pas déf.", "Failsafe pas déf.", "Failsafe pas défini")
 #define TR_KEYSTUCK                    "Touche bloquée"
 #define TR_INVERT_THR                  "Inverser gaz?"
-#define TR_SPEAKER_VOLUME              INDENT "Volume"
+#define TR_SPEAKER_VOLUME              "Volume"
 #define TR_LCD                         "Afficheur"
-#define TR_BRIGHTNESS                  INDENT "Luminosité"
+#define TR_BRIGHTNESS                  "Luminosité"
 #define TR_CPU_TEMP                    "Temp. CPU\016>"
 #define TR_CPU_CURRENT                 "Courant\022>"
 #define TR_CPU_MAH                     "Consomm."
@@ -1000,18 +1000,18 @@
 #define TR_VALUE                       "Valeur"
 #define TR_TOPLCDTIMER                 "Timer LCD haut"
 #define TR_UNIT                        "Unité"
-#define TR_TELEMETRY_NEWSENSOR         TR(INDENT"Nouveau capteur...", INDENT "Ajout d'un nouveau capteur...")
+#define TR_TELEMETRY_NEWSENSOR         TR("Nouveau capteur...", INDENT "Ajout d'un nouveau capteur...")
 #define TR_CHANNELRANGE                TR(INDENT "Canaux", INDENT "Plage de canaux")
 #define TR_ANTENNASELECTION            TR(INDENT "Antenne", INDENT "Choix antenne")
 #define TR_ANTENNACONFIRM1             "Vraiment changer?"
 #define TR_ANTENNACONFIRM2             TR("Vérif antenne", "Installer l'antenne d'abord!")
 #define TR_R9MFLEXWARN1                "Requires non"
 #define TR_R9MFLEXWARN2                "certified R9M firm."
-#define TR_LOWALARM                    INDENT "Alarme basse"
-#define TR_CRITICALALARM               INDENT "Alarme critique"
+#define TR_LOWALARM                    "Alarme basse"
+#define TR_CRITICALALARM               "Alarme critique"
 #define TR_RSSIALARM_WARN              TR("RSSI", "TELEMETRIE")
-#define TR_NO_RSSIALARM                TR(INDENT "Alarmes désact.", "Alarme télémétrie désactivée")
-#define TR_DISABLE_ALARM               TR(INDENT "Désact. alarme", INDENT "Désactiver alarme télémétrie")
+#define TR_NO_RSSIALARM                TR("Alarmes désact.", "Alarme télémétrie désactivée")
+#define TR_DISABLE_ALARM               TR("Désact. alarme", INDENT "Désactiver alarme télémétrie")
 #define TR_ENABLE_POPUP                "Activer popup"
 #define TR_DISABLE_POPUP               "Désactiver popup"
 #define TR_POPUP                       "Popup"

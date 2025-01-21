@@ -639,27 +639,27 @@
 #define TR_CV                  "KU"
 #define TR_GV                  TR("G", "GV")
 #define TR_ACHANNEL            "A\004kanal  "
-#define TR_RANGE               INDENT"MinMax"
-#define TR_CENTER              INDENT "Center"
+#define TR_RANGE               "MinMax"
+#define TR_CENTER              "Center"
 #define TR_BAR                 "Data"
-#define TR_ALARM               INDENT"Alarm"
+#define TR_ALARM               "Alarm"
 #define TR_USRDATA             "Användardata"
-#define TR_BLADES              INDENT"Blad"
+#define TR_BLADES              "Blad"
 #define TR_SCREEN              "Skärm "
 #define TR_SOUND_LABEL         "Ljud "
-#define TR_LENGTH              INDENT"Tid"
-#define TR_BEEP_LENGTH         INDENT "Pip-längd"
-#define TR_SPKRPITCH           INDENT "Pip-ton"
+#define TR_LENGTH              "Tid"
+#define TR_BEEP_LENGTH         "Pip-längd"
+#define TR_SPKRPITCH           "Pip-ton"
 #define TR_HAPTIC_LABEL        "Vibrator"
-#define TR_HAPTICSTRENGTH      INDENT"Styrka"
+#define TR_HAPTICSTRENGTH      "Styrka"
 #define TR_CONTRAST            "Kontrast"
 #define TR_ALARMS_LABEL        "Alarm"
 #define TR_BATTERY_RANGE       "Batteri-MinMax"
-#define TR_BATTERYWARNING      INDENT"Batteri"
-#define TR_INACTIVITYALARM     INDENT"Inaktivitet"
-#define TR_MEMORYWARNING       INDENT"Lite Minne"
-#define TR_ALARMWARNING        INDENT"Ljud Av"
-#define TR_RSSISHUTDOWNALARM   TR(INDENT "Rssi Shutdown", INDENT "Check Rssi on Shutdown")
+#define TR_BATTERYWARNING      "Batteri"
+#define TR_INACTIVITYALARM     "Inaktivitet"
+#define TR_MEMORYWARNING       "Lite Minne"
+#define TR_ALARMWARNING        "Ljud Av"
+#define TR_RSSISHUTDOWNALARM   TR("Rssi Shutdown", INDENT "Check Rssi on Shutdown")
 #define TR_MODEL_STILL_POWERED "Model still powered"
 #define TR_MODEL_SHUTDOWN              "Shutdown ?"
 #define TR_PRESS_ENTER_TO_CONFIRM      "Press enter to confirm"
@@ -671,7 +671,7 @@
 #define TR_BEEPCOUNTDOWN       INDENT "Nedräkning"
 #define TR_PERSISTENT          TR("Jämt på ", INDENT"Alltid På")
 #define TR_BACKLIGHT_LABEL     "Belysning"
-#define TR_BLDELAY             INDENT "Av efter"
+#define TR_BLDELAY             "Av efter"
 #define TR_BLONBRIGHTNESS      INDENT "På Ljusstyrka"
 #define TR_BLOFFBRIGHTNESS     INDENT "Av Ljusstyrka"
 #define TR_SPLASHSCREEN        "Startbild"
@@ -819,9 +819,9 @@
 #define TR_LONGITUDE           "Längdgrad"
 #define TR_GPSCOORD            TR("GPS-Koordinater", "GPS-koordinatsystem")
 #define TR_VARIO               TR("Vario", "Variometer")
-#define TR_PITCH_AT_ZERO       INDENT "Ton vid Noll"
-#define TR_PITCH_AT_MAX        INDENT "Ton vid Max"
-#define TR_REPEAT_AT_ZERO      INDENT "Repetera vid Noll"
+#define TR_PITCH_AT_ZERO       "Ton vid Noll"
+#define TR_PITCH_AT_MAX        "Ton vid Max"
+#define TR_REPEAT_AT_ZERO      "Repetera vid Noll"
 #define TR_POWEROFF            "\027Stänger Av..."
 #define TR_SHUTDOWN            "STÄNGER AV"
 #define TR_SAVEMODEL           "Spara modellinställn."
@@ -865,9 +865,9 @@
 #define TR_NO_FAILSAFE         "Failsafe ej given"
 #define TR_KEYSTUCK            "Knapp-fel"
 #define TR_INVERT_THR          TR("Invert.Gas?", "Invertera Gasen?")
-#define TR_SPEAKER_VOLUME      INDENT "Volym"
+#define TR_SPEAKER_VOLUME      "Volym"
 #define TR_LCD                 "LCD"
-#define TR_BRIGHTNESS          INDENT "Ljusstyrka"
+#define TR_BRIGHTNESS          "Ljusstyrka"
 #define TR_CPU_TEMP            "CPU temp.\016>"
 #define TR_CPU_CURRENT         "Ström\022>"
 #define TR_CPU_MAH             "Förbrukn."
@@ -1003,18 +1003,18 @@
 #define TR_VALUE               "Värde"
 #define TR_TOPLCDTIMER         "Top LCD Timer"
 #define TR_UNIT                "Enhet"
-#define TR_TELEMETRY_NEWSENSOR INDENT "Lägg till"
+#define TR_TELEMETRY_NEWSENSOR "Lägg till"
 #define TR_CHANNELRANGE        INDENT "Kanalområde"
 #define TR_ANTENNASELECTION    TR(INDENT "Antenna", INDENT "Antenna selection")
 #define TR_ANTENNACONFIRM1     "Really switch?"
 #define TR_ANTENNACONFIRM2     TR("Check antenna", "Make sure antenna is installed!")
 #define TR_R9MFLEXWARN1                "Requires non"
 #define TR_R9MFLEXWARN2                "certified R9M firm."
-#define TR_LOWALARM            INDENT "Låg-alarm"
-#define TR_CRITICALALARM       INDENT "Kritiskt alarm"
+#define TR_LOWALARM            "Låg-alarm"
+#define TR_CRITICALALARM       "Kritiskt alarm"
 #define TR_RSSIALARM_WARN             TR("RSSI","TELEMETRY RSSI")
-#define TR_NO_RSSIALARM                TR(INDENT "Alarms disabled", INDENT "Telemetry alarms disabled")
-#define TR_DISABLE_ALARM               TR(INDENT "Disable alarms", INDENT "Disable telemetry alarms")
+#define TR_NO_RSSIALARM                TR("Alarms disabled", INDENT "Telemetry alarms disabled")
+#define TR_DISABLE_ALARM               TR("Disable alarms", INDENT "Disable telemetry alarms")
 #define TR_ENABLE_POPUP        "Slå på Dialog"
 #define TR_DISABLE_POPUP       "Slå av Dialog"
 #define TR_POPUP               "Popup"

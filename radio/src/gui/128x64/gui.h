@@ -50,7 +50,7 @@ extern uint8_t noHighlightCounter;
 #define NO_HIGHLIGHT()        (noHighlightCounter > 0)
 #define START_NO_HIGHLIGHT()  do { noHighlightCounter = 25; } while(0)
 
-
+void drawSlider(coord_t x, coord_t y, uint8_t width, uint8_t value, uint8_t max, uint8_t attr);
 void drawSlider(coord_t x, coord_t y, uint8_t value, uint8_t max, uint8_t attr);
 
 #if defined(NAVIGATION_POT1)
@@ -222,8 +222,22 @@ void title(const char * s);
 
 typedef int choice_t;
 
-choice_t editChoice(coord_t x, coord_t y, const char * label, const char *values, choice_t value, choice_t min, choice_t max, LcdFlags attr, event_t event);
-uint8_t editCheckBox(uint8_t value, coord_t x, coord_t y, const char * label, LcdFlags attr, event_t event);
+choice_t editChoice(coord_t x, coord_t y, const char *label,
+                    const char *values, choice_t value, choice_t min,
+                    choice_t max, LcdFlags attr, event_t event);
+choice_t editChoice(coord_t x, coord_t y, const char *label,
+                    const char *values, choice_t value, choice_t min,
+                    choice_t max, LcdFlags attr, event_t event, coord_t lblX);
+choice_t editChoice(coord_t x, coord_t y, const char *label,
+                    const char *values, choice_t value, choice_t min,
+                    choice_t max, LcdFlags attr, event_t event, coord_t lblX,
+                    IsValueAvailable isValueAvailable);
+
+uint8_t editCheckBox(uint8_t value, coord_t x, coord_t y, const char * label, 
+                     LcdFlags attr, event_t event);
+uint8_t editCheckBox(uint8_t value, coord_t x, coord_t y, const char *label,
+                     LcdFlags attr, event_t event, coord_t lblX);
+
 int8_t editSwitch(coord_t x, coord_t y, int8_t value, LcdFlags attr, event_t event);
 
 #define ON_OFF_MENU_ITEM(value, x, y, label, attr, event) value = editCheckBox(value, x, y, label, attr, event)

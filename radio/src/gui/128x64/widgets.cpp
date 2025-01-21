@@ -34,17 +34,12 @@ void drawStick(coord_t centrex, int16_t xval, int16_t yval)
 
 void drawCheckBox(coord_t x, coord_t y, uint8_t value, LcdFlags attr)
 {
-#if defined(GRAPHICS)
   if (value)
     lcdDrawChar(x+1, y, '#');
   if (attr)
     lcdDrawSolidFilledRect(x, y, 7, 7);
   else
     lcdDrawSquare(x, y, 7);
-#else
-  /* ON / OFF version */
-  lcdDrawTextAtIndex(x, y, STR_OFFON, value, attr ? INVERS:0) ;
-#endif
 }
 
 void drawScreenIndex(uint8_t index, uint8_t count, uint8_t attr)
@@ -85,22 +80,35 @@ void title(const char * s)
   lcdDrawText(0, 0, s, INVERS);
 }
 
-choice_t editChoice(coord_t x, coord_t y, const char * label, const char *values, choice_t value, choice_t min, choice_t max, LcdFlags attr, event_t event)
+choice_t editChoice(coord_t x, coord_t y, const char * label, const char *values, choice_t value, choice_t min, choice_t max, LcdFlags attr, event_t event, coord_t lblX, IsValueAvailable isValueAvailable)
 {
-  lcdDrawTextAlignedLeft(y, label);
+  if (label) {
+    lcdDrawText(lblX, y, label);
+  }
   if (values) lcdDrawTextAtIndex(x, y, values, value-min, attr);
-  if (attr & (~RIGHT)) value = checkIncDec(event, value, min, max, (menuVerticalPositions[0] == 0) ? EE_MODEL : EE_GENERAL);
+  if (attr & (~RIGHT)) value = checkIncDec(event, value, min, max, (menuVerticalPositions[0] == 0) ? EE_MODEL : EE_GENERAL, isValueAvailable);
   return value;
 }
 
-uint8_t editCheckBox(uint8_t value, coord_t x, coord_t y, const char *label, LcdFlags attr, event_t event )
+choice_t editChoice(coord_t x, coord_t y, const char * label, const char *values, choice_t value, choice_t min, choice_t max, LcdFlags attr, event_t event, coord_t lblX)
 {
-#if defined(GRAPHICS)
+  return editChoice(x, y, label, values, value, min, max, attr, event, lblX, nullptr);
+}
+
+choice_t editChoice(coord_t x, coord_t y, const char * label, const char *values, choice_t value, choice_t min, choice_t max, LcdFlags attr, event_t event)
+{
+  return editChoice(x, y, label, values, value, min, max, attr, event, 0, nullptr);
+}
+
+uint8_t editCheckBox(uint8_t value, coord_t x, coord_t y, const char *label, LcdFlags attr, event_t event, coord_t lblX)
+{
   drawCheckBox(x, y, value, attr);
-  return editChoice(x, y, label, NULL, value, 0, 1, attr, event);
-#else
-  return editChoice(x, y, label, STR_OFFON, value, 0, 1, attr, event);
-#endif
+  return editChoice(x, y, label, nullptr, value, 0, 1, attr, event, lblX);
+}
+
+uint8_t editCheckBox(uint8_t value, coord_t x, coord_t y, const char *label, LcdFlags attr, event_t event)
+{
+  return editCheckBox(value, x, y, label, attr, event, 0);
 }
 
 int8_t editSwitch(coord_t x, coord_t y, int8_t value, LcdFlags attr, event_t event)
@@ -111,13 +119,19 @@ int8_t editSwitch(coord_t x, coord_t y, int8_t value, LcdFlags attr, event_t eve
   return value;
 }
 
-void drawSlider(coord_t x, coord_t y, uint8_t value, uint8_t max, uint8_t attr)
+void drawSlider(coord_t x, coord_t y, uint8_t width, uint8_t value, uint8_t max, uint8_t attr)
 {
-  lcdDrawChar(x+(value*4*FW)/max, y, '$');
-  lcdDrawSolidHorizontalLine(x, y+3, 5*FW-1, FORCE);
-  if (attr && (!(attr & BLINK) || !BLINK_ON_PHASE)) lcdDrawSolidFilledRect(x, y, 5*FW-1, FH-1);
+  lcdDrawChar(x + (value * (width - FWNUM)) / max, y, '$');
+  lcdDrawSolidHorizontalLine(x, y + 3, width, FORCE);
+  if (attr && (!(attr & BLINK) || !BLINK_ON_PHASE)) {
+    lcdDrawSolidFilledRect(x, y, width, FH - 1);
+  }
 }
 
+void drawSlider(coord_t x, coord_t y, uint8_t value, uint8_t max, uint8_t attr)
+{
+  drawSlider(x, y, 5*FW - 1, value, max, attr);
+}
 
 #if defined(GVARS)
 void drawGVarValue(coord_t x, coord_t y, uint8_t gvar, gvar_t value, LcdFlags flags)

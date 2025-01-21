@@ -653,12 +653,6 @@ PACK(struct TrainerData {
   NOBACKUP(TrainerMix mix[4]);
 });
 
-#if defined(PCBHORUS)
-#define SPLASH_MODE uint8_t splashSpares : 3
-#else
-#define SPLASH_MODE int8_t splashMode : 3
-#endif
-
 #define EXTRA_GENERAL_FIELDS_ARM                       \
   NOBACKUP(uint8_t backlightBright);                   \
   NOBACKUP(uint32_t globalTimer);                      \
@@ -753,7 +747,7 @@ PACK(struct RadioData {
   NOBACKUP(uint8_t adjustRTC : 1);
   NOBACKUP(uint8_t inactivityTimer);
   uint8_t telemetryBaudrate : 3;
-  SPLASH_MODE;                      /* 3bits */
+  int8_t splashMode : 3;
   NOBACKUP(int8_t hapticMode : 2);  // -2=quiet, -1=only alarms, 0=no keys, 1=all
   int8_t switchesDelay;
   NOBACKUP(uint8_t lightAutoOff);
@@ -781,7 +775,6 @@ PACK(struct RadioData {
 #undef TELEMETRY_DATA
 #undef MODELDATA_EXTRA
 #undef CUSTOM_SCREENS_DATA
-#undef SPLASH_MODE
 #undef EXTRA_GENERAL_FIELDS
 #undef THEME_DATA
 #undef NOBACKUP

@@ -631,27 +631,27 @@
 #define TR_CV                  "CV"
 #define TR_GV                  TR("G", "GV")
 #define TR_ACHANNEL            "A\002ingresso"
-#define TR_RANGE               TR(INDENT"Inter.", INDENT"Intervallo")
-#define TR_CENTER              INDENT "Centro"
+#define TR_RANGE               TR("Inter.", "Intervallo")
+#define TR_CENTER              "Centro"
 #define TR_BAR                 "Barra"
-#define TR_ALARM               TR(INDENT"Allar.", INDENT"Allarme")
+#define TR_ALARM               TR("Allar.", "Allarme")
 #define TR_USRDATA             "Dati"
-#define TR_BLADES              INDENT"Pale"
+#define TR_BLADES              "Pale"
 #define TR_SCREEN              "Schermo "
 #define TR_SOUND_LABEL         "Suono"
-#define TR_LENGTH              INDENT"Durata"
-#define TR_BEEP_LENGTH         INDENT "Lung. Beep"
-#define TR_SPKRPITCH           INDENT"Tono"
+#define TR_LENGTH              "Durata"
+#define TR_BEEP_LENGTH          "Lung. Beep"
+#define TR_SPKRPITCH           "Tono"
 #define TR_HAPTIC_LABEL        "Vibraz"
-#define TR_HAPTICSTRENGTH      INDENT"Forza"
+#define TR_HAPTICSTRENGTH      "Forza"
 #define TR_CONTRAST            "Contrasto"
 #define TR_ALARMS_LABEL        "Allarmi"
 #define TR_BATTERY_RANGE       TR("Interv. Batt", "Intervallo batteria")
-#define TR_BATTERYWARNING      INDENT"Avviso batteria"
-#define TR_INACTIVITYALARM     INDENT"Inattivita'"
-#define TR_MEMORYWARNING       INDENT"Avviso memoria"
-#define TR_ALARMWARNING        INDENT"Spegni suono"
-#define TR_RSSISHUTDOWNALARM   TR(INDENT "Rssi Shutdown", INDENT "Check Rssi on Shutdown")
+#define TR_BATTERYWARNING      "Avviso batteria"
+#define TR_INACTIVITYALARM     "Inattivita'"
+#define TR_MEMORYWARNING       "Avviso memoria"
+#define TR_ALARMWARNING        "Spegni suono"
+#define TR_RSSISHUTDOWNALARM   TR("Rssi Shutdown", INDENT "Check Rssi on Shutdown")
 #define TR_MODEL_STILL_POWERED "Model still powered"
 #define TR_MODEL_SHUTDOWN              "Shutdown ?"
 #define TR_PRESS_ENTER_TO_CONFIRM      "Press enter to confirm"
@@ -663,7 +663,7 @@
 #define TR_BEEPCOUNTDOWN       TR(INDENT"Conto rov", INDENT"Conto rovescia")
 #define TR_PERSISTENT          TR(INDENT"Persist.", INDENT"Persistente")
 #define TR_BACKLIGHT_LABEL     TR("Retroillum.", "Retroilluminazione")
-#define TR_BLDELAY             INDENT"Durata"
+#define TR_BLDELAY             "Durata"
 #define TR_BLONBRIGHTNESS      TR(INDENT"Lumin. ON",INDENT"Luminosità ON")
 #define TR_BLOFFBRIGHTNESS     TR(INDENT"Lumin. OFF",INDENT"Luminosità OFF")
 #define TR_BLCOLOR             INDENT "Colore"
@@ -811,9 +811,9 @@
 #define TR_LONGITUDE           "Longitud."
 #define TR_GPSCOORD            TR("GPS Coords", INDENT "Formato Coordinate")
 #define TR_VARIO               TR("Vario", "Variometro")
-#define TR_PITCH_AT_ZERO       INDENT "Tono a Zero"
-#define TR_PITCH_AT_MAX        INDENT "Tono al Max"
-#define TR_REPEAT_AT_ZERO      INDENT "Ripeti a Zero"
+#define TR_PITCH_AT_ZERO       "Tono a Zero"
+#define TR_PITCH_AT_MAX        "Tono al Max"
+#define TR_REPEAT_AT_ZERO      "Ripeti a Zero"
 #define TR_POWEROFF            "\027Power OFF..."
 #define TR_SHUTDOWN            "ARRESTO.."
 #define TR_SAVEMODEL           "Salvataggio dati modello"
@@ -858,7 +858,7 @@
 #define TR_INVERT_THR          "Inverti Mot?"
 #define TR_SPEAKER_VOLUME      "Volume Audio"
 #define TR_LCD                 "LCD"
-#define TR_BRIGHTNESS          INDENT "Luminosità"
+#define TR_BRIGHTNESS          "Luminosità"
 #define TR_CPU_TEMP            "Temp CPU \016>"
 #define TR_CPU_CURRENT         "Corrente\022>"
 #define TR_CPU_MAH             "Consumo"
@@ -994,18 +994,18 @@
 #define TR_VALUE               "Valore"
 #define TR_TOPLCDTIMER         "Timer LCD Sup."
 #define TR_UNIT                "Unita"
-#define TR_TELEMETRY_NEWSENSOR INDENT "Aggiungi nuovo"
+#define TR_TELEMETRY_NEWSENSOR "Aggiungi nuovo"
 #define TR_CHANNELRANGE        INDENT "Numero Canali"
 #define TR_ANTENNASELECTION    TR(INDENT "Antenna", INDENT "Antenna selection")
 #define TR_ANTENNACONFIRM1     "Really switch?"
 #define TR_ANTENNACONFIRM2     TR("Check antenna", "Make sure antenna is installed!")
 #define TR_R9MFLEXWARN1                "Requires non"
 #define TR_R9MFLEXWARN2                "certified R9M firm."
-#define TR_LOWALARM            INDENT "Allarme Basso"
-#define TR_CRITICALALARM       INDENT "Allarme Critico"
+#define TR_LOWALARM            "Allarme Basso"
+#define TR_CRITICALALARM       "Allarme Critico"
 #define TR_RSSIALARM_WARN      TR("RSSI","TELEMETRY RSSI")
-#define TR_NO_RSSIALARM        TR(INDENT "Alarms disabled", INDENT "Telemetry alarms disabled")
-#define TR_DISABLE_ALARM       TR(INDENT "Disable alarms", INDENT "Disable telemetry alarms")
+#define TR_NO_RSSIALARM        TR("Alarms disabled", INDENT "Telemetry alarms disabled")
+#define TR_DISABLE_ALARM       TR("Disable alarms", INDENT "Disable telemetry alarms")
 #define TR_ENABLE_POPUP        "Abilita Popup"
 #define TR_DISABLE_POPUP       "Disabilita Popup"
 #define TR_POPUP               "Popup"

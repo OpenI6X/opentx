@@ -622,27 +622,27 @@
 #define TR_CV                  "K"
 #define TR_GV                  TR("G", "GP")
 #define TR_ACHANNEL            "A\004Kanál"
-#define TR_RANGE               INDENT"Rozsah"
-#define TR_CENTER              INDENT "Střed"
+#define TR_RANGE               "Rozsah"
+#define TR_CENTER              "Střed"
 #define TR_BAR                 "Ukazatel"
-#define TR_ALARM               INDENT"Alarm"
+#define TR_ALARM               "Alarm"
 #define TR_USRDATA             TR("UživData", "Uživ. data")
 #define TR_BLADES              TR(INDENT"ListyVrt", INDENT"Listy vrtule")
 #define TR_SCREEN              "Panel "
 #define TR_SOUND_LABEL         "Zvuk"
-#define TR_LENGTH              INDENT"Délka"
-#define TR_BEEP_LENGTH         TR3(INDENT"Délka", INDENT"Délka", INDENT"Délka zvuku")
-#define TR_SPKRPITCH           INDENT"Tón"
+#define TR_LENGTH              "Délka"
+#define TR_BEEP_LENGTH         TR3("Délka", "Délka", "Délka zvuku")
+#define TR_SPKRPITCH           "Tón"
 #define TR_HAPTIC_LABEL        "Vibrace"
-#define TR_HAPTICSTRENGTH      INDENT"Síla"
+#define TR_HAPTICSTRENGTH      "Síla"
 #define TR_CONTRAST            "Kontrast LCD"
 #define TR_ALARMS_LABEL        "Alarmy"
 #define TR_BATTERY_RANGE       TR("Ukazatel bat.", "Ukazatel baterie")
-#define TR_BATTERYWARNING      INDENT"Vybitá baterie"
-#define TR_INACTIVITYALARM     TR(INDENT "Nečinnost", INDENT "Nečinnost rádia")
-#define TR_MEMORYWARNING       INDENT"Plná pamět'"
-#define TR_ALARMWARNING        TR3(INDENT "Vypnutý zvuk", INDENT "Upozornit na vypnutý zvuk", INDENT "Upozornit na vyp. zvuk")
-#define TR_RSSISHUTDOWNALARM   TR(INDENT "Rssi Shutdown", INDENT "Check Rssi on Shutdown")
+#define TR_BATTERYWARNING      "Vybitá baterie"
+#define TR_INACTIVITYALARM     TR("Nečinnost", INDENT "Nečinnost rádia")
+#define TR_MEMORYWARNING       "Plná pamět'"
+#define TR_ALARMWARNING        TR3("Vypnutý zvuk", INDENT "Upozornit na vypnutý zvuk", INDENT "Upozornit na vyp. zvuk")
+#define TR_RSSISHUTDOWNALARM   TR("Rssi Shutdown", INDENT "Check Rssi on Shutdown")
 #define TR_MODEL_STILL_POWERED "Model still powered"
 #define TR_MODEL_SHUTDOWN              "Shutdown ?"
 #define TR_PRESS_ENTER_TO_CONFIRM      "Press enter to confirm"
@@ -801,9 +801,9 @@
 #define TR_LONGITUDE           "Zem. délka"
 #define TR_GPSCOORD            "GPS souřadnice"
 #define TR_VARIO               "Vario"
-#define TR_PITCH_AT_ZERO       INDENT "Tón na nule"
-#define TR_PITCH_AT_MAX        INDENT "Tón na maximu"
-#define TR_REPEAT_AT_ZERO      TR(INDENT "Opak. na nule", INDENT "Opakování na nule")
+#define TR_PITCH_AT_ZERO       "Tón na nule"
+#define TR_PITCH_AT_MAX        "Tón na maximu"
+#define TR_REPEAT_AT_ZERO      TR("Opak. na nule", INDENT "Opakování na nule")
 #define TR_POWEROFF            "\027Power OFF..."
 #define TR_SHUTDOWN            "Vypínání.."
 #define TR_SAVEMODEL           "Ukládám nastavení modelu"
@@ -846,9 +846,9 @@
 #define TR_NO_FAILSAFE         "Failsafe není nastaveno"
 #define TR_KEYSTUCK            "Zaseklá klávesa"
 #define TR_INVERT_THR          "Invertovat plyn?"
-#define TR_SPEAKER_VOLUME      INDENT "Hlasitost"
+#define TR_SPEAKER_VOLUME      "Hlasitost"
 #define TR_LCD                 "LCD"
-#define TR_BRIGHTNESS          INDENT "Jas"
+#define TR_BRIGHTNESS          "Jas"
 #define TR_CPU_TEMP            "Tepl. CPU\016>"
 #define TR_CPU_CURRENT         "Proud\030>"
 #define TR_CPU_MAH             "Spotřeba"
@@ -984,18 +984,18 @@
 #define TR_VALUE               "Hodnota"
 #define TR_TOPLCDTIMER         "Stopky horního LCD"
 #define TR_UNIT                "Jednotky"
-#define TR_TELEMETRY_NEWSENSOR INDENT "Přidat senzor ručně"
+#define TR_TELEMETRY_NEWSENSOR "Přidat senzor ručně"
 #define TR_CHANNELRANGE        TR(INDENT "Kanály", INDENT "Rozsah kanálů")
 #define TR_ANTENNASELECTION    TR(INDENT "Antenna", INDENT "Volba antény")
 #define TR_ANTENNACONFIRM1     "Opravdu přepnout?"
 #define TR_ANTENNACONFIRM2     TR("Check antenna", "Ujisti se že je anténa připojena!")
 #define TR_R9MFLEXWARN1                "Requires non"
 #define TR_R9MFLEXWARN2                "certified R9M firm."
-#define TR_LOWALARM            INDENT "Nízký Alarm"
-#define TR_CRITICALALARM       INDENT "Kritický Alarm"
+#define TR_LOWALARM            "Nízký Alarm"
+#define TR_CRITICALALARM       "Kritický Alarm"
 #define TR_RSSIALARM_WARN             TR("RSSI","TELEMETRY RSSI")
-#define TR_NO_RSSIALARM                TR(INDENT "Alarms disabled", INDENT "Telemetry alarms disabled")
-#define TR_DISABLE_ALARM               TR(INDENT "Disable alarms", INDENT "Disable telemetry alarms")
+#define TR_NO_RSSIALARM                TR("Alarms disabled", "Telemetry alarms disabled")
+#define TR_DISABLE_ALARM               TR("Disable alarms", "Disable telemetry alarms")
 #define TR_ENABLE_POPUP        "Povolit vyskakovací okno"
 #define TR_DISABLE_POPUP       "Zakázat vyskakovací okno"
 #define TR_POPUP               "Popup"

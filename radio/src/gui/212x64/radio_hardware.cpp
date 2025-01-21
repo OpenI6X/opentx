@@ -210,7 +210,7 @@ void menuRadioHardware(event_t event)
 
 #if defined(BLUETOOTH)
         case ITEM_RADIO_HARDWARE_BLUETOOTH_MODE:
-          lcdDrawText(INDENT_WIDTH, y, STR_BLUETOOTH);
+          lcdDrawTextIndented(y, STR_BLUETOOTH);
           lcdDrawTextAtIndex(HW_SETTINGS_COLUMN, y, STR_BLUETOOTH_MODES, g_eeGeneral.bluetoothMode, attr);
           if (attr) {
 #if defined(USEHORUSBT)
@@ -222,7 +222,7 @@ void menuRadioHardware(event_t event)
           break;
 #if defined(USEHORUSBT)
         case ITEM_RADIO_HARDWARE_BLUETOOTH_NAME:
-          lcdDrawText(INDENT_WIDTH, y, STR_NAME);
+          lcdDrawTextIndented(y, STR_NAME);
           editName(HW_SETTINGS_COLUMN, y, g_eeGeneral.bluetoothName, LEN_BLUETOOTH_NAME, event, attr);
           break;
 #endif
