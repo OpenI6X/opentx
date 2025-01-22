@@ -409,6 +409,11 @@ void lcdDrawTextAlignedLeft(coord_t y, const char * s)
   lcdDrawText(0, y, s);
 }
 
+void lcdDrawTextIndented(coord_t y, const char * s)
+{
+  lcdDrawText(INDENT_WIDTH, y, s);
+}
+
 #if !defined(BOOT)
 void lcdDrawTextAtIndex(coord_t x, coord_t y, const char * s,uint8_t idx, LcdFlags flags)
 {

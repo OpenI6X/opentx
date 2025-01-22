@@ -105,6 +105,7 @@ void lcdDrawSizedText(coord_t x, coord_t y, const char * s, unsigned char len, L
 void lcdDrawText(coord_t x, coord_t y, const char * s);
 void lcdDrawSizedText(coord_t x, coord_t y, const char * s, unsigned char len);
 void lcdDrawTextAlignedLeft(coord_t y, const char * s);
+void lcdDrawTextIndented(coord_t y, const char * s);
 void drawTimerWithMode(coord_t x, coord_t y, uint8_t index, LcdFlags att);
 
   void lcdDrawHexNumber(coord_t x, coord_t y, uint32_t val, LcdFlags mode=0);

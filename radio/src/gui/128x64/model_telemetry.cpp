@@ -520,7 +520,7 @@ void menuModelTelemetryFrsky(event_t event)
         break;
 
       case ITEM_TELEMETRY_NEW_SENSOR:
-        lcdDrawText(0, y, STR_TELEMETRY_NEWSENSOR, attr);
+        lcdDrawText(INDENT_WIDTH, y, STR_TELEMETRY_NEWSENSOR, attr);
         if (attr && event==EVT_KEY_BREAK(KEY_ENTER)) {
           s_editMode = 0;
           int res = availableTelemetryIndex();
@@ -551,19 +551,13 @@ void menuModelTelemetryFrsky(event_t event)
 
 
       case ITEM_TELEMETRY_RSSI_LABEL:
-#if defined(MULTIMODULE)
-        if (telemetryProtocol == PROTOCOL_TELEMETRY_MULTIMODULE &&
-          g_model.moduleData[EXTERNAL_MODULE].getMultiProtocol(false) == MM_RF_PROTO_FS_AFHDS2A)
-          lcdDrawTextAlignedLeft(y, "RSNR");
-        else
-#endif
         lcdDrawTextAlignedLeft(y, "RQly");
         break;
 
       case ITEM_TELEMETRY_RSSI_ALARM1:
       case ITEM_TELEMETRY_RSSI_ALARM2: {
         bool warning = (k==ITEM_TELEMETRY_RSSI_ALARM1);
-        lcdDrawTextAlignedLeft(y, (warning ? STR_LOWALARM : STR_CRITICALALARM));
+        lcdDrawTextIndented(y, (warning ? STR_LOWALARM : STR_CRITICALALARM));
         lcdDrawNumber(LCD_W, y, warning? g_model.rssiAlarms.getWarningRssi() : g_model.rssiAlarms.getCriticalRssi(), RIGHT | attr, 3);
         if (attr && s_editMode>0) {
           if (warning)
@@ -583,7 +577,7 @@ void menuModelTelemetryFrsky(event_t event)
         break;
 
       case ITEM_TELEMETRY_VARIO_SOURCE:
-        lcdDrawTextAlignedLeft(y, INDENT TR_SOURCE);
+        lcdDrawTextIndented(y, STR_SOURCE);
         drawSource(TELEM_COL2, y, g_model.frsky.varioSource ? MIXSRC_FIRST_TELEM+3*(g_model.frsky.varioSource-1) : 0, attr);
         if (attr) {
           g_model.frsky.varioSource = checkIncDec(event, g_model.frsky.varioSource, 0, MAX_TELEMETRY_SENSORS, EE_MODEL|NO_INCDEC_MARKS, isSensorAvailable);
@@ -591,7 +585,7 @@ void menuModelTelemetryFrsky(event_t event)
         break;
 
       case ITEM_TELEMETRY_VARIO_RANGE:
-        lcdDrawTextAlignedLeft(y, STR_RANGE);
+        lcdDrawTextIndented(y, STR_RANGE);
         if (attr && CURSOR_ON_LINE()) {
           lcdDrawSolidFilledRect(TELEM_COL2-1, y-1, LCD_W-TELEM_COL2+1, FH+1);
         }
@@ -610,7 +604,7 @@ void menuModelTelemetryFrsky(event_t event)
         break;
 
       case ITEM_TELEMETRY_VARIO_CENTER:
-        lcdDrawTextAlignedLeft(y, STR_CENTER);
+        lcdDrawTextIndented(y, STR_CENTER);
         lcdDrawNumber(TELEM_COL2, y, -5+g_model.frsky.varioCenterMin, ((CURSOR_ON_LINE() || menuHorizontalPosition==0) ? attr : 0)|PREC1|LEFT);
         lcdDrawNumber(TELEM_COL2+4*FW, y, 5+g_model.frsky.varioCenterMax, ((CURSOR_ON_LINE() || menuHorizontalPosition==1) ? attr : 0)|PREC1|LEFT);
         lcdDrawTextAtIndex(TELEM_COL2+8*FW, y, STR_VVARIOCENTER, g_model.frsky.varioCenterSilent, (menuHorizontalPosition==2 ? attr : 0));
