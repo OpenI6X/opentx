@@ -305,15 +305,10 @@ void menuRadioSetup(event_t event)
 #if defined(DFPLAYER)
       case ITEM_SETUP_WAV_VOLUME:
       {
-        lcdDrawTextIndented(y, STR_WAV_VOLUME);
-        uint32_t vol = g_eeGeneral.wavVolume;
-        drawSlider(RADIO_SETUP_2ND_COLUMN, y, LCD_W - 2 - RADIO_SETUP_2ND_COLUMN, vol, 4, attr);
-        if (attr) {
-          CHECK_INCDEC_GENVAR(event, vol, 0, 4);
-          if (checkIncDec_Ret) {
-            g_eeGeneral.wavVolume = vol;
-            dfplayerSetVolume(g_eeGeneral.wavVolume);
-          }
+        int8_t vol = g_eeGeneral.wavVolume;
+        g_eeGeneral.wavVolume = slider_5pos(y, g_eeGeneral.wavVolume, event, attr, STR_WAV_VOLUME);
+        if (vol != g_eeGeneral.wavVolume) {
+          dfplayerSetVolume(g_eeGeneral.wavVolume);
         }
       }
       break;
