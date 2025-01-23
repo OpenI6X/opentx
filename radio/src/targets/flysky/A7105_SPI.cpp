@@ -44,9 +44,9 @@ const uint8_t AFHDS2A_A7105_regs[] = {
 };
 
 void SPI_Write(uint8_t command)
-{//working OK
+{
 	while((SPI1->SR & SPI_SR_BSY));
-	*(__IO uint8_t *)&SPI1->DR = command;					//Write the first data item to be transmitted into the SPI_DR register (this clears the TXE flag).
+	*(__IO uint8_t *)&SPI1->DR = command;					// Write the first data item to be transmitted into the SPI_DR register (this clears the TXE flag).
 	#ifdef DEBUG_SPI
 		debug("%02X ",command);
 	#endif

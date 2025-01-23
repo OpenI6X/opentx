@@ -808,4 +808,11 @@ enum BluetoothModes {
   BLUETOOTH_TRAINER,
 };
 
+// PPM Units
+enum PPMUnit {
+    PPM_PERCENT_PREC0,
+    PPM_PERCENT_PREC1,
+    PPM_US
+};
+
 #endif // _DATACONSTANTS_H_

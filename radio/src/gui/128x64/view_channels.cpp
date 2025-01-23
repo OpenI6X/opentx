@@ -79,16 +79,12 @@ void menuChannelsViewCommon(event_t event)
     }
 
     // Value
-#if defined(PPM_UNIT_PERCENT_PREC1)
-      lcdDrawNumber(CHANNEL_VALUE_OFFSET, y + 1, calcRESXto1000(val), PREC1 | TINSIZE | RIGHT);
-#else
-      lcdDrawNumber(CHANNEL_VALUE_OFFSET, y + 1, calcRESXto1000(val) / 10, TINSIZE | RIGHT);
-#endif
+    drawChannelValue(CHANNEL_VALUE_OFFSET, y + 1, ch, val, TINSIZE | RIGHT);
 
-      lcdDrawNumber(LCD_W + 1, y + 1, PPM_CH_CENTER(ch) + val / 2, TINSIZE | RIGHT);
+    lcdDrawNumber(LCD_W + 1, y + 1, PPM_CH_CENTER(ch) + val / 2, TINSIZE | RIGHT);
 
-      // Gauge
-      drawGauge(CHANNEL_GAUGE_OFFSET, y, CHANNEL_BAR_WIDTH, 6, val, limits);
+    // Gauge
+    drawGauge(CHANNEL_GAUGE_OFFSET, y, CHANNEL_BAR_WIDTH, 6, val, limits);
 
     if (!mixersView) {
       // Properties

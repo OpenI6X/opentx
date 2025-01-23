@@ -131,7 +131,7 @@ void dfplayerPlayFile(uint16_t number) {
 void dfplayerSetVolume(int8_t volume) {
     uint8_t volumes[5] = { 0, 16, 23, 27, 30 }; // range: 0-30
     //RTOS_WAIT_MS(200);
-    dfplayerCommand(DFP_SET_VOLUME, volumes[volume]);
+    dfplayerCommand(DFP_SET_VOLUME, volumes[volume+2]);
 }
 
 void dfplayerInit() {
@@ -147,7 +147,7 @@ void dfplayerInit() {
     delay_ms(150); // fix for MH2024K slow init
 
     aux3SerialInit();
-    dfplayerSetVolume(2); // default volume
+    dfplayerSetVolume(0); // default volume
     
     if (!globalData.unexpectedShutdown) {
         AUDIO_HELLO();

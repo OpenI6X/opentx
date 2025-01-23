@@ -237,7 +237,7 @@ void menuRadioHardware(event_t event)
 
 #if defined(CROSSFIRE)
       case ITEM_RADIO_HARDWARE_SERIAL_BAUDRATE:
-        g_eeGeneral.telemetryBaudrate = editChoice(HW_SETTINGS_COLUMN2, y, STR_MAXBAUDRATE, "\004400k115k921k1.8M" /* 3.7M5.2M */, g_eeGeneral.telemetryBaudrate, 0, DIM(CROSSFIRE_BAUDRATES) - 1, attr, event);
+        g_eeGeneral.telemetryBaudrate = editChoice(HW_SETTINGS_COLUMN2, y, STR_MAXBAUDRATE, "\005400k 115k 921k 1.87M3.75M5.25M", g_eeGeneral.telemetryBaudrate, 0, DIM(CROSSFIRE_BAUDRATES) - 1, attr, event);
         if (attr) {
           storageDirty(EE_GENERAL);
           if (checkIncDec_Ret && IS_EXTERNAL_MODULE_ON()) {

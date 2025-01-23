@@ -24,11 +24,7 @@
 #define MODEL_SPECIAL_FUNC_2ND_COLUMN          (4*FW-1)
 #define MODEL_SPECIAL_FUNC_3RD_COLUMN          (15*FW-3)
 #define MODEL_SPECIAL_FUNC_4TH_COLUMN          (20*FW)
-#if defined(GRAPHICS)
-  #define MODEL_SPECIAL_FUNC_4TH_COLUMN_ONOFF  (20*FW)
-#else
-  #define MODEL_SPECIAL_FUNC_4TH_COLUMN_ONOFF  (18*FW+2)
-#endif
+#define MODEL_SPECIAL_FUNC_4TH_COLUMN_ONOFF    (20*FW)
 
 #if defined(SDCARD)
 void onCustomFunctionsFileSelectionMenu(const char * result)

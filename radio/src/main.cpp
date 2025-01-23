@@ -381,7 +381,13 @@ void guiMain(event_t evt)
     menuEvent = 0;
   }
 
-  handleGui(isEventCaughtByPopup() ? 0 : evt);
+  if (isEventCaughtByPopup()) {
+    handleGui(0);
+  }
+  else {
+    handleGui(evt);
+    evt = 0;
+  }
 
   if (warningText) {
     // show warning on top of the normal menus
@@ -404,7 +410,7 @@ void perMain()
 {
   DEBUG_TIMER_START(debugTimerPerMain1);
 
-#if !defined(PCBI6X)
+#if defined(AUDIO)
   checkSpeakerVolume();
 #endif
 

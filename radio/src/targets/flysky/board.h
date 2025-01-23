@@ -187,16 +187,6 @@ uint32_t isBootloaderStart(const uint8_t * buffer);
 
 #define IS_EXTERNAL_MODULE_ON()         (GPIO_ReadInputDataBit(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN) == Bit_SET)
 
-
-void init_no_pulses(uint32_t port);
-void disable_no_pulses(uint32_t port);
-void init_ppm( uint32_t module_index );
-void disable_ppm( uint32_t module_index );
-void init_serial( uint32_t module_index, uint32_t baudrate, uint32_t period);
-void disable_serial( uint32_t module_index);
-void init_module_timer( uint32_t module_index, uint32_t period, uint8_t state);
-void disable_module_timer( uint32_t module_index);
-
 void extmoduleSendNextFrame();
 
 // Trainer driver

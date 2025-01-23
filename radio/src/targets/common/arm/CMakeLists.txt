@@ -104,6 +104,14 @@ if(CROSSFIRE)
     )
 endif()
 
+
+# Protocols supported
+
+# if(PPM)
+  add_definitions(-DPPM)
+# endif()
+
+
 if(PCB STREQUAL I6X)
   set(SRC ${SRC} telemetry/flysky_ibus.cpp)
   add_definitions(-DTELEMETRY_FRSKY)
@@ -149,7 +157,6 @@ set(FIRMWARE_TARGET_SRC
 endif()
 set(TARGET_SRC
   ${TARGET_SRC}
-  pulses_driver.cpp
   keys_driver.cpp
   telemetry_driver.cpp
   )
