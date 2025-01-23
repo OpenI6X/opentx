@@ -81,8 +81,6 @@ void menuChannelsViewCommon(event_t event)
     // Value
     drawChannelValue(CHANNEL_VALUE_OFFSET, y + 1, ch, val, TINSIZE | RIGHT);
 
-    lcdDrawNumber(LCD_W + 1, y + 1, PPM_CH_CENTER(ch) + val / 2, TINSIZE | RIGHT);
-
     // Gauge
     drawGauge(CHANNEL_GAUGE_OFFSET, y, CHANNEL_BAR_WIDTH, 6, val, limits);
 
