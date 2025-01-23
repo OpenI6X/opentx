@@ -23,9 +23,9 @@
 
 #define ABOUT_INDENT 4
 
-// const char ABOUT_VERSION_1[] = "OpenI6X " "(" VERSION "-" VERSION_SUFFIX ")";
-// const char ABOUT_VERSION_2[] = "Copyright (C) " BUILD_YEAR " OpenI6X";
-// const char ABOUT_VERSION_3[] = "github.com/OpenI6X/opentx";
+//const char ABOUT_VERSION_1[] = "OpenI6X " "(" VERSION ")";
+//const char ABOUT_VERSION_2[] = "Copyright (C) " BUILD_YEAR " OpenI6X";
+//const char ABOUT_VERSION_3[] = "github.com/OpenI6X/opentx";
 
 void menuAboutView(event_t event)
 {
