@@ -27,7 +27,6 @@
 // const char ABOUT_VERSION_2[] = "Copyright (C) " BUILD_YEAR " OpenI6X";
 // const char ABOUT_VERSION_3[] = "github.com/OpenI6X/opentx";
 
-#if !defined(PCBI6X)
 void menuAboutView(event_t event)
 {
   switch(event)
@@ -45,5 +44,3 @@ void menuAboutView(event_t event)
   // lcdDrawText(ABOUT_INDENT, 38, ABOUT_VERSION_2, SMLSIZE);
   // lcdDrawText(ABOUT_INDENT, 46, ABOUT_VERSION_3, SMLSIZE);
 }
-
-#endif

@@ -23,9 +23,6 @@
 enum MenuRadioVersionItems
 {
   ITEM_RADIO_VERSION_FIRST = HEADER_LINE - 1,
-#if defined(PXX2)
-  ITEM_RADIO_MODULES_VERSION,
-#endif
   ITEM_RADIO_VERSION_COUNT
 };
 
@@ -35,6 +32,5 @@ void menuRadioVersion(event_t event)
 
   coord_t y = MENU_HEADER_HEIGHT + 2;
   lcdDrawText(FW, y, vers_stamp, SMLSIZE);
-  y += 5 * (FH - 1);
-
+  y += 5 * (FH - 1) + 2;
 }
