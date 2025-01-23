@@ -1496,13 +1496,7 @@ void menuModelFailsafe(event_t event)
       failsafeValue = 0;
     }
     else {
-      if (g_eeGeneral.ppmunit == PPM_US) {
-        lcdDrawNumber(xValue, y, PPM_CH_CENTER(ch)+failsafeValue/2, RIGHT|flags);
-      } else if (g_eeGeneral.ppmunit == PPM_PERCENT_PREC1) {
-        lcdDrawNumber(xValue, y, calcRESXto1000(failsafeValue), RIGHT|PREC1|flags);
-      } else {
-        lcdDrawNumber(xValue, y, calcRESXto1000(failsafeValue)/10, RIGHT|flags);
-      }
+      drawChannelValue(xValue, y, ch, failsafeValue, RIGHT|flags);
     }
 
     // Gauge

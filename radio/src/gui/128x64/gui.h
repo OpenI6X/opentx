@@ -379,6 +379,8 @@ void doMainScreenGraphics();
 void drawProgressBar(const char * label, int num, int den);
 void drawSleepBitmap();
 
+void drawChannelValue(coord_t x, coord_t y, uint8_t ch, int16_t value, LcdFlags flags);
+
 void drawVerticalScrollbar(coord_t x, coord_t y, coord_t h, uint16_t offset, uint16_t count, uint8_t visible);
 void drawGauge(coord_t x, coord_t y, coord_t w, coord_t h, int32_t val, int32_t max);
 

@@ -275,6 +275,20 @@ void drawProgressBar(const char * label, int num, int den)
   lcdRefresh();
 }
 
+void drawChannelValue(coord_t x, coord_t y, uint8_t ch, int16_t value, LcdFlags flags)
+{
+  int16_t valueToDisplay;
+  if (g_eeGeneral.ppmunit == PPM_US) {
+    valueToDisplay = PPM_CH_CENTER(ch) + value / 2;
+  } else if (g_eeGeneral.ppmunit == PPM_PERCENT_PREC1) {
+    flags |= PREC1;
+    valueToDisplay = calcRESXto1000(value);
+  } else {
+    valueToDisplay = calcRESXto1000(value) / 10;
+  }
+  lcdDrawNumber(x, y, valueToDisplay, flags);
+}
+
 const unsigned char SLEEP_BITMAP[]  = {
 #include "sleep.lbm"
 };
