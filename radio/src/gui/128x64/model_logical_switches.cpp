@@ -236,24 +236,18 @@ void onLogicalSwitchesMenu(const char *result)
   }
 #if defined(SDCARD)
   else if (result == STR_COPY) {
-
     clipboard.type = CLIPBOARD_TYPE_CUSTOM_SWITCH;
     clipboard.data.csw = *cs;
-
   }
   else if (result == STR_PASTE) {
-
     *cs = clipboard.data.csw;
     storageDirty(EE_MODEL);
-
   }
-  else 
 #endif
-  if (result == STR_CLEAR) {
+  else if (result == STR_CLEAR) {
     memset(cs, 0, sizeof(LogicalSwitchData));
     storageDirty(EE_MODEL);
   }
-
 }
 
 void menuModelLogicalSwitches(event_t event)
@@ -264,7 +258,7 @@ void menuModelLogicalSwitches(event_t event)
   uint8_t k = 0;
   int8_t sub = menuVerticalPosition - HEADER_LINE;
 
-  if (event==EVT_KEY_FIRST(KEY_ENTER)) {
+  if (event == EVT_KEY_FIRST(KEY_ENTER)) {
     killEvents(event);
     LogicalSwitchData * cs = lswAddress(sub);
     if (cs->func)
@@ -279,7 +273,15 @@ void menuModelLogicalSwitches(event_t event)
 #endif
     if (cs->func || cs->v1 || cs->v2 || cs->delay || cs->duration || cs->andsw)
       POPUP_MENU_ADD_ITEM(STR_CLEAR);
-    POPUP_MENU_START(onLogicalSwitchesMenu);
+    if (popupMenuItemsCount == 1) {
+      popupMenuItemsCount = 0;
+      s_currIdx = sub;
+      pushMenu(menuModelLogicalSwitchOne);
+    }
+    else {
+      s_editMode = 0; // Was set in 'check' function.
+      POPUP_MENU_START(onLogicalSwitchesMenu);
+    }
   }
 
   for (uint32_t i=0; i<LCD_LINES-1; i++) {

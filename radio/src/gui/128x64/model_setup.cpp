@@ -399,7 +399,7 @@ void menuModelSetup(event_t event)
         drawStringWithIndex(0*FW, y, STR_TIMER, timerIdx+1);
         drawTimerMode(MODEL_SETUP_2ND_COLUMN, y, timer->mode, menuHorizontalPosition==0 ? attr : 0);
         drawTimer(MODEL_SETUP_2ND_COLUMN+5*FW-2+5*FWNUM+1, y, timer->start, RIGHT | (menuHorizontalPosition==1 ? attr : 0), menuHorizontalPosition==2 ? attr : 0);
-        if (attr && (editMode > 0 || p1valdiff)) {
+        if (attr && editMode > 0) {
           div_t qr = div(timer->start, 60);
           switch (menuHorizontalPosition) {
             case 0:
@@ -729,7 +729,7 @@ void menuModelSetup(event_t event)
           lcdDrawTextAtIndex(x, y, STR_RETA123, i, ((menuHorizontalPosition==i) && attr) ? BLINK|INVERS : (((g_model.beepANACenter & ((BeepANACenter)1<<i)) || (attr && CURSOR_ON_LINE())) ? INVERS : 0 ) );
         }
         if (attr && CURSOR_ON_CELL) {
-          if (event==EVT_KEY_BREAK(KEY_ENTER) || p1valdiff) {
+          if (event==EVT_KEY_BREAK(KEY_ENTER)) {
             if (READ_ONLY_UNLOCKED()) {
               s_editMode = 0;
               g_model.beepANACenter ^= ((BeepANACenter)1<<menuHorizontalPosition);
@@ -838,7 +838,7 @@ void menuModelSetup(event_t event)
             lcdDrawTextAtIndex(MODEL_SETUP_2ND_COLUMN+5*FW, y, STR_MULTI_PROTOCOLS, multi_rfProto, menuHorizontalPosition==1 ? attr : 0);
         }
 #endif
-        if (attr && (editMode>0 || p1valdiff)) {
+        if (attr && editMode > 0) {
           switch (menuHorizontalPosition) {
             case 0:
               g_model.moduleData[EXTERNAL_MODULE].type = checkIncDec(
@@ -922,7 +922,7 @@ void menuModelSetup(event_t event)
           if (pdef->subTypeString != nullptr)
             lcdDrawTextAtIndex(MODEL_SETUP_2ND_COLUMN, y, pdef->subTypeString, g_model.moduleData[EXTERNAL_MODULE].subType, attr);
         }
-        if (attr && (editMode > 0 || p1valdiff)) {
+        if (attr && editMode > 0) {
           switch (menuHorizontalPosition) {
             case 0:
               if (multi_rfProto == MM_RF_CUSTOM_SELECTED)
@@ -1038,7 +1038,7 @@ void menuModelSetup(event_t event)
           lcdDrawNumber(lcdLastRightPos, y, moduleData.channelsStart+1, LEFT | (menuHorizontalPosition==0 ? attr : 0));
           lcdDrawChar(lcdLastRightPos, y, '-');
           lcdDrawNumber(lcdLastRightPos + FW+1, y, moduleData.channelsStart+sentModuleChannels(moduleIdx), LEFT | (menuHorizontalPosition==1 ? attr : 0));
-          if (attr && (editMode>0 || p1valdiff)) {
+          if (attr && editMode > 0) {
             switch (menuHorizontalPosition) {
               case 0:
                 CHECK_INCDEC_MODELVAR_ZERO(event, moduleData.channelsStart, 32-8-moduleData.channelsCount);
@@ -1072,7 +1072,7 @@ void menuModelSetup(event_t event)
           lcdDrawChar(MODEL_SETUP_2ND_COLUMN+8*FW+2, y, 'u');
           lcdDrawNumber(MODEL_SETUP_2ND_COLUMN+8*FW+2, y, (moduleData.ppm.delay*50)+300, RIGHT | ((CURSOR_ON_LINE() || menuHorizontalPosition==1) ? attr : 0));
           lcdDrawChar(MODEL_SETUP_2ND_COLUMN+10*FW, y, moduleData.ppm.pulsePol ? '+' : '-', (CURSOR_ON_LINE() || menuHorizontalPosition==2) ? attr : 0);
-          if (attr && (editMode>0 || p1valdiff)) {
+          if (attr && editMode > 0) {
             switch (menuHorizontalPosition) {
               case 0:
                 CHECK_INCDEC_MODELVAR(event, moduleData.ppm.frameLength, -20, 35);
@@ -1118,7 +1118,7 @@ void menuModelSetup(event_t event)
             if (xOffsetBind)
               lcdDrawNumber(MODEL_SETUP_2ND_COLUMN, y, g_model.header.modelId[moduleIdx], (l_posHorz==0 ? attr : 0) | LEADING0|LEFT, 2);
             if (attr && l_posHorz == 0) {
-              if (editMode>0 || p1valdiff) {
+              if (editMode > 0) {
                 CHECK_INCDEC_MODELVAR_ZERO(event, g_model.header.modelId[moduleIdx], MAX_RX_NUM(moduleIdx));
                 if (checkIncDec_Ret) {
                   if (isModuleCrossfire(moduleIdx))
@@ -1236,7 +1236,7 @@ void menuModelSetup(event_t event)
           if (moduleData.failsafeMode != FAILSAFE_CUSTOM)
             menuHorizontalPosition = 0;
           if (menuHorizontalPosition == 0) {
-            if (editMode > 0 || p1valdiff) {
+            if (editMode > 0) {
               CHECK_INCDEC_MODELVAR_ZERO(event, moduleData.failsafeMode, FAILSAFE_LAST);
               if (checkIncDec_Ret) SEND_FAILSAFE_NOW(moduleIdx);
             }
