@@ -158,8 +158,6 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
   return newval;
 }
 
-#define SCROLL_POT1_TH 32
-
 #define CURSOR_NOT_ALLOWED_IN_ROW(row) ((int8_t)MAXCOL(row) < 0)
 
 #define INC(val, min, max)             if (val<max) {val++;} else {val=min;}
