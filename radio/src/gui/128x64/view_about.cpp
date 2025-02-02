@@ -23,7 +23,11 @@
 
 #define ABOUT_INDENT 4
 
-//const char ABOUT_VERSION_1[] = "OpenI6X " "(" VERSION ")";
+const char ABOUT_VERSION_1[] = "\
+OpenI6X " VERSION "\036\
+Copyright (C) " BUILD_YEAR " OpenI6X\036\
+github.com/OpenI6X/opentx\036\
+Fly safe!";
 //const char ABOUT_VERSION_2[] = "Copyright (C) " BUILD_YEAR " OpenI6X";
 //const char ABOUT_VERSION_3[] = "github.com/OpenI6X/opentx";
 
@@ -37,10 +41,10 @@ void menuAboutView(event_t event)
       break;
   }
 
-  lcdDrawText(1, 0, "OpenI6X", DBLSIZE|INVERS); // STR_ABOUTUS
+  lcdDrawText(1, 0, STR_ABOUTUS, DBLSIZE|INVERS);
 
   lcdDrawText(ABOUT_INDENT, 22, vers_stamp, SMLSIZE);
-  // lcdDrawText(ABOUT_INDENT, 22, ABOUT_VERSION_1, SMLSIZE);
+  //  lcdDrawText(ABOUT_INDENT, 22, ABOUT_VERSION_1, SMLSIZE);
   // lcdDrawText(ABOUT_INDENT, 38, ABOUT_VERSION_2, SMLSIZE);
   // lcdDrawText(ABOUT_INDENT, 46, ABOUT_VERSION_3, SMLSIZE);
 }
