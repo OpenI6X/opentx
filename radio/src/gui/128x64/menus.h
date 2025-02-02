@@ -102,7 +102,7 @@ static const MenuHandlerFunc menuTabGeneral[]  = {
   menuRadioSpecialFunctions,
   menuRadioTrainer,
   menuRadioHardware,
-  menuRadioVersion
+  // menuRadioVersion
 };
 
 enum MenuModelIndexes {
@@ -165,7 +165,5 @@ static const MenuHandlerFunc menuTabModel[]  = {
 void menuStatisticsView(event_t event);
 void menuStatisticsDebug(event_t event);
 void menuStatisticsDebug2(event_t event);
-#if !defined(PCBI6X)
 void menuAboutView(event_t event);
-#endif
 #endif // _MENUS_H_

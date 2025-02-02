@@ -37,7 +37,7 @@ void menuAboutView(event_t event)
       break;
   }
 
-  lcdDrawText(1, 0, STR_ABOUTUS, DBLSIZE|INVERS);
+  lcdDrawText(1, 0, "OpenI6X", DBLSIZE|INVERS); // STR_ABOUTUS
 
   lcdDrawText(ABOUT_INDENT, 22, vers_stamp, SMLSIZE);
   // lcdDrawText(ABOUT_INDENT, 22, ABOUT_VERSION_1, SMLSIZE);
