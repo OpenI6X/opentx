@@ -25,7 +25,7 @@
 
   #define blkid_t    uint16_t
   #define EEFS_VERS  5
-  #define MAXFILES   62
+  #define MAXFILES   16 + 2 // should be: MAX_MODELS + 1 (FILE_GENERAL) + 1 (FILE_TMP) , 176b RAM wasted in current struct
   #define BS         64
 
 PACK(struct DirEnt {
@@ -56,7 +56,9 @@ extern EeFs eeFs;
 #define FILE_MODEL(n) (1+(n))
 #define FILE_TMP      (1+MAX_MODELS)
 
-#define RESV          sizeof(EeFs)  //reserv for eeprom header with directory (eeFs)
+// Previous size of EeFs to keep eeprom structure untouched but do not allocate unused memory
+#define EEPROM_EEFS_V5_SIZE sizeof(EeFs) + (62 - MAXFILES) * sizeof(DirEnt)
+#define RESV          EEPROM_EEFS_V5_SIZE // sizeof(EeFs)  //reserv for eeprom header with directory (eeFs)
 
 #define FIRSTBLK      1
 #define BLOCKS        (1+(EEPROM_SIZE-RESV)/BS)
