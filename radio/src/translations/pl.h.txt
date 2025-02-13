@@ -1088,7 +1088,7 @@
 #define TR_LSW_DESCRIPTIONS    { "Comparison type or function", "First variable", "Second variable or constant", "Second variable or constant", "Additional condition for line to be enabled", "Minimum ON duration of the logical switch", "Minimum TRUE duration for the switch to become ON" }
 
 // About screen
-#define TR_ABOUTUS             TR("   O   ", "  O  ")
+#define TR_ABOUTUS             TR(" O nas ", "O nas")
 
 #define TR_CHR_SHORT           'k'
 #define TR_CHR_LONG            'd'
