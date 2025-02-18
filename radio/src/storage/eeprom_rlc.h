@@ -25,7 +25,7 @@
 
   #define blkid_t    uint16_t
   #define EEFS_VERS  5
-  #define MAXFILES   16 + 2 // 62 -> 18, MAX_MODELS + 1 (FILE_GENERAL) + 1 (FILE_TMP) , 176b RAM wasted in current struct
+  #define MAXFILES   16 + 2 // 62 -> 18, MAX_MODELS + 1 (FILE_GENERAL) + 1 (FILE_TMP)
   #define BS         64
 
 PACK(struct DirEnt {
@@ -45,7 +45,6 @@ PACK(struct EeFs {
   DirEnt   files[MAXFILES];
 });
 
-// Previous size of EeFs to keep eeprom alignment
 PACK(struct EeFsOld {
   uint8_t  version;
   blkid_t  mySize;
@@ -66,7 +65,8 @@ extern EeFs eeFs;
 #define FILE_MODEL(n) (1+(n))
 #define FILE_TMP      (1+MAX_MODELS)
 
-#define RESV          sizeof(EeFsOld) //   //reserv for eeprom header with directory (eeFs)
+// Align to previous size of EeFs to keep eeprom data intact
+#define RESV          sizeof(EeFsOld)  //reserv for eeprom header with directory (eeFs)
 
 #define FIRSTBLK      1
 #define BLOCKS        (1+(EEPROM_SIZE-RESV)/BS)
