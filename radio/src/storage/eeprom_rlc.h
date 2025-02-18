@@ -211,7 +211,7 @@ inline bool isEepromStart(const void * buffer)
   // OpenTX EEPROM
   {
     const EeFs * eeprom = (const EeFs *)buffer;
-    if (eeprom->version==EEFS_VERS && eeprom->mySize==sizeof(eeFs) && eeprom->bs==BS)
+    if (eeprom->version==EEFS_VERS && eeprom->mySize==sizeof(EeFsOld) && eeprom->bs==BS)
       return true;
   }
 
