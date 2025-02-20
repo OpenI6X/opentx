@@ -25,7 +25,7 @@
 
   #define blkid_t    uint16_t
   #define EEFS_VERS  5
-  #define MAXFILES   16 + 2 // 62 -> 18, MAX_MODELS + 1 (FILE_GENERAL) + 1 (FILE_TMP)
+  #define MAXFILES   MAX_MODELS + 2 // was 62: MAX_MODELS + 1 (FILE_GENERAL) + 1 (FILE_TMP)
   #define BS         64
 
 PACK(struct DirEnt {
@@ -208,21 +208,9 @@ bool eeLoadGeneral();
 // For EEPROM backup/restore
 inline bool isEepromStart(const void * buffer)
 {
-  // OpenTX EEPROM
-  {
-    const EeFs * eeprom = (const EeFs *)buffer;
-    if (eeprom->version==EEFS_VERS && eeprom->mySize==sizeof(EeFsOld) && eeprom->bs==BS)
-      return true;
-  }
-
-  // ersky9x EEPROM
-  {
-    const uint8_t * eeprom = (const uint8_t *)buffer;
-    uint8_t size = eeprom[1] ;
-    uint8_t bs = eeprom[3] ;
-    if (size==0x80 && bs==0x80)
-      return true;
-  }
+  const EeFs * eeprom = (const EeFs *)buffer;
+  if (eeprom->version==EEFS_VERS && eeprom->mySize==sizeof(EeFsOld) && eeprom->bs==BS)
+    return true;
 
   return false;
 }

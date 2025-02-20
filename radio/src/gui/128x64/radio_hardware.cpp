@@ -69,7 +69,7 @@ enum {
   ITEM_RADIO_HARDWARE_DEBUG,
 #endif
 #if defined(EEPROM_RLC)
-#if !defined(PCBI6X)
+#if defined(SDCARD)
   ITEM_RADIO_BACKUP_EEPROM,
 #endif
   ITEM_RADIO_FACTORY_RESET,

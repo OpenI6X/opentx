@@ -59,7 +59,7 @@
   #define MAX_TRAINER_CHANNELS         16
   #define MAX_TELEMETRY_SENSORS        32
 #elif defined(PCBI6X)
-  #define MAX_MODELS                   16
+  #define MAX_MODELS                   20
   #define MAX_OUTPUT_CHANNELS          16 // number of real output channels CH1-CH16
   #define MAX_FLIGHT_MODES             5
   #define MAX_MIXERS                   32 

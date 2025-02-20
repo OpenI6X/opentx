@@ -293,14 +293,10 @@ void menuModelSelect(event_t event)
       break;
   }
 
-#if defined(EEPROM_RLC)
+#if defined(EEPROM_RLC) && !defined(PCBI6X) // should not be reached and warning will be raised anyway on low mem
   lcdDrawText(9*FW-(LEN_FREE-4)*FW-4, 0, STR_FREE);
   if (event) reusableBuffer.modelsel.eepromfree = EeFsGetFree();
   lcdDrawNumber(lcdLastRightPos+3, 0, reusableBuffer.modelsel.eepromfree, LEFT);
-#elif defined(EEPROM_RLC)
-  lcdDrawText(9*FW-(LEN_FREE-4)*FW, 0, STR_FREE);
-  if (event) reusableBuffer.modelsel.eepromfree = EeFsGetFree();
-  lcdDrawNumber(17*FW, 0, reusableBuffer.modelsel.eepromfree, RIGHT);
 #endif
 
 #if defined(PCBX7)
