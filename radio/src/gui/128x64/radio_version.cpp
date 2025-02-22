@@ -20,25 +20,9 @@
 
 #include "opentx.h"
 
-#if defined(PXX2)
-void menuRadioModulesVersion(event_t event)
-{
-  if (event == EVT_ENTRY) {
-    moduleSettings[INTERNAL_MODULE].mode = MODULE_MODE_GET_HARDWARE_INFO;
-    reusableBuffer.hardware.modules[INTERNAL_MODULE].step = -1;
-    reusableBuffer.hardware.modules[INTERNAL_MODULE].timeout = 0;
-  }
-
-  SIMPLE_SUBMENU("MODULES / RX VERSION", 0);
-}
-#endif
-
 enum MenuRadioVersionItems
 {
   ITEM_RADIO_VERSION_FIRST = HEADER_LINE - 1,
-#if defined(PXX2)
-  ITEM_RADIO_MODULES_VERSION,
-#endif
   ITEM_RADIO_VERSION_COUNT
 };
 
@@ -48,6 +32,5 @@ void menuRadioVersion(event_t event)
 
   coord_t y = MENU_HEADER_HEIGHT + 2;
   lcdDrawText(FW, y, vers_stamp, SMLSIZE);
-  y += 5 * (FH - 1);
-
+//  y += 5 * (FH - 1) + 2;
 }
