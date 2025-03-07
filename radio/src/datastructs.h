@@ -428,11 +428,13 @@ PACK(struct ModuleData {
       int8_t frameLength;
     } ppm;
     NOBACKUP(struct {
-      uint8_t rfProtocolExtra : 2;
-      uint8_t spare1 : 3;
-      uint8_t customProto : 1;
-      uint8_t autoBindMode : 1;
-      uint8_t lowPowerMode : 1;
+      uint8_t disableTelemetry:1;
+      uint8_t disableMapping:1;
+      uint8_t autoBindMode:1;
+      uint8_t lowPowerMode:1;
+      uint8_t receiverTelemetryOff:1;
+      uint8_t receiverHigherChannels:1;
+      uint8_t spare:2 SKIP;
       int8_t optionValue;
     } multi);
     NOBACKUP(struct {
