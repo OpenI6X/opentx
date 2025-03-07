@@ -635,7 +635,7 @@ const mm_protocol_definition *getMultiProtocolDefinition (uint8_t protocol)
 
 const char * getMultiOptionTitleStatic(uint8_t moduleIdx)
 {
-  const uint8_t multi_proto = g_model.moduleData[moduleIdx].multi.rfProtocol;
+  const uint8_t multi_proto = g_model.moduleData[moduleIdx].rfProtocol;
   const mm_protocol_definition * pdef = getMultiProtocolDefinition(multi_proto);
   return pdef->optionsstr;
 }
