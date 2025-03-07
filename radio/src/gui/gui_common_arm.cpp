@@ -20,6 +20,8 @@
 
 #include "opentx.h"
 
+#include "MultiSubtypeDefs.h"
+
 int circularIncDec(int current, int inc, int min, int max, IsValueAvailable isValueAvailable) {
   do {
     current += inc;

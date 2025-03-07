@@ -434,7 +434,7 @@ PACK(struct ModuleData {
       uint8_t lowPowerMode:1;
       uint8_t receiverTelemetryOff:1;
       uint8_t receiverHigherChannels:1;
-      uint8_t spare:2 SKIP;
+      uint8_t spare:2;
       int8_t optionValue;
     } multi);
     NOBACKUP(struct {
