@@ -247,6 +247,8 @@ enum EnumSwitches
   SW_SB,
   SW_SC,
   SW_SD,
+  SW_SE,
+  SW_SF,
   NUM_SWITCHES
 };
 
@@ -264,10 +266,17 @@ enum EnumSwitchesPositions
   SW_SD0,
   SW_SD1,
   SW_SD2,
+  SW_SE0,
+  SW_SE1,
+  SW_SE2,
+  SW_SF0,
+  SW_SF1,
+  SW_SF2
 };
+
 #define IS_3POS(x)            ((x) == SW_SC)
 #define IS_TOGGLE(x)					false
-#define NUM_SWITCHES          4
+#define NUM_SWITCHES          6
 
 void keysInit(void);
 uint8_t keyState(uint8_t index);
