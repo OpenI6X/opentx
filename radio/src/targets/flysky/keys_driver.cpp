@@ -144,25 +144,45 @@ uint8_t keyState(uint8_t index)
   return keys[index].state();
 }
 
+#define ADD_2POS_CASE(x) \
+  case SW_S ## x ## 0: \
+    xxx = SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
+    break; \
+  case SW_S ## x ## 2: \
+    xxx = ~SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
+    break
+
 #if !defined(BOOT)
 uint32_t switchState(uint8_t index)
 {
   uint32_t xxx = 0;
+
   uint8_t pos = index % 3;    // 0, 1, 2
   uint8_t sw_num = index / 3; // 0, 1, 2, 3
   uint8_t adc_num = sw_num + 4;
-  if (sw_num > 1)
-  {
-    adc_num += 2; // skip the 2 pots
+
+  if (index < SW_SE0) // SA, SB, SC, SD
+    if (sw_num > 1) {
+      adc_num += 2; // skip the 2 pots
+    }
+
+    uint16_t value = adcValues[adc_num];
+    if (((value <= KEY_ADC_VAL_1) && (pos == 0))
+        || ((value >  KEY_ADC_VAL_1) && (pos == 1) && (value <= KEY_ADC_VAL_2))
+        || ((value >  KEY_ADC_VAL_2) && (pos == 2)))
+    {
+      xxx = 1 << index;
+    }
+  } else { // SE, SF
+    switch (index) {
+      ADD_2POS_CASE(E);
+      ADD_2POS_CASE(F);
+      default:
+        break;
+    }
   }
-  uint16_t value = adcValues[adc_num];
-  if (((value <= KEY_ADC_VAL_1) && (pos == 0)) ||
-      ((value >  KEY_ADC_VAL_1) && (pos == 1) && (value <= KEY_ADC_VAL_2)) ||
-      ((value >  KEY_ADC_VAL_2) && (pos == 2)))
-  {
-    xxx = 1 << index;
-  }
-  //TRACE("switch idx %d sw_num %d value %d pos %d xxx %d", index, sw_num, value, pos, xxx);
+
+  TRACE("switch idx %d sw_num %d value %d pos %d xxx %d", index, sw_num, value, pos, xxx);
   return xxx;
 }
 #endif

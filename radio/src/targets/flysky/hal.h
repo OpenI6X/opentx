@@ -41,12 +41,17 @@
 #define KEYS_COLUMNS_PINS               (KEYS_MATRIX_R1_PIN | KEYS_MATRIX_R2_PIN | KEYS_MATRIX_R3_PIN)
 #define KEYS_LINES_PINS                 (KEYS_MATRIX_L1_PIN | KEYS_MATRIX_L2_PIN | KEYS_MATRIX_L3_PIN | KEYS_MATRIX_L4_PIN)
 
-//buggy implementation
-
 #define KEYS_GPIO_PIN_RIGHT 1024
 #define KEYS_GPIO_PIN_LEFT 1024
 #define KEYS_GPIO_PIN_UP 1024
 #define KEYS_GPIO_PIN_DOWN 1024
+
+
+// Switches
+#define SWITCHES_GPIO_REG_E         GPIOC->IDR
+#define SWITCHES_GPIO_PIN_E         GPIO_Pin_12 // PC.12
+#define SWITCHES_GPIO_REG_F         GPIOC->IDR
+#define SWITCHES_GPIO_PIN_F         GPIO_Pin_15 // PC.15
 
 
 // LCD driver
