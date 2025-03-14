@@ -161,7 +161,7 @@ uint32_t switchState(uint8_t index)
   uint8_t sw_num = index / 3; // 0, 1, 2, 3
   uint8_t adc_num = sw_num + 4;
 
-  if (index < SW_SE0) // SA, SB, SC, SD
+  if (index < SW_SE0) { // SA, SB, SC, SD
     if (sw_num > 1) {
       adc_num += 2; // skip the 2 pots
     }
@@ -197,6 +197,9 @@ void keysInit()
   gpio_init.GPIO_PuPd = GPIO_PuPd_UP;
   gpio_init.GPIO_Pin = KEYS_LINES_PINS;
   GPIO_Init(KEYS_MATRIX_LINES_GPIO, &gpio_init);
+
+  INIT_KEYS_PINS(GPIOC); // SE, SF
+
   gpio_init.GPIO_Mode = GPIO_Mode_OUT;
   gpio_init.GPIO_Pin = KEYS_COLUMNS_PINS;
   GPIO_Init(KEYS_MATRIX_COLUMNS_GPIO, &gpio_init);

@@ -611,6 +611,7 @@ enum MixSources {
   MIXSRC_SD,                        LUA_EXPORT("sd", "Switch D")
   MIXSRC_SE,                        LUA_EXPORT("se", "Switch E")
   MIXSRC_SF,                        LUA_EXPORT("sf", "Switch F")
+  MIXSRC_LAST_SWITCH = MIXSRC_SF,
 #elif defined(PCBTARANIS) || defined(PCBHORUS)
   MIXSRC_SA = MIXSRC_FIRST_SWITCH,  LUA_EXPORT("sa", "Switch A")
   MIXSRC_SB,                        LUA_EXPORT("sb", "Switch B")

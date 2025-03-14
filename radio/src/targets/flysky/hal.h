@@ -48,11 +48,12 @@
 
 
 // Switches
-#define SWITCHES_GPIO_REG_E         GPIOC->IDR
-#define SWITCHES_GPIO_PIN_E         GPIO_Pin_12 // PC.12
-#define SWITCHES_GPIO_REG_F         GPIOC->IDR
-#define SWITCHES_GPIO_PIN_F         GPIO_Pin_15 // PC.15
+#define SWITCHES_GPIO_REG_E           GPIOC->IDR
+#define SWITCHES_GPIO_PIN_E           GPIO_Pin_12 // PC.12
+#define SWITCHES_GPIO_REG_F           GPIOC->IDR
+#define SWITCHES_GPIO_PIN_F           GPIO_Pin_15 // PC.15
 
+#define KEYS_GPIOC_PINS               (SWITCHES_GPIO_PIN_E | SWITCHES_GPIO_PIN_F)
 
 // LCD driver
 #define LCD_RCC_AHB1Periph            (RCC_AHBPeriph_GPIOB | RCC_AHBPeriph_GPIOD | RCC_AHBPeriph_GPIOE)
