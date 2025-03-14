@@ -249,7 +249,8 @@ void generalDefault() {
 #if defined(PCBXLITE)
   g_eeGeneral.switchConfig = (SWITCH_2POS << 6) + (SWITCH_2POS << 4) + (SWITCH_3POS << 2) + (SWITCH_3POS << 0);  // 2x3POS, 2x2POS
 #elif defined(PCBI6X)
-  g_eeGeneral.switchConfig = (SWITCH_2POS << 10) + (SWITCH_2POS << 8) + (SWITCH_2POS << 6) + (SWITCH_3POS << 4) + (SWITCH_2POS << 2) + (SWITCH_2POS << 0);
+  // SE and SF disabled by default
+  g_eeGeneral.switchConfig = /*(SWITCH_2POS << 10) + (SWITCH_2POS << 8) +*/ (SWITCH_2POS << 6) + (SWITCH_3POS << 4) + (SWITCH_2POS << 2) + (SWITCH_2POS << 0);
 #elif defined(PCBX7)
   g_eeGeneral.switchConfig = 0x000006ff;  // 4x3POS, 1x2POS, 1xTOGGLE
 #elif defined(PCBTARANIS) || defined(PCBHORUS)
