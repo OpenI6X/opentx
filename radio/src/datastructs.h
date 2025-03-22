@@ -428,11 +428,13 @@ PACK(struct ModuleData {
       int8_t frameLength;
     } ppm;
     NOBACKUP(struct {
-      uint8_t rfProtocolExtra : 2;
-      uint8_t spare1 : 3;
-      uint8_t customProto : 1;
-      uint8_t autoBindMode : 1;
-      uint8_t lowPowerMode : 1;
+      uint8_t disableTelemetry:1;
+      uint8_t disableMapping:1;
+      uint8_t autoBindMode:1;
+      uint8_t lowPowerMode:1;
+      uint8_t receiverTelemetryOff:1;
+      uint8_t receiverHigherChannels:1;
+      uint8_t spare:2;
       int8_t optionValue;
     } multi);
     NOBACKUP(struct {
@@ -450,18 +452,6 @@ PACK(struct ModuleData {
       int16_t spare1:5;
     } crsf);
   };
-
-  // Helper functions to set both of the rfProto protocol at the same time
-  NOBACKUP(inline uint8_t getMultiProtocol(bool returnCustom) {
-    if (returnCustom && multi.customProto)
-      return MM_RF_CUSTOM_SELECTED;
-    return ((uint8_t)(rfProtocol & 0x0f)) + (multi.rfProtocolExtra << 4);
-  })
-
-  NOBACKUP(inline void setMultiProtocol(uint8_t proto) {
-    rfProtocol = (uint8_t)(proto & 0x0f);
-    multi.rfProtocolExtra = (proto & 0x30) >> 4;
-  })
 });
 
 /*
