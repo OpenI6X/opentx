@@ -4,7 +4,7 @@
  * 
  * Only crc8, (crc16 is used in frsky fw update)
  */
-#include "stm32f0xx_crc.h"
+#include "opentx.h"
 #include "crc_driver.h"
 
 uint8_t crc8_hw(const uint8_t * ptr, uint32_t len) {

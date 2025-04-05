@@ -121,14 +121,13 @@ void adcInit()
   ADC_DMA_Channel->CPAR = (uint32_t) &ADC_MAIN->DR;
   ADC_DMA_Channel->CMAR = (uint32_t)&adcValues[FIRST_ANALOG_ADC];
   ADC_DMA_Channel->CNDTR = NUM_ANALOGS;
-  ADC_DMA_Channel->CCR = DMA_MemoryInc_Enable
-                              | DMA_M2M_Disable
-                              | DMA_Mode_Circular
-                              | DMA_Priority_High
-                              | DMA_DIR_PeripheralSRC
-                              | DMA_PeripheralInc_Disable
-                              | DMA_PeripheralDataSize_HalfWord
-                              | DMA_MemoryDataSize_HalfWord;
+  ADC_DMA_Channel->CCR = LL_DMA_MEMORY_INCREMENT
+                        | LL_DMA_MODE_CIRCULAR
+                        | LL_DMA_PRIORITY_HIGH
+                        | LL_DMA_DIRECTION_PERIPH_TO_MEMORY
+                        | LL_DMA_PERIPH_NOINCREMENT
+                        | LL_DMA_PDATAALIGN_HALFWORD
+                        | LL_DMA_MDATAALIGN_HALFWORD;
 
   // enable the DMA1 - Channel1
   DMA_Cmd(ADC_DMA_Channel, ENABLE);
