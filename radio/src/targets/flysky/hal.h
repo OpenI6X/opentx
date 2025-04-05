@@ -36,7 +36,7 @@
 #define KEYS_BIND_GPIO                  GPIOF
 #define KEYS_BIND_PIN                   LL_GPIO_PIN_2
 
-#define KEYS_RCC_AHB1Periph             (RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_GPIOD | RCC_AHBPeriph_GPIOF)
+#define KEYS_RCC_AHB1Periph             (LL_AHB1_GRP1_PERIPH_GPIOC | LL_AHB1_GRP1_PERIPH_GPIOD | LL_AHB1_GRP1_PERIPH_GPIOF)
 
 #define KEYS_COLUMNS_PINS               (KEYS_MATRIX_R1_PIN | KEYS_MATRIX_R2_PIN | KEYS_MATRIX_R3_PIN)
 #define KEYS_LINES_PINS                 (KEYS_MATRIX_L1_PIN | KEYS_MATRIX_L2_PIN | KEYS_MATRIX_L3_PIN | KEYS_MATRIX_L4_PIN)
@@ -56,7 +56,7 @@
 #define KEYS_GPIOC_PINS               (SWITCHES_GPIO_PIN_E | SWITCHES_GPIO_PIN_F)
 
 // LCD driver
-#define LCD_RCC_AHB1Periph            (RCC_AHBPeriph_GPIOB | RCC_AHBPeriph_GPIOD | RCC_AHBPeriph_GPIOE)
+#define LCD_RCC_AHB1Periph            (LL_AHB1_GRP1_PERIPH_GPIOB | LL_AHB1_GRP1_PERIPH_GPIOD | LL_AHB1_GRP1_PERIPH_GPIOE)
 #define LCD_RCC_APB1Periph            0
 #define LCD_RCC_APB2Periph            0
 
@@ -73,13 +73,13 @@
 
 
 // CRC
-#define CRC_RCC_AHB1Periph             RCC_AHBPeriph_CRC
+#define CRC_RCC_AHB1Periph            LL_AHB1_GRP1_PERIPH_CRC
 
 // I2C Bus: EEPROM
-#define I2C_RCC_APB1Periph            RCC_APB1Periph_I2C2
+#define I2C_RCC_APB1Periph            LL_APB1_GRP1_PERIPH_I2C2
 #define I2C                           I2C2
 #define I2C_GPIO_AF                   LL_GPIO_AF_1
-#define I2C_RCC_AHB1Periph            RCC_AHBPeriph_GPIOB
+#define I2C_RCC_AHB1Periph            LL_AHB1_GRP1_PERIPH_GPIOB
 #define I2C_GPIO                      GPIOB
 #define I2C_SCL_GPIO_PIN              LL_GPIO_PIN_10
 #define I2C_SDA_GPIO_PIN              LL_GPIO_PIN_11
@@ -103,9 +103,9 @@
 #define ADC_DMA_TC_FLAG               DMA1_FLAG_TC1
 #define ADC_SAMPTIME                  LL_ADC_SAMPLINGTIME_239CYCLES_5
 
-#define ADC_RCC_AHB1Periph            (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_GPIOB | RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_DMA1)
+#define ADC_RCC_AHB1Periph            (LL_AHB1_GRP1_PERIPH_GPIOA | LL_AHB1_GRP1_PERIPH_GPIOB | LL_AHB1_GRP1_PERIPH_GPIOC | LL_AHB1_GRP1_PERIPH_DMA1)
 #define ADC_RCC_APB1Periph            0
-#define ADC_RCC_APB2Periph            RCC_APB2Periph_ADC1
+#define ADC_RCC_APB2Periph            LL_APB1_GRP2_PERIPH_ADC1
 #if !defined(FLYSKY_GIMBAL)
 #define ADC_GPIO_PIN_STICK_RV         LL_GPIO_PIN_0  // PA.00
 #define ADC_GPIO_PIN_STICK_RH         LL_GPIO_PIN_1  // PA.01
@@ -191,7 +191,7 @@ void AFHDS2A_callback();
 #define UID_BASE              ((uint32_t)0x1FFFF7ACU)       /*!< Unique device ID register base address */
 #endif // AFHDS2A
 
-#define INTMODULE_RCC_APB2Periph      (RCC_APB2Periph_TIM16 | RCC_APB2Periph_SPI1 | RCC_APB2Periph_SYSCFG)
+#define INTMODULE_RCC_APB2Periph      (LL_APB1_GRP2_PERIPH_TIM16 | LL_APB1_GRP2_PERIPH_SPI1 | LL_APB1_GRP2_PERIPH_SYSCFG)
 #define INTMODULE_TIMER               TIM16
 #define INTMODULE_TIMER_IRQn          TIM16_IRQn
 #define INTMODULE_TIMER_IRQHandler    TIM16_IRQHandler
@@ -209,8 +209,8 @@ void AFHDS2A_callback();
 // External Module
 #define EXTMODULE_PWR_GPIO            GPIOC
 #define EXTMODULE_PWR_GPIO_PIN        LL_GPIO_PIN_13  // PC.13
-#define EXTMODULE_RCC_AHBPeriph       (RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_GPIOF)
-#define EXTMODULE_RCC_APB2Periph      RCC_APB2Periph_TIM15 // TIM15_CH2
+#define EXTMODULE_RCC_AHBPeriph       (LL_AHB1_GRP1_PERIPH_GPIOC | LL_AHB1_GRP1_PERIPH_GPIOF)
+#define EXTMODULE_RCC_APB2Periph      LL_APB1_GRP2_PERIPH_TIM15 // TIM15_CH2
 #define EXTMODULE_TX_GPIO             GPIOF
 #define EXTMODULE_TX_GPIO_PIN         LL_GPIO_PIN_10 // PF.10
 #define EXTMODULE_TX_GPIO_PinSource   GPIO_PinSource10
@@ -234,7 +234,7 @@ void AFHDS2A_callback();
 
 // USB
 #define USB_RCC_APB1Periph_CRS          RCC_APB1Periph_CRS
-#define USB_RCC_AHBPeriph_GPIO          RCC_AHBPeriph_GPIOA
+#define USB_RCC_AHBPeriph_GPIO          LL_AHB1_GRP1_PERIPH_GPIOA
 #define USB_GPIO                        GPIOA
 #define USB_GPIO_PIN_DM                 LL_GPIO_PIN_11 // PA.11
 #define USB_GPIO_PIN_DP                 LL_GPIO_PIN_12 // PA.12
@@ -253,8 +253,8 @@ void AFHDS2A_callback();
 #endif
 
 // AUX Serial
-#define AUX_SERIAL_RCC_AHB1Periph         (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_DMA1)
-#define AUX_SERIAL_RCC_APB2Periph         RCC_APB2Periph_USART1
+#define AUX_SERIAL_RCC_AHB1Periph         (LL_AHB1_GRP1_PERIPH_GPIOA | LL_AHB1_GRP1_PERIPH_DMA1)
+#define AUX_SERIAL_RCC_APB2Periph         LL_APB1_GRP2_PERIPH_USART1
 #define AUX_SERIAL_GPIO                   GPIOA
 #define AUX_SERIAL_GPIO_PIN_TX            LL_GPIO_PIN_9 // PA9
 #define AUX_SERIAL_GPIO_PIN_RX            LL_GPIO_PIN_10 // PA10
@@ -268,8 +268,8 @@ void AFHDS2A_callback();
 #define AUX_SERIAL_DMA_Channel_RX_CH      LL_DMA_CHANNEL_3
 
 // AUX3 Serial, only TX for DFPLAYER
-#define AUX3_SERIAL_RCC_AHB1Periph         RCC_AHBPeriph_GPIOC
-#define AUX3_SERIAL_RCC_APB1Periph         RCC_APB1Periph_USART3
+#define AUX3_SERIAL_RCC_AHB1Periph         LL_AHB1_GRP1_PERIPH_GPIOC
+#define AUX3_SERIAL_RCC_APB1Periph         LL_APB1_GRP1_PERIPH_USART3
 #define AUX3_SERIAL_GPIO                   GPIOC
 #define AUX3_SERIAL_GPIO_PIN_TX            LL_GPIO_PIN_10 // PC10
 #define AUX3_SERIAL_GPIO_PinSource_TX      GPIO_PinSource10
@@ -277,8 +277,8 @@ void AFHDS2A_callback();
 #define AUX3_SERIAL_USART                  USART3
 
 // AUX4 Serial, only RX for FLYSKY_GIMBAL
-#define AUX4_SERIAL_RCC_AHB1Periph         (RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_DMA1)
-#define AUX4_SERIAL_RCC_APB1Periph         RCC_APB1Periph_USART4
+#define AUX4_SERIAL_RCC_AHB1Periph         (LL_AHB1_GRP1_PERIPH_GPIOC | LL_AHB1_GRP1_PERIPH_DMA1)
+#define AUX4_SERIAL_RCC_APB1Periph         LL_APB1_GRP1_PERIPH_USART3
 #define AUX4_SERIAL_GPIO                   GPIOC
 #define AUX4_SERIAL_GPIO_PIN_RX            LL_GPIO_PIN_11 // PC11
 #define AUX4_SERIAL_GPIO_PinSource_RX      GPIO_PinSource11
@@ -291,8 +291,8 @@ void AFHDS2A_callback();
 
 
 // Telemetry
-#define TELEMETRY_RCC_AHB1Periph        (RCC_AHBPeriph_GPIOD | RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_DMA1)
-#define TELEMETRY_RCC_APB1Periph        RCC_APB1Periph_USART2
+#define TELEMETRY_RCC_AHB1Periph        (LL_AHB1_GRP1_PERIPH_GPIOD | LL_AHB1_GRP1_PERIPH_GPIOA | LL_AHB1_GRP1_PERIPH_DMA1)
+#define TELEMETRY_RCC_APB1Periph        LL_APB1_GRP1_PERIPH_USART2
 #define TELEMETRY_GPIO                  GPIOD
 #define TELEMETRY_TX_GPIO_PIN           LL_GPIO_PIN_5  // PD.05
 #define TELEMETRY_RX_GPIO               GPIOA
@@ -315,8 +315,8 @@ void AFHDS2A_callback();
 
 // Backlight
 // pwm, requires wiring BL pad to PC9 pad
-  #define BACKLIGHT_RCC_APB1Periph      RCC_APB1Periph_TIM3
-  #define BACKLIGHT_RCC_AHB1Periph      RCC_AHBPeriph_GPIOC
+  #define BACKLIGHT_RCC_APB1Periph      LL_APB1_GRP1_PERIPH_TIM3
+  #define BACKLIGHT_RCC_AHB1Periph      LL_AHB1_GRP1_PERIPH_GPIOC
   #define BACKLIGHT_GPIO                GPIOC
   #define BACKLIGHT_GPIO_PIN            LL_GPIO_PIN_9
   #define BACKLIGHT_TIMER_FREQ          (PERI1_FREQUENCY * TIMER_MULT_APB1)
@@ -340,8 +340,8 @@ void AFHDS2A_callback();
 #define BUZZER_GPIO_PORT                GPIOA
 #define BUZZER_GPIO_PIN                 LL_GPIO_PIN_8
 #define BUZZER_GPIO_PinSource           GPIO_PinSource8
-#define BUZZER_RCC_AHBPeriph            RCC_AHBPeriph_GPIOA
-#define PWM_RCC_APB2Periph              RCC_APB2Periph_TIM1
+#define BUZZER_RCC_AHBPeriph            LL_AHB1_GRP1_PERIPH_GPIOA
+#define PWM_RCC_APB2Periph              LL_APB1_GRP2_PERIPH_TIM1
 #define PWM_TIMER                       TIM1
 
 // DFPlayer
@@ -352,17 +352,17 @@ void AFHDS2A_callback();
 #endif
 
 // Xms Interrupt
-#define INTERRUPT_xMS_RCC_APB1Periph    RCC_APB1Periph_TIM14
+#define INTERRUPT_xMS_RCC_APB1Periph    LL_APB1_GRP1_PERIPH_TIM14
 #define INTERRUPT_xMS_TIMER             TIM14
 #define INTERRUPT_xMS_IRQn              TIM14_IRQn
 #define INTERRUPT_xMS_IRQHandler        TIM14_IRQHandler
 
 // 2MHz Timer
-#define TIMER_2MHz_RCC_APB1Periph       RCC_APB1Periph_TIM7
+#define TIMER_2MHz_RCC_APB1Periph       LL_APB1_GRP1_PERIPH_TIM7
 #define TIMER_2MHz_TIMER                TIM7
 
 // Mixer scheduler timer
-#define MIXER_SCHEDULER_TIMER_RCC_APB2Periph RCC_APB2Periph_TIM17
+#define MIXER_SCHEDULER_TIMER_RCC_APB2Periph LL_APB1_GRP2_PERIPH_TIM17
 #define MIXER_SCHEDULER_TIMER                TIM17
 #define MIXER_SCHEDULER_TIMER_FREQ           (PERI1_FREQUENCY * TIMER_MULT_APB1)
 #define MIXER_SCHEDULER_TIMER_IRQn           TIM17_IRQn
@@ -372,7 +372,7 @@ void AFHDS2A_callback();
 #define RCC_AHB1_LIST                   (I2C_RCC_AHB1Periph | BACKLIGHT_STD_RCC_AHB1Periph | BACKLIGHT_RCC_AHB1Periph | LCD_RCC_AHB1Periph | KEYS_RCC_AHB1Periph | BUZZER_RCC_AHBPeriph \
                                          | PWR_RCC_AHB1Periph | EXTMODULE_RCC_AHBPeriph | CRC_RCC_AHB1Periph | TELEMETRY_RCC_AHB1Periph | AUX_SERIAL_RCC_AHB1Periph \
                                          | AUX3_SERIAL_RCC_AHB1Periph | AUX4_SERIAL_RCC_AHB1Periph | ADC_RCC_AHB1Periph | USB_RCC_AHBPeriph_GPIO)
-#define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | RCC_APB1Periph_TIM6 /*delays*/ | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph \
+#define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | LL_APB1_GRP1_PERIPH_TIM6 /*delays*/ | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph \
                                          | TELEMETRY_RCC_APB1Periph | BACKLIGHT_STD_RCC_APB1Periph | BACKLIGHT_RCC_APB1Periph | RCC_APB1Periph_USB \
                                          | AUX3_SERIAL_RCC_APB1Periph | AUX4_SERIAL_RCC_APB1Periph | USB_RCC_APB1Periph_CRS)
 #define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB2Periph | PWM_RCC_APB2Periph | INTMODULE_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph \

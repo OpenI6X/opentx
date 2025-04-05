@@ -210,7 +210,7 @@ uint32_t isBootloaderStart(const uint8_t * buffer);
 #define EXTERNAL_MODULE_OFF()           EXTMODULE_PWR_GPIO->BRR = EXTMODULE_PWR_GPIO_PIN // GPIO_ResetBits(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN)
 #endif
 
-#define IS_EXTERNAL_MODULE_ON()         (GPIO_ReadInputDataBit(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN) == Bit_SET)
+#define IS_EXTERNAL_MODULE_ON()         (LL_GPIO_IsInputPinSet(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN) == SET)
 
 void extmoduleSendNextFrame();
 
@@ -331,9 +331,9 @@ uint32_t readTrims(void);
   #define WDG_RESET()                   IWDG->KR = 0xAAAA
 #endif
 void watchdogInit(unsigned int duration);
-#define WAS_RESET_BY_WATCHDOG()               (RCC->CSR & (RCC_CSR_IWDGRSTF))
-#define WAS_RESET_BY_SOFTWARE()               (RCC->CSR & RCC_CSR_SFTRSTF)
-#define WAS_RESET_BY_WATCHDOG_OR_SOFTWARE()   (RCC->CSR & (RCC_CSR_IWDGRSTF | RCC_CSR_WWDGRSTF | RCC_CSR_SFTRSTF))
+#define WAS_RESET_BY_WATCHDOG()               (LL_RCC_IsActiveFlag_IWDGRST())
+#define WAS_RESET_BY_SOFTWARE()               (LL_RCC_IsActiveFlag_SFTRST())
+#define WAS_RESET_BY_WATCHDOG_OR_SOFTWARE()   (LL_RCC_IsActiveFlag_SFTRST() || LL_RCC_IsActiveFlag_WWDGRST() || LL_RCC_IsActiveFlag_IWDGRST())
 
 // ADC driver
 enum Analogs {
