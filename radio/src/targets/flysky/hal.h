@@ -223,7 +223,7 @@ void ActionAFHDS2A();
 // #define TRAINER_TIMER_FREQ            (PERI1_FREQUENCY * TIMER_MULT_APB1)
 
 // USB
-#define USB_RCC_APB1Periph_CRS          RCC_APB1Periph_CRS
+#define USB_RCC_APB1Periph_CRS          LL_APB1_GRP1_PERIPH_CRS
 #define USB_RCC_AHBPeriph_GPIO          LL_AHB1_GRP1_PERIPH_GPIOA
 #define USB_GPIO                        GPIOA
 #define USB_GPIO_PIN_DM                 LL_GPIO_PIN_11 // PA.11
