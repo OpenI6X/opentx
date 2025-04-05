@@ -103,28 +103,43 @@ void adcInit()
   // ADC_MAIN->CR |= ADC_CR_ADCAL;
   // while(ADC_MAIN->CR & ADC_CR_ADCAL);
 
-  // ADC configuration
-  ADC_InitTypeDef adc_init;
-  adc_init.ADC_ContinuousConvMode = ENABLE;
-  adc_init.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T1_TRGO;
-  adc_init.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
-  adc_init.ADC_DataAlign = ADC_DataAlign_Right;
-  adc_init.ADC_Resolution = ADC_Resolution_12b;
-  adc_init.ADC_ScanDirection = ADC_ScanDirection_Upward;
-  ADC_Init(ADC_MAIN, &adc_init);
+  /* Initialize ADC structures */
+  LL_ADC_InitTypeDef ADC_InitStruct = {0};
+  LL_ADC_REG_InitTypeDef ADC_REG_InitStruct = {0};
 
-  ADC_ChannelConfig(ADC_MAIN,
-  #if !defined(FLYSKY_GIMBAL)
-    ADC_Channel_0 | ADC_Channel_1 | ADC_Channel_2 | ADC_Channel_3 |
-  #endif
-    ADC_Channel_4 | ADC_Channel_5 | ADC_Channel_6 | ADC_Channel_7 | ADC_Channel_8 | ADC_Channel_9 | ADC_Channel_10, ADC_SAMPTIME);
+  /* Configure ADC initialization structure */
+  ADC_InitStruct.Resolution = LL_ADC_RESOLUTION_12B;               // 12-bit resolution
+  ADC_InitStruct.DataAlignment = LL_ADC_DATA_ALIGN_RIGHT;          // Right data alignment
+  ADC_InitStruct.ScanConvMode = LL_ADC_REG_SEQ_SCAN_DIR_FORWARD;   // Upward scan direction
+  ADC_InitStruct.LowPowerMode = LL_ADC_LP_MODE_NONE;               // No low power mode
 
-  ADC_Cmd(ADC_MAIN, ENABLE);
+  /* Configure regular ADC group */
+  ADC_REG_InitStruct.TriggerSource = LL_ADC_REG_TRIG_SOFTWARE;     // No external trigger
+  ADC_REG_InitStruct.SequencerDiscont = LL_ADC_REG_SEQ_DISCONT_DISABLE; // No discontinuous mode
+  ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_CONTINUOUS;  // Continuous conversion mode
+  ADC_REG_InitStruct.DMATransfer = LL_ADC_REG_DMA_TRANSFER_UNLIMITED; // Enable DMA for ADC
+  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;      // Preserve data on overrun
 
-  ADC_DMACmd(ADC_MAIN, ENABLE);
+  /* Initialize ADC */
+  LL_ADC_Init(ADC_MAIN, &ADC_InitStruct);
+  LL_ADC_REG_Init(ADC_MAIN, &ADC_REG_InitStruct);
+
+  /* Configure ADC channels */
+  LL_ADC_REG_SetSequencerChannels(ADC_MAIN,
+#if !defined(FLYSKY_GIMBAL)
+    LL_ADC_CHANNEL_0 | LL_ADC_CHANNEL_1 | LL_ADC_CHANNEL_2 | LL_ADC_CHANNEL_3 |
+#endif
+    LL_ADC_CHANNEL_4 | LL_ADC_CHANNEL_5 | LL_ADC_CHANNEL_6 | LL_ADC_CHANNEL_7 |
+    LL_ADC_CHANNEL_8 | LL_ADC_CHANNEL_9 | LL_ADC_CHANNEL_10);
+
+  LL_ADC_SetSamplingTimeCommonChannels(ADC_MAIN, ADC_SAMPTIME);
+
+  LL_ADC_Enable(ADC_MAIN);
+
+  while (LL_ADC_IsActiveFlag_ADRDY(ADC_MAIN) == 0);
 
   // reset DMA1 channe1 to default values
-  DMA_DeInit(ADC_DMA_Channel);
+  LL_DMA_DeInit(ADC_MAIN, ADC_DMA_Channel);
 
   ADC_DMA_Channel->CPAR = (uint32_t) &ADC_MAIN->DR;
   ADC_DMA_Channel->CMAR = (uint32_t)&adcValues[FIRST_ANALOG_ADC];
