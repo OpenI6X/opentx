@@ -223,6 +223,7 @@ void ActionAFHDS2A();
 // #define TRAINER_TIMER_FREQ            (PERI1_FREQUENCY * TIMER_MULT_APB1)
 
 // USB
+#define USB_RCC_APB1Periph_CRS          RCC_APB1Periph_CRS
 #define USB_RCC_AHBPeriph_GPIO          LL_AHB1_GRP1_PERIPH_GPIOA
 #define USB_GPIO                        GPIOA
 #define USB_GPIO_PIN_DM                 LL_GPIO_PIN_11 // PA.11
@@ -363,7 +364,7 @@ void ActionAFHDS2A();
                                          | AUX3_SERIAL_RCC_AHB1Periph | AUX4_SERIAL_RCC_AHB1Periph | ADC_RCC_AHB1Periph | USB_RCC_AHBPeriph_GPIO)
 #define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | LL_APB1_GRP1_PERIPH_TIM6 /*delays*/ | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph \
                                          | TELEMETRY_RCC_APB1Periph | BACKLIGHT_STD_RCC_APB1Periph | BACKLIGHT_RCC_APB1Periph | LL_APB1_GRP1_PERIPH_USB \
-                                         | AUX3_SERIAL_RCC_APB1Periph | AUX4_SERIAL_RCC_APB1Periph)
+                                         | AUX3_SERIAL_RCC_APB1Periph | AUX4_SERIAL_RCC_APB1Periph | USB_RCC_APB1Periph_CRS)
 #define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB2Periph | PWM_RCC_APB2Periph | INTMODULE_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph \
                                          | AUX_SERIAL_RCC_APB2Periph | ADC_RCC_APB2Periph)
 

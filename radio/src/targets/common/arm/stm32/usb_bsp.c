@@ -76,7 +76,7 @@ void USB_BSP_mDelay(const uint32_t msec) {
 static void CRS_Config(void)
 {
   /*Enable CRS Clock*/
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_CRS, ENABLE);
+  // RCC_APB1PeriphClockCmd(RCC_APB1Periph_CRS, ENABLE); // moved to general clock init
   
   /* Select USB SOF as synchronization source */
   CRS_SynchronizationSourceConfig(CRS_SYNCSource_USB);
