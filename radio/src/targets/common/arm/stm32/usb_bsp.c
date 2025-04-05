@@ -35,7 +35,7 @@ static void CRS_Config(void);
 void USB_BSP_Init(USB_CORE_HANDLE *pdev) {
 
 #if defined USB_CLOCK_SOURCE_CRS
-  RCC_USBCLKConfig(RCC_USBCLK_HSI48);
+  LL_RCC_SetUSBClockSource(RCC_USBCLK_HSI48);
 
   CRS_Config();  
 #endif

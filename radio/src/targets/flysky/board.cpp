@@ -91,12 +91,12 @@ void initBuzzerTimer()
 {
   PWM_TIMER->PSC = 48 - 1; // 48MHz -> 1MHz
   PWM_TIMER->CR1 &= ~(TIM_CR1_DIR | TIM_CR1_CMS | TIM_CR1_CKD);
-  PWM_TIMER->CR1 |= TIM_CounterMode_Up | TIM_CKD_DIV1;
+  PWM_TIMER->CR1 |= LL_TIM_COUNTERMODE_UP | LL_TIM_CLOCKDIVISION_DIV1;
   PWM_TIMER->ARR = 400; // count up to
   PWM_TIMER->CCR1 = 200; // ARR/2 = PWM duty 50%
   // PWM_TIMER->RCR = 0;
-  PWM_TIMER->CCMR1 |= TIM_OCMode_PWM1;
-  PWM_TIMER->CCER |= TIM_OCPolarity_Low | TIM_CCER_CC1E; // TIM_OCPOLARITY_LOW + enable Capture compare channel
+  PWM_TIMER->CCMR1 |= LL_TIM_OCMODE_PWM1;
+  PWM_TIMER->CCER |= LL_TIM_OCPOLARITY_LOW | TIM_CCER_CC1E; // TIM_OCPOLARITY_LOW + enable Capture compare channel
   PWM_TIMER->BDTR |= TIM_BDTR_MOE;
 }
 
@@ -112,9 +112,9 @@ void boardInit()
 #endif
 
 #if !defined(SIMU)
-  RCC_AHBPeriphClockCmd(RCC_AHB1_LIST, ENABLE);
-  RCC_APB1PeriphClockCmd(RCC_APB1_LIST, ENABLE);
-  RCC_APB2PeriphClockCmd(RCC_APB2_LIST, ENABLE);
+  LL_AHB1_GRP1_EnableClock(RCC_AHB1_LIST);
+  LL_APB1_GRP1_EnableClock(RCC_APB1_LIST);
+  LL_APB1_GRP2_EnableClock(RCC_APB2_LIST);
 
   pwrInit();
   keysInit();

@@ -153,7 +153,7 @@ LL_GPIO_Init(DFPLAYER_GPIO_PORT, &GPIO_InitStruct);
 }
 
 bool dfPlayerBusy() {
-    return (!IS_MIN_PLAY_DELAY_ELAPSED()) || !GPIO_ReadInputDataBit(DFPLAYER_GPIO_PORT, DFPLAYER_GPIO_PIN_BUSY); // low == playing
+    return (!IS_MIN_PLAY_DELAY_ELAPSED()) || !LL_GPIO_IsInputPinSet(DFPLAYER_GPIO_PORT, DFPLAYER_GPIO_PIN_BUSY); // low == playing
 }
 
 //bool dfplayerQueueHasPromptId(uint8_t id) {
