@@ -58,7 +58,7 @@ int usbPlugged()
   static uint8_t debounced_state = 0;
   static uint8_t last_state = 0;
 
-  if (!GPIO_ReadInputDataBit(USB_GPIO, USB_GPIO_PIN_DM)) {
+  if (!LL_GPIO_IsInputPinSet(USB_GPIO, USB_GPIO_PIN_DM)) {
     if (last_state) {
       debounced_state = 1;
     }
