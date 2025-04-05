@@ -46,15 +46,11 @@ uint16_t adcValues[NUM_ANALOGS] __DMA;
 
 static void adc_dma_arm(void)
 {
-  ADC_StartOfConversion(ADC_MAIN);
+  LL_ADC_REG_StartConversion(ADC_MAIN);
 }
 
 void adcInit()
 {
-  // -- init rcc --
-  // ADC CLOCK = 24 / 4 = 6MHz
-  RCC_ADCCLKConfig(RCC_ADCCLK_PCLK_Div2);
-
   // init gpio
   LL_GPIO_InitTypeDef gpio_init = {0};
 
@@ -81,11 +77,12 @@ void adcInit()
   /* Initialize ADC structures */
   LL_ADC_InitTypeDef ADC_InitStruct = {0};
   LL_ADC_REG_InitTypeDef ADC_REG_InitStruct = {0};
+  LL_ADC_StructInit(&ADC_InitStruct);
 
   /* Configure ADC initialization structure */
+  ADC_InitStruct.Clock = LL_ADC_CLOCK_SYNC_PCLK_DIV2;
   ADC_InitStruct.Resolution = LL_ADC_RESOLUTION_12B;               // 12-bit resolution
   ADC_InitStruct.DataAlignment = LL_ADC_DATA_ALIGN_RIGHT;          // Right data alignment
-  ADC_InitStruct.ScanConvMode = LL_ADC_REG_SEQ_SCAN_DIR_FORWARD;   // Upward scan direction
   ADC_InitStruct.LowPowerMode = LL_ADC_LP_MODE_NONE;               // No low power mode
 
   /* Configure regular ADC group */
@@ -116,7 +113,7 @@ void adcInit()
   while (LL_ADC_IsActiveFlag_ADRDY(ADC_MAIN) == 0);
 
   // reset DMA channel to default values
-  LL_DMA_DeInit(ADC_MAIN, ADC_DMA_Channel);
+  LL_DMA_DeInit(DMA1, ADC_DMA_Channel_CH);
 
   ADC_DMA_Channel->CPAR = (uint32_t) &ADC_MAIN->DR;
   ADC_DMA_Channel->CMAR = (uint32_t)&adcValues[FIRST_ANALOG_ADC];
@@ -130,7 +127,7 @@ void adcInit()
                         | LL_DMA_MDATAALIGN_HALFWORD;
 
   // enable the DMA1 - Channel1
-  DMA_Cmd(ADC_DMA_Channel, ENABLE);
+  LL_DMA_EnableChannel(DMA1, ADC_DMA_Channel_CH);
 
   // start conversion:
   adc_dma_arm();
@@ -139,7 +136,7 @@ void adcInit()
 void adcRead()
 {
   // adc dma finished?
-  if (DMA_GetITStatus(ADC_DMA_TC_FLAG))
+  if (LL_DMA_IsActiveFlag_TC1(DMA1))
   {
 
 #if NUM_PWMANALOGS > 0

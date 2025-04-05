@@ -55,9 +55,9 @@ void backlightEnable(uint8_t level)
 
   // std
   if (level == 0) { // inverted
-    GPIO_SetBits(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
+    LL_GPIO_SetOutputPin(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
   } else {
-    GPIO_ResetBits(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
+    LL_GPIO_ResetOutputPin(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
   }
 }
 
@@ -67,10 +67,10 @@ void backlightDisable()
   BACKLIGHT_TIMER->CR1 &= ~TIM_CR1_CEN;          // solves very dim light with backlight off
 
   // std
-  GPIO_ResetBits(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
+  LL_GPIO_ResetOutputPin(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
 }
 
 uint8_t isBacklightEnabled()
 {
-  return BACKLIGHT_COUNTER_REGISTER != 100 || GPIO_ReadInputDataBit(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN) != 0;
+  return BACKLIGHT_COUNTER_REGISTER != 100 || LL_GPIO_IsInputPinSet(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN) != 0;
 }

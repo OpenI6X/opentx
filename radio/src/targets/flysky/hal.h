@@ -90,7 +90,8 @@
 
 // ADC
 #define ADC_MAIN                      ADC1
-#define ADC_DMA_Channel               LL_DMA_CHANNEL_1
+#define ADC_DMA_Channel               DMA1_Channel1
+#define ADC_DMA_Channel_CH            LL_DMA_CHANNEL_1
 // #define ADC_SET_DMA_FLAGS()             ADC_DMA->HIFCR = (DMA_HIFCR_CTCIF4 | DMA_HIFCR_CHTIF4 | DMA_HIFCR_CTEIF4 | DMA_HIFCR_CDMEIF4 | DMA_HIFCR_CFEIF4)
 // #define ADC_TRANSFER_COMPLETE()         (ADC_DMA->HISR & DMA_HISR_TCIF4)
 #define ADC_DMA_TC_FLAG               DMA1_FLAG_TC1
