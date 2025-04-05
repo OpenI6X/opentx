@@ -56,7 +56,7 @@ void SystemBootloaderJump() {
     typedef void (*pFunction)(void);
     pFunction JumpToApplication;
 
-    RCC_DeInit();
+    LL_RCC_DeInit();
 
     SysTick->CTRL = 0;
     SysTick->LOAD = 0;
