@@ -22,14 +22,13 @@
 
 void backlightInit()
 {
-  GPIO_InitTypeDef GPIO_InitStructure;
-  GPIO_InitStructure.GPIO_Pin = BACKLIGHT_GPIO_PIN;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-  GPIO_Init(BACKLIGHT_GPIO, &GPIO_InitStructure);
-  GPIO_PinAFConfig(BACKLIGHT_GPIO, BACKLIGHT_GPIO_PinSource, BACKLIGHT_GPIO_AF);
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  GPIO_InitStruct.Pin        = BACKLIGHT_GPIO_PIN;
+  GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull       = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(BACKLIGHT_GPIO, &GPIO_InitStruct);
 
   BACKLIGHT_TIMER->ARR = 100;
   BACKLIGHT_TIMER->PSC = BACKLIGHT_TIMER_FREQ / 50000 - 1; // 20us * 100 = 2ms => 500Hz
@@ -40,13 +39,13 @@ void backlightInit()
   BACKLIGHT_TIMER->CR1 = TIM_CR1_CEN;  // Counter enable
 
   // std
-  GPIO_InitTypeDef gpio_init;
-  gpio_init.GPIO_Mode  = GPIO_Mode_OUT;
-  gpio_init.GPIO_OType = GPIO_OType_PP;
-  gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
-  gpio_init.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-  gpio_init.GPIO_Pin   = BACKLIGHT_STD_GPIO_PIN;
-  GPIO_Init(BACKLIGHT_STD_GPIO, &gpio_init);
+  LL_GPIO_InitTypeDef gpio_init = {0};
+  gpio_init.Pin        = BACKLIGHT_STD_GPIO_PIN;
+  gpio_init.Mode       = LL_GPIO_MODE_OUTPUT;
+  gpio_init.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  gpio_init.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  gpio_init.Pull       = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(BACKLIGHT_STD_GPIO, &gpio_init);
 }
 
 void backlightEnable(uint8_t level)

@@ -56,28 +56,27 @@ void adcInit()
   RCC_ADCCLKConfig(RCC_ADCCLK_PCLK_Div2);
 
   // init gpio
-  GPIO_InitTypeDef gpio_init;
-  GPIO_StructInit(&gpio_init);
+  LL_GPIO_InitTypeDef gpio_init = {0};
 
-  // set up analog inputs ADC0...ADC7(PA0...PA7)
+  // Set up analog inputs ADC0...ADC7 (PA0...PA7)
   #if defined(FLYSKY_GIMBAL)
-  gpio_init.GPIO_Pin = 0b11110000;
+  gpio_init.Pin = LL_GPIO_PIN_4 | LL_GPIO_PIN_5 | LL_GPIO_PIN_6 | LL_GPIO_PIN_7;
   #else
-  gpio_init.GPIO_Pin = 0b11111111;
+  gpio_init.Pin = LL_GPIO_PIN_0 | LL_GPIO_PIN_1 | LL_GPIO_PIN_2 | LL_GPIO_PIN_3 |
+                  LL_GPIO_PIN_4 | LL_GPIO_PIN_5 | LL_GPIO_PIN_6 | LL_GPIO_PIN_7;
   #endif
 
-  gpio_init.GPIO_Mode = GPIO_Mode_AN;
-  GPIO_Init(GPIOA, &gpio_init);
+  gpio_init.Mode = LL_GPIO_MODE_ANALOG;
+  gpio_init.Pull = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(GPIOA, &gpio_init);
 
-  // set up analog inputs ADC8, ADC9(PB0, PB1)
-  gpio_init.GPIO_Pin = 0b11;
-  gpio_init.GPIO_Mode = GPIO_Mode_AN;
-  GPIO_Init(GPIOB, &gpio_init);
+  // Set up analog inputs ADC8, ADC9 (PB0, PB1)
+  gpio_init.Pin = LL_GPIO_PIN_0 | LL_GPIO_PIN_1;
+  LL_GPIO_Init(GPIOB, &gpio_init);
 
-  // battery voltage is on PC0(ADC10)
-  gpio_init.GPIO_Pin = 0b1;
-  gpio_init.GPIO_Mode = GPIO_Mode_AN;
-  GPIO_Init(GPIOC, &gpio_init);
+  // Battery voltage input on PC0 (ADC10)
+  gpio_init.Pin = LL_GPIO_PIN_0;
+  LL_GPIO_Init(GPIOC, &gpio_init);
 
   // init mode
   ADC_InitTypeDef adc_init;

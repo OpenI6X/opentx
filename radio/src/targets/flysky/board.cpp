@@ -38,15 +38,13 @@ extern volatile uint32_t g_pfnVectors[VECTOR_TABLE_SIZE];
 //audio
 void buzzerInit()
 {
-  GPIO_InitTypeDef gpio_init;
-  gpio_init.GPIO_Pin = BUZZER_GPIO_PIN;
-  gpio_init.GPIO_Mode = GPIO_Mode_AF;
-  gpio_init.GPIO_OType = GPIO_OType_PP;
-  gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_Init(BUZZER_GPIO_PORT, &gpio_init);
-
-  GPIO_PinAFConfig(BUZZER_GPIO_PORT, BUZZER_GPIO_PinSource, GPIO_AF_2);
+  LL_GPIO_InitTypeDef gpio_init = {0};
+  gpio_init.Pin        = BUZZER_GPIO_PIN;
+  gpio_init.Mode       = LL_GPIO_MODE_ALTERNATE;
+  gpio_init.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  gpio_init.Pull       = LL_GPIO_PULL_NO;
+  gpio_init.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  LL_GPIO_Init(BUZZER_GPIO_PORT, &gpio_init);
 }
 
 #define __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH()  do {SYSCFG->CFGR1 &= ~(SYSCFG_CFGR1_MEM_MODE); \

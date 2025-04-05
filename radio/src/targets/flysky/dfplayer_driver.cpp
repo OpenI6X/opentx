@@ -136,13 +136,11 @@ void dfplayerSetVolume(int8_t volume) {
 
 void dfplayerInit() {
     // setup BUSY pin
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = DFPLAYER_GPIO_PIN_BUSY;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
-    GPIO_Init(DFPLAYER_GPIO_PORT, &GPIO_InitStructure);
+LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+GPIO_InitStruct.Pin   = DFPLAYER_GPIO_PIN_BUSY;
+GPIO_InitStruct.Mode  = LL_GPIO_MODE_INPUT;
+GPIO_InitStruct.Pull  = LL_GPIO_PULL_DOWN;
+LL_GPIO_Init(DFPLAYER_GPIO_PORT, &GPIO_InitStruct);
 
     delay_ms(150); // fix for MH2024K slow init
 

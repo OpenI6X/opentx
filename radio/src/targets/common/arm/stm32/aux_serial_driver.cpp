@@ -22,29 +22,20 @@
 
 #if defined(AUX_SERIAL)
 uint8_t auxSerialMode = UART_MODE_COUNT;  // Prevent debug output before port is setup
-#if defined(DEBUG)
-Fifo<uint8_t, 256> auxSerialTxFifo;
-#else
 Fifo<uint8_t, 128> auxSerialTxFifo;
-#endif
 DMAFifo<32> auxSerialRxFifo __DMA (AUX_SERIAL_DMA_Channel_RX);
 
 void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1)
 {
   USART_InitTypeDef USART_InitStructure;
-  GPIO_InitTypeDef GPIO_InitStructure;
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-#if defined(SBUS_TRAINER)
-  GPIO_PinAFConfig(AUX_SERIAL_GPIO, AUX_SERIAL_GPIO_PinSource_RX, AUX_SERIAL_GPIO_AF);
-#endif
-  GPIO_PinAFConfig(AUX_SERIAL_GPIO, AUX_SERIAL_GPIO_PinSource_TX, AUX_SERIAL_GPIO_AF);
-
-  GPIO_InitStructure.GPIO_Pin = AUX_SERIAL_GPIO_PIN_TX | AUX_SERIAL_GPIO_PIN_RX;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_Init(AUX_SERIAL_GPIO, &GPIO_InitStructure);
+  GPIO_InitStruct.Pin        = AUX_SERIAL_GPIO_PIN_TX | AUX_SERIAL_GPIO_PIN_RX;
+  GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
+  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  LL_GPIO_Init(AUX_SERIAL_GPIO, &GPIO_InitStruct);
 
   USART_InitStructure.USART_BaudRate = baudrate;
   USART_InitStructure.USART_WordLength = lenght;
@@ -157,7 +148,7 @@ void auxSerialStop()
 #if defined(SBUS_TRAINER)
   DMA_DeInit(AUX_SERIAL_DMA_Channel_RX);
 #endif
-  USART_DeInit(AUX_SERIAL_USART);
+  LL_USART_DeInit(AUX_SERIAL_USART);
 }
 
 uint8_t auxSerialTracesEnabled()
@@ -229,16 +220,14 @@ Fifo<uint8_t, 16> aux3SerialTxFifo;
 void aux3SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1)
 {
   USART_InitTypeDef USART_InitStructure;
-  GPIO_InitTypeDef GPIO_InitStructure;
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  GPIO_PinAFConfig(AUX3_SERIAL_GPIO, AUX3_SERIAL_GPIO_PinSource_TX, AUX3_SERIAL_GPIO_AF);
-
-  GPIO_InitStructure.GPIO_Pin = AUX3_SERIAL_GPIO_PIN_TX;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_Init(AUX3_SERIAL_GPIO, &GPIO_InitStructure);
+  GPIO_InitStruct.Pin        = AUX3_SERIAL_GPIO_PIN_TX;
+  GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
+  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  LL_GPIO_Init(AUX3_SERIAL_GPIO, &GPIO_InitStruct);
 
   USART_InitStructure.USART_BaudRate = baudrate;
   USART_InitStructure.USART_WordLength = lenght;
@@ -281,16 +270,14 @@ void (*aux4SerialIdleCb)(void);
 void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1)
 {
   USART_InitTypeDef USART_InitStructure;
-  GPIO_InitTypeDef GPIO_InitStructure;
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  GPIO_PinAFConfig(AUX4_SERIAL_GPIO, AUX4_SERIAL_GPIO_PinSource_RX, AUX4_SERIAL_GPIO_AF);
-
-  GPIO_InitStructure.GPIO_Pin = AUX4_SERIAL_GPIO_PIN_RX;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_Init(AUX4_SERIAL_GPIO, &GPIO_InitStructure);
+GPIO_InitStruct.Pin        = AUX4_SERIAL_GPIO_PIN_RX;
+GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
+GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
+GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+LL_GPIO_Init(AUX4_SERIAL_GPIO, &GPIO_InitStruct);
 
   USART_InitStructure.USART_BaudRate = baudrate;
   USART_InitStructure.USART_WordLength = lenght;
@@ -333,7 +320,7 @@ void aux4SerialInit(void)
 void aux4SerialStop(void)
 {
   DMA_DeInit(AUX4_SERIAL_DMA_Channel_RX);
-  USART_DeInit(AUX4_SERIAL_USART);
+  LL_USART_DeInit(AUX4_SERIAL_USART);
 }
 
 void aux4SerialSetIdleCb(void (*cb)()) {

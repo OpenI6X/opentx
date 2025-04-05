@@ -58,27 +58,21 @@
 // LCD
 // data lines
 #define LCD_DATA_GPIO        GPIOE
-#define LCD_DATA_GPIO_CLK    RCC_AHBPeriph_GPIOE
 // RW
 #define LCD_RW_GPIO          GPIOB
-#define LCD_RW_GPIO_CLK      RCC_AHBPeriph_GPIOB
-#define LCD_RW_PIN           GPIO_Pin_5
+#define LCD_RW_PIN           LL_GPIO_PIN_5
 // RST
 #define LCD_RST_GPIO         GPIOB
-#define LCD_RST_GPIO_CLK     RCC_AHBPeriph_GPIOB
-#define LCD_RST_PIN          GPIO_Pin_4
+#define LCD_RST_PIN          LL_GPIO_PIN_4
 // RS
 #define LCD_RS_GPIO          GPIOB
-#define LCD_RS_GPIO_CLK      RCC_AHBPeriph_GPIOB
-#define LCD_RS_PIN           GPIO_Pin_3
+#define LCD_RS_PIN           LL_GPIO_PIN_3
 // RD
 #define LCD_RD_GPIO          GPIOD
-#define LCD_RD_GPIO_CLK      RCC_AHBPeriph_GPIOD
-#define LCD_RD_PIN           GPIO_Pin_7
+#define LCD_RD_PIN           LL_GPIO_PIN_7
 // CS
 #define LCD_CS_GPIO          GPIOD
-#define LCD_CS_GPIO_CLK      RCC_AHBPeriph_GPIOD
-#define LCD_CS_PIN           GPIO_Pin_2
+#define LCD_CS_PIN           LL_GPIO_PIN_2
 
 #define LCD_RW_HI()   { LCD_RW_GPIO->BSRR = (LCD_RW_PIN);  }
 #define LCD_RW_LO()   { LCD_RW_GPIO->BRR  = (LCD_RW_PIN); }
@@ -134,21 +128,21 @@ static void lcdSendGFX(uint8_t data) {
 }
 
 void lcdInit() {
-  GPIO_InitTypeDef gpio_init;
-  // set all gpio directions to output
-  gpio_init.GPIO_Mode  = GPIO_Mode_OUT;
-  gpio_init.GPIO_OType = GPIO_OType_PP;
-  gpio_init.GPIO_Speed = GPIO_Speed_50MHz;
-  gpio_init.GPIO_PuPd  = GPIO_PuPd_NOPULL;
-
-  gpio_init.GPIO_Pin   = LCD_DATA_PIN;
-  GPIO_Init(LCD_DATA_GPIO, &gpio_init);
-
-  gpio_init.GPIO_Pin   = LCD_RW_PIN | LCD_RST_PIN | LCD_RS_PIN;
-  GPIO_Init(LCD_RW_RST_RS_GPIO, &gpio_init);
-
-  gpio_init.GPIO_Pin   = LCD_RD_PIN | LCD_CS_PIN;
-  GPIO_Init(LCD_RD_CS_GPIO, &gpio_init);
+  LL_GPIO_InitTypeDef gpio_init = {0};
+  // Set all GPIO directions to output
+  gpio_init.Mode       = LL_GPIO_MODE_OUTPUT;
+  gpio_init.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  gpio_init.Speed      = LL_GPIO_SPEED_FREQ_HIGH;
+  gpio_init.Pull       = LL_GPIO_PULL_NO;
+  // Configure LCD data pins
+  gpio_init.Pin = LCD_DATA_PIN;
+  LL_GPIO_Init(LCD_DATA_GPIO, &gpio_init);
+  // Configure LCD control pins (RW, RST, RS)
+  gpio_init.Pin = LCD_RW_PIN | LCD_RST_PIN | LCD_RS_PIN;
+  LL_GPIO_Init(LCD_RW_RST_RS_GPIO, &gpio_init);
+  // Configure LCD control pins (RD, CS)
+  gpio_init.Pin = LCD_RD_PIN | LCD_CS_PIN;
+  LL_GPIO_Init(LCD_RD_CS_GPIO, &gpio_init);
 
   LCD_RST_LO();
   LCD_CS_LO(); // Enable access to LCD
