@@ -106,8 +106,10 @@ void adcInit()
   /* Initialize ADC structures */
   LL_ADC_InitTypeDef ADC_InitStruct = {0};
   LL_ADC_REG_InitTypeDef ADC_REG_InitStruct = {0};
+  LL_ADC_StructInit(&ADC_InitStruct);
 
   /* Configure ADC initialization structure */
+  ADC_InitStruct.Clock = LL_ADC_CLOCK_SYNC_PCLK_DIV2;
   ADC_InitStruct.Resolution = LL_ADC_RESOLUTION_12B;               // 12-bit resolution
   ADC_InitStruct.DataAlignment = LL_ADC_DATA_ALIGN_RIGHT;          // Right data alignment
   ADC_InitStruct.ScanConvMode = LL_ADC_REG_SEQ_SCAN_DIR_FORWARD;   // Upward scan direction
@@ -153,7 +155,7 @@ void adcInit()
                         | LL_DMA_MDATAALIGN_HALFWORD;
 
   // enable the DMA1 - Channel1
-  DMA_Cmd(ADC_DMA_Channel, ENABLE);
+  LL_DMA_EnableChannel(DMA1, ADC_DMA_Channel_CH);
 
   // start conversion:
   ADC_MAIN->CR |= (uint32_t)ADC_CR_ADSTART;
@@ -164,7 +166,7 @@ void adcInit()
 void adcRead()
 {
   // adc dma finished?
-  if (DMA_GetITStatus(ADC_DMA_TC_FLAG))
+  if (LL_DMA_IsActiveFlag_TC1(DMA1))
   {
 
 #if NUM_PWMANALOGS > 0
