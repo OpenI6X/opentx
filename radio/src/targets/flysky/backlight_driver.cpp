@@ -59,9 +59,9 @@ void backlightEnable(uint8_t level)
   // Standard backlight
 #if defined(BACKLIGHT_STD_GPIO_PIN)
   if (level == 0) { // inverted
-    GPIO_SetBits(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
+    LL_GPIO_SetOutputPin(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
   } else {
-    GPIO_ResetBits(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
+    LL_GPIO_ResetOutputPin(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
   }
 #endif
 }
@@ -73,7 +73,7 @@ void backlightDisable()
 
   // Standard backlight
 #if defined(BACKLIGHT_STD_GPIO_PIN)
-  GPIO_ResetBits(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
+  LL_GPIO_ResetOutputPin(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN);
 #endif
 }
 
@@ -82,6 +82,6 @@ uint8_t isBacklightEnabled()
 #if !defined(BACKLIGHT_STD_GPIO_PIN)
   return BACKLIGHT_COUNTER_REGISTER != 100;
 #else
-  return BACKLIGHT_COUNTER_REGISTER != 100 || GPIO_ReadInputDataBit(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN) != 0;
+  return BACKLIGHT_COUNTER_REGISTER != 100 || LL_GPIO_IsInputPinSet(BACKLIGHT_STD_GPIO, BACKLIGHT_STD_GPIO_PIN) != 0;
 #endif
 }
