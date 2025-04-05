@@ -34,36 +34,31 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 
-  GPIO_InitTypeDef GPIO_InitStructure;
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
   USART_InitTypeDef USART_InitStructure;
 
-  GPIO_InitStructure.GPIO_Pin = TELEMETRY_TX_GPIO_PIN;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStruct.Pin        = TELEMETRY_TX_GPIO_PIN;
+  GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Alternate  = TELEMETRY_TX_GPIO_AF;
 #if defined(CRSF_FULLDUPLEX)
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
 #else
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+  GPIO_InitStruct.Pull       = LL_GPIO_PULL_DOWN;
 #endif
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(TELEMETRY_GPIO, &GPIO_InitStructure);
+  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_HIGH;
+  LL_GPIO_Init(TELEMETRY_GPIO, &GPIO_InitStruct);
 
 #if defined(CRSF_FULLDUPLEX)
-  GPIO_InitStructure.GPIO_Pin = TELEMETRY_RX_GPIO_PIN;
-  // GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  // GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  // GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-  // GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(TELEMETRY_RX_GPIO, &GPIO_InitStructure);
-  GPIO_PinAFConfig(TELEMETRY_RX_GPIO, TELEMETRY_GPIO_PinSource_RX, TELEMETRY_RX_GPIO_AF);
+  GPIO_InitStruct.Pin        = TELEMETRY_RX_GPIO_PIN;
+  GPIO_InitStruct.Alternate  = TELEMETRY_RX_GPIO_AF;
+  LL_GPIO_Init(TELEMETRY_RX_GPIO, &GPIO_InitStruct);
 #endif
 
-  USART_DeInit(TELEMETRY_USART);
+  LL_USART_DeInit(TELEMETRY_USART);
 
   // OverSampling + IDLE
   TELEMETRY_USART->CR1 |= ( USART_CR1_OVER8 /*| USART_CR1_IDLEIE*/ );
-
-  GPIO_PinAFConfig(TELEMETRY_GPIO, TELEMETRY_GPIO_PinSource_TX, TELEMETRY_TX_GPIO_AF);
 
   USART_InitStructure.USART_BaudRate = baudrate;
   USART_InitStructure.USART_WordLength = USART_WordLength_8b;
@@ -176,7 +171,7 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
     TELEMETRY_USART->CR1 &= ~USART_CR1_TCIE;
 
     telemetryPortSetDirectionInput();
-    
+
     while (TELEMETRY_USART->ISR & USART_FLAG_RXNE) {
       (void)TELEMETRY_USART->RDR;
     }

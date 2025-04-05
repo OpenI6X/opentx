@@ -95,13 +95,12 @@ extern "C" void OTG_FS_IRQHandler()
 void usbInit()
 {
   // USB DP/DM as connection detect
-  GPIO_InitTypeDef GPIO_InitStructure;
-  GPIO_InitStructure.GPIO_Pin = USB_GPIO_PIN_DM;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-  GPIO_Init(USB_GPIO, &GPIO_InitStructure);
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  GPIO_InitStruct.Pin   = USB_GPIO_PIN_DM;
+  GPIO_InitStruct.Mode  = LL_GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull  = LL_GPIO_PULL_UP;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  LL_GPIO_Init(USB_GPIO, &GPIO_InitStruct);
 
   // Initialize hardware
 #if defined(STM32F0)
