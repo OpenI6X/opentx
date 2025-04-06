@@ -139,7 +139,7 @@ typedef struct
 /** @defgroup USB_LL_EP_Type USB Low Layer EP Type
   * @{
   */
-#define EP_TYPE_CTRL                           0U
+// #define EP_TYPE_CTRL                           0U
 #define EP_TYPE_ISOC                           1U
 #define EP_TYPE_BULK                           2U
 #define EP_TYPE_INTR                           3U
@@ -157,7 +157,7 @@ typedef struct
   */
 
 
-#define BTABLE_ADDRESS                         0x000U
+// #define BTABLE_ADDRESS                         0x000U
 #define PMA_ACCESS                             1U
 
 #ifndef USB_EP_RX_STRX
