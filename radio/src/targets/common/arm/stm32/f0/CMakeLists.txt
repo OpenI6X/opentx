@@ -12,10 +12,11 @@ add_library(stm32cube_ll OBJECT EXCLUDE_FROM_ALL
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_dma.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_usart.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_rcc.c
+  ${STM32CUBE_DIR}/Src/stm32f0xx_ll_i2c.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_exti.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_adc.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_spi.c
-  ${STM32CUBE_DIR}/Src/stm32f0xx_ll_usb.c
+#  ${STM32CUBE_DIR}/Src/stm32f0xx_ll_usb.c
   # HAL drivers
   ${STM32CUBE_DIR}/Src/stm32f0xx_hal.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pwr.c
@@ -23,10 +24,10 @@ add_library(stm32cube_ll OBJECT EXCLUDE_FROM_ALL
   ${STM32CUBE_DIR}/Src/stm32f0xx_hal_rcc.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_hal_rtc.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_hal_i2c.c
-  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pcd.c
+#  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pcd.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pcd_ex.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_hal_flash.c
-  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_flash_ex.c
+#  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_flash_ex.c
   )
 
 target_compile_options(stm32cube_ll PRIVATE -DUSE_FULL_LL_DRIVER)
@@ -44,10 +45,10 @@ include_directories(${STM32LIB_DIR}/CMSIS/Include)
 
 add_definitions(-DSTM32F0)
 
-# add_library(stm32_stdperiph OBJECT EXCLUDE_FROM_ALL
-#  targets/common/arm/stm32/f0/system_stm32f0xx.c
-#  boards/generic_stm32/startup/startup_stm32f0xx.s
-# )
+add_library(stm32_stdperiph OBJECT EXCLUDE_FROM_ALL
+  targets/common/arm/stm32/f0/system_stm32f0xx.c
+# targets/flysky/startup_stm32f072.s
+)
 
-# set(FIRMWARE_SRC ${FIRMWARE_SRC} $<TARGET_OBJECTS:stm32_stdperiph>)
-# set(BOOTLOADER_SRC ${BOOTLOADER_SRC} $<TARGET_OBJECTS:stm32_stdperiph>)
+set(FIRMWARE_SRC ${FIRMWARE_SRC} $<TARGET_OBJECTS:stm32_stdperiph>)
+set(BOOTLOADER_SRC ${BOOTLOADER_SRC} $<TARGET_OBJECTS:stm32_stdperiph>)
