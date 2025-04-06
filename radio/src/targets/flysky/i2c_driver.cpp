@@ -64,6 +64,7 @@ uint32_t I2C_GetFlagStatus(const I2C_TypeDef *I2Cx, uint32_t flag)
     case I2C_ISR_STOPF:
       return LL_I2C_IsActiveFlag_STOP(I2Cx);
   }
+  return 0;
 }
 
 #define I2C_TIMEOUT_MAX 1000
