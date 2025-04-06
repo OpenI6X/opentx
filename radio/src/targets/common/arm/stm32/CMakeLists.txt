@@ -48,14 +48,13 @@ else() # STM32F0
     )
 endif()
 
-if(NOT CPU_TYPE STREQUAL STM32F0)
 set(TARGET_SRC
   ${TARGET_SRC}
-  ../common/arm/stm32/rtc_driver.cpp
-  ../common/arm/stm32/cpu_id.cpp
+#  ../common/arm/stm32/rtc_driver.cpp
+#  ../common/arm/stm32/cpu_id.cpp
   ${AUX_SERIAL_DRIVER}
   )
-endif()
+
 set(FIRMWARE_TARGET_SRC
   ${FIRMWARE_TARGET_SRC}
   ../common/arm/stm32/delays.cpp

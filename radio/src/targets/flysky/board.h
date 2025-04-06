@@ -53,7 +53,7 @@ extern "C" {
 //#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_misc.h"
 //#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_crc.h"
 
-// #include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_hal.h"
+//#include "CMSIS/Device/ST/STM32F0xx/Include/stm32f0xx.h"
 #include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_crs.h"
 #include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_rcc.h"
 #include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_gpio.h"

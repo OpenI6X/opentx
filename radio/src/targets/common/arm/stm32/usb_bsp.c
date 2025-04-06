@@ -35,7 +35,7 @@ static void CRS_Config(void);
 void USB_BSP_Init(USB_CORE_HANDLE *pdev) {
 
 #if defined USB_CLOCK_SOURCE_CRS
-  LL_RCC_SetUSBClockSource(RCC_USBCLK_HSI48);
+  LL_RCC_SetUSBClockSource(LL_RCC_USB_CLKSOURCE_HSI48);
 
   CRS_Config();  
 #endif
@@ -75,17 +75,13 @@ void USB_BSP_mDelay(const uint32_t msec) {
   */
 static void CRS_Config(void)
 {
-  /*Enable CRS Clock*/
-  // RCC_APB1PeriphClockCmd(RCC_APB1Periph_CRS, ENABLE); // moved to general clock init
-  
-  /* Select USB SOF as synchronization source */
-  CRS_SynchronizationSourceConfig(CRS_SYNCSource_USB);
+  LL_CRS_SetSyncSignalSource(LL_CRS_SYNC_SOURCE_USB);
   
   /*Enables the automatic hardware adjustment of TRIM bits: AUTOTRIMEN:*/
-  CRS_AutomaticCalibrationCmd(ENABLE);
+  LL_CRS_EnableAutoTrimming();
   
   /*Enables the oscillator clock for frequency error counter CEN*/
-  CRS_FrequencyErrorCounterCmd(ENABLE);
+  LL_CRS_EnableFreqErrorCounter();
 }
 #endif
 

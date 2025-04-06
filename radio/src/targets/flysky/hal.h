@@ -151,15 +151,7 @@
 #define RF_RF1_SET_PIN GPIO_BSRR_BS_11
 #define RF_RF1_RESET_PIN GPIO_BSRR_BR_11
 
-#define READBIT(A, B) ((A >> (B & 7)) & 1)
 #define SETBIT(T, B, V) (T = V ? T | (1<<B) : T & ~(1<<B))
-#define SET_BIT(REG, BIT)     ((REG) |= (BIT))
-#define CLEAR_BIT(REG, BIT)   ((REG) &= ~(BIT))
-#define READ_BIT(REG, BIT)    ((REG) & (BIT))
-#define CLEAR_REG(REG)        ((REG) = (0x0))
-#define WRITE_REG(REG, VAL)   ((REG) = (VAL))
-#define READ_REG(REG)         ((REG))
-#define MODIFY_REG(REG, CLEARMASK, SETMASK)  WRITE_REG((REG), (((READ_REG(REG)) & (~(CLEARMASK))) | (SETMASK)))
 
 void SPI_Write(uint8_t command);
 uint8_t SPI_SDI_Read(void);
