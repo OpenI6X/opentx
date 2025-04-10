@@ -118,7 +118,7 @@ static struct LinkStat {
 
 static constexpr uint8_t ELRS_FLAGS_INFO_MAX_LEN = 20;
 static char elrsFlagsInfo[ELRS_FLAGS_INFO_MAX_LEN] = "";
-static uint8_t expectedParamsCount = 0;
+static uint8_t expectedParamsCount = 0; // TODO: folderLastId
 
 static tmr10ms_t devicesRefreshTimeout = 50;
 static uint8_t allParamsLoaded = 0;
@@ -405,6 +405,12 @@ static void paramStringSave(Parameter * param) {
 #endif
 }
 
+static void paramFolderLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+  do {
+    bufferPush((char*)&data[offset], 1); // push one child id at a time
+  } while (data[offset++] != 0xff);
+}
+
 static void paramMultibyteSave(Parameter * param) {
   uint8_t data[4];
   for (uint32_t i = 0; i < param->size; i++) {
@@ -562,7 +568,7 @@ static void parseDeviceInfoMessage(uint8_t* data) {
   if (deviceId == id && currentFolderId != otherDevicesId) {
     memcpy(&deviceName[0], (char *)&data[3], DEVICE_NAME_MAX_LEN);
     deviceIsELRS_TX = ((paramGetValue(&data[offset], 4) == 0x454C5253) && (deviceId == 0xEE)); // SerialNumber = 'E L R S' and ID is TX module
-    uint8_t newParamCount = data[offset+12];
+    uint8_t newParamCount = data[offset+12]; // TODO: newFolderLastId
 //    TRACE("deviceId match %x, newParamCount %d", deviceId, newParamCount);
     reloadAllParam();
     if (newParamCount != expectedParamsCount || newParamCount == 0) {
@@ -589,7 +595,7 @@ static const ParamFunctions functions[] = {
   // { .load=paramFloatLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // FLOAT(8)
   { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramTextSelectionDisplay }, // SELECT(9)
   { .load=paramStringLoad, .save=paramStringSave, .display=paramStringDisplay }, // STRING(10) editing
-  { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // FOLDER(11)
+  { .load=paramFolderLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // FOLDER(11)
   { .load=paramInfoLoad, .save=noopSave, .display=paramStringDisplay }, // INFO(12)
   { .load=paramCommandLoad, .save=paramCommandSave, .display=paramUnifiedDisplay }, // COMMAND(13)
   { .load=noopLoad, .save=paramBackExec, .display=paramUnifiedDisplay }, // back(14)
