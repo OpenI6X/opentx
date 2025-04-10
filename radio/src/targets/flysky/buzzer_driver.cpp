@@ -282,7 +282,7 @@ static void buzzerOff()
 {
   PWM_TIMER->CR1 &= ~TIM_CR1_CEN;
   PWM_TIMER->CNT = 0;                     //
-  PWM_TIMER->SR = (U16)~TIM_FLAG_Update;  // solves random hiss issue when timer stopped
+  PWM_TIMER->SR = (U16)~LL_TIM_SR_UIF;  // solves random hiss issue when timer stopped
 }
 
 void playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t flags, int8_t freqIncr)

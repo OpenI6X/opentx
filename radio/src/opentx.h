@@ -27,9 +27,10 @@
 #include <stdlib.h>
 #include "definitions.h"
 #include "opentx_types.h"
-#if defined(STM32)
+
+#include "stm32_hal.h"
+#include "stm32_hal_ll.h"
 #include "usbd_conf.h"
-#endif
 
 #if defined(SIMU)
   #define SWITCH_SIMU(a, b)  (a)

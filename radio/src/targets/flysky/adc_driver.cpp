@@ -46,87 +46,88 @@ uint16_t adcValues[NUM_ANALOGS] __DMA;
 
 static void adc_dma_arm(void)
 {
-  ADC_StartOfConversion(ADC_MAIN);
+  LL_ADC_REG_StartConversion(ADC_MAIN);
 }
 
 void adcInit()
 {
-  // -- init rcc --
-  // ADC CLOCK = 24 / 4 = 6MHz
-  RCC_ADCCLKConfig(RCC_ADCCLK_PCLK_Div2);
-
   // init gpio
-  GPIO_InitTypeDef gpio_init;
-  GPIO_StructInit(&gpio_init);
+  LL_GPIO_InitTypeDef gpio_init = {0};
 
-  // set up analog inputs ADC0...ADC7(PA0...PA7)
+  // Set up analog inputs ADC0...ADC7 (PA0...PA7)
   #if defined(FLYSKY_GIMBAL)
-  gpio_init.GPIO_Pin = 0b11110000;
+  gpio_init.Pin = LL_GPIO_PIN_4 | LL_GPIO_PIN_5 | LL_GPIO_PIN_6 | LL_GPIO_PIN_7;
   #else
-  gpio_init.GPIO_Pin = 0b11111111;
+  gpio_init.Pin = LL_GPIO_PIN_0 | LL_GPIO_PIN_1 | LL_GPIO_PIN_2 | LL_GPIO_PIN_3 |
+                  LL_GPIO_PIN_4 | LL_GPIO_PIN_5 | LL_GPIO_PIN_6 | LL_GPIO_PIN_7;
   #endif
 
-  gpio_init.GPIO_Mode = GPIO_Mode_AN;
-  GPIO_Init(GPIOA, &gpio_init);
+  gpio_init.Mode = LL_GPIO_MODE_ANALOG;
+  gpio_init.Pull = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(GPIOA, &gpio_init);
 
-  // set up analog inputs ADC8, ADC9(PB0, PB1)
-  gpio_init.GPIO_Pin = 0b11;
-  gpio_init.GPIO_Mode = GPIO_Mode_AN;
-  GPIO_Init(GPIOB, &gpio_init);
+  // Set up analog inputs ADC8, ADC9 (PB0, PB1)
+  gpio_init.Pin = LL_GPIO_PIN_0 | LL_GPIO_PIN_1;
+  LL_GPIO_Init(GPIOB, &gpio_init);
 
-  // battery voltage is on PC0(ADC10)
-  gpio_init.GPIO_Pin = 0b1;
-  gpio_init.GPIO_Mode = GPIO_Mode_AN;
-  GPIO_Init(GPIOC, &gpio_init);
+  // Battery voltage input on PC0 (ADC10)
+  gpio_init.Pin = LL_GPIO_PIN_0;
+  LL_GPIO_Init(GPIOC, &gpio_init);
 
-  // init mode
-  ADC_InitTypeDef adc_init;
-  ADC_StructInit(&adc_init);
+  /* Initialize ADC structures */
+  LL_ADC_InitTypeDef ADC_InitStruct = {0};
+  LL_ADC_REG_InitTypeDef ADC_REG_InitStruct = {0};
+  LL_ADC_StructInit(&ADC_InitStruct);
 
-  // ADC configuration
-  adc_init.ADC_ContinuousConvMode = ENABLE; // ! select continuous conversion mode
-  adc_init.ADC_ExternalTrigConv = 0;
-  adc_init.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None; // select no ext triggering
-  adc_init.ADC_DataAlign = ADC_DataAlign_Right;                      // r 12-bit data alignment in ADC reg
-  adc_init.ADC_Resolution = ADC_Resolution_12b;
-  adc_init.ADC_ScanDirection = ADC_ScanDirection_Upward;
+  /* Configure ADC initialization structure */
+  ADC_InitStruct.Clock = LL_ADC_CLOCK_SYNC_PCLK_DIV2;
+  ADC_InitStruct.Resolution = LL_ADC_RESOLUTION_12B;               // 12-bit resolution
+  ADC_InitStruct.DataAlignment = LL_ADC_DATA_ALIGN_RIGHT;          // Right data alignment
+  ADC_InitStruct.LowPowerMode = LL_ADC_LP_MODE_NONE;               // No low power mode
 
-  // load structure values to control and status registers
-  ADC_Init(ADC_MAIN, &adc_init);
+  /* Configure regular ADC group */
+  ADC_REG_InitStruct.TriggerSource = LL_ADC_REG_TRIG_SOFTWARE;     // No external trigger
+  ADC_REG_InitStruct.SequencerDiscont = LL_ADC_REG_SEQ_DISCONT_DISABLE; // No discontinuous mode
+  ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_CONTINUOUS;  // Continuous conversion mode
+  ADC_REG_InitStruct.DMATransfer = LL_ADC_REG_DMA_TRANSFER_UNLIMITED; // Enable DMA for ADC
+  ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;      // Preserve data on overrun
 
-  // configure each channel
-  ADC_ChannelConfig(ADC_MAIN,
-  #if !defined(FLYSKY_GIMBAL)
-    ADC_Channel_0 | ADC_Channel_1 | ADC_Channel_2 | ADC_Channel_3 |
-  #endif
-    ADC_Channel_4 | ADC_Channel_5 | ADC_Channel_6 | ADC_Channel_7 | ADC_Channel_8 | ADC_Channel_9 | ADC_Channel_10, ADC_SAMPTIME);
+  /* Initialize ADC */
+  LL_ADC_Init(ADC_MAIN, &ADC_InitStruct);
+  LL_ADC_REG_Init(ADC_MAIN, &ADC_REG_InitStruct);
 
+  /* Configure ADC channels */
+  LL_ADC_REG_SetSequencerChannels(ADC_MAIN,
+#if !defined(FLYSKY_GIMBAL)
+    LL_ADC_CHANNEL_0 | LL_ADC_CHANNEL_1 | LL_ADC_CHANNEL_2 | LL_ADC_CHANNEL_3 |
+#endif
+    LL_ADC_CHANNEL_4 | LL_ADC_CHANNEL_5 | LL_ADC_CHANNEL_6 | LL_ADC_CHANNEL_7 |
+    LL_ADC_CHANNEL_8 | LL_ADC_CHANNEL_9 | LL_ADC_CHANNEL_10);
 
-  // enable ADC
-  ADC_Cmd(ADC_MAIN, ENABLE);
+  LL_ADC_SetSamplingTimeCommonChannels(ADC_MAIN, ADC_SAMPTIME);
 
-  // enable DMA for ADC
-  ADC_DMACmd(ADC_MAIN, ENABLE);
+  // Enable ADC
+  LL_ADC_Enable(ADC_MAIN);
 
-  // -- init dma --
+  /* Wait for ADC ready */
+  while (LL_ADC_IsActiveFlag_ADRDY(ADC_MAIN) == 0);
 
-  // reset DMA1 channe1 to default values
-  DMA_DeInit(ADC_DMA_Channel);
+  // reset DMA channel to default values
+  LL_DMA_DeInit(DMA1, ADC_DMA_Channel_CH);
 
   ADC_DMA_Channel->CPAR = (uint32_t) &ADC_MAIN->DR;
   ADC_DMA_Channel->CMAR = (uint32_t)&adcValues[FIRST_ANALOG_ADC];
   ADC_DMA_Channel->CNDTR = NUM_ANALOGS;
-  ADC_DMA_Channel->CCR = DMA_MemoryInc_Enable
-                              | DMA_M2M_Disable
-                              | DMA_Mode_Circular
-                              | DMA_Priority_High
-                              | DMA_DIR_PeripheralSRC
-                              | DMA_PeripheralInc_Disable
-                              | DMA_PeripheralDataSize_HalfWord
-                              | DMA_MemoryDataSize_HalfWord;
+  ADC_DMA_Channel->CCR = LL_DMA_MEMORY_INCREMENT
+                        | LL_DMA_MODE_CIRCULAR
+                        | LL_DMA_PRIORITY_HIGH
+                        | LL_DMA_DIRECTION_PERIPH_TO_MEMORY
+                        | LL_DMA_PERIPH_NOINCREMENT
+                        | LL_DMA_PDATAALIGN_HALFWORD
+                        | LL_DMA_MDATAALIGN_HALFWORD;
 
   // enable the DMA1 - Channel1
-  DMA_Cmd(ADC_DMA_Channel, ENABLE);
+  LL_DMA_EnableChannel(DMA1, ADC_DMA_Channel_CH);
 
   // start conversion:
   adc_dma_arm();
@@ -135,7 +136,7 @@ void adcInit()
 void adcRead()
 {
   // adc dma finished?
-  if (DMA_GetITStatus(ADC_DMA_TC_FLAG))
+  if (LL_DMA_IsActiveFlag_TC1(DMA1))
   {
 
 #if NUM_PWMANALOGS > 0

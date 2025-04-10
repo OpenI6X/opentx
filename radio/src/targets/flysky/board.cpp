@@ -38,15 +38,13 @@ extern volatile uint32_t g_pfnVectors[VECTOR_TABLE_SIZE];
 //audio
 void buzzerInit()
 {
-  GPIO_InitTypeDef gpio_init;
-  gpio_init.GPIO_Pin = BUZZER_GPIO_PIN;
-  gpio_init.GPIO_Mode = GPIO_Mode_AF;
-  gpio_init.GPIO_OType = GPIO_OType_PP;
-  gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_Init(BUZZER_GPIO_PORT, &gpio_init);
-
-  GPIO_PinAFConfig(BUZZER_GPIO_PORT, BUZZER_GPIO_PinSource, GPIO_AF_2);
+  LL_GPIO_InitTypeDef gpio_init = {0};
+  gpio_init.Pin        = BUZZER_GPIO_PIN;
+  gpio_init.Mode       = LL_GPIO_MODE_ALTERNATE;
+  gpio_init.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  gpio_init.Pull       = LL_GPIO_PULL_NO;
+  gpio_init.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  LL_GPIO_Init(BUZZER_GPIO_PORT, &gpio_init);
 }
 
 #define __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH()  do {SYSCFG->CFGR1 &= ~(SYSCFG_CFGR1_MEM_MODE); \
@@ -57,7 +55,7 @@ void SystemBootloaderJump() {
     typedef void (*pFunction)(void);
     pFunction JumpToApplication;
 
-    RCC_DeInit();
+    LL_RCC_DeInit();
 
     SysTick->CTRL = 0;
     SysTick->LOAD = 0;
@@ -92,13 +90,13 @@ void watchdogInit(unsigned int duration)
 void initBuzzerTimer()
 {
   PWM_TIMER->PSC = 48 - 1; // 48MHz -> 1MHz
-  PWM_TIMER->CR1 &= ~(TIM_CR1_DIR | TIM_CR1_CMS | TIM_CR1_CKD);
-  PWM_TIMER->CR1 |= TIM_CounterMode_Up | TIM_CKD_DIV1;
+  PWM_TIMER->CR1 &= ~(LL_TIM_COUNTERMODE_DOWN | LL_TIM_COUNTERMODE_CENTER_UP_DOWN | TIM_CR1_CKD);
+  PWM_TIMER->CR1 |= LL_TIM_COUNTERMODE_UP | LL_TIM_CLOCKDIVISION_DIV1;
   PWM_TIMER->ARR = 400; // count up to
   PWM_TIMER->CCR1 = 200; // ARR/2 = PWM duty 50%
   // PWM_TIMER->RCR = 0;
-  PWM_TIMER->CCMR1 |= TIM_OCMode_PWM1;
-  PWM_TIMER->CCER |= TIM_OCPolarity_Low | TIM_CCER_CC1E; // TIM_OCPOLARITY_LOW + enable Capture compare channel
+  PWM_TIMER->CCMR1 |= LL_TIM_OCMODE_PWM1;
+  PWM_TIMER->CCER |= LL_TIM_OCPOLARITY_LOW | LL_TIM_CHANNEL_CH1;
   PWM_TIMER->BDTR |= TIM_BDTR_MOE;
 }
 
@@ -114,9 +112,9 @@ void boardInit()
 #endif
 
 #if !defined(SIMU)
-  RCC_AHBPeriphClockCmd(RCC_AHB1_LIST, ENABLE);
-  RCC_APB1PeriphClockCmd(RCC_APB1_LIST, ENABLE);
-  RCC_APB2PeriphClockCmd(RCC_APB2_LIST, ENABLE);
+  LL_AHB1_GRP1_EnableClock(RCC_AHB1_GRP1_LIST);
+  LL_APB1_GRP1_EnableClock(RCC_APB1_GRP1_LIST);
+  LL_APB1_GRP2_EnableClock(RCC_APB1_GRP2_LIST);
 
   pwrInit();
   keysInit();
@@ -146,7 +144,14 @@ void boardInit()
   usbInit();
 
 #if defined(DEBUG)
-  DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP | DBGMCU_TIM1_STOP | DBGMCU_TIM2_STOP | DBGMCU_TIM3_STOP | DBGMCU_TIM6_STOP | DBGMCU_TIM14_STOP, ENABLE);
+  LL_DBGMCU_APB1_GRP2_FreezePeriph(LL_DBGMCU_APB1_GRP2_TIM1_STOP);
+  LL_DBGMCU_APB1_GRP1_FreezePeriph(
+      LL_DBGMCU_APB1_GRP1_IWDG_STOP |
+      LL_DBGMCU_APB1_GRP1_TIM2_STOP |
+      LL_DBGMCU_APB1_GRP1_TIM3_STOP |
+      LL_DBGMCU_APB1_GRP1_TIM6_STOP |
+      LL_DBGMCU_APB1_GRP1_TIM14_STOP
+  );
 #endif
 
   backlightInit();

@@ -169,18 +169,18 @@ uint32_t switchState(uint8_t index)
 
 void keysInit()
 {
-  // RCC_AHBPeriphClockCmd(KEYS_RCC_AHB1Periph, ENABLE);
-  GPIO_InitTypeDef gpio_init;
-  //default state is low
-  gpio_init.GPIO_Mode = GPIO_Mode_IN;
-  gpio_init.GPIO_OType = GPIO_OType_PP;
-  gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
-  gpio_init.GPIO_PuPd = GPIO_PuPd_UP;
-  gpio_init.GPIO_Pin = KEYS_LINES_PINS;
-  GPIO_Init(KEYS_MATRIX_LINES_GPIO, &gpio_init);
-  gpio_init.GPIO_Mode = GPIO_Mode_OUT;
-  gpio_init.GPIO_Pin = KEYS_COLUMNS_PINS;
-  GPIO_Init(KEYS_MATRIX_COLUMNS_GPIO, &gpio_init);
-  //set to height
+  LL_GPIO_InitTypeDef gpio_init = {0};
+  // Configure lines as input with pull-up (default state is low)
+  gpio_init.Pin   = KEYS_LINES_PINS;
+  gpio_init.Mode  = LL_GPIO_MODE_INPUT;
+  gpio_init.Pull  = LL_GPIO_PULL_UP;
+  gpio_init.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  LL_GPIO_Init(KEYS_MATRIX_LINES_GPIO, &gpio_init);
+  // Configure columns as output (default state is low)
+  gpio_init.Pin   = KEYS_COLUMNS_PINS;
+  gpio_init.Mode  = LL_GPIO_MODE_OUTPUT;
+  gpio_init.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  LL_GPIO_Init(KEYS_MATRIX_COLUMNS_GPIO, &gpio_init);
+  //set to high
   KEYS_MATRIX_COLUMNS_GPIO->BSRR = KEYS_COLUMNS_PINS;
 }

@@ -30,6 +30,7 @@ if(PCB STREQUAL I6X)
   set(DEFAULT_TEMPLATE_SETUP "0" CACHE STRING "Default channel order")
 
   add_definitions(-DSTM32F072)
+  add_definitions(-DSTM32F072xB)
   add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
   add_definitions(-DEEPROM_VARIANT=0)
   add_definitions(-DSOFTWARE_VOLUME)

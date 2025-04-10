@@ -23,11 +23,7 @@
 #define _USB_CONF_H_
 
 #if defined(STM32F0)
-  #include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/CMSIS/Device/ST/STM32F0xx/Include/stm32f0xx.h"
-#elif defined(STM32F4)
-  #include "STM32F4xx_DSP_StdPeriph_Lib_V1.4.0/Libraries/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h"
-#else
-  #include "STM32F2xx_StdPeriph_Lib_V1.1.0/Libraries/CMSIS/Device/ST/STM32F2xx/Include/stm32f2xx.h"
+  #include "CMSIS/Device/ST/STM32F0xx/Include/stm32f0xx.h"
 #endif
 
 #if defined(STM32F0)

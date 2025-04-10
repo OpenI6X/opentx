@@ -218,9 +218,9 @@ int main() {
 
   wdt_reset();
 #if defined(PCBI6X)
-  RCC_AHBPeriphClockCmd(RCC_AHB1_LIST, ENABLE);
-  RCC_APB1PeriphClockCmd(RCC_APB1_LIST, ENABLE);
-  RCC_APB2PeriphClockCmd(RCC_APB2_LIST, ENABLE);
+  LL_AHB1_GRP1_EnableClock(RCC_AHB1_GRP1_LIST);
+  LL_APB1_GRP1_EnableClock(RCC_APB1_GRP1_LIST);
+  LL_APB1_GRP2_EnableClock(RCC_APB1_GRP2_LIST);
 #else
   RCC_AHB1PeriphClockCmd(PWR_RCC_AHB1Periph | KEYS_RCC_AHB1Periph |
                              LCD_RCC_AHB1Periph | BACKLIGHT_RCC_AHB1Periph |

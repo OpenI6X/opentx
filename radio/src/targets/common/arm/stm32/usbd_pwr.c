@@ -192,14 +192,16 @@ void Leave_LowPowerMode(void)
 {
 #if defined USB_CLOCK_SOURCE_CRS
   /* Enable HSI48 oscillator */
-  RCC_HSI48Cmd(ENABLE);
+  LL_RCC_HSI48_Enable();
   
   /* Wait till HSI48RDYF is set */
-  while(RCC_GetFlagStatus(RCC_FLAG_HSI48RDY) == RESET)
-  {
-  }
-  /* Select HSI48 as system clock source */
-  RCC_SYSCLKConfig(RCC_SYSCLKSource_HSI48);
+  while (!LL_RCC_HSI48_IsReady()) {}
+
+  // Set the system clock source to HSI48
+  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI48);
+
+  // Wait until the system clock source is updated
+  while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI48) {}
   
 #else
 
@@ -228,7 +230,7 @@ void Leave_LowPowerMode(void)
 #endif /* USB_CLOCK_SOURCE_CRS */
   
   /*Low Power Sleep on Exit Disabled*/
-  NVIC_SystemLPConfig(NVIC_LP_SLEEPONEXIT, DISABLE);
+  SCB->SCR &= ~(SCB_SCR_SLEEPONEXIT_Msk);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -36,22 +36,39 @@ extern "C" {
 #pragma clang diagnostic ignored "-Wdeprecated-register"
 #endif
 
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/CMSIS/Device/ST/STM32F0xx/Include/stm32f0xx.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_crs.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_rcc.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_gpio.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_tim.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_adc.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_spi.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_i2c.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_rtc.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_pwr.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_dma.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_usart.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_flash.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_dbgmcu.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_misc.h"
-#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_crc.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/CMSIS/Device/ST/STM32F0xx/Include/stm32f0xx.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_crs.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_rcc.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_gpio.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_tim.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_adc.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_spi.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_i2c.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_rtc.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_pwr.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_dma.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_usart.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_flash.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_dbgmcu.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_misc.h"
+//#include "STM32F0xx_StdPeriph_Lib_V1.5.0/Libraries/STM32F0xx_StdPeriph_Driver/inc/stm32f0xx_crc.h"
+
+//#include "CMSIS/Device/ST/STM32F0xx/Include/stm32f0xx.h"
+#include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_crs.h"
+#include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_rcc.h"
+#include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_gpio.h"
+#include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_tim.h"
+#include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_adc.h"
+#include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_spi.h"
+#include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_i2c.h"
+#include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_rtc.h"
+#include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_pwr.h"
+#include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_dma.h"
+#include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_usart.h"
+// #include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_flash.h"
+// #include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_dbgmcu.h"
+// #include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_misc.h"
+#include "STM32F0xx_HAL_Driver/Inc/stm32f0xx_ll_crc.h"
 
 #if __clang__
 // Restore warnings about registers
@@ -185,7 +202,7 @@ uint32_t isBootloaderStart(const uint8_t * buffer);
 #define EXTERNAL_MODULE_OFF()           EXTMODULE_PWR_GPIO->BRR = EXTMODULE_PWR_GPIO_PIN // GPIO_ResetBits(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN)
 #endif
 
-#define IS_EXTERNAL_MODULE_ON()         (GPIO_ReadInputDataBit(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN) == Bit_SET)
+#define IS_EXTERNAL_MODULE_ON()         (LL_GPIO_IsInputPinSet(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN) == SET)
 
 void extmoduleSendNextFrame();
 
@@ -296,9 +313,9 @@ uint32_t readTrims(void);
 #endif
 #define wdt_disable()
 void watchdogInit(unsigned int duration);
-#define WAS_RESET_BY_SOFTWARE()             (RCC_GetFlagStatus(RCC_FLAG_SFTRST))
-#define WAS_RESET_BY_WATCHDOG()             (RCC_GetFlagStatus(RCC_FLAG_WWDGRST) || RCC_GetFlagStatus(RCC_FLAG_IWDGRST) )
-#define WAS_RESET_BY_WATCHDOG_OR_SOFTWARE() (RCC_GetFlagStatus(RCC_FLAG_SFTRST) || RCC_GetFlagStatus(RCC_FLAG_WWDGRST) || RCC_GetFlagStatus(RCC_FLAG_IWDGRST))
+#define WAS_RESET_BY_SOFTWARE()             (LL_RCC_IsActiveFlag_SFTRST())
+#define WAS_RESET_BY_WATCHDOG()             (LL_RCC_IsActiveFlag_WWDGRST() || LL_RCC_IsActiveFlag_IWDGRST() )
+#define WAS_RESET_BY_WATCHDOG_OR_SOFTWARE() (LL_RCC_IsActiveFlag_SFTRST() || LL_RCC_IsActiveFlag_WWDGRST() || LL_RCC_IsActiveFlag_IWDGRST())
 
 // ADC driver
 enum Analogs {

@@ -21,17 +21,17 @@
 #include "opentx.h"
 
 void pwrInit() {
-  GPIO_InitTypeDef GPIO_InitStructure;
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  // Init EXT Module PWR
-  GPIO_InitStructure.GPIO_Pin = EXTMODULE_PWR_GPIO_PIN;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-
-  GPIO_ResetBits(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN);
-  GPIO_Init(EXTMODULE_PWR_GPIO, &GPIO_InitStructure);
+  // Configure EXT Module Power pin as output
+  GPIO_InitStruct.Pin        = EXTMODULE_PWR_GPIO_PIN;
+  GPIO_InitStruct.Mode       = LL_GPIO_MODE_OUTPUT;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
+  // Reset EXT Module Power pin (set to low)
+  LL_GPIO_ResetOutputPin(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN);
+  LL_GPIO_Init(EXTMODULE_PWR_GPIO, &GPIO_InitStruct);
 
   pwrOn();
 }
