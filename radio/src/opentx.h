@@ -728,7 +728,7 @@ extern const char vers_stamp[];
 /**
  * Tries to find opentx version in the first 1024 byte of either firmware/bootloader (the one not running) or the buffer
  * @param buffer If non-null find the firmware version in the buffer instead
- * @return The opentx version string starting with "opentx-" or "no version found" if the version string is not found
+ * @return The opentx version string starting with "opentx-" or "-" if the version string is not found
  */
 const char* getOtherVersion(const char* buffer = nullptr);
 
