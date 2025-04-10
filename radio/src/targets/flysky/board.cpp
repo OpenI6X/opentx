@@ -88,9 +88,9 @@ void boardInit()
 #endif
 
 #if !defined(SIMU)
-  LL_AHB1_GRP1_EnableClock(RCC_AHB1_LIST);
-  LL_APB1_GRP1_EnableClock(RCC_APB1_LIST);
-  LL_APB1_GRP2_EnableClock(RCC_APB2_LIST);
+  LL_AHB1_GRP1_EnableClock(RCC_AHB1_GRP1_LIST);
+  LL_APB1_GRP1_EnableClock(RCC_APB1_GRP1_LIST);
+  LL_APB1_GRP2_EnableClock(RCC_APB1_GRP2_LIST);
 
   pwrInit();
   keysInit();
