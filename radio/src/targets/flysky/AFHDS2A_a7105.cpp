@@ -269,7 +269,7 @@ SendBIND_:  //--------------------------------------------------------------
   goto Send_;
 EndSendBIND123_:  //-----------------------------------------------------------
   A7105_SetPower();
-  A7105_SetTxRxMode(TXRX_OFF);  // Turn LNA off since we are in near range and we want to prevent swamping
+  A7105_SetTxRxMode((packet_count & 0x40) ? TXRX_OFF : RX_EN);  // Turn LNA off time to time since we are in near range and we want to prevent swamping
   A7105_Strobe(A7105_RX);
   EnableGIO();
   RadioState++;
