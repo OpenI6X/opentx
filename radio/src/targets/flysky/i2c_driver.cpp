@@ -46,7 +46,7 @@ void i2cInit()
   GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
   GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
-  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_MEDIUM;
   LL_GPIO_Init(I2C_GPIO, &GPIO_InitStruct);
 }
 
