@@ -17,6 +17,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+#if !defined(SIMU)
+#include "stm32_hal.h"
+#include "stm32_hal_ll.h"
+#endif
 
 #include "opentx.h"
 
