@@ -51,6 +51,16 @@ void preModelLoad()
   }
 
   pauseMixerCalculations();
+
+#if defined(HARDWARE_INTERNAL_MODULE)
+  stopPulsesInternalModule();
+#endif
+#if defined(HARDWARE_EXTERNAL_MODULE)
+  stopPulsesExternalModule();
+#endif
+//#if defined(TRAINER_GPIO)
+//   stopTrainer();
+//#endif
 }
 
 void postModelLoad(bool alarms)

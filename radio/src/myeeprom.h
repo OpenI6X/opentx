@@ -38,9 +38,9 @@
 #define EEPROM_VER 222
 #define FIRST_CONV_EEPROM_VER 216
 
-#define GET_PPM_POLARITY(idx) g_model.moduleData[idx].ppm.pulsePol
+#define GET_MODULE_PPM_POLARITY(idx) g_model.moduleData[idx].ppm.pulsePol
 #define GET_SBUS_POLARITY(idx) g_model.moduleData[idx].sbus.noninverted
-#define GET_PPM_DELAY(idx) (g_model.moduleData[idx].ppm.delay * 50 + 300)
+#define GET_MODULE_PPM_DELAY(idx) (g_model.moduleData[idx].ppm.delay * 50 + 300)
 #define SET_DEFAULT_PPM_FRAME_LENGTH(idx) g_model.moduleData[idx].ppm.frameLength = 4 * max((int8_t)0, g_model.moduleData[idx].channelsCount)
 
 #if defined(PCBHORUS)
@@ -271,29 +271,6 @@ enum SwashType {
 #define IS_MANUAL_RESET_TIMER(idx) (g_model.timers[idx].persistent == 2)
 
 #define TIMER_COUNTDOWN_START(x) (g_model.timers[x].countdownStart > 0 ? 5 : 10 - g_model.timers[x].countdownStart * 10)
-
-enum ChannelsProtocols {
-  PROTOCOL_CHANNELS_UNINITIALIZED,
-  PROTOCOL_CHANNELS_NONE,
-  PROTOCOL_CHANNELS_PPM,
-#if defined(PXX) || defined(DSM2)
-  PROTO_PXX,
-#endif
-#if defined(DSM2)
-  PROTO_DSM2_LP45,
-  PROTO_DSM2_DSM2,
-  PROTO_DSM2_DSMX,
-#endif
-  PROTOCOL_CHANNELS_CROSSFIRE,
-  PROTOCOL_CHANNELS_MULTIMODULE,
-  PROTOCOL_CHANNELS_SBUS,
-#if defined(PXX2)
-  PROTO_PXX2,
-#endif
-#if defined(PCBI6X)
-  PROTOCOL_CHANNELS_AFHDS2A_SPI
-#endif
-};
 
 #if defined(PXX2)
 #define PROTO_PXX_EXTERNAL_MODULE PROTO_PXX2

@@ -30,12 +30,18 @@ void init_trainer_capture() {
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;  // erfly6: GPIO_PuPd_UP
   GPIO_Init(TRAINER_GPIO, &GPIO_InitStructure);
+
+  extmoduleTimerStart();
 }
 
 void stop_trainer_capture()
 {
   // disable PPM input capture
-  // nothing to do because it would stop EXTMODULE_TIMER
+  CLEAR_BIT(EXTMODULE_TIMER->DIER, TIM_DIER_CC1IE);
+  CLEAR_BIT(EXTMODULE_TIMER->CCER, TIM_CCER_CC1E);
+
+  // Keep timer running because PPM OUT uses the same timer
+  // NVIC_DisableIRQ(EXTMODULE_TIMER_IRQn);
 }
 
 #if defined(SBUS_TRAINER)

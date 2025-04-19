@@ -24,11 +24,7 @@
 #define MODEL_SPECIAL_FUNC_2ND_COLUMN          (4*FW-1)
 #define MODEL_SPECIAL_FUNC_3RD_COLUMN          (15*FW-3)
 #define MODEL_SPECIAL_FUNC_4TH_COLUMN          (20*FW)
-#if defined(GRAPHICS)
-  #define MODEL_SPECIAL_FUNC_4TH_COLUMN_ONOFF  (20*FW)
-#else
-  #define MODEL_SPECIAL_FUNC_4TH_COLUMN_ONOFF  (18*FW+2)
-#endif
+#define MODEL_SPECIAL_FUNC_4TH_COLUMN_ONOFF    (20*FW)
 
 #if defined(SDCARD)
 void onCustomFunctionsFileSelectionMenu(const char * result)
@@ -115,19 +111,18 @@ void onCustomFunctionsMenu(const char * result)
     eeFlags = EE_GENERAL;
   }
 
+#if defined(CLIPBOARD)
   if (result == STR_COPY) {
-	#if defined(SDCARD)
     clipboard.type = CLIPBOARD_TYPE_CUSTOM_FUNCTION;
     clipboard.data.cfn = *cfn;
-	#endif
   }
   else if (result == STR_PASTE) {
-	#if defined(SDCARD)
     *cfn = clipboard.data.cfn;
     storageDirty(eeFlags);
-	#endif
   }
-  else if (result == STR_CLEAR) {
+  else
+#endif
+  if (result == STR_CLEAR) {
     memset(cfn, 0, sizeof(CustomFunctionData));
     storageDirty(eeFlags);
   }
@@ -164,8 +159,8 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
 #endif
     killEvents(event);
     CustomFunctionData *cfn = &functions[sub];
+#if defined(CLIPBOARD)
     if (!CFN_EMPTY(cfn))
-#if !defined(PCBI6X)
       POPUP_MENU_ADD_ITEM(STR_COPY);
     if (clipboard.type == CLIPBOARD_TYPE_CUSTOM_FUNCTION && isAssignableFunctionAvailable(clipboard.data.cfn.func))
       POPUP_MENU_ADD_ITEM(STR_PASTE);
@@ -195,7 +190,7 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
     uint8_t func = CFN_FUNC(cfn);
     for (uint32_t j=0; j<5; j++) {
       uint8_t attr = ((sub==k && menuHorizontalPosition==j) ? ((s_editMode>0) ? BLINK|INVERS : INVERS) : 0);
-      uint8_t active = (attr && (s_editMode>0 || p1valdiff));
+      uint8_t active = (attr && s_editMode > 0);
       switch (j) {
         case 0:
           if (sub==k && menuHorizontalPosition < 1 && CFN_SWITCH(cfn) == SWSRC_NONE) {

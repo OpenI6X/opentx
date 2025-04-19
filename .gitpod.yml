@@ -1,0 +1,7 @@
+# .gitpod.yml
+image:
+  file: Dockerfile
+
+tasks:
+  - init: echo 'Welcome!'
+  - command: mkdir build && cd build

@@ -70,7 +70,7 @@ struct ParamFunctions {
   void (*display)(Parameter*, uint8_t, uint8_t);
 };
 
-static constexpr uint16_t BUFFER_SIZE = 552;
+static constexpr uint16_t BUFFER_SIZE = 720;
 static uint8_t *buffer = &reusableBuffer.cToolData[0];
 static uint16_t bufferOffset = 0;
 

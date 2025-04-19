@@ -339,7 +339,7 @@ getvalue_t getValue(mixsrc_t i)
   else if ((i >= MIXSRC_FIRST_SWITCH) && (i <= MIXSRC_LAST_SWITCH)) {
     mixsrc_t sw = i-MIXSRC_FIRST_SWITCH;
     if (SWITCH_EXISTS(sw)) {
-      return (switchState(3*sw) ? -1024 : (switchState(3*sw+1) ? 0 : 1024));
+      return (switchState(3*sw) ? -1024 : (IS_CONFIG_3POS(sw) && switchState(3*sw+1) ? 0 : 1024));
     }
     else {
       return 0;
@@ -960,7 +960,7 @@ void evalMixes(uint8_t tick10ms)
   // must be done after mixing because some functions use the inputs/channels values
   // must be done before limits because of the applyLimit function: it checks for safety switches which would be not initialized otherwise
   if (tick10ms) {
-#if !defined(PCBI6X)
+#if defined(AUDIO)
     requiredSpeakerVolume = g_eeGeneral.speakerVolume + VOLUME_LEVEL_DEF;
 #endif
     requiredBacklightBright = g_eeGeneral.backlightBright;

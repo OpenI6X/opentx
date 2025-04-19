@@ -31,6 +31,13 @@
   #define trainer_pulse_duration_t     uint16_t
 #endif
 
+enum ModuleSettingsMode
+{
+  MODULE_MODE_NORMAL,
+  MODULE_MODE_RANGECHECK,
+  MODULE_MODE_BIND
+};
+
 template <class T, int SIZE>
 class DataBuffer {
   public:

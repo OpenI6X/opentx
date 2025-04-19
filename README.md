@@ -1,6 +1,8 @@
-![OpenI6X](https://circleci.com/gh/OpenI6X/opentx.svg?style=shield)
 [![Release](https://img.shields.io/github/v/release/OpenI6X/opentx?include_prereleases)](https://github.com/OpenI6X/opentx/releases/latest)
 [![GitHub all releases](https://img.shields.io/github/downloads/OpenI6X/opentx/total)](https://github.com/OpenI6X/opentx/releases)
+[![GitHub license](https://img.shields.io/github/license/OpenI6X/opentx)](https://github.com/openi6x/opentx/blob/master/LICENSE)
+![OpenI6X](https://circleci.com/gh/OpenI6X/opentx.svg?style=shield)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/openi6x/opentx/tree/master)
 [![Discord](https://img.shields.io/discord/973289741862727741.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/3vKfYNTVa2)
 
 ![Banner](https://github.com/OpenI6X/opentx/blob/master/doc/flysky/banner.png?raw=true)
@@ -19,13 +21,13 @@ Join our [Discord](https://discord.gg/3vKfYNTVa2), [RCGroups](https://www.rcgrou
 
 ## Comparison
 
-| Feature                   | FlySky i6X | OpenTX i6X                   |
+| Feature                   | FlySky i6X | OpenI6X                      |
 |---------------------------|------------|------------------------------|
 | Channels                  | 6/10       | 16                           |
 | Mixers                    | 3          | 32                           |
-| Models                    | 20         | 16 / unlimited<sup>[1]</sup> |
-| Protocols                 | AFHDS, AFHDS2A, PPM | AFHDS2A + 16Ch modes, PPM, CRSF (CRSFshot)  |
-| Trainer                   | PPM        | SBUS, PPM                    |
+| Models                    | 20         | 20 / unlimited<sup>[1]</sup> |
+| Protocols                 | AFHDS, AFHDS2A, PPM | AFHDS2A + 16Ch modes, PPM, CRSF |
+| Trainer                   | PPM        | PPM, SBUS                    |
 | Timers                    | _          | ✓                            |
 | Voice annoucements        | _          | ✓<sup>[2]</sup>              |
 | Variometer                | _          | ✓                            |
@@ -33,7 +35,7 @@ Join our [Discord](https://discord.gg/3vKfYNTVa2), [RCGroups](https://www.rcgrou
 | Adjustable screen brightness | _       | ✓<sup>[3]</sup>              |
 | USB Modes                 | Joystick   | Joystick, Storage, Serial (Telemetry mirror, Debug) |
 | AUX Serial port           | _          | ✓ SBUS Trainer, Telemetry mirror, Debug |
-| FlySky FS-HZCZ03-ADJ Digital Gimbal support | _   | ✓<sup>[4]</sup>    |
+| FlySky FS-HZCZ03-ADJ Gimbal support | _   | ✓<sup>[4]</sup>    |
 | Languages                 | EN, CN      | PL, EN, CZ, DE, ES, FI, FR, IT, NL, PT, SE |
 
 <sub>[1] Unlimited by using USB mass storage mode eeprom backup/restore.</sub><br>

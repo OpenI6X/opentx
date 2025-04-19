@@ -100,7 +100,7 @@ extern uint8_t telemetryState;
 #define TELEMETRY_SERIAL_DEFAULT       0
 #define TELEMETRY_SERIAL_8E2           1
 #define TELEMETRY_SERIAL_WITHOUT_DMA   2
-#define TELEMETRY_OUTPUT_BUFFER_SIZE   64
+#define TELEMETRY_OUTPUT_BUFFER_SIZE   32 // 64
 #define TELEMETRY_AVERAGE_COUNT        3
 
 #if defined(CROSSFIRE) || defined(MULTIMODULE) || defined(AFHDS2A)

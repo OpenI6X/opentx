@@ -20,9 +20,9 @@
 
 #include "opentx.h"
 
-constexpr coord_t CHANNEL_NAME_OFFSET = 1;
-constexpr coord_t CHANNEL_VALUE_OFFSET = CHANNEL_NAME_OFFSET + 42;
-constexpr coord_t CHANNEL_GAUGE_OFFSET = CHANNEL_VALUE_OFFSET;
+constexpr coord_t CHANNEL_NAME_OFFSET = 0;
+constexpr coord_t CHANNEL_VALUE_OFFSET = CHANNEL_NAME_OFFSET + 43;
+constexpr coord_t CHANNEL_GAUGE_OFFSET = CHANNEL_VALUE_OFFSET - 1;
 constexpr coord_t CHANNEL_BAR_WIDTH = 70;
 constexpr coord_t CHANNEL_PROPERTIES_OFFSET = CHANNEL_GAUGE_OFFSET + CHANNEL_BAR_WIDTH + 2;
 
@@ -43,26 +43,22 @@ constexpr coord_t CHANNEL_PROPERTIES_OFFSET = CHANNEL_GAUGE_OFFSET + CHANNEL_BAR
 #define EVT_KEY_PREVIOUS_PAGE          EVT_KEY_BREAK(KEY_LEFT)
 #endif
 
+static bool mixersView = false;
+
 void menuChannelsViewCommon(event_t event)
 {
-  bool newLongNames = false;
-
   uint8_t ch;
 
   switch (event) {
-    case EVT_ENTRY:
-      memclear(&reusableBuffer.viewChannels, sizeof(reusableBuffer.viewChannels));
-      break;
-
     case EVT_KEY_FIRST(KEY_ENTER):
-      reusableBuffer.viewChannels.mixersView = !reusableBuffer.viewChannels.mixersView;
+      mixersView = !mixersView;
       break;
   }
 
   ch = 8 * (g_eeGeneral.view / ALTERNATE_VIEW);
 
   // Screen title
-  lcdDrawText(LCD_W / 2, 0, reusableBuffer.viewChannels.mixersView ? STR_MIXERS_MONITOR : STR_CHANNELS_MONITOR, CENTERED);
+  lcdDrawText(LCD_W / 2, 0, mixersView ? STR_MIXERS_MONITOR : STR_CHANNELS_MONITOR, CENTERED);
   lcdInvertLine(0);
 
   int16_t limits = 512 * 2;
@@ -71,13 +67,11 @@ void menuChannelsViewCommon(event_t event)
   for (uint32_t line = 0; line < 8; line++) {
     LimitData * ld = limitAddress(ch);
     const uint8_t y = 9 + line * 7;
-    const int32_t val = reusableBuffer.viewChannels.mixersView ? ex_chans[ch] : channelOutputs[ch];
+    const int32_t val = mixersView ? ex_chans[ch] : channelOutputs[ch];
     const uint8_t lenLabel = ZLEN(g_model.limitData[ch].name);
 
     // Channel name if present, number if not
     if (lenLabel > 0) {
-      if (lenLabel > 4)
-        reusableBuffer.viewChannels.longNames = true;
       lcdDrawSizedText(CHANNEL_NAME_OFFSET, y, g_model.limitData[ch].name, sizeof(g_model.limitData[ch].name), ZCHAR | SMLSIZE);
     }
     else {
@@ -85,18 +79,12 @@ void menuChannelsViewCommon(event_t event)
     }
 
     // Value
-#if defined(PPM_UNIT_US)
-      lcdDrawNumber(CHANNEL_VALUE_OFFSET, y + 1, PPM_CH_CENTER(ch) + val / 2, TINSIZE | RIGHT);
-#elif defined(PPM_UNIT_PERCENT_PREC1)
-      lcdDrawNumber(CHANNEL_VALUE_OFFSET, y + 1, calcRESXto1000(val), PREC1 | TINSIZE | RIGHT);
-#else
-      lcdDrawNumber(CHANNEL_VALUE_OFFSET, y + 1, calcRESXto1000(val) / 10, TINSIZE | RIGHT);
-#endif
+    drawChannelValue(CHANNEL_VALUE_OFFSET, y + 1, ch, val, TINSIZE | RIGHT);
 
-      // Gauge
-      drawGauge(CHANNEL_GAUGE_OFFSET, y, CHANNEL_BAR_WIDTH, 6, val, limits);
+    // Gauge
+    drawGauge(CHANNEL_GAUGE_OFFSET, y, CHANNEL_BAR_WIDTH, 6, val, limits);
 
-    if (!reusableBuffer.viewChannels.mixersView) {
+    if (!mixersView) {
       // Properties
 #if defined(OVERRIDE_CHANNEL_FUNCTION)
       if (safetyCh[ch] != OVERRIDE_CHANNEL_UNDEFINED)
@@ -110,8 +98,6 @@ void menuChannelsViewCommon(event_t event)
 
     ++ch;
   }
-
-  reusableBuffer.viewChannels.longNames = newLongNames;
 }
 
 void menuChannelsView(event_t event)

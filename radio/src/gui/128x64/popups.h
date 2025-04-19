@@ -134,7 +134,7 @@ enum
 
   inline bool isEventCaughtByPopup()
   {
-    if (warningText && warningType != WARNING_TYPE_WAIT)
+    if (warningText /*&& warningType != WARNING_TYPE_WAIT*/)
       return true;
 
     if (popupMenuItemsCount > 0)

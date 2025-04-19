@@ -25,7 +25,6 @@ tts_languages = {
 
 options_sky9x = {
     "heli": ("HELI", "YES", "NO"),
-    "ppmus": ("PPM_UNIT", "US", "PERCENT_PREC1"),
     "gvars": ("GVARS", "YES", "NO"),
     "potscroll": ("NAVIGATION", "POTS", "NO"),
     "autosource": ("AUTOSOURCE", "YES", "NO"),
@@ -46,7 +45,6 @@ options_sky9x = {
 
 options_ar9x = {
     "heli": ("HELI", "YES", "NO"),
-    "ppmus": ("PPM_UNIT", "US", "PERCENT_PREC1"),
     "gvars": ("GVARS", "YES", "NO"),
     "potscroll": ("NAVIGATION", "POTS", "NO"),
     "autosource": ("AUTOSOURCE", "YES", "NO"),
@@ -68,7 +66,6 @@ options_ar9x = {
 
 options_taranis = {
     "noheli": ("HELI", "NO", "YES"),
-    "ppmus": ("PPM_UNIT", "US", "PERCENT_PREC1"),
     "lua": ("LUA", "YES", "NO_MODEL_SCRIPTS"),
     "luac": ("LUA_COMPILER", "YES", "NO"),
     "haptic": ("HAPTIC", "YES", "NO"),
@@ -86,7 +83,6 @@ options_taranis = {
 
 options_taranisplus = {
     "noheli": ("HELI", "NO", "YES"),
-    "ppmus": ("PPM_UNIT", "US", "PERCENT_PREC1"),
     "lua": ("LUA", "YES", "NO_MODEL_SCRIPTS"),
     "luac": ("LUA_COMPILER", "YES", "NO"),
     "nogvars": ("GVARS", "NO", "YES"),
@@ -104,7 +100,6 @@ options_taranisplus = {
 
 options_xlite = {
     "noheli": ("HELI", "NO", "YES"),
-    "ppmus": ("PPM_UNIT", "US", "PERCENT_PREC1"),
     "lua": ("LUA", "YES", "NO_MODEL_SCRIPTS"),
     "luac": ("LUA_COMPILER", "YES", "NO"),
     "nogvars": ("GVARS", "NO", "YES"),
@@ -121,7 +116,6 @@ options_xlite = {
 
 options_taranisx9e = {
     "noheli": ("HELI", "NO", "YES"),
-    "ppmus": ("PPM_UNIT", "US", "PERCENT_PREC1"),
     "lua": ("LUA", "YES", "NO_MODEL_SCRIPTS"),
     "luac": ("LUA_COMPILER", "YES", "NO"),
     "nogvars": ("GVARS", "NO", "YES"),
@@ -139,7 +133,6 @@ options_taranisx9e = {
 
 options_x12s = {
     "noheli": ("HELI", "NO", "YES"),
-    "ppmus": ("PPM_UNIT", "US", "PERCENT_PREC1"),
     "lua": ("LUA", "YES", "NO_MODEL_SCRIPTS"),
     "luac": ("LUA_COMPILER", "YES", "NO"),
     "nogvars": ("GVARS", "NO", "YES"),
@@ -154,7 +147,6 @@ options_x12s = {
 
 options_x10 = {
     "noheli": ("HELI", "NO", "YES"),
-    "ppmus": ("PPM_UNIT", "US", "PERCENT_PREC1"),
     "lua": ("LUA", "YES", "NO_MODEL_SCRIPTS"),
     "luac": ("LUA_COMPILER", "YES", "NO"),
     "nogvars": ("GVARS", "NO", "YES"),

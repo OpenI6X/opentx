@@ -44,9 +44,9 @@ const uint8_t AFHDS2A_A7105_regs[] = {
 };
 
 void SPI_Write(uint8_t command)
-{//working OK
+{
 	while((SPI1->SR & SPI_SR_BSY));
-	*(__IO uint8_t *)&SPI1->DR = command;					//Write the first data item to be transmitted into the SPI_DR register (this clears the TXE flag).
+	*(__IO uint8_t *)&SPI1->DR = command;					// Write the first data item to be transmitted into the SPI_DR register (this clears the TXE flag).
 	#ifdef DEBUG_SPI
 		debug("%02X ",command);
 	#endif
@@ -95,18 +95,17 @@ inline void TX_RX_PutVal(uint32_t Val) {
 void A7105_AntSwitch(void) {
 	static uint8_t sw = 0;
 	switch (sw) {
-
-	case 0:
-		RF1_ClrVal();
-		RF0_SetVal();
-		sw = 1;
-		return;
-	case 1:
-		RF0_ClrVal();
-		RF1_SetVal();
-		sw = 0;
-		return;
-	}
+    case 0:
+      RF1_ClrVal();
+      RF0_SetVal();
+      sw = 1;
+      return;
+    case 1:
+      RF0_ClrVal();
+      RF1_SetVal();
+      sw = 0;
+      return;
+    }
 
 }
 
@@ -305,6 +304,7 @@ void A7105_Sleep(void) {
 
 #define ID_NORMAL  0x55201041 // used by Multiprotocol Module
 #define ID_NORMAL2 0x5475C52A // used by DeviationTX & erFly6
+
 void A7105_Init(void)
 {
 	uint8_t *A7105_Regs = 0;

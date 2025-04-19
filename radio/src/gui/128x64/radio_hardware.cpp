@@ -20,9 +20,19 @@
 
 #include "opentx.h"
 
+#define HW_SETTINGS_COLUMN1            30
+#define HW_SETTINGS_COLUMN2            (HW_SETTINGS_COLUMN1 + 5*FW)
+#define HW_SETTINGS_COLUMN3            HW_SETTINGS_COLUMN2 + FW
+
+#if defined(BATTGRAPH)
+  #define CASE_BATTGRAPH(x) x,
+#else
+  #define CASE_BATTGRAPH(x)
+#endif
+
 #if defined(PCBTARANIS) || defined(PCBI6X)
-enum MenuRadioHardwareItems {
-  ITEM_RADIO_HARDWARE_LABEL_STICKS,
+enum {
+  ITEM_RADIO_HARDWARE_LABEL_STICKS = 0,
   ITEM_RADIO_HARDWARE_STICK1,
   ITEM_RADIO_HARDWARE_STICK2,
   ITEM_RADIO_HARDWARE_STICK3,
@@ -41,10 +51,8 @@ enum MenuRadioHardwareItems {
 #if NUM_SWITCHES >= 6
   ITEM_RADIO_HARDWARE_SH,
 #endif
+  CASE_BATTGRAPH(ITEM_RADIO_HARDWARE_BATT_RANGE)
   ITEM_RADIO_HARDWARE_BATTERY_CALIB,
-#if defined(TX_CAPACITY_MEASUREMENT)
-  ITEM_RADIO_HARDWARE_CAPACITY_CALIB,
-#endif
   ITEM_RADIO_HARDWARE_SERIAL_BAUDRATE,
 #if defined(BLUETOOTH)
   ITEM_RADIO_HARDWARE_BLUETOOTH_MODE,
@@ -61,7 +69,7 @@ enum MenuRadioHardwareItems {
   ITEM_RADIO_HARDWARE_DEBUG,
 #endif
 #if defined(EEPROM_RLC)
-#if !defined(PCBI6X)
+#if defined(SDCARD)
   ITEM_RADIO_BACKUP_EEPROM,
 #endif
   ITEM_RADIO_FACTORY_RESET,
@@ -98,9 +106,6 @@ enum MenuRadioHardwareItems {
 #define SWITCH_TYPE_MAX(sw)            ((MIXSRC_SF-MIXSRC_FIRST_SWITCH == sw || MIXSRC_SH-MIXSRC_FIRST_SWITCH == sw) ? SWITCH_2POS : SWITCH_3POS)
 #endif
 
-#define HW_SETTINGS_COLUMN1            30
-#define HW_SETTINGS_COLUMN2            (30 + 5*FW)
-
 #if defined(EEPROM_RLC)
 void onFactoryResetConfirm(const char result)
 {
@@ -126,10 +131,8 @@ void menuRadioHardware(event_t event)
       POTS_ROWS,
     LABEL(Switches),
       SWITCHES_ROWS,
+    CASE_BATTGRAPH(1) 
     0 /* battery calib */,
-#if defined(TX_CAPACITY_MEASUREMENT)
-    0,
-#endif
 #if defined(CROSSFIRE)
     0 /* max bauds */,
 #endif
@@ -222,14 +225,24 @@ void menuRadioHardware(event_t event)
         break;
       }
 
-      case ITEM_RADIO_HARDWARE_BATTERY_CALIB:
-#if defined(PCBTARANIS) || defined(PCBI6X)
-        lcdDrawTextAlignedLeft(y, STR_BATT_CALIB);
-        putsVolts(HW_SETTINGS_COLUMN2, y, getBatteryVoltage(), attr|PREC2|LEFT);
-#else
-        lcdDrawTextAlignedLeft(MENU_HEADER_HEIGHT + 1 + (NUM_STICKS+NUM_POTS+NUM_SLIDERS+1)/2 * FH, STR_BATT_CALIB);
-        putsVolts(HW_SETTINGS_COLUMN2, y, g_vbat100mV, attr|LEFT);
+#if defined(BATTGRAPH)
+      case ITEM_RADIO_HARDWARE_BATT_RANGE:
+        lcdDrawTextAlignedLeft(y, STR_BATTERY_RANGE);
+        putsVolts(HW_SETTINGS_COLUMN3, y, 90+g_eeGeneral.vBatMin, (menuHorizontalPosition==0 ? attr : 0)|NO_UNIT);
+        lcdDrawChar(lcdNextPos, y, '-');
+        putsVolts(lcdNextPos, y, 120+g_eeGeneral.vBatMax, (menuHorizontalPosition>0 ? attr : 0)|NO_UNIT);
+        if (attr && s_editMode>0) {
+          if (menuHorizontalPosition==0)
+            CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMin, -60, g_eeGeneral.vBatMax+29); // min=3.0V
+          else
+            CHECK_INCDEC_GENVAR(event, g_eeGeneral.vBatMax, g_eeGeneral.vBatMin-29, +40); // max=16.0V
+        }
+        break;
 #endif
+
+      case ITEM_RADIO_HARDWARE_BATTERY_CALIB:
+        lcdDrawTextAlignedLeft(y, STR_BATT_CALIB);
+        putsVolts(HW_SETTINGS_COLUMN3, y, getBatteryVoltage(), attr|PREC2|LEFT);
         if (attr) {
           CHECK_INCDEC_GENVAR(event, g_eeGeneral.txVoltageCalibration, -127, 127);
         }
@@ -237,7 +250,7 @@ void menuRadioHardware(event_t event)
 
 #if defined(CROSSFIRE)
       case ITEM_RADIO_HARDWARE_SERIAL_BAUDRATE:
-        g_eeGeneral.telemetryBaudrate = editChoice(HW_SETTINGS_COLUMN2, y, STR_MAXBAUDRATE, "\004400k115k921k1.8M" /* 3.7M5.2M */, g_eeGeneral.telemetryBaudrate, 0, DIM(CROSSFIRE_BAUDRATES) - 1, attr, event);
+        g_eeGeneral.telemetryBaudrate = editChoice(HW_SETTINGS_COLUMN2, y, STR_MAXBAUDRATE, "\005400k 115k 921k 1.87M3.75M5.25M", g_eeGeneral.telemetryBaudrate, 0, DIM(CROSSFIRE_BAUDRATES) - 1, attr, event);
         if (attr) {
           storageDirty(EE_GENERAL);
           if (checkIncDec_Ret && IS_EXTERNAL_MODULE_ON()) {

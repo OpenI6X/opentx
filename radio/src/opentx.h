@@ -195,9 +195,9 @@
 
 #if defined(PCBI6X_ELRS)
 #if defined(CRSF_EXTENDED_TYPES)
-#define CTOOL_DATA_SIZE (552 + 44 + 216 + 8) // 820
+#define CTOOL_DATA_SIZE (720 + 44 + 216 + 8) // 988
 #else
-#define CTOOL_DATA_SIZE (552 + 44 + 180 + 8) // 784
+#define CTOOL_DATA_SIZE (720 + 44 + 180 + 8) // 952
 #endif
 #else
 #define CTOOL_DATA_SIZE 512 // minimize RAM usage for non PCBI6X_ELRS builds
@@ -727,7 +727,7 @@ extern const char vers_stamp[];
 /**
  * Tries to find opentx version in the first 1024 byte of either firmware/bootloader (the one not running) or the buffer
  * @param buffer If non-null find the firmware version in the buffer instead
- * @return The opentx version string starting with "opentx-" or "no version found" if the version string is not found
+ * @return The opentx version string starting with "opentx-" or "-" if the version string is not found
  */
 const char* getOtherVersion(const char* buffer = nullptr);
 
@@ -1171,12 +1171,6 @@ union ReusableBuffer
 #endif
 
   struct {
-    bool longNames;
-    bool secondPage;
-    bool mixersView;
-  } viewChannels;
-
-  struct {
     uint8_t maxNameLen;
   } modelFailsafe;
 
@@ -1279,7 +1273,7 @@ void usbPluggedIn();
 
 #include "lua/lua_api.h"
 
-#if defined(SDCARD)
+#if defined(CLIPBOARD)
 enum ClipboardType {
   CLIPBOARD_TYPE_NONE,
   CLIPBOARD_TYPE_CUSTOM_SWITCH,
@@ -1298,10 +1292,12 @@ struct Clipboard {
   union {
     LogicalSwitchData csw;
     CustomFunctionData cfn;
+#if defined(SDCARD)
     struct {
       char directory[CLIPBOARD_PATH_LEN];
       char filename[CLIPBOARD_PATH_LEN];
     } sd;
+#endif
   } data;
 };
 

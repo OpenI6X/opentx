@@ -35,7 +35,8 @@ RTOS_DEFINE_STACK(audioStack, AUDIO_STACK_SIZE);
 RTOS_MUTEX_HANDLE audioMutex;
 RTOS_MUTEX_HANDLE mixerMutex;
 
-void stackPaint() {
+void stackPaint() 
+{
   menusStack.paint();
   mixerStack.paint();
 #if defined(VOICE)
@@ -48,7 +49,8 @@ void stackPaint() {
 
 volatile uint16_t timeForcePowerOffPressed = 0;
 
-bool isForcePowerOffRequested() {
+bool isForcePowerOffRequested() 
+{
   if (pwrOffPressed()) {
     if (timeForcePowerOffPressed == 0) {
       timeForcePowerOffPressed = get_tmr10ms();
@@ -64,21 +66,39 @@ bool isForcePowerOffRequested() {
   return false;
 }
 
-bool isModuleSynchronous(uint8_t moduleIdx) {
-  switch (g_model.moduleData[moduleIdx].type) {
-    case MODULE_TYPE_CROSSFIRE:
+bool isModuleSynchronous(uint8_t moduleIdx) 
+{
+  switch (moduleState[moduleIdx].protocol) {
+    case PROTOCOL_CHANNELS_CROSSFIRE:
+    case PROTOCOL_CHANNELS_NONE:
+#if defined(MULTIMODULE)
+    case PROTOCOL_CHANNELS_MULTIMODULE:
+#endif
+    case PROTOCOL_CHANNELS_AFHDS2A_SPI: // make AFHDS2A synchronous to make watchdog happy
+    // case PROTOCOL_CHANNELS_SBUS:
       return true;
   }
   return false;
 }
 
-void sendSynchronousPulses(uint8_t runMask) {
-  if ((runMask & (1 << EXTERNAL_MODULE)) && isModuleSynchronous(EXTERNAL_MODULE)) {
-    // Only for CRSF currently (guarded by returned value)
-    if (setupPulses(EXTERNAL_MODULE)) {
-      extmoduleSendNextFrame();
-    }
+void sendSynchronousPulses(uint8_t runMask) 
+{
+#if defined(HARDWARE_INTERNAL_MODULE)
+  if ((runMask & (1 << INTERNAL_MODULE)) && isModuleSynchronous(INTERNAL_MODULE)) {
+    // Updates heartbeat - keep watchdog happy,
+    // for AFHDS2A returns true because return value is used in INTMODULE_TIMER_IRQHandler,
+    // but we don't want intmoduleSendNextFrame for it.
+    if (setupPulsesInternalModule())
+      ;// intmoduleSendNextFrame();
   }
+#endif
+
+#if defined(HARDWARE_EXTERNAL_MODULE)
+  if ((runMask & (1 << EXTERNAL_MODULE)) && isModuleSynchronous(EXTERNAL_MODULE)) {
+    if (setupPulsesExternalModule())
+      extmoduleSendNextFrame();
+  }
+#endif
 }
 
 constexpr uint8_t MIXER_FREQUENT_ACTIONS_PERIOD = 5 /*ms*/;
@@ -103,10 +123,12 @@ void execMixerFrequentActions()
 #endif
 }
 
-TASK_FUNCTION(mixerTask) {
+TASK_FUNCTION(mixerTask) 
+{
   s_pulses_paused = true;
 
   mixerSchedulerInit();
+
   mixerSchedulerStart();
 
   while (true) {
@@ -150,7 +172,13 @@ TASK_FUNCTION(mixerTask) {
 
       doMixerCalculations();
 
+#if defined(HARDWARE_INTERNAL_MODULE) && defined(HARDWARE_EXTERNAL_MODULE)
+      sendSynchronousPulses((1 << INTERNAL_MODULE) | (1 << EXTERNAL_MODULE));
+#elif defined(HARDWARE_INTERNAL_MODULE)
+      sendSynchronousPulses((1 << INTERNAL_MODULE));
+#elif defined(HARDWARE_EXTERNAL_MODULE)
       sendSynchronousPulses(1 << EXTERNAL_MODULE);
+#endif
 
       doMixerPeriodicUpdates();
 
@@ -189,7 +217,8 @@ TASK_FUNCTION(mixerTask) {
 bool perMainEnabled = true;
 #endif
 
-TASK_FUNCTION(menusTask) {
+TASK_FUNCTION(menusTask)
+{
   opentxInit();
 
 #if defined(PWR_BUTTON_PRESS)
@@ -206,13 +235,9 @@ TASK_FUNCTION(menusTask) {
 #endif
     uint32_t start = (uint32_t)RTOS_GET_TIME();
     DEBUG_TIMER_START(debugTimerPerMain);
-#if defined(COLORLCD) && defined(CLI)
-    if (perMainEnabled) {
-      perMain();
-    }
-#else
+
     perMain();
-#endif
+
     DEBUG_TIMER_STOP(debugTimerPerMain);
     // TODO remove completely massstorage from sky9x firmware
     uint32_t runtime = ((uint32_t)RTOS_GET_TIME() - start);

@@ -1180,7 +1180,7 @@ void ConvertModel_217_to_218(ModelData & model)
         }
       }
     }
-    else if (((oldModel.frsky.screensType >> (2*i)) & 0x03) == TELEMETRY_SCREEN_TYPE_GAUGES) {
+    else if (((oldModel.frsky.screensType >> (2*i)) & 0x03) == TELEMETRY_SCREEN_TYPE_BARS) {
       for (int j = 0; j < 4; j++) {
         newModel.frsky.screens[i].bars[j].source = ConvertSource_217_to_218(oldModel.frsky.screens[i].bars[j].source);
       }
@@ -1246,7 +1246,7 @@ bool eeConvert()
   // Information to the user and wait for key press
   g_eeGeneral.backlightMode = e_backlight_mode_on;
   g_eeGeneral.backlightBright = 0;
-  g_eeGeneral.contrast = 25;
+  g_eeGeneral.contrast = LCD_CONTRAST_DEFAULT;
 
   ALERT(STR_STORAGE_WARNING, msg, AU_BAD_RADIODATA);
 

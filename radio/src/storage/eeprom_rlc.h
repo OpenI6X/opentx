@@ -25,7 +25,7 @@
 
   #define blkid_t    uint16_t
   #define EEFS_VERS  5
-  #define MAXFILES   62
+  #define MAXFILES   MAX_MODELS + 2 // was 62: MAX_MODELS + 1 (FILE_GENERAL) + 1 (FILE_TMP)
   #define BS         64
 
 PACK(struct DirEnt {
@@ -45,6 +45,15 @@ PACK(struct EeFs {
   DirEnt   files[MAXFILES];
 });
 
+PACK(struct EeFsOld {
+  uint8_t  version;
+  blkid_t  mySize;
+  blkid_t  freeList;
+  uint8_t  bs;
+  EEFS_EXTRA_FIELDS
+  DirEnt   files[62];
+});
+
 extern EeFs eeFs;
 
 #define FILE_TYP_GENERAL 1
@@ -56,7 +65,8 @@ extern EeFs eeFs;
 #define FILE_MODEL(n) (1+(n))
 #define FILE_TMP      (1+MAX_MODELS)
 
-#define RESV          sizeof(EeFs)  //reserv for eeprom header with directory (eeFs)
+// Align to previous size of EeFs to keep eeprom data intact
+#define RESV          sizeof(EeFsOld)  //reserv for eeprom header with directory (eeFs)
 
 #define FIRSTBLK      1
 #define BLOCKS        (1+(EEPROM_SIZE-RESV)/BS)
@@ -198,21 +208,9 @@ bool eeLoadGeneral();
 // For EEPROM backup/restore
 inline bool isEepromStart(const void * buffer)
 {
-  // OpenTX EEPROM
-  {
-    const EeFs * eeprom = (const EeFs *)buffer;
-    if (eeprom->version==EEFS_VERS && eeprom->mySize==sizeof(eeFs) && eeprom->bs==BS)
-      return true;
-  }
-
-  // ersky9x EEPROM
-  {
-    const uint8_t * eeprom = (const uint8_t *)buffer;
-    uint8_t size = eeprom[1] ;
-    uint8_t bs = eeprom[3] ;
-    if (size==0x80 && bs==0x80)
-      return true;
-  }
+  const EeFs * eeprom = (const EeFs *)buffer;
+  if (eeprom->version==EEFS_VERS && eeprom->mySize==sizeof(EeFsOld) && eeprom->bs==BS)
+    return true;
 
   return false;
 }

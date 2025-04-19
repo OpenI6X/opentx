@@ -154,28 +154,21 @@
 #define READ_REG(REG)         ((REG))
 #define MODIFY_REG(REG, CLEARMASK, SETMASK)  WRITE_REG((REG), (((READ_REG(REG)) & (~(CLEARMASK))) | (SETMASK)))
 
-#define RF_SCK_GPIO_PORT GPIOE
-#define RF_SCK_PIN_MASK GPIO_IDR_13
-
-#define RF_SDIO_GPIO_PORT GPIOE
-#define RF_SDIO_PIN_MASK GPIO_IDR_15
-
+// #define RF_SCK_GPIO_PORT GPIOE
+// #define RF_SCK_PIN_MASK GPIO_IDR_13
+// #define RF_SDIO_GPIO_PORT GPIOE
+// #define RF_SDIO_PIN_MASK GPIO_IDR_15
 #define RF_SCN_GPIO_PORT GPIOE
 #define RF_SCN_SET_PIN GPIO_BSRR_BS_12
 #define RF_SCN_RESET_PIN GPIO_BSRR_BR_12
-
-#define RF_GIO2_GPIO_PORT GPIOB
+// #define RF_GIO2_GPIO_PORT GPIOB
 #define RF_GIO2_PIN EXTI_IMR_MR2
-
 #define RF_RxTx_GPIO_PORT GPIOE
 #define RF_RxTx_PIN_MASK 0x00000300U
-
-#define RF_Rx_SET_PIN GPIO_BSRR_BS_8
+// #define RF_Rx_SET_PIN GPIO_BSRR_BS_8
 #define RF_Rx_RESET_PIN GPIO_BSRR_BR_8
-
-#define RF_Tx_SET_PIN GPIO_PIN_BSRR_BS_9
-#define RF_Tx_RESET_PIN GPIO_PIN_BSRR_BR_9
-
+// #define RF_Tx_SET_PIN GPIO_PIN_BSRR_BS_9
+// #define RF_Tx_RESET_PIN GPIO_PIN_BSRR_BR_9
 #define RF_RF0_GPIO_PORT GPIOE
 #define RF_RF0_SET_PIN GPIO_BSRR_BS_10
 #define RF_RF0_RESET_PIN GPIO_BSRR_BR_10
@@ -197,8 +190,7 @@ void EnableGIO(void);
 void DisableGIO(void);
 void initAFHDS2A();
 void ActionAFHDS2A();
-void init_afhds2a(uint32_t port);
-void disable_afhds2a(uint32_t port);
+
 #define A7105_CSN_on a7105_csn_on()
 #define A7105_CSN_off a7105_csn_off()
 
@@ -234,47 +226,23 @@ void disable_afhds2a(uint32_t port);
 #define EXTMODULE_TIMER_IRQHandler    TIM15_IRQHandler
 #define EXTMODULE_TIMER_FREQ          (PERI2_FREQUENCY * TIMER_MULT_APB2)
 
-extern void ISR_TIMER0_COMP_vect(void);
-extern void ISR_TIMER2_OVF_vect(void);
-extern void ISR_TIMER1_COMPA_vect(void);
-extern void ISR_TIMER3_CAPT_vect(void);
-
 // Trainer Port
 #define TRAINER_GPIO                  GPIOF
-#define TRAINER_IN_GPIO_PIN           GPIO_Pin_9  // PC.08
+#define TRAINER_IN_GPIO_PIN           GPIO_Pin_9  // PF.09
 #define TRAINER_IN_GPIO_PinSource     GPIO_PinSource9
 #define TRAINER_GPIO_AF               GPIO_AF_0
-// #define TRAINER_OUT_GPIO_PIN          GPIO_Pin_9  // PC.09
-// #define TRAINER_OUT_GPIO_PinSource    GPIO_PinSource9
-// #define TRAINER_DETECT_GPIO           GPIOA
-// #define TRAINER_DETECT_GPIO_PIN       GPIO_Pin_8  // PA.08
 // #define TRAINER_TIMER                 EXTMODULE_TIMER
 // #define TRAINER_TIMER_IRQn            EXTMODULE_TIMER_IRQn
+// #define TRAINER_TIMER_IRQHandler      EXTMODULE_TIMER_IRQHandler
 // #define TRAINER_DMA                   DMA1
-// #define TRAINER_DMA_CHANNEL           DMA_Channel_5
-// #define TRAINER_DMA_STREAM            DMA1_Stream2
-// #define TRAINER_DMA_IRQn              DMA1_Stream2_IRQn
-// #define TRAINER_DMA_IRQHandler        DMA1_Stream2_IRQHandler
-// #define TRAINER_DMA_FLAG_TC           DMA_IT_TCIF2
-// #define TRAINER_TIMER_IRQn            TIM3_IRQn
-// #define TRAINER_TIMER_IRQHandler      TIM3_IRQHandler
+// #define TRAINER_DMA_CHANNEL           DMA1_Channel5
+// #define TRAINER_DMA_IRQn              DMA1_Channel4_5_IRQn
+// #define TRAINER_DMA_IRQHandler        DMA1_Channel4_5_IRQHandler
+// #define TRAINER_DMA_FLAG_TC           DMA_IT_TCIF5
 // #define TRAINER_TIMER_FREQ            (PERI1_FREQUENCY * TIMER_MULT_APB1)
 
-
-#define SD_RCC_AHB1Periph 0
-#define HAPTIC_RCC_AHB1Periph 0
-#define EXTMODULE_RCC_AHB1Periph 0
-#define SPORT_UPDATE_RCC_AHB1Periph 0
-#define BT_RCC_AHB1Periph 0
-#define TRAINER_RCC_AHB1Periph 0
-#define HAPTIC_RCC_APB1Periph 0
-#define SD_RCC_APB1Periph 0
-#define BT_RCC_APB1Periph 0
-#define HAPTIC_RCC_APB2Periph 0
-#define BT_RCC_APB2Periph 0
-#define SD_GPIO_PRESENT_GPIO 0
-
 // USB
+#define USB_RCC_APB1Periph_CRS          RCC_APB1Periph_CRS
 #define USB_RCC_AHBPeriph_GPIO          RCC_AHBPeriph_GPIOA
 #define USB_GPIO                        GPIOA
 #define USB_GPIO_PIN_DM                 GPIO_Pin_11 // PA.11
@@ -351,21 +319,6 @@ extern void ISR_TIMER3_CAPT_vect(void);
 #define TELEMETRY_USART_IRQHandler      USART2_IRQHandler
 #define TELEMETRY_USART_IRQn            USART2_IRQn
 
-// Heartbeat
-
-  // #define TRAINER_MODULE_HEARTBEAT
-  // #define HEARTBEAT_RCC_AHB1Periph      RCC_AHBPeriph_GPIOC
-  // #define HEARTBEAT_RCC_APB2Periph      RCC_APB2Periph_USART6
-  // #define HEARTBEAT_GPIO                GPIOC
-  // #define HEARTBEAT_GPIO_PIN            GPIO_Pin_7  // PC.07
-  // #define HEARTBEAT_GPIO_PinSource      GPIO_PinSource7
-  // #define HEARTBEAT_GPIO_AF_SBUS        GPIO_AF_USART6
-  // #define HEARTBEAT_GPIO_AF_CAPTURE     GPIO_AF_TIM3
-  // #define HEARTBEAT_USART               USART6
-  // #define HEARTBEAT_USART_IRQHandler    USART6_IRQHandler
-  // #define HEARTBEAT_USART_IRQn          USART6_IRQn
-  // #define HEARTBEAT_DMA_Stream          DMA2_Stream1
-  // #define HEARTBEAT_DMA_Channel         DMA_Channel_5
 
 // Backlight
 // pwm, requires wiring BL pad to PC9 pad
@@ -427,7 +380,7 @@ extern void ISR_TIMER3_CAPT_vect(void);
                                          | AUX3_SERIAL_RCC_AHB1Periph | AUX4_SERIAL_RCC_AHB1Periph | ADC_RCC_AHB1Periph | USB_RCC_AHBPeriph_GPIO)
 #define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | RCC_APB1Periph_TIM6 /*delays*/ | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph \
                                          | TELEMETRY_RCC_APB1Periph | BACKLIGHT_STD_RCC_APB1Periph | BACKLIGHT_RCC_APB1Periph | RCC_APB1Periph_USB \
-                                         | AUX3_SERIAL_RCC_APB1Periph | AUX4_SERIAL_RCC_APB1Periph)
+                                         | AUX3_SERIAL_RCC_APB1Periph | AUX4_SERIAL_RCC_APB1Periph | USB_RCC_APB1Periph_CRS)
 #define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB2Periph | PWM_RCC_APB2Periph | INTMODULE_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph \
                                          | AUX_SERIAL_RCC_APB2Periph | ADC_RCC_APB2Periph)
 

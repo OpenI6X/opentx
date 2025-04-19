@@ -22,18 +22,15 @@
 #include "mixer_scheduler.h"
 #include "opentx.h"
 
-static bool ahfds2aEnabled = false;
-
 void intmoduleStop() {
   TRACE("intmoduleStop");
   CLEAR_BIT(INTMODULE_TIMER->CR1, TIM_CR1_CEN);
-  if (ahfds2aEnabled) {
+
+  if (moduleState[INTERNAL_MODULE].protocol == PROTOCOL_CHANNELS_AFHDS2A_SPI)
     A7105_Sleep();
-    ahfds2aEnabled = false;
-  }
 }
 
-void initIntModuleTimer(uint16_t periodUs) {
+void intmoduleAfhds2aPulsesStart(uint16_t periodUs) {
   CLEAR_BIT(INTMODULE_TIMER->CR1, TIM_CR1_ARPE);   // Disable ARR Preload
   CLEAR_BIT(INTMODULE_TIMER->SMCR, TIM_SMCR_MSM);  // Disable Master Slave Mode
   WRITE_REG(INTMODULE_TIMER->PSC, 2);              // Prescaler
@@ -42,14 +39,6 @@ void initIntModuleTimer(uint16_t periodUs) {
 
   NVIC_SetPriority(INTMODULE_TIMER_IRQn, 2);
   NVIC_EnableIRQ(INTMODULE_TIMER_IRQn);
-}
-
-void intmoduleNoneStart() {
-  TRACE("intmoduleNoneStart");
-  initIntModuleTimer(50000); // 50 ms
-  ahfds2aEnabled = false;
-
-  SET_BIT(INTMODULE_TIMER->CR1, TIM_CR1_CEN);
 }
 
 void initSPI1()
@@ -102,14 +91,14 @@ void intmoduleAfhds2aStart() {
   NVIC_SetPriority(EXTI2_3_IRQn, 2);
   NVIC_EnableIRQ(EXTI2_3_IRQn);
 
-  initIntModuleTimer(3850); // was: 3776 us
-  ahfds2aEnabled = true;
+  intmoduleAfhds2aPulsesStart(3850); // was: 3776 us
   initAFHDS2A();
   SET_BIT(INTMODULE_TIMER->CR1, TIM_CR1_CEN);
 }
 
 // handler for RADIO GIO2 (FALLING AGE)
-extern "C" void EXTI2_3_IRQHandler() {
+extern "C" void EXTI2_3_IRQHandler() 
+{
   if (EXTI->PR & RF_GIO2_PIN) {
     WRITE_REG(EXTI->PR, RF_GIO2_PIN);
     DisableGIO();
@@ -118,10 +107,10 @@ extern "C" void EXTI2_3_IRQHandler() {
   }
 }
 
-extern "C" void INTMODULE_TIMER_IRQHandler() {
+extern "C" void INTMODULE_TIMER_IRQHandler() 
+{
   WRITE_REG(INTMODULE_TIMER->SR, ~(TIM_SR_UIF));  // Clear the update interrupt flag (UIF)
-  setupPulses(INTERNAL_MODULE);
-  if (ahfds2aEnabled) {
+  if (setupPulsesInternalModule()) {
     SETBIT(RadioState, CALLER, TIM_CALL);
     ActionAFHDS2A();
   }

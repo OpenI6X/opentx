@@ -625,6 +625,7 @@ extern const char STR_CURRENT[];
 
 extern const char STR_CURRENT_CALIB[];
 extern const char STR_UNITSSYSTEM[];
+extern const char STR_UNITS_PPM[];
 extern const char STR_VOICELANG[];
 extern const char STR_MODELIDUSED[];
 extern const char STR_BEEP_VOLUME[];

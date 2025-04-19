@@ -838,7 +838,7 @@ void menuModelSetup(event_t event)
           s_editMode = 0;
         }
         if (bluetoothDistantAddr[0]) {
-          lcdDrawText(INDENT_WIDTH, y+1, bluetoothDistantAddr, TINSIZE);
+          lcdDrawTextIndented(y+1, bluetoothDistantAddr, TINSIZE);
           if (bluetoothState != BLUETOOTH_STATE_CONNECTED) {
             lcdDrawText(MODEL_SETUP_2ND_COLUMN, y, BUTTON("Bind"), menuHorizontalPosition == 0 ? attr : 0);
             lcdDrawText(MODEL_SETUP_2ND_COLUMN+5*FW, y, BUTTON("Clear"), menuHorizontalPosition == 1 ? attr : 0);
@@ -857,7 +857,7 @@ void menuModelSetup(event_t event)
           }
         }
         else {
-          lcdDrawText(INDENT_WIDTH, y, "---");
+          lcdDrawTextIndented(y, "---");
           if (bluetoothState < BLUETOOTH_STATE_IDLE)
             lcdDrawText(MODEL_SETUP_2ND_COLUMN, y, BUTTON("Init"), attr);
           else
@@ -1108,7 +1108,7 @@ void menuModelSetup(event_t event)
          const uint8_t multi_proto = g_model.moduleData[EXTERNAL_MODULE].getMultiProtocol(true);
          const mm_protocol_definition *pdef = getMultiProtocolDefinition(multi_proto);
          if (pdef->optionsstr)
-           lcdDrawText(INDENT_WIDTH, y, pdef->optionsstr);
+           lcdDrawTextIndented(y, pdef->optionsstr);
 
          if (multi_proto == MM_RF_PROTO_FS_AFHDS2A)
            optionValue = 50 + 5 * optionValue;
@@ -1201,7 +1201,7 @@ void menuModelSetup(event_t event)
   }
 
 #if defined(PXX)
-  if (IS_RANGECHECK_ENABLE()) {
+  if (isModuleInRangeCheckMode()) {
     showMessageBox("RSSI: ");
     lcdDrawNumber(16+4*FW, 5*FH, TELEMETRY_RSSI(), BOLD);
   }

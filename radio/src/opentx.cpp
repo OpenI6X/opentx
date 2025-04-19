@@ -23,7 +23,7 @@
 RadioData g_eeGeneral;
 ModelData g_model;
 
-#if defined(SDCARD)
+#if defined(CLIPBOARD)
 Clipboard clipboard;
 #endif
 
@@ -163,11 +163,7 @@ void per10ms()
   }
 #endif
 
-#if defined(TELEMETRY_FRSKY) || defined(TELEMETRY_JETI)
-  if (!IS_DSM2_SERIAL_PROTOCOL(moduleState[0].protocol)) {
-    telemetryInterrupt10ms();
-  }
-#endif
+  telemetryInterrupt10ms();
 
   // These moved here from evalFlightModeMixes() to improve beep trigger reliability.
 #if defined(PWM_BACKLIGHT)
