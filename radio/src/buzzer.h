@@ -126,8 +126,6 @@ extern void playModelEvent(uint8_t category, uint8_t index, event_t event=0);
 #define PLAY_FILE(f, id)                dfPlayerQueuePlayFile((f))
 #define AUDIO_FLUSH()               //audioQueue.flush()
 
-#define setScaledVolume(v)
-
 #else // buzzer
 
 extern void pushPrompt(uint16_t prompt);

@@ -317,13 +317,6 @@ void playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t flags, int8_t
 
 void buzzerHeartbeat()
 {
-#if defined(DFPLAYER)
-    uint16_t index;
-    if (!dfPlayerBusy() && dfplayerFifo.pop(index)) {
-      dfplayerPlayFile(index);
-    }
-#endif
-
   if (buzzerState.duration) {
 
     if (buzzerState.duration > 10) {

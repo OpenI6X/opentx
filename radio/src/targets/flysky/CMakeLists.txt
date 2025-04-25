@@ -36,7 +36,6 @@ if(PCB STREQUAL I6X)
   add_definitions(-DSTM32F072)
   add_definitions(-DPWR_BUTTON_${PWR_BUTTON})
   add_definitions(-DEEPROM_VARIANT=0)
-  add_definitions(-DSOFTWARE_VOLUME)
   add_definitions(-DAFHDS2A)
   add_definitions(-DCLIPBOARD)
 endif()
@@ -59,6 +58,8 @@ if(DFPLAYER STREQUAL YES)
   ${TARGET_SRC}
   dfplayer_driver.cpp
   )
+else()
+  add_definitions(-DSOFTWARE_VOLUME)
 endif()
 
 if(FAKE_RSSI STREQUAL YES)
