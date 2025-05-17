@@ -737,7 +737,7 @@ static void refreshNext() {
   } else if (time > paramTimeout && expectedParamsCount != 0) {
     if (allParamsLoaded < 1) {
       crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_READ, paramId, paramChunk);
-      paramTimeout = time + 50; // 0.5s
+      paramTimeout = time + 500; // 5s
     }
   }
 
