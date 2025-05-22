@@ -128,9 +128,9 @@ void dfplayerPlayFile(uint16_t number) {
 }
 
 void setScaledVolume(uint8_t volume) {
-  if (volume > VOLUME_LEVEL_MAX) {
-    volume = VOLUME_LEVEL_MAX;
-  }
+  // if (volume > VOLUME_LEVEL_MAX) {
+  //   volume = VOLUME_LEVEL_MAX;
+  // }
 
   //RTOS_WAIT_MS(200);
   dfplayerCommand(DFP_SET_VOLUME, volume);

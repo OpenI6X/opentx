@@ -20,8 +20,8 @@
 
 #include "opentx.h"
 
-uint8_t currentSpeakerVolume = 255;
-uint8_t requiredSpeakerVolume = 255;
+uint8_t currentSpeakerVolume = VOLUME_LEVEL_MAX;
+uint8_t requiredSpeakerVolume = VOLUME_LEVEL_MAX;
 uint8_t currentBacklightBright = 0;
 uint8_t requiredBacklightBright = 0;
 uint8_t mainRequestFlags = 0;
