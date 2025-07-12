@@ -138,12 +138,10 @@ PACK(struct CellValue
   uint16_t value:15;
   uint16_t state:1;
 
-  void set(uint16_t value)
+  void set(uint16_t newValue)
   {
-    if (value > 50) {
-      this->value = value;
-      this->state = 1;
-    }
+      value = newValue;
+      state = 1;
   }
 });
 

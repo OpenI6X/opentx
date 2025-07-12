@@ -21,38 +21,42 @@
 #include "opentx.h"
 
 const CrossfireSensor crossfireSensors[] = {
-    {LINK_ID, 0, ZSTR_RX_RSSI1, UNIT_DB, 0},
-    {LINK_ID, 1, ZSTR_RX_RSSI2, UNIT_DB, 0},
-    {LINK_ID, 2, ZSTR_RX_QUALITY, UNIT_PERCENT, 0},
-    {LINK_ID, 3, ZSTR_RX_SNR, UNIT_DB, 0},
-    {LINK_ID, 4, ZSTR_ANTENNA, UNIT_RAW, 0},
-    {LINK_ID, 5, ZSTR_RF_MODE, UNIT_RAW, 0},
-    {LINK_ID, 6, ZSTR_TX_POWER, UNIT_MILLIWATTS, 0},
-    {LINK_ID, 7, ZSTR_TX_RSSI, UNIT_DB, 0},
-    {LINK_ID, 8, ZSTR_TX_QUALITY, UNIT_PERCENT, 0},
-    {LINK_ID, 9, ZSTR_TX_SNR, UNIT_DB, 0},
-    {LINK_RX_ID, 0, ZSTR_RX_RSSI_PERC, UNIT_PERCENT, 0},
-    {LINK_RX_ID, 1, ZSTR_RX_RF_POWER, UNIT_DBM, 0},
-    {LINK_TX_ID, 0, ZSTR_TX_RSSI_PERC, UNIT_PERCENT, 0},
-    {LINK_TX_ID, 1, ZSTR_TX_RF_POWER, UNIT_DBM, 0},
-    {LINK_TX_ID, 2, ZSTR_TX_FPS, UNIT_HERTZ, 0},
-    {BATTERY_ID, 0, ZSTR_BATT, UNIT_VOLTS, 1},
-    {BATTERY_ID, 1, ZSTR_CURR, UNIT_AMPS, 1},
-    {BATTERY_ID, 2, ZSTR_CAPACITY, UNIT_MAH, 0},
-    {BATTERY_ID, 3, ZSTR_BATT_PERCENT, UNIT_PERCENT, 0},
-    {GPS_ID, 0, ZSTR_GPS, UNIT_GPS_LATITUDE, 0},
-    {GPS_ID, 0, ZSTR_GPS, UNIT_GPS_LONGITUDE, 0},
-    {GPS_ID, 2, ZSTR_GSPD, UNIT_KMH, 1},
-    {GPS_ID, 3, ZSTR_HDG, UNIT_DEGREE, 2},
-    {GPS_ID, 4, ZSTR_ALT, UNIT_METERS, 0},
-    {GPS_ID, 5, ZSTR_SATELLITES, UNIT_RAW, 0},
-    {ATTITUDE_ID, 0, ZSTR_PITCH, UNIT_RADIANS, 3},
-    {ATTITUDE_ID, 1, ZSTR_ROLL, UNIT_RADIANS, 3},
-    {ATTITUDE_ID, 2, ZSTR_YAW, UNIT_RADIANS, 3},
-    {FLIGHT_MODE_ID, 0, ZSTR_FLIGHT_MODE, UNIT_TEXT, 0},
-    {CF_VARIO_ID, 0, ZSTR_VSPD, UNIT_METERS_PER_SECOND, 2},
-    {BARO_ALT_ID, 0, ZSTR_ALT, UNIT_METERS, 2},
-    {0, 0, "UNKNOWN", UNIT_RAW, 0},
+  {LINK_ID,        0, ZSTR_RX_RSSI1,      UNIT_DB,             0},
+  {LINK_ID,        1, ZSTR_RX_RSSI2,      UNIT_DB,             0},
+  {LINK_ID,        2, ZSTR_RX_QUALITY,    UNIT_PERCENT,        0},
+  {LINK_ID,        3, ZSTR_RX_SNR,        UNIT_DB,             0},
+  {LINK_ID,        4, ZSTR_ANTENNA,       UNIT_RAW,            0},
+  {LINK_ID,        5, ZSTR_RF_MODE,       UNIT_RAW,            0},
+  {LINK_ID,        6, ZSTR_TX_POWER,      UNIT_MILLIWATTS,     0},
+  {LINK_ID,        7, ZSTR_TX_RSSI,       UNIT_DB,             0},
+  {LINK_ID,        8, ZSTR_TX_QUALITY,    UNIT_PERCENT,        0},
+  {LINK_ID,        9, ZSTR_TX_SNR,        UNIT_DB,             0},
+  {LINK_RX_ID,     0, ZSTR_RX_RSSI_PERC,  UNIT_PERCENT,        0},
+  {LINK_RX_ID,     1, ZSTR_RX_RF_POWER,   UNIT_DBM,            0},
+  {LINK_TX_ID,     0, ZSTR_TX_RSSI_PERC,  UNIT_PERCENT,        0},
+  {LINK_TX_ID,     1, ZSTR_TX_RF_POWER,   UNIT_DBM,            0},
+  {LINK_TX_ID,     2, ZSTR_TX_FPS,        UNIT_HERTZ,          0},
+  {BATTERY_ID,     0, ZSTR_BATT,          UNIT_VOLTS,          1},
+  {BATTERY_ID,     1, ZSTR_CURR,          UNIT_AMPS,           1},
+  {BATTERY_ID,     2, ZSTR_CAPACITY,      UNIT_MAH,            0},
+  {BATTERY_ID,     3, ZSTR_BATT_PERCENT,  UNIT_PERCENT,        0},
+  {GPS_ID,         0, ZSTR_GPS,           UNIT_GPS_LATITUDE,   0},
+  {GPS_ID,         0, ZSTR_GPS,           UNIT_GPS_LONGITUDE,  0},
+  {GPS_ID,         2, ZSTR_GSPD,          UNIT_KMH,            1},
+  {GPS_ID,         3, ZSTR_HDG,           UNIT_DEGREE,         2},
+  {GPS_ID,         4, ZSTR_ALT,           UNIT_METERS,         0},
+  {GPS_ID,         5, ZSTR_SATELLITES,    UNIT_RAW,            0},
+  {ATTITUDE_ID,    0, ZSTR_PITCH,         UNIT_RADIANS,        3},
+  {ATTITUDE_ID,    1, ZSTR_ROLL,          UNIT_RADIANS,        3},
+  {ATTITUDE_ID,    2, ZSTR_YAW,           UNIT_RADIANS,        3},
+  {FLIGHT_MODE_ID, 0, ZSTR_FLIGHT_MODE,   UNIT_TEXT,           0},
+  {CF_VARIO_ID,    0, ZSTR_VSPD,          UNIT_METERS_PER_SECOND, 2},
+  {BARO_ALT_ID,    0, ZSTR_ALT,           UNIT_METERS,         2},
+  {AIRSPEED_ID,    0, ZSTR_ASPD,         UNIT_KMH,             1},
+  {CF_RPM_ID,      0, ZSTR_RPM,          UNIT_RPMS,            0},
+  {TEMP_ID,        0, ZSTR_TEMP,         UNIT_DEGREE,          1},
+  {CELLS_ID,       0, ZSTR_CELLS,        UNIT_CELLS,           2},
+  {0,              0, "UNKNOWN",          UNIT_RAW,            0},
 };
 
 CrossfireModuleStatus crossfireModuleStatus = {0};
@@ -76,6 +80,14 @@ const CrossfireSensor &getCrossfireSensor(uint8_t id, uint8_t subId) {
     return crossfireSensors[FLIGHT_MODE_INDEX];
   else if (id == BARO_ALT_ID)
     return crossfireSensors[BARO_ALTITUDE_INDEX];
+  else if (id == AIRSPEED_ID)
+    return crossfireSensors[AIRSPEED_INDEX];
+  else if (id == CF_RPM_ID)
+    return crossfireSensors[CF_RPM_INDEX];
+  else if (id == TEMP_ID)
+    return crossfireSensors[TEMP_INDEX];
+  else if (id == CELLS_ID)
+    return crossfireSensors[CELLS_INDEX];
   else
     return crossfireSensors[UNKNOWN_INDEX];
 }
@@ -153,11 +165,61 @@ void processCrossfireTelemetryFrame() {
         }
         processCrossfireTelemetryValue(BARO_ALTITUDE_INDEX, value);
       }
+
       // Length of TBS BARO_ALT has 4 payload bytes with just 2 bytes of altitude
-      // but support including VARIO if the declared payload length is 6 bytes or more
+      // but support including ELRS VARIO if the declared payload length is 6 bytes or more
       if (crsfPayloadLen > 5 && getCrossfireTelemetryValue<2>(5, value))
         processCrossfireTelemetryValue(VERTICAL_SPEED_INDEX, value);
       break;
+
+    case AIRSPEED_ID:
+      if (getCrossfireTelemetryValue<2>(3, value, rxBuffer)) {
+        // Airspeed in 0.1 * km/h (hectometers/h)
+        // Converstion to KMH is done through PREC1
+        processCrossfireTelemetryValue(AIRSPEED_INDEX, value);
+      }
+      break;
+
+    case CF_RPM_ID:
+    {
+      getCrossfireTelemetryValue<1>(3, value, rxBuffer);
+      uint8_t sensorID = value;
+      for(uint8_t i = 0; i * 3 < (crsfPayloadLen - 4);  i++) {
+        getCrossfireTelemetryValue<3>(4 + i * 3, value, rxBuffer);
+        const CrossfireSensor & sensor = crossfireSensors[CF_RPM_INDEX];
+        setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id + (sensorID << 8), 0, i,
+                          value, sensor.unit, sensor.precision);
+      }
+      break;
+    }
+
+    case TEMP_ID:
+    {
+      getCrossfireTelemetryValue<1>(3, value, rxBuffer);
+      uint8_t sensorID = value;
+      for(uint8_t i = 0; i * 2 < (crsfPayloadLen - 4);  i++) {
+        getCrossfireTelemetryValue<2>(4 + i * 2, value, rxBuffer);
+        const CrossfireSensor & sensor = crossfireSensors[TEMP_INDEX];
+        setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id + (sensorID << 8), 0, i,
+                          value, sensor.unit, sensor.precision);
+      }
+      break;
+    }
+
+    case CELLS_ID:
+    {
+      getCrossfireTelemetryValue<1>(3, value, rxBuffer);
+      uint8_t sensorID = value;
+
+      // We can handle only up to 8 cells
+      for(uint8_t i = 0; i * 2 < min(16, crsfPayloadLen - 4);  i++) {
+        getCrossfireTelemetryValue<2>(4 + i * 2, value, rxBuffer);
+        const CrossfireSensor & sensor = crossfireSensors[CELLS_INDEX];
+        setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id + (sensorID << 8), 0, 0,
+                          i << 16 | value / 10, sensor.unit, sensor.precision);
+      }
+      break;
+    }
 
     case LINK_ID:
       for (unsigned int i = 0; i <= TX_SNR_INDEX; i++) {
@@ -364,7 +426,8 @@ void processCrossfireTelemetryData(uint8_t data) {
   }
 }
 
-void crossfireSetDefault(int index, uint8_t id, uint8_t subId) {
+void crossfireSetDefault(int index, uint16_t id, uint8_t subId) 
+{
   TelemetrySensor &telemetrySensor = g_model.telemetrySensors[index];
 
   telemetrySensor.id = id;
