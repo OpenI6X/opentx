@@ -104,7 +104,6 @@ const char * audioNames =
   "custm8"
   "custm9";
 
-// #define IS_MIN_CMD_DELAY_ELAPSED() (get_tmr10ms() - dfplayerLastCmdTime > 20) // 200 ms
 #define IS_MIN_PLAY_DELAY_ELAPSED() (get_tmr10ms() - dfplayerLastCmdTime > 80) // 800 ms
 
 static void dfplayerCommand(uint8_t cmd, uint16_t param = 0) {
@@ -128,10 +127,20 @@ void dfplayerPlayFile(uint16_t number) {
     dfplayerCommand(DFP_PLAY, number + 1); // +1 because first file is "zero" and dfplayer uses filesystem index, not filename
 }
 
-void dfplayerSetVolume(int8_t volume) {
-    uint8_t volumes[5] = { 0, 16, 23, 27, 30 }; // range: 0-30
-    //RTOS_WAIT_MS(200);
-    dfplayerCommand(DFP_SET_VOLUME, volumes[volume+2]);
+void setScaledVolume(uint8_t volume) {
+  // if (volume > VOLUME_LEVEL_MAX) {
+  //   volume = VOLUME_LEVEL_MAX;
+  // }
+
+  //RTOS_WAIT_MS(200);
+  dfplayerCommand(DFP_SET_VOLUME, volume);
+}
+
+void dfplayerWakeup() {
+  uint16_t index;
+  if (!dfPlayerBusy() && dfplayerFifo.pop(index)) {
+    dfplayerPlayFile(index);
+  }
 }
 
 void dfplayerInit() {
@@ -147,7 +156,7 @@ void dfplayerInit() {
     delay_ms(150); // fix for MH2024K slow init
 
     aux3SerialInit();
-    dfplayerSetVolume(0); // default volume
+    // dfplayerSetVolume(0); // default volume, done in opentxInit
     
     if (!globalData.unexpectedShutdown) {
         AUDIO_HELLO();

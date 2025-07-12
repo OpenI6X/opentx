@@ -288,7 +288,7 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
             }
             break;
 #endif
-#if !defined(PCBI6X)
+#if defined(DFPLAYER)
           case FUNC_VOLUME:
           {
             getvalue_t raw = getValue(CFN_PARAM(cfn));

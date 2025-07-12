@@ -17,6 +17,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+#include <stddef.h>
 
 #ifndef _DFPLAYER_DRIVER_H_
 #define _DFPLAYER_DRIVER_H_
@@ -36,9 +37,11 @@
 
 extern const char * audioNames;
 
+extern uint8_t currentSpeakerVolume;
+
 void dfplayerPlayFile(uint16_t number);
 void dfplayerInit(void);
-void dfplayerSetVolume(int8_t);
+void dfplayerWakeup(void);
 bool dfPlayerBusy(void);
 void dfPlayerQueuePlayFile(uint16_t);
 // void dfPlayerQueueStopPlay(uint8_t id);

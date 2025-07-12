@@ -1775,7 +1775,7 @@ void opentxInit()
 #endif
 #if defined(AUDIO)
   currentSpeakerVolume = requiredSpeakerVolume = g_eeGeneral.speakerVolume + VOLUME_LEVEL_DEF;
-  currentBacklightBright = requiredBacklightBright = g_eeGeneral.backlightBright;
+  currentBacklightBright = requiredBacklightBright = g_eeGeneral.backlightBright; // TODO test if needed?
 #if !defined(SOFTWARE_VOLUME)
   setScaledVolume(currentSpeakerVolume);
 #endif
@@ -1785,7 +1785,7 @@ void opentxInit()
 #endif
 
 #if defined(DFPLAYER)
-  dfplayerSetVolume(g_eeGeneral.wavVolume);
+  setScaledVolume(currentSpeakerVolume);
 #endif
 
   BACKLIGHT_ENABLE();
