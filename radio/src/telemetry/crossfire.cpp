@@ -173,7 +173,7 @@ void processCrossfireTelemetryFrame() {
       break;
 
     case AIRSPEED_ID:
-      if (getCrossfireTelemetryValue<2>(3, value, rxBuffer)) {
+      if (getCrossfireTelemetryValue<2>(3, value)) {
         // Airspeed in 0.1 * km/h (hectometers/h)
         // Converstion to KMH is done through PREC1
         processCrossfireTelemetryValue(AIRSPEED_INDEX, value);
@@ -182,10 +182,10 @@ void processCrossfireTelemetryFrame() {
 
     case CF_RPM_ID:
     {
-      getCrossfireTelemetryValue<1>(3, value, rxBuffer);
+      getCrossfireTelemetryValue<1>(3, value);
       uint8_t sensorID = value;
       for(uint8_t i = 0; i * 3 < (crsfPayloadLen - 4);  i++) {
-        getCrossfireTelemetryValue<3>(4 + i * 3, value, rxBuffer);
+        getCrossfireTelemetryValue<3>(4 + i * 3, value);
         const CrossfireSensor & sensor = crossfireSensors[CF_RPM_INDEX];
         setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id + (sensorID << 8), 0, i,
                           value, sensor.unit, sensor.precision);
@@ -195,10 +195,10 @@ void processCrossfireTelemetryFrame() {
 
     case TEMP_ID:
     {
-      getCrossfireTelemetryValue<1>(3, value, rxBuffer);
+      getCrossfireTelemetryValue<1>(3, value);
       uint8_t sensorID = value;
       for(uint8_t i = 0; i * 2 < (crsfPayloadLen - 4);  i++) {
-        getCrossfireTelemetryValue<2>(4 + i * 2, value, rxBuffer);
+        getCrossfireTelemetryValue<2>(4 + i * 2, value);
         const CrossfireSensor & sensor = crossfireSensors[TEMP_INDEX];
         setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id + (sensorID << 8), 0, i,
                           value, sensor.unit, sensor.precision);
@@ -208,12 +208,12 @@ void processCrossfireTelemetryFrame() {
 
     case CELLS_ID:
     {
-      getCrossfireTelemetryValue<1>(3, value, rxBuffer);
+      getCrossfireTelemetryValue<1>(3, value);
       uint8_t sensorID = value;
 
       // We can handle only up to 8 cells
       for(uint8_t i = 0; i * 2 < min(16, crsfPayloadLen - 4);  i++) {
-        getCrossfireTelemetryValue<2>(4 + i * 2, value, rxBuffer);
+        getCrossfireTelemetryValue<2>(4 + i * 2, value);
         const CrossfireSensor & sensor = crossfireSensors[CELLS_INDEX];
         setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id + (sensorID << 8), 0, 0,
                           i << 16 | value / 10, sensor.unit, sensor.precision);
