@@ -95,66 +95,75 @@ void resetCustomCurveX(int8_t * points, int noPoints)
 #define CUSTOM_POINT_X(points, count, idx) ((idx)==0 ? -100 : (((idx)==(count)-1) ? 100 : points[(count)+(idx)-1]))
 int32_t compute_tangent(CurveInfo * crv, int8_t * points, int i)
 {
-  int32_t m=0;
-    uint8_t num_points = crv->points + 5;
-    #define MMULT 1024
-    if (i == 0) {
-      //linear interpolation between 1st 2 points
-      //keep 3 decimal-places for m
-      if (crv->type == CURVE_TYPE_CUSTOM) {
-        int8_t x0 = CUSTOM_POINT_X(points, num_points, 0);
-        int8_t x1 = CUSTOM_POINT_X(points, num_points, 1);
-        if (x1 > x0) m = (MMULT * (points[1] - points[0])) / (x1 - x0);
+  int32_t m = 0;
+  uint8_t num_points = crv->points + 5;
+  #define MMULT 1024
+
+  if (i == 0) {
+    // Linear interpolation between the first two points
+    if (crv->type == CURVE_TYPE_CUSTOM) {
+      int8_t x0 = CUSTOM_POINT_X(points, num_points, 0);
+      int8_t x1 = CUSTOM_POINT_X(points, num_points, 1);
+      int32_t dx = x1 - x0;
+      if (dx > 0) {
+        m = (MMULT * (points[1] - points[0])) / dx;
       }
-      else {
-        int32_t delta = (2 * 100) / (num_points - 1);
-        m = (MMULT * (points[1] - points[0])) / delta;
+    } else {
+      int32_t delta = (2 * 100) / (num_points - 1);
+      m = (MMULT * (points[1] - points[0])) / delta;
+    }
+  } else if (i == num_points - 1) {
+    // Linear interpolation between the last two points
+    if (crv->type == CURVE_TYPE_CUSTOM) {
+      int8_t x0 = CUSTOM_POINT_X(points, num_points, num_points - 2);
+      int8_t x1 = CUSTOM_POINT_X(points, num_points, num_points - 1);
+      int32_t dx = x1 - x0;
+      if (dx > 0) {
+        m = (MMULT * (points[num_points - 1] - points[num_points - 2])) / dx;
+      }
+    } else {
+      int32_t delta = (2 * 100) / (num_points - 1);
+      m = (MMULT * (points[num_points - 1] - points[num_points - 2])) / delta;
+    }
+  } else {
+    // Apply monotone rules
+    int32_t d0 = 0, d1 = 0;
+    if (crv->type == CURVE_TYPE_CUSTOM) {
+      int8_t x0 = CUSTOM_POINT_X(points, num_points, i - 1);
+      int8_t x1 = CUSTOM_POINT_X(points, num_points, i);
+      int8_t x2 = CUSTOM_POINT_X(points, num_points, i + 1);
+
+      int32_t dx0 = x1 - x0;
+      int32_t dx1 = x2 - x1;
+
+      if (dx0 > 0) {
+        d0 = (MMULT * (points[i] - points[i - 1])) / dx0;
+      }
+      if (dx1 > 0) {
+        d1 = (MMULT * (points[i + 1] - points[i])) / dx1;
+      }
+    } else {
+      int32_t delta = (2 * 100) / (num_points - 1);
+      d0 = (MMULT * (points[i] - points[i - 1])) / (delta);
+      d1 = (MMULT * (points[i + 1] - points[i])) / (delta);
+    }
+
+    // Compute initial average tangent
+    m = (d0 + d1) / 2;
+
+    // Check for horizontal lines or changes in direction
+    if (d0 == 0 || d1 == 0 || (d0 > 0 && d1 < 0) || (d0 < 0 && d1 > 0)) {
+      m = 0;
+    } else {
+      // Apply the monotone constraints
+      if (MMULT * m / d0 > 3 * MMULT) {
+        m = 3 * d0;
+      } else if (MMULT * m / d1 > 3 * MMULT) {
+        m = 3 * d1;
       }
     }
-    else if (i == num_points - 1) {
-      //linear interpolation between last 2 points
-      //keep 3 decimal-places for m
-      if (crv->type == CURVE_TYPE_CUSTOM) {
-        int8_t x0 = CUSTOM_POINT_X(points, num_points, num_points-2);
-        int8_t x1 = CUSTOM_POINT_X(points, num_points, num_points-1);
-        if (x1 > x0) m = (MMULT * (points[num_points-1] - points[num_points-2])) / (x1 - x0);
-      }
-      else {
-        int32_t delta = (2 * 100) / (num_points - 1);
-        m = (MMULT * (points[num_points-1] - points[num_points-2])) / delta;
-      }
-    }
-    else {
-        //apply monotone rules from
-        //http://en.wikipedia.org/wiki/Monotone_cubic_interpolation
-        //1) compute slopes of secant lines
-      int32_t d0=0, d1=0;
-        if (crv->type == CURVE_TYPE_CUSTOM) {
-          int8_t x0 = CUSTOM_POINT_X(points, num_points, i-1);
-          int8_t x1 = CUSTOM_POINT_X(points, num_points, i);
-          int8_t x2 = CUSTOM_POINT_X(points, num_points, i+1);
-          if (x1 > x0) d0 = (MMULT * (points[i] - points[i-1])) / (x1 - x0);
-          if (x2 > x1) d1 = (MMULT * (points[i+1] - points[i])) / (x2 - x1);
-        }
-        else {
-          int32_t delta = (2 * 100) / (num_points - 1);
-          d0 = (MMULT * (points[i] - points[i-1])) / (delta);
-          d1 = (MMULT * (points[i+1] - points[i])) / (delta);
-        }
-        //2) compute initial average tangent
-        m = (d0 + d1) / 2;
-        //3 check for horizontal lines
-        if (d0 == 0 || d1 == 0 || (d0 > 0 && d1 < 0) || (d0 < 0 && d1 > 0)) {
-          m = 0;
-        }
-        else if (MMULT * m / d0 >  3 * MMULT) {
-          m = 3 * d0;
-        }
-        else if (MMULT * m / d1 > 3 * MMULT) {
-          m = 3 * d1;
-        }
-    }
-    return m;
+  }
+  return m;
 }
 
 /* The following is a hermite cubic spline.
@@ -227,11 +236,23 @@ int intpol(int x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 100
     uint16_t a=0, b=0;
     uint8_t i;
     if (custom) {
-      for (i=0; i<count-1; i++) {
-        a = b;
-        b = (i==count-2 ? 2*RESX : RESX + calc100toRESX(points[count+i]));
-        if ((uint16_t)x<=b) break;
+      uint8_t low = 0;
+      uint8_t high = count - 2;
+      uint8_t i = 0;
+
+      while (low <= high) {
+        i = low + (high - low) / 2;
+        uint16_t b_mid = (i == count - 2) ? 2 * RESX : RESX + calc100toRESX(points[count + i]);
+
+        if ((uint16_t)x <= b_mid) {
+          high = i - 1;
+        } else {
+          low = i + 1;
+        }
       }
+      if (low > 0) i = low;
+      a = (i == 0) ? 0 : RESX + calc100toRESX(points[count + i - 1]);
+      b = (i == count - 2) ? 2 * RESX : RESX + calc100toRESX(points[count + i]);
     }
     else {
       uint16_t d = (RESX * 2) / (count-1);
