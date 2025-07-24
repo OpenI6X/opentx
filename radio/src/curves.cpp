@@ -234,7 +234,7 @@ int intpol(int x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 100
   }
   else {
     uint16_t a=0, b=0;
-    uint8_t i;
+    uint8_t i = 0;
     if (custom) {
       uint8_t low = 0;
       uint8_t high = count - 2;
