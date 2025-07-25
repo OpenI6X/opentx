@@ -2,9 +2,9 @@
  * Copyright (C) OpenTX
  *
  * Based on code named
- *   th9x - http://code.google.com/p/th9x
- *   er9x - http://code.google.com/p/er9x
- *   gruvin9x - http://code.google.com/p/gruvin9x
+ * th9x - http://code.google.com/p/th9x
+ * er9x - http://code.google.com/p/er9x
+ * gruvin9x - http://code.google.com/p/gruvin9x
  *
  * License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -442,10 +442,10 @@ void menuModelMixAll(event_t event)
           drawSource(MIX_LINE_SRC_POS, y, md->srcRaw, 0);
 
           if (mixCnt == 0 && md->mltpx == 1) {
-            lcdDrawText(MIX_LINE_WEIGHT_POS, y, "MULT!", RIGHT | attr | (isMixActive(i) ? BOLD : 0));
+            lcdDrawText(MIX_LINE_WEIGHT_POS, y, "MULT!", RIGHT | attr | (mixState[i].activeMix ? BOLD : 0)); // Using mixState.activeMix
           }
           else {
-            gvarWeightItem(MIX_LINE_WEIGHT_POS, y, md, RIGHT | attr | (isMixActive(i) ? BOLD : 0), 0);
+            gvarWeightItem(MIX_LINE_WEIGHT_POS, y, md, RIGHT | attr | (mixState[i].activeMix ? BOLD : 0), 0); // Using mixState.activeMix
           }
 
 #if LCD_W >= 212
