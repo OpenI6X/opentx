@@ -20,30 +20,30 @@
 
 #include "opentx.h"
 
-#if defined(PCBI6X_INV_CH1)
+#if defined(INVERT_GIMBAL_CH1)
 #define ADC_DIR_CH1 -1
-#pragma message("CH1 invert active")
+#pragma message("Gimbal CH1 invert active")
 #else
 #define ADC_DIR_CH1 1
 #endif
 
-#if defined(PCBI6X_INV_CH2)
+#if defined(INVERT_GIMBAL_CH2)
 #define ADC_DIR_CH2 -1
-#pragma message("CH2 invert active")
+#pragma message("Gimbal CH2 invert active")
 #else
 #define ADC_DIR_CH2 1
 #endif
 
-#if defined(PCBI6X_INV_CH3)
+#if defined(INVERT_GIMBAL_CH3)
 #define ADC_DIR_CH3 -1
-#pragma message("CH3 invert active")
+#pragma message("Gimbal CH3 invert active")
 #else
 #define ADC_DIR_CH3 1
 #endif
 
-#if defined(PCBI6X_INV_CH4)
+#if defined(INVERT_GIMBAL_CH4)
 #define ADC_DIR_CH4 -1
-#pragma message("CH4 invert active")
+#pragma message("Gimbal CH4 invert active")
 #else
 #define ADC_DIR_CH4 1
 #endif
