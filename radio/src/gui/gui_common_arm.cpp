@@ -404,7 +404,7 @@ bool isAssignableFunctionAvailable(int function) {
 #else
       return false;
 #endif
-#if defined(PCBI6X) // volume function unsupported
+#if !defined(DFPLAYER)
     case FUNC_VOLUME:
 #endif
 #if !defined(HAPTIC)

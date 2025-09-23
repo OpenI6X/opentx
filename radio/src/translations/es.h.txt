@@ -260,9 +260,14 @@
   #define TR_PLAY_BOTH         "Oir Ambos\0"
   #define TR_PLAY_VALUE        "Oir valor\0"
 #else
-  #define TR_PLAY_TRACK        "[OirPista]"
   #define TR_PLAY_BOTH         "[OirAmbos]"
+#if defined(DFPLAYER)
+  #define TR_PLAY_TRACK        "Oir pista\0"
+  #define TR_PLAY_VALUE        "Oir valor\0"
+#else
+  #define TR_PLAY_TRACK        "[OirPista]"
   #define TR_PLAY_VALUE        "[OirValor]"
+#endif
 #endif
 
 #define TR_SF_BG_MUSIC        "BgMusica\0 ""BgMusica||"
@@ -305,7 +310,7 @@
 
 #define TR_SF_RESERVE         "[reserve]\0"
 
-#define TR_VFSWFUNC          TR_SF_SAFETY "Aprendiz\0 ""Inst. Trim""Reset\0    ""Set \0     " TR_ADJUST_GVAR "Volumen\0  " "SetFailsfe" "RangeCheck" "ModuleBind" TR_SOUND /*TR_PLAY_TRACK TR_PLAY_VALUE*/ TR_SF_RESERVE TR_SF_PLAY_SCRIPT TR_SF_RESERVE /*TR_SF_BG_MUSIC*/ TR_VVARIO TR_HAPTIC /*TR_SDCLOGS*/ "Luz fondo\0" TR_SF_SCREENSHOT TR_SF_TEST
+#define TR_VFSWFUNC          TR_SF_SAFETY "Aprendiz\0 ""Inst. Trim""Reset\0    ""Set \0     " TR_ADJUST_GVAR "Volumen\0  " "SetFailsfe" "RangeCheck" "ModuleBind" TR_SOUND TR_PLAY_TRACK TR_PLAY_VALUE TR_SF_RESERVE TR_SF_PLAY_SCRIPT TR_SF_RESERVE /*TR_SF_BG_MUSIC*/ TR_VVARIO TR_HAPTIC /*TR_SDCLOGS*/ "Luz fondo\0" TR_SF_SCREENSHOT TR_SF_TEST
 
 #define LEN_VFSWRESET          TR("\004", "\011")
 

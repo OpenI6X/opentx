@@ -20,10 +20,38 @@
 
 #include "opentx.h"
 
+#if defined(INVERT_GIMBAL_CH1)
+#define ADC_DIR_CH1 -1
+#pragma message("Gimbal CH1 invert active")
+#else
+#define ADC_DIR_CH1 1
+#endif
+
+#if defined(INVERT_GIMBAL_CH2)
+#define ADC_DIR_CH2 -1
+#pragma message("Gimbal CH2 invert active")
+#else
+#define ADC_DIR_CH2 1
+#endif
+
+#if defined(INVERT_GIMBAL_CH3)
+#define ADC_DIR_CH3 -1
+#pragma message("Gimbal CH3 invert active")
+#else
+#define ADC_DIR_CH3 1
+#endif
+
+#if defined(INVERT_GIMBAL_CH4)
+#define ADC_DIR_CH4 -1
+#pragma message("Gimbal CH4 invert active")
+#else
+#define ADC_DIR_CH4 1
+#endif
+
 #if defined(SIMU)
 // not needed
 #else
-const int8_t ana_direction[NUM_ANALOGS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0};
+const int8_t ana_direction[NUM_ANALOGS] = {ADC_DIR_CH4, ADC_DIR_CH3, ADC_DIR_CH2, ADC_DIR_CH1, 1, 1, 1, 1, 1, 1, 0};
 #if defined (FLYSKY_GIMBAL)
 const uint8_t ana_mapping[NUM_ANALOGS] =  {0, 1, 2, 3, 6, 7, 4, 5, 8, 9, 10};
 #else

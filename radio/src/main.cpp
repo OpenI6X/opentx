@@ -20,8 +20,8 @@
 
 #include "opentx.h"
 
-uint8_t currentSpeakerVolume = 255;
-uint8_t requiredSpeakerVolume = 255;
+uint8_t currentSpeakerVolume = VOLUME_LEVEL_MAX;
+uint8_t requiredSpeakerVolume = VOLUME_LEVEL_MAX;
 uint8_t currentBacklightBright = 0;
 uint8_t requiredBacklightBright = 0;
 uint8_t mainRequestFlags = 0;
@@ -410,7 +410,14 @@ void perMain()
 {
   DEBUG_TIMER_START(debugTimerPerMain1);
 
-#if defined(AUDIO)
+#if defined(DFPLAYER)
+  // here instead of audioTask
+  // before checkSpeakerVolume because it is more important to play file
+  // than to set volume
+  dfplayerWakeup();
+#endif
+
+#if defined(AUDIO) || defined(DFPLAYER)
   checkSpeakerVolume();
 #endif
 
