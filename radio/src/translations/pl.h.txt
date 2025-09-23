@@ -259,16 +259,16 @@
 
 #if defined(VOICE)
   #define TR_PLAY_TRACK      "GrajŚcieżk"
-  #define TR_PLAY_BOTH         "Graj Oba\0 "
-  #define TR_PLAY_VALUE        TR("Graj Wart\0","GrajWartoś")
+  #define TR_PLAY_BOTH         "Graj oba\0 "
+  #define TR_PLAY_VALUE        TR("Graj wart.","GrajWartoś")
 #else
-  #define TR_PLAY_BOTH         "[Graj Oba]"
+  #define TR_PLAY_BOTH         "[Graj oba]"
 #if defined(DFPLAYER)
   #define TR_PLAY_TRACK        "GrajŚcieżk"
-  #define TR_PLAY_VALUE        "Graj Wart\0"
+  #define TR_PLAY_VALUE        "Graj wart."
 #else
-  #define TR_PLAY_TRACK        "[Graj Ści]"
-  #define TR_PLAY_VALUE        "[Graj War]"
+  #define TR_PLAY_TRACK        "[Graj ści]"
+  #define TR_PLAY_VALUE        "[Graj war]"
 #endif
 #endif
 
@@ -1154,7 +1154,7 @@
 #define TR_SCALE               "Skala"
 #define TR_VIEW_CHANNELS       "Pokaż Kanały"
 #define TR_VIEW_NOTES          "Pokaż Notki"
-#define TR_MODEL_SELECT        "Model Select"
+#define TR_MODEL_SELECT        "WybierzModel"
 #define TR_MODS_FORBIDDEN      "Modyfikacje zabronione!"
 #define TR_UNLOCKED            "Odblokowane"
 #define TR_ID                  "ID"

@@ -1373,9 +1373,8 @@ void evalMixes(uint8_t tick10ms)
   //========== FUNCTIONS ===============
   // must be done after mixing because some functions use the inputs/channels values
   // must be done before limits because of the applyLimit function: it checks for safety switches which would be not initialized otherwise
-  if (tick10ms)
-  {
-#if defined(AUDIO)
+  if (tick10ms) {
+#if defined(AUDIO) || defined(DFPLAYER)
     requiredSpeakerVolume = g_eeGeneral.speakerVolume + VOLUME_LEVEL_DEF;
 #endif
     requiredBacklightBright = g_eeGeneral.backlightBright;

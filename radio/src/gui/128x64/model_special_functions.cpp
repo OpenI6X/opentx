@@ -344,8 +344,8 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
               INCDEC_ENABLE_CHECK(functionsContext == &globalFunctionsContext ? isSourceAvailableInGlobalFunctions : isSourceAvailable);
             }
           }
-#endif // SDCARD || DFPLAYER
-#if !defined(PCBI6X)
+#endif // DFPLAYER
+#if defined(DFPLAYER)
           else if (func == FUNC_VOLUME) {
             val_max = MIXSRC_LAST_CH;
             drawSource(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, val_displayed, attr);

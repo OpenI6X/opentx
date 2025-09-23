@@ -52,7 +52,7 @@ void drawAlertBox(const char * title, const char * text, const char * action)
 {
   lcdClear();
 
-#if defined(DEBUG) || (defined(PCBI6X_ELRS) && defined(TRANSLATIONS_PT)) // saves ~140B
+#if defined(DEBUG) || (defined(PCBI6X_ELRS) && (defined(TRANSLATIONS_CZ) || defined(TRANSLATIONS_PT))) // saves ~140B
   lcdDrawRect(2, 2, 32 - 4, 32 - 4);
   lcdDrawChar(11, 6, 'x', DBLSIZE);
 #else
