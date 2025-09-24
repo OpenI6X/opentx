@@ -282,11 +282,9 @@ void onMainViewMenu(const char *result)
     watchdogSuspend(200); // 2s
     saveAllData();
   }
-#if !defined(PCBI6X)
   else if (result == STR_ABOUT_US) {
     chainMenu(menuAboutView);
   }
-#endif
 }
 
 void menuMainView(event_t event)
@@ -338,9 +336,8 @@ void menuMainView(event_t event)
 
       POPUP_MENU_ADD_ITEM(STR_STATISTICS);
 
-#if !defined(PCBI6X)
       POPUP_MENU_ADD_ITEM(STR_ABOUT_US);
-#endif
+
       POPUP_MENU_START(onMainViewMenu);
       break;
 
