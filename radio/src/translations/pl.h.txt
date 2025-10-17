@@ -1221,6 +1221,7 @@
 #define ZSTR_A2                "A2"
 #define ZSTR_A3                "A3"
 #define ZSTR_A4                "A4"
+#define ZSTR_VOLT              "Volt"
 #define ZSTR_BATT              "RxBt"
 #define ZSTR_ALT               "Alt"
 #define ZSTR_TEMP             "Temp"
