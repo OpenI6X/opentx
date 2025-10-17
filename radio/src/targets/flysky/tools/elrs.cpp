@@ -737,7 +737,7 @@ static void refreshNext() {
   } else if (time > paramTimeout && expectedParamsCount != 0) {
     if (allParamsLoaded < 1) {
       crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_READ, paramId, paramChunk);
-      paramTimeout = time + 500; // 5s
+      paramTimeout = time + ((deviceIsELRS_TX) ? 50 : 500); // 0.5s for local / 5s for remote devices
     }
   }
 
@@ -771,7 +771,7 @@ static void lcd_title() {
     luaLcdDrawGauge(0, 1, COL2, barHeight, paramId, expectedParamsCount);
   } else {
     const char* textToDisplay = titleShowWarn ? elrsFlagsInfo :
-                            (allParamsLoaded == 1) ? (char *)&deviceName[0] : "Loading...";
+                            (allParamsLoaded == 1) ? (char *)&deviceName[0] : "External TX...";
     uint8_t textLen = titleShowWarn ? ELRS_FLAGS_INFO_MAX_LEN : DEVICE_NAME_MAX_LEN;
     lcdDrawSizedText(COL1, 1, textToDisplay, textLen, INVERS);
   }
