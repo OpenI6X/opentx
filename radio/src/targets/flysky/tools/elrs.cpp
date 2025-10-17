@@ -5,29 +5,31 @@
  */
 #include "opentx.h"
 
-enum COMMAND_STEP {
-    STEP_IDLE = 0,
-    STEP_CLICK = 1,       // user has clicked the command to execute
-    STEP_EXECUTING = 2,   // command is executing
-    STEP_CONFIRM = 3,     // command pending user OK
-    STEP_CONFIRMED = 4,   // user has confirmed
-    STEP_CANCEL = 5,      // user has requested cancel
-    STEP_QUERY = 6,       // UI is requesting status update
+enum cmd_status {
+    STATUS_READY = 0,
+    STATUS_START = 1,       // user has clicked the command to execute
+    STATUS_PROGRESS = 2,   // command is executing
+    STATUS_CONFIRMATION_NEEDED = 3,     // command pending user OK
+    STATUS_CONFIRM = 4,   // user has confirmed
+    STATUS_CANCEL = 5,      // user has requested cancel
+    STATUS_POLL = 6,       // UI is requesting status update
 };
 
-#define TYPE_UINT8				   0
-#define TYPE_INT8				   1
-#define TYPE_UINT16				   2
-#define TYPE_INT16				   3
-#define TYPE_FLOAT				   8
-#define TYPE_SELECT                9
-#define TYPE_STRING				  10
-#define TYPE_FOLDER				  11
-#define TYPE_INFO				  12
-#define TYPE_COMMAND			  13
-#define TYPE_BACK                 14
-#define TYPE_DEVICE               15
-#define TYPE_DEVICES_FOLDER       16
+enum data_type {
+    TYPE_UINT8 = 0,
+    TYPE_INT8 = 1,
+    TYPE_UINT16 = 2,
+    TYPE_INT16 = 3,
+    TYPE_FLOAT = 8,
+    TYPE_SELECT = 9,
+    TYPE_STRING = 10,
+    TYPE_FOLDER = 11,
+    TYPE_INFO = 12,
+    TYPE_COMMAND = 13,
+    TYPE_BACK = 14,
+    TYPE_DEVICE = 15,
+    TYPE_DEVICES_FOLDER = 16
+};
 
 #define CRSF_FRAMETYPE_DEVICE_PING 0x28
 #define CRSF_FRAMETYPE_DEVICE_INFO 0x29
@@ -468,17 +470,17 @@ static void paramCommandLoad(Parameter * param, uint8_t * data, uint8_t offset) 
   param->status = data[offset];
   param->timeout = data[offset+1];
   param->infoOffset = offset+2; // do not copy info, access directly
-  if (param->status == STEP_IDLE) {
+  if (param->status == STATUS_READY) {
     paramPopup = nullptr;
   }
 }
 
 static void paramCommandSave(Parameter * param) {
-  if (param->status < STEP_CONFIRMED) {
-    param->status = STEP_CLICK;
+  if (param->status < STATUS_CONFIRM) {
+    param->status = STATUS_START;
     crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->status);
     paramPopup = param;
-    paramPopup->lastStatus = STEP_IDLE;
+    paramPopup->lastStatus = STATUS_READY;
     paramTimeout = getTime() + param->timeout;
   }
 }
@@ -727,8 +729,8 @@ static void refreshNextCallback(uint8_t command, uint8_t* data, uint8_t length) 
 static void refreshNext() {
   tmr10ms_t time = getTime();
   if (paramPopup != nullptr) {
-    if (time > paramTimeout && paramPopup->status != STEP_CONFIRM) {
-      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, STEP_QUERY);
+    if (time > paramTimeout && paramPopup->status != STATUS_CONFIRMATION_NEEDED) {
+      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, STATUS_POLL);
       paramTimeout = time + paramPopup->timeout;
     }
   } else if (time > devicesRefreshTimeout && expectedParamsCount < 1) {
@@ -906,30 +908,30 @@ static uint8_t popupCompat(event_t event) {
 
 static void runPopupPage(event_t event) {
   if (event == EVT_VIRTUAL_EXIT) {
-    crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, STEP_CANCEL);
+    crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, STATUS_CANCEL);
     paramTimeout = getTime() + 200;
   }
 
   uint8_t result = RESULT_NONE;
-  if (paramPopup->status == STEP_IDLE && paramPopup->lastStatus != STEP_IDLE) { // stopped
+  if (paramPopup->status == STATUS_READY && paramPopup->lastStatus != STATUS_READY) { // stopped
       popupCompat(event);
       reloadAllParam();
       paramPopup = nullptr;
-  } else if (paramPopup->status == STEP_CONFIRM) { // confirmation required
+  } else if (paramPopup->status == STATUS_CONFIRMATION_NEEDED) { // confirmation required
     result = popupCompat(event);
     paramPopup->lastStatus = paramPopup->status;
     if (result == RESULT_OK) {
-      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, STEP_CONFIRMED);
+      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, STATUS_CONFIRM);
       paramTimeout = getTime() + paramPopup->timeout; // we are expecting an immediate response
-      paramPopup->status = STEP_CONFIRMED;
+      paramPopup->status = STATUS_CONFIRM;
     } else if (result == RESULT_CANCEL) {
       paramPopup = nullptr;
     }
-  } else if (paramPopup->status == STEP_EXECUTING) {
+  } else if (paramPopup->status == STATUS_PROGRESS) {
     result = popupCompat(event);
     paramPopup->lastStatus = paramPopup->status;
     if (result == RESULT_CANCEL) {
-      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, STEP_CANCEL);
+      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, STATUS_CANCEL);
       paramTimeout = getTime() + paramPopup->timeout;
       paramPopup = nullptr;
     }
