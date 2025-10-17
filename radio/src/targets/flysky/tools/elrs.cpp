@@ -194,7 +194,7 @@ static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const 
   crossfireTelemetryCmd(cmd, index, &value, 1);
 }
 
-static void crossfireTelemetryPing(){
+static void crossfireTelemetryPing() {
   const uint8_t crsfPushData[2] = { 0x00, 0xEA };
   crossfireTelemetryPush(CRSF_FRAMETYPE_DEVICE_PING, (uint8_t *) crsfPushData, 2);
 }
@@ -566,7 +566,7 @@ static void parseDeviceInfoMessage(uint8_t* data) {
       expectedParamsCount = newParamCount;
       clearParams();
       if (newParamCount == 0) {
-      // This device has no params so the Loading code never starts
+        // This device has no params so the Loading code never starts
         allParamsLoaded = 1;
       }
     }
@@ -773,7 +773,7 @@ static void lcd_title() {
     luaLcdDrawGauge(0, 1, COL2, barHeight, paramId, expectedParamsCount);
   } else {
     const char* textToDisplay = titleShowWarn ? elrsFlagsInfo :
-                            (allParamsLoaded == 1) ? (char *)&deviceName[0] : "External TX...";
+                            (allParamsLoaded == 1) ? (char *)&deviceName[0] : TR_EXTERNALRF; // "External TX...";
     uint8_t textLen = titleShowWarn ? ELRS_FLAGS_INFO_MAX_LEN : DEVICE_NAME_MAX_LEN;
     lcdDrawSizedText(COL1, 1, textToDisplay, textLen, INVERS);
   }
