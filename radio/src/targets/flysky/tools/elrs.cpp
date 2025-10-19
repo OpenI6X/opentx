@@ -72,22 +72,21 @@ struct ParamFunctions {
   void (*display)(Parameter*, uint8_t, uint8_t);
 };
 
-static constexpr uint16_t BUFFER_SIZE = 720;
+static constexpr uint8_t PARAM_DATA_TAIL_SIZE = 44; // == max popup packet size
+static constexpr uint8_t PARAMS_MAX_SIZE = 18 * sizeof(Parameter); // for max items observed in a folder
+static constexpr uint16_t BUFFER_SIZE = 720 + PARAM_DATA_TAIL_SIZE + PARAMS_MAX_SIZE;
+
 static uint8_t *buffer = &reusableBuffer.cToolData[0];
 static uint16_t bufferOffset = 0;
-
-static constexpr uint8_t PARAM_DATA_TAIL_SIZE = 44; // max popup packet size
 
 static uint8_t *paramData = &reusableBuffer.cToolData[0];
 static uint32_t paramDataLen = 0;
 
-static constexpr uint8_t PARAMS_MAX_COUNT = 18;
-static constexpr uint8_t PARAMS_SIZE = PARAMS_MAX_COUNT * sizeof(Parameter);
-static Parameter *params = (Parameter *)&reusableBuffer.cToolData[BUFFER_SIZE + PARAM_DATA_TAIL_SIZE];
+static Parameter *params;
 static uint8_t allocatedParamsCount = 0;
 
 static constexpr uint8_t DEVICES_MAX_COUNT = 8;
-static uint8_t *deviceIds = &reusableBuffer.cToolData[BUFFER_SIZE + PARAM_DATA_TAIL_SIZE + PARAMS_SIZE];
+static uint8_t *deviceIds = &reusableBuffer.cToolData[BUFFER_SIZE];
 //static uint8_t deviceIds[DEVICES_MAX_COUNT];
 static uint8_t devicesLen = 0;
 
@@ -199,9 +198,15 @@ static void crossfireTelemetryPing() {
   crossfireTelemetryPush(CRSF_FRAMETYPE_DEVICE_PING, (uint8_t *) crsfPushData, 2);
 }
 
+static void updateParamsSizeAndBufferOffset() {
+  TRACE("updateParamsSizeAndBufferOffset %d", expectedParamsCount);
+  uint16_t paramsSize = (expectedParamsCount + 1) * sizeof(Parameter); // + 1 button (EXIT/DEVICES)
+  params = (Parameter *)&reusableBuffer.cToolData[BUFFER_SIZE - paramsSize];
+}
+
 static void clearData() {
 //  TRACE("clearData %d", allocatedParamsCount);
-  memclear(reusableBuffer.cToolData, BUFFER_SIZE + PARAM_DATA_TAIL_SIZE + PARAMS_SIZE); // Skip deviceIds
+  memclear(reusableBuffer.cToolData, BUFFER_SIZE); // Skip deviceIds
   btnState = BTN_NONE;
   allocatedParamsCount = 0;
 }
@@ -564,6 +569,7 @@ static void parseDeviceInfoMessage(uint8_t* data) {
     reloadAllParam();
     if (newParamCount != expectedParamsCount || newParamCount == 0) {
       expectedParamsCount = newParamCount;
+      updateParamsSizeAndBufferOffset();
       clearData();
       if (newParamCount == 0) {
         // This device has no params so the Loading code never starts
