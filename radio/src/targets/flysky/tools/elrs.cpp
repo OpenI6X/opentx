@@ -72,10 +72,7 @@ struct ParamFunctions {
   void (*display)(Parameter*, uint8_t, uint8_t);
 };
 
-static constexpr uint8_t PARAM_DATA_TAIL_SIZE = 44; // == max popup packet size
-static constexpr uint8_t PARAMS_MAX_SIZE = 18 * sizeof(Parameter); // for max items observed in a folder
-static constexpr uint16_t BUFFER_SIZE = 720 + PARAM_DATA_TAIL_SIZE + PARAMS_MAX_SIZE;
-
+static constexpr uint16_t BUFFER_SIZE = CTOOL_DATA_SIZE - 8/*devices*/;
 static uint8_t *buffer = &reusableBuffer.cToolData[0];
 static uint16_t bufferOffset = 0;
 
@@ -200,7 +197,7 @@ static void crossfireTelemetryPing() {
 
 static void updateParamsSizeAndBufferOffset() {
   TRACE("updateParamsSizeAndBufferOffset %d", expectedParamsCount);
-  uint16_t paramsSize = (expectedParamsCount + 1) * sizeof(Parameter); // + 1 button (EXIT/DEVICES)
+  uint16_t paramsSize = (expectedParamsCount + 1) * sizeof(Parameter); // + 1 for button (EXIT/DEVICES)
   params = (Parameter *)&reusableBuffer.cToolData[BUFFER_SIZE - paramsSize];
 }
 
