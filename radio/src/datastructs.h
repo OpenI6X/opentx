@@ -416,9 +416,8 @@ PACK(struct ModuleData {
   uint8_t channelsStart;
   int8_t channelsCount;      // 0=8 channels
   uint8_t failsafeMode : 4;  // only 3 bits used
-  uint8_t subType : 3;
-  uint8_t invertedSerial : 1;  // telemetry serial inverted from standard
-  int16_t failsafeChannels[MAX_OUTPUT_CHANNELS];
+  uint8_t subType : 4;
+  int16_t failsafeChannels[MAX_OUTPUT_CHANNELS]; // TODO: EdgeTX moved to ModelData
 
   union {
     struct {
@@ -428,11 +427,13 @@ PACK(struct ModuleData {
       int8_t frameLength;
     } ppm;
     NOBACKUP(struct {
-      uint8_t rfProtocolExtra : 2;
-      uint8_t spare1 : 3;
-      uint8_t customProto : 1;
+      uint8_t disableTelemetry:1;
+      uint8_t disableMapping:1;
       uint8_t autoBindMode : 1;
       uint8_t lowPowerMode : 1;
+      uint8_t receiverTelemetryOff:1;
+      uint8_t receiverHigherChannels:1;
+      uint8_t spare:2;
       int8_t optionValue;
     } multi);
     NOBACKUP(struct {
@@ -451,16 +452,14 @@ PACK(struct ModuleData {
     } crsf);
   };
 
+  // TODO remove
   // Helper functions to set both of the rfProto protocol at the same time
   NOBACKUP(inline uint8_t getMultiProtocol(bool returnCustom) {
-    if (returnCustom && multi.customProto)
-      return MM_RF_CUSTOM_SELECTED;
-    return ((uint8_t)(rfProtocol & 0x0f)) + (multi.rfProtocolExtra << 4);
+    return ((uint8_t)(rfProtocol));
   })
 
   NOBACKUP(inline void setMultiProtocol(uint8_t proto) {
-    rfProtocol = (uint8_t)(proto & 0x0f);
-    multi.rfProtocolExtra = (proto & 0x30) >> 4;
+    rfProtocol = (int8_t)(proto);
   })
 });
 
