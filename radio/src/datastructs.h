@@ -404,6 +404,20 @@ PACK(struct TelemetrySensor {
 });
 
 /*
+ * Trainer module structure
+ */
+
+PACK(struct TrainerModuleData {
+  uint8_t mode;
+  uint8_t channelsStart;
+  int8_t  channelsCount; // 0=8 channels
+  int8_t frameLength;
+  int8_t  delay:6;
+  uint8_t pulsePol:1;
+  uint8_t spare2:1;
+});
+
+/*
  * Module structure
  */
 
@@ -416,8 +430,7 @@ PACK(struct ModuleData {
   uint8_t channelsStart;
   int8_t channelsCount;      // 0=8 channels
   uint8_t failsafeMode : 4;  // only 3 bits used
-  uint8_t subType : 4;
-  int16_t failsafeChannels[MAX_OUTPUT_CHANNELS]; // TODO: EdgeTX moved to ModelData
+  uint8_t subType : 4;       // used only by AFHDS2A
 
   union {
     struct {
@@ -531,48 +544,10 @@ PACK(struct CustomScreenData {
 // TODO other boards could have their custom screens here as well
 #endif
 
-#if defined(PCBX12S)
-#define MODELDATA_EXTRA                                  \
-  NOBACKUP(uint8_t spare : 3);                           \
-  NOBACKUP(uint8_t trainerMode : 3);                     \
-  NOBACKUP(uint8_t potsWarnMode : 2);                    \
-  ModuleData moduleData[NUM_MODULES + 1];                \
-  NOBACKUP(ScriptData scriptsData[MAX_SCRIPTS]);         \
-  NOBACKUP(char inputNames[MAX_INPUTS][LEN_INPUT_NAME]); \
-  NOBACKUP(uint8_t potsWarnEnabled);                     \
-  NOBACKUP(int8_t potsWarnPosition[NUM_POTS + NUM_SLIDERS]);
-#elif defined(PCBX10)
-#define MODELDATA_EXTRA                                      \
-  NOBACKUP(uint8_t spare : 3);                               \
-  NOBACKUP(uint8_t trainerMode : 3);                         \
-  NOBACKUP(uint8_t potsWarnMode : 2);                        \
-  ModuleData moduleData[NUM_MODULES + 1];                    \
-  NOBACKUP(ScriptData scriptsData[MAX_SCRIPTS]);             \
-  NOBACKUP(char inputNames[MAX_INPUTS][LEN_INPUT_NAME]);     \
-  NOBACKUP(uint8_t potsWarnEnabled);                         \
-  NOBACKUP(int8_t potsWarnPosition[NUM_POTS + NUM_SLIDERS]); \
-  NOBACKUP(uint8_t potsWarnSpares[NUM_DUMMY_ANAS]);
-#elif defined(PCBTARANIS)
-#define MODELDATA_EXTRA                        \
-  uint8_t spare : 3;                           \
-  uint8_t trainerMode : 3;                     \
-  uint8_t potsWarnMode : 2;                    \
-  ModuleData moduleData[NUM_MODULES + 1];      \
-  ScriptData scriptsData[MAX_SCRIPTS];         \
-  char inputNames[MAX_INPUTS][LEN_INPUT_NAME]; \
-  uint8_t potsWarnEnabled;                     \
-  int8_t potsWarnPosition[NUM_POTS + NUM_SLIDERS];
-#elif defined(PCBI6X)
-#define MODELDATA_EXTRA                            \
-  NOBACKUP(uint8_t spare : 3);                     \
-  NOBACKUP(uint8_t trainerMode : 3);               \
-  uint8_t potsWarnMode : 2;                        \
-  ModuleData moduleData[NUM_MODULES + 1];          \
-  char inputNames[MAX_INPUTS][LEN_INPUT_NAME];     \
-  uint8_t potsWarnEnabled;                         \
-  int8_t potsWarnPosition[NUM_POTS + NUM_SLIDERS];
+#if defined(PCBHORUS)  || defined(PCBTARANIS)
+  #define SCRIPTS_DATA  NOBACKUP(ScriptData scriptsData[MAX_SCRIPTS]);
 #else
-#define MODELDATA_EXTRA
+#define SCRIPTS_DATA
 #endif
 
 PACK(struct ModelData {
@@ -610,7 +585,17 @@ PACK(struct ModelData {
 
   TELEMETRY_DATA
 
-  MODELDATA_EXTRA
+  NOBACKUP(uint8_t spare:6);
+  NOBACKUP(uint8_t potsWarnMode:2);
+  ModuleData moduleData[NUM_MODULES];
+  int16_t failsafeChannels[MAX_OUTPUT_CHANNELS];
+  TrainerModuleData trainerData;
+
+  SCRIPTS_DATA
+
+  NOBACKUP(char inputNames[MAX_INPUTS][LEN_INPUT_NAME]);
+  NOBACKUP(uint8_t potsWarnEnabled);
+  NOBACKUP(int8_t potsWarnPosition[NUM_POTS+NUM_SLIDERS+NUM_DUMMY_ANAS]);
 
   NOBACKUP(TelemetrySensor telemetrySensors[MAX_TELEMETRY_SENSORS];)
 
@@ -764,7 +749,7 @@ PACK(struct RadioData {
 #undef SWITCHES_WARNING_DATA
 #undef MODEL_GVARS_DATA
 #undef TELEMETRY_DATA
-#undef MODELDATA_EXTRA
+#undef SCRIPTS_DATA
 #undef CUSTOM_SCREENS_DATA
 #undef EXTRA_GENERAL_FIELDS
 #undef THEME_DATA
@@ -871,17 +856,14 @@ static inline void check_struct() {
 
   CHKSIZE(LogicalSwitchData, 9);
   CHKSIZE(TelemetrySensor, 14);
-
-  CHKSIZE(ModuleData, 7 + (2 * MAX_OUTPUT_CHANNELS));
-
+  CHKSIZE(ModuleData, 7);
   CHKSIZE(GVarData, 7);
-
   CHKSIZE(RssiAlarmData, 2);
   CHKSIZE(TrainerData, 16);
 
 #if defined(PCBI6X)
   CHKSIZE(RadioData, 316);
-  CHKSIZE(ModelData, 2959);
+  CHKSIZE(ModelData, 2893);
 #elif defined(PCBXLITE)
   CHKSIZE(RadioData, 844);
   CHKSIZE(ModelData, 6025);

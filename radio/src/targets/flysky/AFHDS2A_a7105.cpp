@@ -121,8 +121,8 @@ void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type) {
       packet[0] = 0x56;
       for (uint8_t ch = 0; ch < num_ch; ch++) {
         if (g_model.moduleData[INTERNAL_MODULE].failsafeMode == FAILSAFE_CUSTOM &&
-            g_model.moduleData[INTERNAL_MODULE].failsafeChannels[ch] < FAILSAFE_CHANNEL_HOLD) {
-          const uint16_t failsafeMicros = g_model.moduleData[INTERNAL_MODULE].failsafeChannels[ch] / 2 + PPM_CH_CENTER(ch);
+            g_model.failsafeChannels[ch] < FAILSAFE_CHANNEL_HOLD) {
+          const uint16_t failsafeMicros = g_model.failsafeChannels[ch] / 2 + PPM_CH_CENTER(ch);
           packet[9 + ch * 2] = failsafeMicros & 0xff;
           packet[10 + ch * 2] = (failsafeMicros >> 8) & 0xff;
         } else {  // no values

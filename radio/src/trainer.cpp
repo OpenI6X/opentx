@@ -49,7 +49,7 @@ void checkTrainerSignalWarning()
 
 void checkTrainerSettings()
 {
-  uint8_t requiredTrainerMode = g_model.trainerMode;
+  uint8_t requiredTrainerMode = g_model.trainerData.mode;
 
   if (requiredTrainerMode != currentTrainerMode) {
     switch (currentTrainerMode) {

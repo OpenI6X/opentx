@@ -64,7 +64,7 @@ void extmoduleTimerStart()
   EXTMODULE_TIMER->CCMR1 |= TIM_CCMR1_CC1S_0 | TIM_CCMR1_IC1F_1 | TIM_CCMR1_IC1F_0;
   EXTMODULE_TIMER->EGR = 1;                                // Restart
 
-  if (g_model.trainerMode == TRAINER_MODE_MASTER_TRAINER_JACK) {
+  if (g_model.trainerData.mode == TRAINER_MODE_MASTER_TRAINER_JACK) {
     WRITE_REG(EXTMODULE_TIMER->SR, ~(TIM_SR_CC1IF));  // Clear capture interrupt flag (PPMIN)
     EXTMODULE_TIMER->DIER |= TIM_DIER_CC1IE;          // Enable capture interrupt     (PPMIN)
     EXTMODULE_TIMER->CCER |= TIM_CCER_CC1E | TIM_CCER_CC1P;  // 01: inverted/falling edge

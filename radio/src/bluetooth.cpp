@@ -361,11 +361,11 @@ void bluetoothWakeup()
     bluetoothWakeupTime = now + 10; /* 100ms */
   }
   else if (bluetoothState == BLUETOOTH_STATE_CONNECTED) {
-    if (g_eeGeneral.bluetoothMode == BLUETOOTH_TRAINER && g_model.trainerMode == TRAINER_MODE_MASTER_BLUETOOTH) {
+    if (g_eeGeneral.bluetoothMode == BLUETOOTH_TRAINER && g_model.trainerData.mode == TRAINER_MODE_MASTER_BLUETOOTH) {
       bluetoothReceiveTrainer();
     }
     else {
-      if (g_eeGeneral.bluetoothMode == BLUETOOTH_TRAINER && g_model.trainerMode == TRAINER_MODE_SLAVE_BLUETOOTH) {
+      if (g_eeGeneral.bluetoothMode == BLUETOOTH_TRAINER && g_model.trainerData.mode == TRAINER_MODE_SLAVE_BLUETOOTH) {
         bluetoothSendTrainer();
         bluetoothWakeupTime = now + 2; /* 20ms */
       }
@@ -399,7 +399,7 @@ void bluetoothWakeup()
       bluetoothState = BLUETOOTH_STATE_POWER_SENT;
     }
     else if (bluetoothState == BLUETOOTH_STATE_POWER_SENT && (!strncmp(line, "Central:", 8) || !strncmp(line, "Peripheral:", 11))) {
-      if (g_eeGeneral.bluetoothMode == BLUETOOTH_TRAINER && g_model.trainerMode == TRAINER_MODE_MASTER_BLUETOOTH)
+      if (g_eeGeneral.bluetoothMode == BLUETOOTH_TRAINER && g_model.trainerData.mode == TRAINER_MODE_MASTER_BLUETOOTH)
         bluetoothWriteString("AT+ROLE1\r\n");
       else
         bluetoothWriteString("AT+ROLE0\r\n");
@@ -430,7 +430,7 @@ void bluetoothWakeup()
     else if ((bluetoothState == BLUETOOTH_STATE_IDLE || bluetoothState == BLUETOOTH_STATE_DISCONNECTED || bluetoothState == BLUETOOTH_STATE_CONNECT_SENT) && !strncmp(line, "Connected:", 10)) {
       strcpy(bluetoothDistantAddr, &line[10]); // TODO quick & dirty
       bluetoothState = BLUETOOTH_STATE_CONNECTED;
-      if (g_model.trainerMode == TRAINER_MODE_SLAVE_BLUETOOTH) {
+      if (g_model.trainerData.mode == TRAINER_MODE_SLAVE_BLUETOOTH) {
         bluetoothWakeupTime += 500; // it seems a 5s delay is needed before sending the 1st frame
       }
     }
