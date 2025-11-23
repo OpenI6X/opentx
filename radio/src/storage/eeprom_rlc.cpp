@@ -164,7 +164,7 @@ void storageFormat()
 
   memclear(&eeFs, sizeof(eeFs));
   eeFs.version  = EEFS_VERS;
-  eeFs.mySize   = sizeof(EeFsOld);
+  eeFs.mySize   = sizeof(eeFs);
   eeFs.freeList = 0;
   eeFs.bs       = BS;
   for (blkid_t i=FIRSTBLK; i<BLOCKS-1; i++) {
@@ -186,12 +186,12 @@ bool eepromOpen()
   if (eeFs.version != EEFS_VERS) {
     TRACE("bad eeFs.version (%d instead of %d)", eeFs.version, EEFS_VERS);
   }
-  if (eeFs.mySize != sizeof(EeFsOld)) {
-    TRACE("bad eeFs.mySize (%d instead of %d)", (int)eeFs.mySize, (int)sizeof(EeFsOld));
+  if (eeFs.mySize != sizeof(eeFs)) {
+    TRACE("bad eeFs.mySize (%d instead of %d)", (int)eeFs.mySize, (int)sizeof(eeFs));
   }
 #endif
 
-  if (eeFs.version != EEFS_VERS || eeFs.mySize != sizeof(EeFsOld)) {
+  if (eeFs.version != EEFS_VERS || eeFs.mySize != sizeof(eeFs)) {
     return false;
   }
 

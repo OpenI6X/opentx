@@ -45,15 +45,6 @@ PACK(struct EeFs {
   DirEnt   files[MAXFILES];
 });
 
-PACK(struct EeFsOld {
-  uint8_t  version;
-  blkid_t  mySize;
-  blkid_t  freeList;
-  uint8_t  bs;
-  EEFS_EXTRA_FIELDS
-  DirEnt   files[62];
-});
-
 extern EeFs eeFs;
 
 #define FILE_TYP_GENERAL 1
@@ -65,8 +56,8 @@ extern EeFs eeFs;
 #define FILE_MODEL(n) (1+(n))
 #define FILE_TMP      (1+MAX_MODELS)
 
-// Align to previous size of EeFs to keep eeprom data intact
-#define RESV          sizeof(EeFsOld)  //reserv for eeprom header with directory (eeFs)
+// OpenTX eeFs=256B, our is only 96B, align to 2 blocks
+#define RESV          128 // was 256, sizeof(EeFs)  //reserved for eeprom header with directory (eeFs)
 
 #define FIRSTBLK      1
 #define BLOCKS        (1+(EEPROM_SIZE-RESV)/BS)
@@ -209,7 +200,7 @@ bool eeLoadGeneral();
 inline bool isEepromStart(const void * buffer)
 {
   const EeFs * eeprom = (const EeFs *)buffer;
-  if (eeprom->version==EEFS_VERS && eeprom->mySize==sizeof(EeFsOld) && eeprom->bs==BS)
+  if (eeprom->version==EEFS_VERS && eeprom->mySize==sizeof(EeFs) && eeprom->bs==BS)
     return true;
 
   return false;

@@ -69,7 +69,7 @@
   #define MAX_SCRIPTS                  0
   #define MAX_INPUTS                   16
   #define MAX_TRAINER_CHANNELS         16
-  #define MAX_TELEMETRY_SENSORS        30 // 48B each
+  #define MAX_TELEMETRY_SENSORS        38 // 48B each
 #else
   #warning "Unknown board!"
 #endif

@@ -489,13 +489,9 @@ typedef uint32_t swarnstate_t;
 typedef uint64_t swconfig_t;
 typedef uint64_t swarnstate_t;
 typedef uint32_t swarnenable_t;
-#elif defined(PCBTARANIS)
+#elif defined(PCBTARANIS) || defined(PCBI6X)
 typedef uint16_t swconfig_t;
 typedef uint16_t swarnstate_t;
-typedef uint8_t swarnenable_t;
-#elif defined(PCBI6X)
-typedef uint8_t swconfig_t;
-typedef uint8_t swarnstate_t;
 typedef uint8_t swarnenable_t;
 #else
 typedef uint8_t swarnstate_t;
@@ -575,8 +571,7 @@ PACK(struct CustomScreenData {
   ModuleData moduleData[NUM_MODULES + 1];          \
   char inputNames[MAX_INPUTS][LEN_INPUT_NAME];     \
   uint8_t potsWarnEnabled;                         \
-  int8_t potsWarnPosition[NUM_POTS + NUM_SLIDERS]; \
-  uint8_t rxBattAlarms[2];
+  int8_t potsWarnPosition[NUM_POTS + NUM_SLIDERS];
 #else
 #define MODELDATA_EXTRA
 #endif
@@ -656,16 +651,12 @@ PACK(struct TrainerData {
 #define EXTRA_GENERAL_FIELDS_ARM                       \
   NOBACKUP(uint8_t backlightBright);                   \
   NOBACKUP(uint32_t globalTimer);                      \
-  NOBACKUP(uint8_t bluetoothBaudrate : 4);             \
-  NOBACKUP(uint8_t bluetoothMode : 4);                 \
-  NOBACKUP(uint8_t countryCode);                       \
   NOBACKUP(uint8_t imperial : 1);                      \
   NOBACKUP(uint8_t jitterFilter : 1); /* 0 - active */ \
   NOBACKUP(uint8_t disableRssiPoweroffAlarm : 1);      \
   NOBACKUP(uint8_t USBMode : 2);                       \
   NOBACKUP(uint8_t spare : 1);                         \
   NOBACKUP(uint8_t ppmunit : 2);                       \
-  NOBACKUP(char ttsLanguage[2]);                       \
   NOBACKUP(int8_t beepVolume : 4);                     \
   NOBACKUP(int8_t wavVolume : 4);                      \
   NOBACKUP(int8_t varioVolume : 4);                    \
@@ -890,8 +881,8 @@ static inline void check_struct() {
   CHKSIZE(TrainerData, 16);
 
 #if defined(PCBI6X)
-  CHKSIZE(RadioData, 318);
-  CHKSIZE(ModelData, 2848);
+  CHKSIZE(RadioData, 316); // 318
+  CHKSIZE(ModelData, 2959); // 2848
 #elif defined(PCBXLITE)
   CHKSIZE(RadioData, 844);
   CHKSIZE(ModelData, 6025);
