@@ -56,7 +56,7 @@ extern EeFs eeFs;
 #define FILE_MODEL(n) (1+(n))
 #define FILE_TMP      (1+MAX_MODELS)
 
-// OpenTX eeFs=256B, our is only 96B, align to 2 blocks
+// OpenTX eeFs=256B, our is 96B, align to 2 blocks vs 4, restores 128B of eeprom space
 #define RESV          128 // was 256, sizeof(EeFs)  //reserved for eeprom header with directory (eeFs)
 
 #define FIRSTBLK      1
