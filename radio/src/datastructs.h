@@ -425,8 +425,8 @@ PACK(struct TrainerModuleData {
 #define MM_RF_CUSTOM_SELECTED 0xff
 
 PACK(struct ModuleData {
-  uint8_t type; // : 4; // use full byte to reduce code size on PCBI6X
-  uint8_t rfProtocol; //  : 4
+  uint8_t type;              // use full byte to reduce code size on PCBI6X
+  uint8_t rfProtocol;        //
   uint8_t channelsStart;
   int8_t channelsCount;      // 0=8 channels
   uint8_t failsafeMode : 4;  // only 3 bits used
