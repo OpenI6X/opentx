@@ -174,8 +174,7 @@ enum BeeperMode {
   enum ModuleIndex {
     INTERNAL_MODULE,
     EXTERNAL_MODULE,
-    TRAINER_MODULE,
-    FLASHING_MODULE,
+    SPORT_MODULE,
   };
 
   enum ArmingMode {

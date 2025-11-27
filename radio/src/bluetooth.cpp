@@ -212,7 +212,7 @@ void bluetoothSendTrainer()
 {
   int16_t PPM_range = g_model.extendedLimits ? 640*2 : 512*2;
 
-  int firstCh = g_model.moduleData[TRAINER_MODULE].channelsStart;
+  int firstCh = g_model.trainerData.channelsStart;
   int lastCh = firstCh + 8;
 
   uint8_t * cur = bluetoothBuffer;
