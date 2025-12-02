@@ -252,8 +252,8 @@ int getSwitchWarningsCount()
 #define SLIDER_WARN_ITEMS()               ((g_model.potsWarnMode) ? uint8_t(NAVIGATION_LINE_BY_LINE|(NUM_SLIDERS-1)) : (uint8_t)0)
 
 #define TRAINER_LINE1_BLUETOOTH_M_ROWS    ((bluetoothDistantAddr[0] == 0 || bluetoothState == BLUETOOTH_STATE_CONNECTED) ? (uint8_t)0 : (uint8_t)1)
-#define TRAINER_LINE1_ROWS                (g_model.trainerMode == TRAINER_MODE_SLAVE ? (uint8_t)1 : (g_model.trainerMode == TRAINER_MODE_MASTER_BLUETOOTH ? TRAINER_LINE1_BLUETOOTH_M_ROWS : (g_model.trainerMode == TRAINER_MODE_SLAVE_BLUETOOTH ? (uint8_t)1 : HIDDEN_ROW)))
-#define TRAINER_LINE2_ROWS                (g_model.trainerMode == TRAINER_MODE_SLAVE ? (uint8_t)2 : HIDDEN_ROW)
+#define TRAINER_LINE1_ROWS                (g_model.trainerData.mode == TRAINER_MODE_SLAVE ? (uint8_t)1 : (g_model.trainerData.mode == TRAINER_MODE_MASTER_BLUETOOTH ? TRAINER_LINE1_BLUETOOTH_M_ROWS : (g_model.trainerData.mode == TRAINER_MODE_SLAVE_BLUETOOTH ? (uint8_t)1 : HIDDEN_ROW)))
+#define TRAINER_LINE2_ROWS                (g_model.trainerData.mode == TRAINER_MODE_SLAVE ? (uint8_t)2 : HIDDEN_ROW)
 
 bool menuModelSetup(event_t event)
 {
@@ -675,7 +675,7 @@ bool menuModelSetup(event_t event)
 
       case ITEM_MODEL_TRAINER_MODE:
         lcdDrawText(MENUS_MARGIN_LEFT, y, STR_MODE);
-        g_model.trainerMode = editChoice(MODEL_SETUP_2ND_COLUMN, y, STR_VTRAINERMODES, g_model.trainerMode, 0, TRAINER_MODE_MAX(), attr, event);
+        g_model.trainerData.mode = editChoice(MODEL_SETUP_2ND_COLUMN, y, STR_VTRAINERMODES, g_model.trainerData.mode, 0, TRAINER_MODE_MAX(), attr, event);
         if (attr && checkIncDec_Ret) {
           bluetoothState = BLUETOOTH_STATE_OFF;
           bluetoothDistantAddr[0] = 0;
@@ -790,7 +790,7 @@ bool menuModelSetup(event_t event)
         break;
 
       case ITEM_MODEL_TRAINER_LINE1:
-        if (g_model.trainerMode == TRAINER_MODE_MASTER_BLUETOOTH) {
+        if (g_model.trainerData.mode == TRAINER_MODE_MASTER_BLUETOOTH) {
           if (attr) {
             s_editMode = 0;
           }
@@ -1195,11 +1195,11 @@ bool menuModelFailsafe(event_t event)
 
     if (menuVerticalPosition < sentModuleChannels(g_moduleIdx)) {
       if (s_editMode) {
-        g_model.moduleData[g_moduleIdx].failsafeChannels[menuVerticalPosition] = channelOutputs[menuVerticalPosition+channelStart];
+        g_model.failsafeChannels[menuVerticalPosition] = channelOutputs[menuVerticalPosition+channelStart];
         s_editMode = 0;
       }
       else {
-        int16_t & failsafe = g_model.moduleData[g_moduleIdx].failsafeChannels[menuVerticalPosition];
+        int16_t & failsafe = g_model.failsafeChannels[menuVerticalPosition];
         if (failsafe < FAILSAFE_CHANNEL_HOLD)
           failsafe = FAILSAFE_CHANNEL_HOLD;
         else if (failsafe == FAILSAFE_CHANNEL_HOLD)
@@ -1226,7 +1226,7 @@ bool menuModelFailsafe(event_t event)
       coord_t x = col*(LCD_W/2);
       const coord_t y = MENU_CONTENT_TOP - FH + line*(FH+2);
       const int32_t channelValue = channelOutputs[ch+channelStart];
-      int32_t failsafeValue = g_model.moduleData[g_moduleIdx].failsafeChannels[8*col+line];
+      int32_t failsafeValue = g_model.failsafeChannels[8*col+line];
 
       // Channel name if present, number if not
       if (g_model.limitData[ch+channelStart].name[0] != '\0') {
@@ -1247,7 +1247,7 @@ bool menuModelFailsafe(event_t event)
           }
           else {
             flags |= BLINK;
-            CHECK_INCDEC_MODELVAR(event, g_model.moduleData[g_moduleIdx].failsafeChannels[8*col+line], -lim, +lim);
+            CHECK_INCDEC_MODELVAR(event, g_model.failsafeChannels[8*col+line], -lim, +lim);
           }
         }
       }

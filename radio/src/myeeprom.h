@@ -47,7 +47,7 @@
 #define IS_TRAINER_EXTERNAL_MODULE() false
 #define HAS_WIRELESS_TRAINER_HARDWARE() (g_eeGeneral.auxSerialMode == UART_MODE_SBUS_TRAINER)
 #elif defined(PCBTARANIS)
-#define IS_TRAINER_EXTERNAL_MODULE() (g_model.trainerMode == TRAINER_MODE_MASTER_SBUS_EXTERNAL_MODULE || g_model.trainerMode == TRAINER_MODE_MASTER_CPPM_EXTERNAL_MODULE)
+#define IS_TRAINER_EXTERNAL_MODULE() (g_model.trainerData.mode == TRAINER_MODE_MASTER_SBUS_EXTERNAL_MODULE || g_model.trainerData.mode == TRAINER_MODE_MASTER_CPPM_EXTERNAL_MODULE)
 #define HAS_WIRELESS_TRAINER_HARDWARE() (g_eeGeneral.auxSerialMode == UART_MODE_SBUS_TRAINER)
 #else
 #define IS_TRAINER_EXTERNAL_MODULE() false
@@ -281,7 +281,7 @@ enum SwashType {
 #endif
 
 enum XJTRFProtocols {
-  RF_PROTO_OFF = -1,
+  RF_PROTO_OFF = 0,
   RF_PROTO_X16,
   RF_PROTO_D8,
   RF_PROTO_LR12,
@@ -289,7 +289,7 @@ enum XJTRFProtocols {
 };
 
 enum I6XProtocols {
-  RF_I6X_PROTO_OFF = -1,
+  RF_I6X_PROTO_OFF = 0,
   RF_I6X_PROTO_AFHDS2A,
   RF_I6X_PROTO_LAST = RF_I6X_PROTO_AFHDS2A
 };
@@ -303,7 +303,7 @@ enum R9MSubTypes {
 };
 
 enum MultiModuleRFProtocols {
-  MM_RF_PROTO_CUSTOM = -1,
+  MM_RF_PROTO_CUSTOM = 0,
   MM_RF_PROTO_FIRST = MM_RF_PROTO_CUSTOM,
   MM_RF_PROTO_FLYSKY = 0,
   MM_RF_PROTO_HUBSAN,

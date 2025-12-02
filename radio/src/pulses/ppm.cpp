@@ -64,7 +64,7 @@ void setupPulsesPPM(PpmPulsesData<T> * ppmPulsesData, uint8_t channelsStart, int
 
 void setupPulsesPPMTrainer()
 {
-  setupPulsesPPM<trainer_pulse_duration_t>(&trainerPulsesData.ppm, g_model.moduleData[TRAINER_MODULE].channelsStart, g_model.moduleData[TRAINER_MODULE].channelsCount, g_model.moduleData[TRAINER_MODULE].ppm.frameLength);
+  setupPulsesPPM<trainer_pulse_duration_t>(&trainerPulsesData.ppm, g_model.trainerData.channelsStart, g_model.trainerData.channelsCount, g_model.trainerData.frameLength);
 }
 
 #if defined(TARANIS_INTERNAL_PPM)

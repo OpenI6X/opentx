@@ -404,6 +404,20 @@ PACK(struct TelemetrySensor {
 });
 
 /*
+ * Trainer module structure
+ */
+
+PACK(struct TrainerModuleData {
+  uint8_t mode;
+  uint8_t channelsStart;
+  int8_t  channelsCount; // 0=8 channels
+  int8_t frameLength;
+  int8_t  delay:6;
+  uint8_t pulsePol:1;
+  uint8_t spare2:1;
+});
+
+/*
  * Module structure
  */
 
@@ -411,14 +425,12 @@ PACK(struct TelemetrySensor {
 #define MM_RF_CUSTOM_SELECTED 0xff
 
 PACK(struct ModuleData {
-  uint8_t type; // : 4; // use full byte to reduce code size on PCBI6X
-  int8_t rfProtocol; //  : 4
+  uint8_t type;              // use full byte to reduce code size on PCBI6X
+  uint8_t rfProtocol;        //
   uint8_t channelsStart;
   int8_t channelsCount;      // 0=8 channels
   uint8_t failsafeMode : 4;  // only 3 bits used
-  uint8_t subType : 3;
-  uint8_t invertedSerial : 1;  // telemetry serial inverted from standard
-  int16_t failsafeChannels[MAX_OUTPUT_CHANNELS];
+  uint8_t subType : 4;       // used only by AFHDS2A
 
   union {
     struct {
@@ -428,11 +440,13 @@ PACK(struct ModuleData {
       int8_t frameLength;
     } ppm;
     NOBACKUP(struct {
-      uint8_t rfProtocolExtra : 2;
-      uint8_t spare1 : 3;
-      uint8_t customProto : 1;
+      uint8_t disableTelemetry:1;
+      uint8_t disableMapping:1;
       uint8_t autoBindMode : 1;
       uint8_t lowPowerMode : 1;
+      uint8_t receiverTelemetryOff:1;
+      uint8_t receiverHigherChannels:1;
+      uint8_t spare:2;
       int8_t optionValue;
     } multi);
     NOBACKUP(struct {
@@ -450,18 +464,6 @@ PACK(struct ModuleData {
       int16_t spare1:5;
     } crsf);
   };
-
-  // Helper functions to set both of the rfProto protocol at the same time
-  NOBACKUP(inline uint8_t getMultiProtocol(bool returnCustom) {
-    if (returnCustom && multi.customProto)
-      return MM_RF_CUSTOM_SELECTED;
-    return ((uint8_t)(rfProtocol & 0x0f)) + (multi.rfProtocolExtra << 4);
-  })
-
-  NOBACKUP(inline void setMultiProtocol(uint8_t proto) {
-    rfProtocol = (uint8_t)(proto & 0x0f);
-    multi.rfProtocolExtra = (proto & 0x30) >> 4;
-  })
 });
 
 /*
@@ -532,48 +534,10 @@ PACK(struct CustomScreenData {
 // TODO other boards could have their custom screens here as well
 #endif
 
-#if defined(PCBX12S)
-#define MODELDATA_EXTRA                                  \
-  NOBACKUP(uint8_t spare : 3);                           \
-  NOBACKUP(uint8_t trainerMode : 3);                     \
-  NOBACKUP(uint8_t potsWarnMode : 2);                    \
-  ModuleData moduleData[NUM_MODULES + 1];                \
-  NOBACKUP(ScriptData scriptsData[MAX_SCRIPTS]);         \
-  NOBACKUP(char inputNames[MAX_INPUTS][LEN_INPUT_NAME]); \
-  NOBACKUP(uint8_t potsWarnEnabled);                     \
-  NOBACKUP(int8_t potsWarnPosition[NUM_POTS + NUM_SLIDERS]);
-#elif defined(PCBX10)
-#define MODELDATA_EXTRA                                      \
-  NOBACKUP(uint8_t spare : 3);                               \
-  NOBACKUP(uint8_t trainerMode : 3);                         \
-  NOBACKUP(uint8_t potsWarnMode : 2);                        \
-  ModuleData moduleData[NUM_MODULES + 1];                    \
-  NOBACKUP(ScriptData scriptsData[MAX_SCRIPTS]);             \
-  NOBACKUP(char inputNames[MAX_INPUTS][LEN_INPUT_NAME]);     \
-  NOBACKUP(uint8_t potsWarnEnabled);                         \
-  NOBACKUP(int8_t potsWarnPosition[NUM_POTS + NUM_SLIDERS]); \
-  NOBACKUP(uint8_t potsWarnSpares[NUM_DUMMY_ANAS]);
-#elif defined(PCBTARANIS)
-#define MODELDATA_EXTRA                        \
-  uint8_t spare : 3;                           \
-  uint8_t trainerMode : 3;                     \
-  uint8_t potsWarnMode : 2;                    \
-  ModuleData moduleData[NUM_MODULES + 1];      \
-  ScriptData scriptsData[MAX_SCRIPTS];         \
-  char inputNames[MAX_INPUTS][LEN_INPUT_NAME]; \
-  uint8_t potsWarnEnabled;                     \
-  int8_t potsWarnPosition[NUM_POTS + NUM_SLIDERS];
-#elif defined(PCBI6X)
-#define MODELDATA_EXTRA                            \
-  NOBACKUP(uint8_t spare : 3);                     \
-  NOBACKUP(uint8_t trainerMode : 3);               \
-  uint8_t potsWarnMode : 2;                        \
-  ModuleData moduleData[NUM_MODULES + 1];          \
-  char inputNames[MAX_INPUTS][LEN_INPUT_NAME];     \
-  uint8_t potsWarnEnabled;                         \
-  int8_t potsWarnPosition[NUM_POTS + NUM_SLIDERS];
+#if defined(PCBHORUS)  || defined(PCBTARANIS)
+  #define SCRIPTS_DATA  NOBACKUP(ScriptData scriptsData[MAX_SCRIPTS]);
 #else
-#define MODELDATA_EXTRA
+#define SCRIPTS_DATA
 #endif
 
 PACK(struct ModelData {
@@ -611,7 +575,17 @@ PACK(struct ModelData {
 
   TELEMETRY_DATA
 
-  MODELDATA_EXTRA
+  NOBACKUP(uint8_t spare:6);
+  NOBACKUP(uint8_t potsWarnMode:2);
+  ModuleData moduleData[NUM_MODULES];
+  int16_t failsafeChannels[MAX_OUTPUT_CHANNELS];
+  TrainerModuleData trainerData;
+
+  SCRIPTS_DATA
+
+  NOBACKUP(char inputNames[MAX_INPUTS][LEN_INPUT_NAME]);
+  NOBACKUP(uint8_t potsWarnEnabled);
+  NOBACKUP(int8_t potsWarnPosition[NUM_POTS+NUM_SLIDERS+NUM_DUMMY_ANAS]);
 
   NOBACKUP(TelemetrySensor telemetrySensors[MAX_TELEMETRY_SENSORS];)
 
@@ -765,7 +739,7 @@ PACK(struct RadioData {
 #undef SWITCHES_WARNING_DATA
 #undef MODEL_GVARS_DATA
 #undef TELEMETRY_DATA
-#undef MODELDATA_EXTRA
+#undef SCRIPTS_DATA
 #undef CUSTOM_SCREENS_DATA
 #undef EXTRA_GENERAL_FIELDS
 #undef THEME_DATA
@@ -872,17 +846,14 @@ static inline void check_struct() {
 
   CHKSIZE(LogicalSwitchData, 9);
   CHKSIZE(TelemetrySensor, 14);
-
-  CHKSIZE(ModuleData, 7 + (2 * MAX_OUTPUT_CHANNELS));
-
+  CHKSIZE(ModuleData, 7);
   CHKSIZE(GVarData, 7);
-
   CHKSIZE(RssiAlarmData, 2);
   CHKSIZE(TrainerData, 16);
 
 #if defined(PCBI6X)
   CHKSIZE(RadioData, 316);
-  CHKSIZE(ModelData, 2959);
+  CHKSIZE(ModelData, 2921);
 #elif defined(PCBXLITE)
   CHKSIZE(RadioData, 844);
   CHKSIZE(ModelData, 6025);
