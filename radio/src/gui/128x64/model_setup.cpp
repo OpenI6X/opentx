@@ -769,7 +769,7 @@ void menuModelSetup(event_t event)
 #if defined(PCBI6X) 
       case ITEM_MODEL_INTERNAL_MODULE_MODE:
         lcdDrawTextAlignedLeft(y, INDENT TR_MODE);
-        lcdDrawTextAtIndex(MODEL_SETUP_2ND_COLUMN, y, STR_I6X_PROTOCOLS, 1+g_model.moduleData[INTERNAL_MODULE].rfProtocol, attr);
+        lcdDrawTextAtIndex(MODEL_SETUP_2ND_COLUMN, y, STR_I6X_PROTOCOLS, g_model.moduleData[INTERNAL_MODULE].rfProtocol, attr);
         if (attr) {
           g_model.moduleData[INTERNAL_MODULE].rfProtocol = 
           checkIncDec(event, g_model.moduleData[INTERNAL_MODULE].rfProtocol, RF_I6X_PROTO_OFF, RF_I6X_PROTO_LAST, EE_MODEL, isRfProtocolAvailable);
@@ -802,7 +802,7 @@ void menuModelSetup(event_t event)
                       isSubtypeAvailable);
         }
         break;
-        case ITEM_MODEL_INTERNAL_MODULE_SERVOFREQ:
+      case ITEM_MODEL_INTERNAL_MODULE_SERVOFREQ:
         lcdDrawTextAlignedLeft(y, INDENT "Servo rate");
         lcdDrawNumber(MODEL_SETUP_2ND_COLUMN, y, g_model.moduleData[INTERNAL_MODULE].afhds2a.servoFreq, attr|LEFT);
 //        lcdDrawText(lcdLastRightPos, y, STR_MS, attr);
