@@ -66,7 +66,7 @@ enum MenuModelSetupItems {
 #endif
   ITEM_MODEL_THROTTLE_WARNING,
   ITEM_MODEL_SWITCHES_WARNING,
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBI6X)
   ITEM_MODEL_SWITCHES_WARNING2,
   ITEM_MODEL_POTS_WARNING,
 #endif
@@ -165,10 +165,23 @@ enum MenuModelSetupItems {
 
   #define CURSOR_ON_CELL                 (true)
   #define MODEL_SETUP_MAX_LINES          (HEADER_LINE+ITEM_MODEL_SETUP_MAX)
-  #define POT_WARN_ITEMS()               ((g_model.potsWarnMode) ? (uint8_t)(NUM_POTS+NUM_SLIDERS) : (uint8_t)0)
+#if NUM_POTS > 0 && !defined(PCBI6X)
+  #define POT_WARN_ROWS                  ((g_model.potsWarnMode) ? (uint8_t)(NUM_POTS+NUM_SLIDERS) : (uint8_t)0)
+#else
+  #define POT_WARN_ROWS                  HIDDEN_ROW
+#endif
   #define TIMER_ROWS(x)                  2, 0, 0, 0, g_model.timers[x].countdownBeep != COUNTDOWN_SILENT ? (uint8_t)1 : (uint8_t)0
   #define TIMERS_ROWS                    TIMER_ROWS(0), TIMER_ROWS(1), TIMER_ROWS(2)
   #define EXTRA_MODULE_ROWS
+
+#if defined(PCBTARANIS) || defined(PCBI6X)
+  #define WARN_ROWS \
+    SW_WARN_ROWS, /* Switch warning */ \
+    POT_WARN_ROWS, /* Pot warning */
+#else
+  #define WARN_ROWS \
+    NUM_SWITCHES - 1, /* Switch warning */
+#endif
 
 #if defined(PCBX7)
 #define ANTENNA_ROW
@@ -274,8 +287,7 @@ void menuModelSetup(event_t event)
     LABEL(PreflightCheck),
     0, // Checklist
     0, // Throttle warning
-    SW_WARN_ROWS, // Switch warning
-    POT_WARN_ITEMS(), // Pot warning
+    WARN_ROWS
     NUM_STICKS + NUM_POTS + NUM_SLIDERS + NUM_ROTARY_ENCODERS - 1, // Center beeps
     0, // Global functions
     LABEL(InternalModule),
@@ -317,8 +329,8 @@ void menuModelSetup(event_t event)
     // 0, // Throttle trim switch
     LABEL(PreflightCheck), 
 //    0, // Checklist
-    0, 
-    NUM_SWITCHES-1, 
+    0, // Throttle warning
+    WARN_ROWS
     NUM_STICKS+NUM_POTS+NUM_SLIDERS+NUM_ROTARY_ENCODERS-1, 
     0,
     LABEL(InternalModule),
@@ -532,7 +544,7 @@ void menuModelSetup(event_t event)
         g_model.disableThrottleWarning = !editCheckBox(!g_model.disableThrottleWarning, MODEL_SETUP_2ND_COLUMN, y, STR_THROTTLEWARNING, attr, event);
         break;
 
-#if defined(PCBTARANIS)
+#if defined(PCBTARANIS) || defined(PCBI6X)
       case ITEM_MODEL_SWITCHES_WARNING2:
         if (i==0) {
           if (CURSOR_MOVED_LEFT(event))
@@ -1401,7 +1413,7 @@ void menuModelSetup(event_t event)
   if (old_editMode > 0 && s_editMode == 0) {
     switch(menuVerticalPosition) {
 #if defined(PCBTARANIS) || defined(PCBI6X)
-    case ITEM_MODEL_INTERNAL_MODULE_BIND + 1: // for some reason index is off by one
+    case ITEM_MODEL_INTERNAL_MODULE_BIND:
       if (menuHorizontalPosition == 0)
         checkModelIdUnique(g_eeGeneral.currModel, INTERNAL_MODULE);
       break;

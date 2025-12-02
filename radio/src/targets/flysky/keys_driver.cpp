@@ -189,20 +189,20 @@ uint32_t switchState(uint8_t index)
 
 void keysInit()
 {
-  GPIO_InitTypeDef gpio_init;
+  GPIO_InitTypeDef GPIO_InitStructure;
   //default state is low
-  gpio_init.GPIO_Mode = GPIO_Mode_IN;
-  gpio_init.GPIO_OType = GPIO_OType_PP;
-  gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
-  gpio_init.GPIO_PuPd = GPIO_PuPd_UP;
-  gpio_init.GPIO_Pin = KEYS_LINES_PINS;
-  GPIO_Init(KEYS_MATRIX_LINES_GPIO, &gpio_init);
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_InitStructure.GPIO_Pin = KEYS_LINES_PINS;
+  GPIO_Init(KEYS_MATRIX_LINES_GPIO, &GPIO_InitStructure);
 
   INIT_KEYS_PINS(GPIOC); // SE, SF
 
-  gpio_init.GPIO_Mode = GPIO_Mode_OUT;
-  gpio_init.GPIO_Pin = KEYS_COLUMNS_PINS;
-  GPIO_Init(KEYS_MATRIX_COLUMNS_GPIO, &gpio_init);
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+  GPIO_InitStructure.GPIO_Pin = KEYS_COLUMNS_PINS;
+  GPIO_Init(KEYS_MATRIX_COLUMNS_GPIO, &GPIO_InitStructure);
   //set to height
   KEYS_MATRIX_COLUMNS_GPIO->BSRR = KEYS_COLUMNS_PINS;
 }
