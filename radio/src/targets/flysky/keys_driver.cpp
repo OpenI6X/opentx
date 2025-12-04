@@ -182,7 +182,7 @@ uint32_t switchState(uint8_t index)
     }
   }
 
-  TRACE("switch idx %d sw_num %d value %d pos %d xxx %d", index, sw_num, value, pos, xxx);
+  // TRACE("switch idx %d sw_num %d value %d pos %d xxx %d", index, sw_num, value, pos, xxx);
   return xxx;
 }
 #endif
@@ -190,7 +190,6 @@ uint32_t switchState(uint8_t index)
 void keysInit()
 {
   GPIO_InitTypeDef GPIO_InitStructure;
-  //default state is low
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
