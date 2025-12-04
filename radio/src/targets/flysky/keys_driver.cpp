@@ -207,6 +207,6 @@ void keysInit()
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
   GPIO_InitStructure.GPIO_Pin = KEYS_COLUMNS_PINS;
   GPIO_Init(KEYS_MATRIX_COLUMNS_GPIO, &GPIO_InitStructure);
-  //set to height
+  //set high
   KEYS_MATRIX_COLUMNS_GPIO->BSRR = KEYS_COLUMNS_PINS;
 }
