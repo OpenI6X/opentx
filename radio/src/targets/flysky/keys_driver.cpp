@@ -198,7 +198,12 @@ void keysInit()
   GPIO_InitStructure.GPIO_Pin = KEYS_LINES_PINS;
   GPIO_Init(KEYS_MATRIX_LINES_GPIO, &GPIO_InitStructure);
 
-  INIT_KEYS_PINS(GPIOC); // SE, SF
+  // SE, SF
+#if defined(KEYS_GPIOD_PINS)
+  INIT_KEYS_PINS(GPIOD);
+#elif defined(KEYS_GPIOC_PINS)
+  INIT_KEYS_PINS(GPIOC);
+#endif
 
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
   GPIO_InitStructure.GPIO_Pin = KEYS_COLUMNS_PINS;
