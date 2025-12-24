@@ -292,7 +292,8 @@ void processCrossfireTelemetryFrame() {
         processCrossfireTelemetryValue(ATTITUDE_YAW_INDEX, value / 10);
       break;
 
-    case FLIGHT_MODE_ID: {
+    case FLIGHT_MODE_ID:
+    {
       const CrossfireSensor &sensor = crossfireSensors[FLIGHT_MODE_INDEX];
       auto textLength = min<int>(16, telemetryRxBuffer[1]);
       telemetryRxBuffer[textLength] = '\0';
@@ -409,7 +410,7 @@ void processCrossfireTelemetryData(uint8_t data) {
   }
 #endif
 
-  if (telemetryRxBufferCount == 0 && data != RADIO_ADDRESS) {
+  if (telemetryRxBufferCount == 0 && !(data == RADIO_ADDRESS || data == UART_SYNC)) {
     TRACE("[XF] addr 0x%02X err", data);
     return;
   }

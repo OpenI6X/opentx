@@ -166,7 +166,7 @@ extern "C" void TELEMETRY_DMA_TX_IRQHandler(void) {
   if (DMA_GetITStatus(TELEMETRY_DMA_TX_FLAG_TC)) {
     DMA_ClearITPendingBit(TELEMETRY_DMA_TX_FLAG_TC);
     // clear TC flag before enabling interrupt
-    TELEMETRY_USART->ISR &= ~USART_ISR_TC;
+    TELEMETRY_USART->ICR = USART_ICR_TCCF;
     TELEMETRY_USART->CR1 |= USART_CR1_TCIE;
   }
 }
@@ -177,11 +177,13 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
 
   // TX, transfer complete
   if ((status & USART_ISR_TC) && (TELEMETRY_USART->CR1 & USART_CR1_TCIE)) {
+    // disable TC IRQ
     TELEMETRY_USART->CR1 &= ~USART_CR1_TCIE;
+
     telemetryPortSetDirectionInput();
-    while (status & (USART_FLAG_RXNE)) {
-      status = TELEMETRY_USART->RDR;
-      status = TELEMETRY_USART->ISR;
+    
+    while (TELEMETRY_USART->ISR & USART_FLAG_RXNE) {
+      (void)TELEMETRY_USART->RDR;
     }
   }
 
