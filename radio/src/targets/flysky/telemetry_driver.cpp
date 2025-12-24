@@ -160,10 +160,6 @@ void sportSendBuffer(const uint8_t* buffer, uint32_t count) {
   DMA_Cmd(TELEMETRY_DMA_Channel_TX, ENABLE);
   USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Tx, ENABLE);
   DMA_ITConfig(TELEMETRY_DMA_Channel_TX, DMA_IT_TC, ENABLE);
-
-  // enable interrupt and set it's priority
-  NVIC_EnableIRQ(TELEMETRY_DMA_TX_IRQn);
-  NVIC_SetPriority(TELEMETRY_DMA_TX_IRQn, TELEMETRY_DMA_IRQ_PRIORITY);
 }
 
 extern "C" void TELEMETRY_DMA_TX_IRQHandler(void) {
