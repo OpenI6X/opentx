@@ -1,86 +1,74 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
+executors:
+  opentx-i6x:
+    docker:
+      - image: ajjjjjjjj/opentx-docker-i6x:1.5.0
+
 jobs:
-  build-std:
-    docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.4.0
+  build:
+    executor: opentx-i6x
+    parameters:
+      boards:
+        type: string
+        default: "-bI6X"
+      lang:
+        type: string
+        default: ALL
     steps:
       - checkout
-      - run: |
-          python3 ./tools/build-flysky.py -bI6X -tALL $PWD/
-      - store_artifacts:
-          path: output
-
-  build-std-dfplayer:
-    docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.4.0
-    steps:
-      - checkout
-      - run: |
-          python3 ./tools/build-flysky.py -bI6X_DFPLAYER -tALL $PWD/
-      - store_artifacts:
-          path: output
-
-  build-heli:
-    docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.4.0
-    steps:
-      - checkout
-      - run: |
-          python3 ./tools/build-flysky.py -bI6X_HELI -tALL $PWD/
-      - store_artifacts:
-          path: output
-
-  build-heli-dfplayer:
-    docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.4.0
-    steps:
-      - checkout
-      - run: |
-          python3 ./tools/build-flysky.py -bI6X_HELI_DFPLAYER -tALL $PWD/
-      - store_artifacts:
-          path: output
-
-  build-en:
-    docker:
-      - image: ajjjjjjjj/opentx-docker-i6x:1.4.0
-    steps:
-      - checkout
-      - run: |
-          python3 ./tools/build-flysky.py -bI6X_DFPLAYER -bI6X_HELI -bI6X -tEN $PWD/
+      - run:
+          name: Build OpenI6X
+          command: |
+            python3 ./tools/build-flysky.py << parameters.boards >> -t<< parameters.lang >> $PWD/
       - store_artifacts:
           path: output
 
 workflows:
-  openi6x-release-workflow:
+  openi6x-release:
     jobs:
-      - build-en:
+      # EN-only build for feature branches
+      - build:
+          name: build-en
+          boards: "-bI6X_DFPLAYER -bI6X_HELI -bI6X"
+          lang: EN
           filters:
             branches:
               ignore:
                 - master
                 - /.*-maintenance/
-      - build-std:
+
+      # Full builds for release branches
+      - build:
+          name: build-std
+          boards: "-bI6X"
           filters:
             branches:
               only:
                 - master
                 - /.*-maintenance/
-      - build-std-dfplayer:
+
+      - build:
+          name: build-std-dfplayer
+          boards: "-bI6X_DFPLAYER"
           filters:
             branches:
               only:
                 - master
                 - /.*-maintenance/
-      - build-heli:
+
+      - build:
+          name: build-heli
+          boards: "-bI6X_HELI"
           filters:
             branches:
               only:
                 - master
                 - /.*-maintenance/
-      - build-heli-dfplayer:
+
+      - build:
+          name: build-heli-dfplayer
+          boards: "-bI6X_HELI_DFPLAYER"
           filters:
             branches:
               only:
