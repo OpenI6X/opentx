@@ -172,6 +172,6 @@ const mm_protocol_definition *getMultiProtocolDefinition (uint8_t protocol);
 
 void editStickHardwareSettings(coord_t x, coord_t y, int idx, event_t event, LcdFlags flags);
 
-
+uint8_t expandableSection(coord_t y, const char* title, uint8_t value, uint8_t attr, event_t event);
 
 #endif // _GUI_COMMON_H_

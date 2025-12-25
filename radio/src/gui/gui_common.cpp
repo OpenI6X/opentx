@@ -20,18 +20,21 @@
 
 #include "opentx.h"
 
-#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
 uint8_t switchToMix(uint8_t source)
 {
   div_t qr = div(source-1, 3);
   return qr.quot+MIXSRC_FIRST_SWITCH;
 }
-#else
-uint8_t switchToMix(uint8_t source)
+
+uint8_t expandableSection(coord_t y, const char* title, uint8_t value, uint8_t attr, event_t event)
 {
-  if (source <= 3)
-    return MIXSRC_3POS;
-  else
-    return MIXSRC_FIRST_SWITCH - 3 + source;
+  #define STR_CHAR_UP "\300"
+  #define STR_CHAR_DOWN "\301"
+  lcdDrawTextAlignedLeft(y, title);
+  lcdDrawText(120, y, value ? STR_CHAR_UP : STR_CHAR_DOWN, attr);
+  if (attr && (event == EVT_KEY_BREAK(KEY_ENTER))) {
+    value = !value;
+    s_editMode = 0;
+  }
+  return value;
 }
-#endif

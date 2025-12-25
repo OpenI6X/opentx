@@ -103,12 +103,6 @@
   #define CASE_SPLASH(x)
 #endif
 
-#if defined(TELEMETRY_FRSKY)
-  #define CASE_FRSKY(x) x,
-#else
-  #define CASE_FRSKY(x)
-#endif
-
 #if defined(PXX)
   #define CASE_PXX(x) x,
 #else
