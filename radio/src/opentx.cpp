@@ -712,11 +712,6 @@ void checkFailsafe() {
 #else
 #define checkFailsafe()
 #endif
-void checkRSSIAlarmsDisabled() {
-  if (g_model.disableTelemetryWarning) {
-    ALERT(STR_RSSIALARM_WARN, STR_NO_RSSIALARM, AU_ERROR);
-  }
-}
 
 #if defined(GUI)
 void checkAll() {
@@ -734,7 +729,6 @@ void checkAll() {
 
   checkSwitches();
   checkFailsafe();
-  checkRSSIAlarmsDisabled(); // TODO moved in EdgeTX
 
 #if defined(SDCARD)
   checkSDVersion();
