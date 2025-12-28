@@ -221,7 +221,8 @@ void memswap(void *a, void *b, uint8_t size) {
 void generalDefault() {
   memclear(&g_eeGeneral, sizeof(g_eeGeneral));
   g_eeGeneral.version = EEPROM_VER;
-#if !defined(PCBI6X)
+
+#if !defined(PCBI6X) // single variant for PCBI6X
   g_eeGeneral.variant = EEPROM_VARIANT;
 #endif
 
@@ -274,7 +275,7 @@ void generalDefault() {
   g_eeGeneral.lightAutoOff = 2;
   g_eeGeneral.inactivityTimer = 10;
 
-#if defined(VOICE) // PCBI6X no voice
+#if defined(VOICE)
   g_eeGeneral.ttsLanguage[0] = 'e';
   g_eeGeneral.ttsLanguage[1] = 'n';
   g_eeGeneral.wavVolume = 2;
@@ -287,18 +288,8 @@ void generalDefault() {
     g_eeGeneral.trainer.mix[i].studWeight = 100;
   }
 
-#if defined(PCBX9E)
-  const int8_t defaultName[] = {20, -1, -18, -1, -14, -9, -19};
-  memcpy(g_eeGeneral.bluetoothName, defaultName, sizeof(defaultName));
-#endif
-
 #if !defined(EEPROM)
   strcpy(g_eeGeneral.currModelFilename, DEFAULT_MODEL_FILENAME);
-#endif
-
-#if defined(PCBHORUS)
-  strcpy(g_eeGeneral.themeName, theme->getName());
-  theme->init();
 #endif
 
   g_eeGeneral.chkSum = 0xFFFF;
@@ -312,49 +303,6 @@ uint16_t evalChkSum() {
     sum += cal.mid + cal.spanNeg + cal.spanPos;
   }
   return sum;
-}
-
-void clearInputs() {
-  memset(g_model.expoData, 0, sizeof(g_model.expoData));  // clear all expos
-}
-
-void defaultInputs() {
-  clearInputs();
-
-  for (int i = 0; i < NUM_STICKS; i++) {
-    uint8_t stick_index = channelOrder(i + 1);
-    ExpoData *expo = expoAddress(i);
-    expo->srcRaw = MIXSRC_Rud - 1 + stick_index;
-    expo->curve.type = CURVE_REF_EXPO;
-    expo->chn = i;
-    expo->weight = 100;
-    expo->mode = 3;  // TODO constant
-
-#if defined(TRANSLATIONS_CZ)
-    for (int c = 0; c < 4; c++) {
-      g_model.inputNames[i][c] = char2zchar(STR_INPUTNAMES[1 + 4 * (stick_index - 1) + c]);
-    }
-#else
-    for (int c = 0; c < 3; c++) {
-      g_model.inputNames[i][c] = char2zchar(STR_VSRCRAW[2 + 4 * stick_index + c]);
-    }
-#if LEN_INPUT_NAME > 3
-    g_model.inputNames[i][3] = '\0';
-#endif
-#endif
-  }
-  storageDirty(EE_MODEL);
-}
-
-void applyDefaultTemplate() {
-  defaultInputs();  // calls storageDirty internally
-
-  for (int i = 0; i < NUM_STICKS; i++) {
-    MixData *mix = mixAddress(i);
-    mix->destCh = i;
-    mix->weight = 100;
-    mix->srcRaw = i + 1;
-  }
 }
 
 #if defined(EEPROM)
@@ -428,65 +376,6 @@ uint8_t findNextUnusedModelId(uint8_t index, uint8_t module)
   return 0;
 }
 #endif
-
-void modelDefault(uint8_t id) {
-  memset(&g_model, 0, sizeof(g_model));
-
-  applyDefaultTemplate();
-
-#if defined(LUA) && defined(PCBTARANIS)  // Horus uses menuModelWizard() for wizard
-  if (isFileAvailable(WIZARD_PATH "/" WIZARD_NAME)) {
-    f_chdir(WIZARD_PATH);
-    luaExec(WIZARD_NAME);
-  }
-#endif
-
-#if defined(PCBTARANIS) || defined(PCBHORUS)
-  g_model.moduleData[INTERNAL_MODULE].type = MODULE_TYPE_XJT;
-  g_model.moduleData[INTERNAL_MODULE].channelsCount = defaultModuleChannels_M8(INTERNAL_MODULE);
-#elif defined(PCBI6X)
- g_model.moduleData[INTERNAL_MODULE].rfProtocol = RF_I6X_PROTO_OFF;
-#endif
-
-#if defined(PCBXLITE)
-  g_model.trainerData.mode = TRAINER_MODE_MASTER_BLUETOOTH;
-#endif
-
-#if defined(FLIGHT_MODES) && defined(GVARS)
-  for (int fmIdx = 1; fmIdx < MAX_FLIGHT_MODES; fmIdx++) {
-    for (int gvarIdx = 0; gvarIdx < MAX_GVARS; gvarIdx++) {
-      g_model.flightModeData[fmIdx].gvars[gvarIdx] = GVAR_MAX + 1;
-    }
-  }
-#endif
-
-#if defined(FLIGHT_MODES) && defined(ROTARY_ENCODERS)
-  for (int p = 1; p < MAX_FLIGHT_MODES; p++) {
-    for (int i = 0; i < ROTARY_ENCODERS; i++) {
-      g_model.flightModeData[p].rotaryEncoders[i] = ROTARY_ENCODER_MAX + 1;
-    }
-  }
-#endif
-
-#if !defined(EEPROM)
-  strcpy(g_model.header.name, "\015\361\374\373\364");
-  g_model.header.name[5] = '\033' + id / 10;
-  g_model.header.name[6] = '\033' + id % 10;
-#endif
-
-#if defined(PCBHORUS)
-  extern const LayoutFactory *defaultLayout;
-  delete customScreens[0];
-  customScreens[0] = defaultLayout->create(&g_model.screenData[0].layoutData);
-  strcpy(g_model.screenData[0].layoutName, "Layout2P1");
-  extern const WidgetFactory *defaultWidget;
-  customScreens[0]->createWidget(0, defaultWidget);
-  // enable switch warnings
-  for (int i = 0; i < NUM_SWITCHES; i++) {
-    g_model.switchWarningState |= (1 << (3 * i));
-  }
-#endif
-}
 
 bool isInputRecursive(int index) {
   ExpoData *line = expoAddress(0);
@@ -824,7 +713,7 @@ void checkFailsafe() {
 #define checkFailsafe()
 #endif
 void checkRSSIAlarmsDisabled() {
-  if (g_model.rssiAlarms.disabled) {
+  if (g_model.disableTelemetryWarning) {
     ALERT(STR_RSSIALARM_WARN, STR_NO_RSSIALARM, AU_ERROR);
   }
 }
@@ -845,7 +734,7 @@ void checkAll() {
 
   checkSwitches();
   checkFailsafe();
-  checkRSSIAlarmsDisabled();
+  checkRSSIAlarmsDisabled(); // TODO moved in EdgeTX
 
 #if defined(SDCARD)
   checkSDVersion();

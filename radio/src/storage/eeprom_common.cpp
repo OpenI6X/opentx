@@ -22,6 +22,7 @@
 #include <inttypes.h>
 #include <string.h>
 #include "opentx.h"
+#include "model_init.h"
 #include "timers.h"
 
 void eeLoadModel(uint8_t index)
@@ -46,7 +47,7 @@ void eeLoadModel(uint8_t index)
 
     bool alarms = true;
     if (size < EEPROM_MIN_MODEL_SIZE) { // if not loaded a fair amount
-      modelDefault(index) ;
+      setModelDefaults(index);
       storageCheck(true);
       alarms = false;
     }
@@ -121,7 +122,7 @@ void storageEraseAll(bool warn)
   TRACE("storageEraseAll");
 
   generalDefault();
-  modelDefault(0);
+  setModelDefaults();
 
   if (warn) {
     ALERT(STR_STORAGE_WARNING, STR_BAD_RADIO_DATA, AU_BAD_RADIODATA);

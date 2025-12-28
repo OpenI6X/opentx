@@ -664,7 +664,6 @@ inline void resumeMixerCalculations()
 #endif
 
 void generalDefault();
-void modelDefault(uint8_t id);
 
 #if defined(EEPROM)
 void checkModelIdUnique(uint8_t index, uint8_t module);
@@ -833,9 +832,6 @@ int applyCurrentCurve(int x);
 int8_t getCurveX(int noPoints, int point);
 void resetCustomCurveX(int8_t * points, int noPoints);
 bool moveCurve(uint8_t index, int8_t shift); // TODO bool?
-
-void clearInputs();
-void defaultInputs();
 
 void applyExpos(int16_t * anas, uint8_t mode, uint8_t ovwrIdx=0, int16_t ovwrValue=0);
 int16_t applyLimits(uint8_t channel, int32_t value);
