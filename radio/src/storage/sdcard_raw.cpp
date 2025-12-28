@@ -139,7 +139,7 @@ const char * loadModel(const char * filename, bool alarms)
   }
   
   if (error) {
-    modelDefault(0) ;
+    setModelDefaults();
     storageCheck(true);
     alarms = false;
   }
@@ -241,7 +241,7 @@ const char * createModel()
 
   int index = findNextFileIndex(filename, LEN_MODEL_FILENAME, MODELS_PATH);
   if (index > 0) {
-    modelDefault(index);
+    setModelDefaults(index);
     memcpy(g_eeGeneral.currModelFilename, filename, sizeof(g_eeGeneral.currModelFilename));
     storageDirty(EE_GENERAL);
     storageDirty(EE_MODEL);
@@ -262,7 +262,7 @@ void storageEraseAll(bool warn)
 #endif
 
   generalDefault();
-  modelDefault(1);
+  setModelDefaults(1);
 
   if (warn) {
     ALERT(STR_STORAGE_WARNING, STR_BAD_RADIO_DATA, AU_BAD_RADIODATA);

@@ -366,7 +366,7 @@ TEST(Curves, LinearIntpol)
   SYSTEM_RESET();
   MODEL_RESET();
   MIXER_RESET();
-  modelDefault(0);
+  setModelDefaults();
   for (int8_t i=-2; i<=2; i++) {
     g_model.points[2+i] = 50*i;
   }
@@ -573,7 +573,7 @@ TEST_F(TrimsTest, throttleTrimEle) {
   SYSTEM_RESET();
   MODEL_RESET();
   MIXER_RESET();
-  modelDefault(0);
+  setModelDefaults();
   g_eeGeneral.templateSetup = 17;
   applyDefaultTemplate();
   g_model.thrTrim = 1;
@@ -586,7 +586,7 @@ TEST_F(TrimsTest, throttleTrimEle) {
   SYSTEM_RESET();
   MODEL_RESET();
   MIXER_RESET();
-  modelDefault(0);
+  setModelDefaults();
   g_eeGeneral.templateSetup = 0;
   applyDefaultTemplate();
 }
@@ -597,7 +597,7 @@ TEST(Heli, BasicTest)
   SYSTEM_RESET();
   MODEL_RESET();
   MIXER_RESET();
-  modelDefault(0);
+  setModelDefaults();
   g_model.swashR.collectiveSource = MIXSRC_Thr;
   g_model.swashR.elevatorSource = MIXSRC_Ele;
   g_model.swashR.aileronSource = MIXSRC_Ail;
@@ -629,7 +629,7 @@ TEST(Heli, Mode2Test)
   SYSTEM_RESET();
   MODEL_RESET();
   MIXER_RESET();
-  modelDefault(0);
+  setModelDefaults();
   g_eeGeneral.templateSetup = 2;
   applyDefaultTemplate();
   g_model.swashR.collectiveSource = MIXSRC_Thr;
@@ -665,7 +665,7 @@ TEST(Trainer, UnpluggedTest)
   SYSTEM_RESET();
   MODEL_RESET();
   MIXER_RESET();
-  modelDefault(0);
+  setModelDefaults();
   g_model.mixData[0].destCh = 0;
   g_model.mixData[0].mltpx = MLTPX_ADD;
   g_model.mixData[0].srcRaw = MIXSRC_FIRST_TRAINER;
@@ -682,7 +682,7 @@ TEST_F(MixerTest, flightModeTransition)
   SYSTEM_RESET();
   MODEL_RESET();
   MIXER_RESET();
-  modelDefault(0);
+  setModelDefaults();
   g_model.flightModeData[1].swtch = TR(SWSRC_ID2, SWSRC_SA2);
   g_model.flightModeData[0].fadeIn = 100;
   g_model.flightModeData[0].fadeOut = 100;
@@ -708,7 +708,7 @@ TEST_F(MixerTest, flightModeOverflow)
   SYSTEM_RESET();
   MODEL_RESET();
   MIXER_RESET();
-  modelDefault(0);
+  setModelDefaults();
   g_model.flightModeData[1].swtch = TR(SWSRC_ID2, SWSRC_SA2);
   g_model.flightModeData[0].fadeIn = 100;
   g_model.flightModeData[0].fadeOut = 100;

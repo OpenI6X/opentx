@@ -542,17 +542,17 @@ void menuModelTelemetry(event_t event)
       case ITEM_TELEMETRY_RSSI_ALARM2: {
         bool warning = (k==ITEM_TELEMETRY_RSSI_ALARM1);
         lcdDrawTextIndented(y, (warning ? STR_LOWALARM : STR_CRITICALALARM));
-        lcdDrawNumber(LCD_W, y, warning? g_model.rssiAlarms.getWarningRssi() : g_model.rssiAlarms.getCriticalRssi(), RIGHT | attr, 3);
+        lcdDrawNumber(LCD_W, y, warning? g_model.rfAlarms.warning : g_model.rfAlarms.critical, RIGHT | attr, 3);
         if (attr && s_editMode>0) {
           if (warning)
-            CHECK_INCDEC_MODELVAR(event, g_model.rssiAlarms.warning, -30, 30);
+            CHECK_INCDEC_MODELVAR(event, g_model.rfAlarms.warning, 0, 100);
           else
-            CHECK_INCDEC_MODELVAR(event, g_model.rssiAlarms.critical, -30, 30);
+            CHECK_INCDEC_MODELVAR(event, g_model.rfAlarms.critical, 0, 100);
      }
         break;
       }
       case ITEM_TELEMETRY_DISABLE_ALARMS:
-        g_model.rssiAlarms.disabled = editCheckBox(g_model.rssiAlarms.disabled, LCD_W - 10, y, STR_DISABLE_ALARM, attr, event);
+        g_model.disableTelemetryWarning = editCheckBox(g_model.disableTelemetryWarning, LCD_W - 10, y, STR_DISABLE_ALARM, attr, event);
         break;
 
 #if defined(VARIO)
