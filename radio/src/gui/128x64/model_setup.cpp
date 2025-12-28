@@ -135,8 +135,8 @@ enum MenuModelSetupItems {
 #endif
 
 #if defined(CROSSFIRE)
-#define IF_MODULE_ARMED(module, xxx) (CRSF_ELRS_MIN_VER(4, 0) ? (uint8_t)(xxx) : HIDDEN_ROW)
-#define IF_MODULE_ARMED_TRIGGER(module, xxx) ((CRSF_ELRS_MIN_VER(4, 0) && g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingMode) ? (uint8_t)(xxx) : HIDDEN_ROW)
+#define IF_MODULE_ARMED(module, xxx) (isModuleCrossfire(EXTERNAL_MODULE) && CRSF_ELRS_MIN_VER(4, 0) ? (uint8_t)(xxx) : HIDDEN_ROW)
+#define IF_MODULE_ARMED_TRIGGER(module, xxx) (isModuleCrossfire(EXTERNAL_MODULE) && (CRSF_ELRS_MIN_VER(4, 0) && g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingMode) ? (uint8_t)(xxx) : HIDDEN_ROW)
 #else
 #define IF_MODULE_ARMED(module, xxx)
 #define IF_MODULE_ARMED_TRIGGER(module, xxx)
