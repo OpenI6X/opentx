@@ -836,11 +836,12 @@ void checkAll() {
 #endif
 
   // we don't check the throttle stick if the radio is not calibrated
-  if (g_eeGeneral.chkSum == evalChkSum())
+  if (g_eeGeneral.chkSum == evalChkSum()) {
 #if defined(FLYSKY_GIMBAL) // delay necessary for the throttle check to successfully detect when serial flysky gimbal throttle is not at zero
-    RTOS_WAIT_MS(23);
+    RTOS_WAIT_MS(25);
 #endif    
     checkThrottleStick();
+  }
 
   checkSwitches();
   checkFailsafe();
