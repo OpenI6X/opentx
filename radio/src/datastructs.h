@@ -277,7 +277,7 @@ PACK(struct ScriptData {
 #endif
 
 /*
- * Frsky Telemetry structure
+ * Frsky Telemetry structure is replaced by RFAlarmData
  */
 PACK(struct RssiAlarmData {
   int8_t disabled : 1;
@@ -287,6 +287,11 @@ PACK(struct RssiAlarmData {
   int8_t critical : 6;
   inline int8_t getWarningRssi() { return 45 + warning; }
   inline int8_t getCriticalRssi() { return 42 + critical; }
+});
+
+PACK(struct RFAlarmData {
+  int8_t warning;
+  int8_t critical;
 });
 
 typedef int16_t ls_telemetry_value_t;
@@ -512,7 +517,7 @@ typedef uint8_t swarnenable_t;
 #define MODEL_GVARS_DATA GVarData gvars[MAX_GVARS];
 #define TELEMETRY_DATA                \
   NOBACKUP(FrSkyTelemetryData frsky); \
-  NOBACKUP(RssiAlarmData rssiAlarms);
+  NOBACKUP(RFAlarmData rfAlarms);
 
 #if defined(PCBHORUS)
 #include "gui/480x272/layout.h"
@@ -550,7 +555,7 @@ PACK(struct ModelData {
   uint8_t ignoreSensorIds : 1;
   int8_t trimInc : 3;  // Trim Increments
   uint8_t disableThrottleWarning : 1;
-  uint8_t displayChecklist : 1;
+  uint8_t disableTelemetryWarning : 1;
   uint8_t extendedLimits : 1;
   uint8_t extendedTrims : 1;
   uint8_t throttleReversed : 1;
@@ -848,7 +853,7 @@ static inline void check_struct() {
   CHKSIZE(TelemetrySensor, 14);
   CHKSIZE(ModuleData, 7);
   CHKSIZE(GVarData, 7);
-  CHKSIZE(RssiAlarmData, 2);
+  CHKSIZE(RFAlarmData, 2);
   CHKSIZE(TrainerData, 16);
 
 #if defined(PCBI6X)
