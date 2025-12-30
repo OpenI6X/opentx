@@ -21,9 +21,7 @@
 #include "opentx.h"
 
 #define STATUS_BAR_Y     (7*FH+1)
-#if defined(TELEMETRY_FRSKY)
 uint8_t selectedTelemView = 0;
-#endif
 
 #define BAR_LEFT    25
 #define BAR_WIDTH   100
@@ -108,7 +106,7 @@ bool displayNumbersTelemetryScreen(FrSkyScreenData & screen)
         fields_count++;
       }
       if (i==3) {
-        if (!TELEMETRY_STREAMING()) {
+        if (!TELEMETRY_STREAMING() || (screen.lines[i].sources[0] == 0 && screen.lines[i].sources[1] == 0)) {
           displayRssiLine();
           return fields_count;
         }
