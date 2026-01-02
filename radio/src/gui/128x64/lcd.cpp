@@ -645,7 +645,7 @@ void drawTimer(coord_t x, coord_t y, int32_t tme, LcdFlags att, LcdFlags att2)
   }
   if (separator == CHR_HOUR)
     att &= ~DBLSIZE;
-#if defined(RTCLOCK)
+#if defined(RTCLOCK) || defined(PCBI6X)
   if (att & TIMEBLINK)
     lcdDrawChar(lcdLastRightPos, y, separator, BLINK);
   else

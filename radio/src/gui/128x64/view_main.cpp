@@ -48,7 +48,6 @@
 #define TRIM_LH_POS   (TRIM_LH_X-4*FW)
 #define TRIM_RH_NEG   (TRIM_RH_X+1*FW)
 #define TRIM_RH_POS   (TRIM_RH_X-4*FW)
-#if defined(TELEMETRY_FRSKY)
 #define RSSSI_X       (30)
 #define RSSSI_Y       (31)
 #if defined(PCBI6X)
@@ -56,7 +55,8 @@
 #else
   #define RSSI_MAX      105
 #endif
-#endif
+#define CLOCK_X       53
+#define CLOCK_Y       57
 
 
 void drawExternalAntennaAndRSSI()
@@ -553,11 +553,11 @@ void menuMainView(event_t event)
   }
 #endif
 
-#if defined(DSM2)
-  if (moduleState[0].mode == MODULE_MODE_BIND) {
-    // Issue 98
-    lcdDrawText(15 * FW, 0, "BIND", 0);
-  }
+// Session timer instead of RTC
+#if defined(RTCLOCK) || defined(PCBI6X)
+if (view_base != VIEW_CHAN_MONITOR) {
+  drawTimer(CLOCK_X, CLOCK_Y, sessionTimer, LEFT|TIMEBLINK);
+}
 #endif
 }
 
