@@ -29,9 +29,9 @@ void pwrInit() {
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+  GPIO_Init(EXTMODULE_PWR_GPIO, &GPIO_InitStructure);
 
   GPIO_ResetBits(EXTMODULE_PWR_GPIO, EXTMODULE_PWR_GPIO_PIN);
-  GPIO_Init(EXTMODULE_PWR_GPIO, &GPIO_InitStructure);
 
   pwrOn();
 }
