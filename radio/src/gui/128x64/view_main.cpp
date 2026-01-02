@@ -553,12 +553,10 @@ void menuMainView(event_t event)
   }
 #endif
 
-// Session timer instead of RTC
-#if defined(RTCLOCK) || defined(PCBI6X)
-if (view_base != VIEW_CHAN_MONITOR) {
-  drawTimer(CLOCK_X, CLOCK_Y, sessionTimer, LEFT|TIMEBLINK);
-}
-#endif
+  if (view_base != VIEW_CHAN_MONITOR) {
+    // Session timer instead of RTC
+    drawTimer(CLOCK_X, CLOCK_Y, sessionTimer, LEFT);
+  }
 }
 
 #undef EVT_KEY_CONTEXT_MENU
