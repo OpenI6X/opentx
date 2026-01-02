@@ -35,7 +35,6 @@
 #define PHASE_FLAGS   0
 #define VBATT_X       (6*FW-1)
 #define VBATT_Y       (2*FH)
-#define VBATTUNIT_X   (VBATT_X-1)
 #define VBATTUNIT_Y   (3*FH)
 #define REBOOT_X      (2)
 #define BAR_HEIGHT    (BOX_WIDTH-1l) // don't remove the l here to force 16bits maths on 9X
@@ -44,10 +43,10 @@
 #define TRIM_LV_X     3
 #define TRIM_RV_X     (LCD_W-4)
 #define TRIM_RH_X     (LCD_W-TRIM_LEN-5)
-#define TRIM_LH_NEG   (TRIM_LH_X+1*FW)
-#define TRIM_LH_POS   (TRIM_LH_X-4*FW)
-#define TRIM_RH_NEG   (TRIM_RH_X+1*FW)
-#define TRIM_RH_POS   (TRIM_RH_X-4*FW)
+#define TRIM_LH_NEG   (TRIM_LH_X+3*FW+1)
+#define TRIM_LH_POS   (TRIM_LH_X-4*FW+3)
+#define TRIM_RH_NEG   (TRIM_RH_X+3*FW+1)
+#define TRIM_RH_POS   (TRIM_RH_X-4*FW+3)
 #define RSSSI_X       (30)
 #define RSSSI_Y       (31)
 #if defined(PCBI6X)
