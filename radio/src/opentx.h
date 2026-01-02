@@ -194,7 +194,7 @@
 #define CTOOL_DATA_SIZE (709/*strings buffer*/ + 44/*max popup packet*/ + (18*10)/*params*/ + 8/*devices*/ + 1/*data alignment*/) // 942
 #endif
 #else
-#define CTOOL_DATA_SIZE 512 // minimize RAM usage for DEBUG and non PCBI6X_ELRS builds
+#define CTOOL_DATA_SIZE 680 // minimize RAM usage for DEBUG and non PCBI6X_ELRS builds
 #endif
 
 // RESX range is used for internal calculation; The menu says -100.0 to 100.0; internally it is -1024 to 1024 to allow some optimizations
