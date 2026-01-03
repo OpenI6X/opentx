@@ -2,24 +2,30 @@
 [![GitHub all releases](https://img.shields.io/github/downloads/OpenI6X/opentx/total)](https://github.com/OpenI6X/opentx/releases)
 [![GitHub license](https://img.shields.io/github/license/OpenI6X/opentx)](https://github.com/openi6x/opentx/blob/master/LICENSE)
 ![OpenI6X](https://circleci.com/gh/OpenI6X/opentx.svg?style=shield)
-[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/openi6x/opentx/tree/master)
 [![Discord](https://img.shields.io/discord/973289741862727741.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/3vKfYNTVa2)
 
 ![Banner](https://github.com/OpenI6X/opentx/blob/master/doc/flysky/banner.png?raw=true)
 
-# Custom OpenTX / EdgeTX for Flysky FS-i6X
+# OpenI6X
 
-Join our [Discord](https://discord.gg/3vKfYNTVa2), [RCGroups](https://www.rcgroups.com/forums/showthread.php?3916435-FlySky-I6X-port-of-OpenTX) or [Telegram](https://t.me/otx_flysky_i6x) to contribute, discuss or get help.<br> 
+Goal of the project is to bring customized **EdgeTX / OpenTX** to FlySky I6X and other STM32F0 based radios.
+
+Join our [Discord](https://discord.gg/3vKfYNTVa2), [RCGroups](https://www.rcgroups.com/forums/showthread.php?3916435-FlySky-I6X-port-of-OpenTX) or [Telegram](https://t.me/otx_flysky_i6x) to contribute, discuss or get help.
+
+New contributors are very welcome.<br>
+You can help by improving documentation, adding or suggesting features, fixing or reporting bugs.
 
 ## Instructions
 
-- [FlySky i6X user interface](https://github.com/OpenI6X/opentx/wiki/Manual) and other differences to official EdgeTX/OpenTX devices.<br>
-- [EdgeTX manual](https://manual.edgetx.org/bw-radios)
-- [How to install, upgrade or restore firmware](https://github.com/OpenI6X/opentx/wiki/Flashing-&-Upgrading)<br>
-- [Developers guide, how to build](https://github.com/OpenI6X/opentx/wiki/Development)<br>
-- [Modifications](https://github.com/OpenI6X/opentx/wiki/Modifications)<br>
+- [User interface](https://github.com/OpenI6X/opentx/wiki/Manual) and differences to official EdgeTX / OpenTX radios.
+- [EdgeTX manual](https://manual.edgetx.org/bw-radios), mostly relevant to OpenI6X.
+- [How to install, upgrade or restore firmware](https://github.com/OpenI6X/opentx/wiki/Flashing-&-Upgrading)
+- [Developers guide, how to build](https://github.com/OpenI6X/opentx/wiki/Development)
+- [Modifications](https://github.com/OpenI6X/opentx/wiki/Modifications)
 
-## Comparison
+See [Wiki](https://github.com/OpenI6X/opentx/wiki) for more.
+
+## Comparison with original firmware
 
 | Feature                   | FlySky i6X | OpenI6X                      |
 |---------------------------|------------|------------------------------|
@@ -42,18 +48,5 @@ Join our [Discord](https://discord.gg/3vKfYNTVa2), [RCGroups](https://www.rcgrou
 <sub>[2] By adding DFPlayer, see [instructions](https://github.com/OpenI6X/opentx/wiki/Modifications#dfplayer) in wiki.</sub><br>
 <sub>[3] By wiring 2 pads, see [instructions](https://github.com/OpenI6X/opentx/wiki/Modifications#adjustable-backlight-level) in wiki.</sub><br>
 <sub>[4] See [instructions](https://github.com/OpenI6X/opentx/wiki/Modifications#flysky-fs-hzcz03-adj-gimbal) in wiki.</sub>
-  
-## Credits
 
-* Janek ([ajjjjjjjj](https://github.com/ajjjjjjjj)), continues Kuba's and Mariano's work, added sound, USB, ExpressLRS V2/V3 configuration, telemetry mirror, SBUS trainer, new/fixed drivers, ports, bugfixes.
-* Mariano ([marianomd](https://github.com/marianomd)), continued Kuba's work and made it up to useable condition! Added gimbals, buttons, AFHDS2A, PPM, CRSF.
-* Kuba ([qba667](https://github.com/qba667)), started this work and made this project possible, it is forked from his repo.
-* Wilhelm ([wimalopaan](https://github.com/wimalopaan)) added 16 channels SBUS16 / IBUS16 modes.
-* Rafael ([rafolg](https://github.com/rafolg)), ported FlySky Hall Gimbal support from EdgeTX.
-* Tom ([tmcadam](https://github.com/tmcadam)) fixed AFHDS2A PWM mode selection.
-* The internal RF code was taken from the great KotelloRC's [erfly6: Er9X for i6 and i6x](https://bitbucket.org/KotelloRC/erfly6/src/master/).
-* Some of the internal RF fixes are a result of analysing [pascallanger's](https://github.com/pascallanger) [DIY-Multiprotocol-TX-Module](https://github.com/pascallanger/DIY-Multiprotocol-TX-Module).
-* ExpressLRS configurator is based on elrsV2/V3.lua from [ExpressLRS](https://github.com/ExpressLRS/ExpressLRS).
-* Some of the ports are from [EdgeTX](https://github.com/EdgeTX/edgetx/).
-* ADC code taken from [OpenGround](https://github.com/fishpepper/OpenGround).
-* All the contributors of [OpenTX](https://github.com/opentx/opentx/). 
+<br>
