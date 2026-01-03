@@ -100,16 +100,6 @@ void processCrossfireTelemetryValue(uint8_t index, int32_t value) {
   setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id, 0, sensor.subId, value, sensor.unit, sensor.precision);
 }
 
-bool checkCrossfireTelemetryFrameCRC() {
-  uint8_t len = telemetryRxBuffer[1];
-#if defined(PCBI6X)
-  uint8_t crc = crc8_hw(&telemetryRxBuffer[2], len - 1);
-#else
-  uint8_t crc = crc8(&telemetryRxBuffer[2], len - 1);
-#endif
-  return (crc == telemetryRxBuffer[len + 1]);
-}
-
 template <int N>
 bool getCrossfireTelemetryValue(uint8_t index, int32_t &value) {
   bool result = false;
@@ -360,10 +350,29 @@ bool isCrossfireOutputBufferAvailable() {
   return outputTelemetryBufferSize == 0;
 }
 
-bool crossfireLenIsSane(uint8_t len)
+
+#define MIN_FRAME_LEN         3                       // Min size of the buffer needed to begin processing (HDR + LEN + 1)
+#define MAX_FRAME_LEN         64                      // A whole CRSF packet including header and length can not exceed 64 bytes
+#define MIN_PAYLOAD_LEN       3                       // Min value for the LEN field (TYPE + 1 payload + CRC)
+#define MAX_PAYLOAD_LEN       (MAX_FRAME_LEN-2)       // Max value for the LEN field (MAX - HDR - LEN)
+
+bool _checkFrameCRC(uint8_t* rxBuffer) {
+  uint8_t len = rxBuffer[1];
+  uint8_t crc = crc8(&rxBuffer[2], len - 1);
+  return (crc == rxBuffer[len + 1]);
+}
+
+static bool _lenIsSane(uint8_t len)
 {
-  // packet len must be at least 3 bytes (type+payload+crc) and 2 bytes < MAX (hdr+len)
-  return (len > 2 && len < TELEMETRY_RX_PACKET_SIZE-1);
+  // Validate that the declared len in the packet is valid for a CRSF frame
+  return (len >= MIN_PAYLOAD_LEN && len <= MAX_PAYLOAD_LEN);
+}
+
+static bool _validHdr(uint8_t data)
+{
+  // All CRSF packets should start with UART_SYNC, but RADIO_ADDRESS is also accepted
+  // for older modules which used the incorrect "destination address" start byte
+  return data == RADIO_ADDRESS || data == UART_SYNC;
 }
 
 void crossfireTelemetrySeekStart(uint8_t *rxBuffer, uint8_t &rxBufferCount)
@@ -373,12 +382,12 @@ void crossfireTelemetrySeekStart(uint8_t *rxBuffer, uint8_t &rxBufferCount)
   // the parser tries to resync.
   // Search through the rxBuffer for a sync byte, shift the contents if found
   // and reduce rxBufferCount
-  for (uint32_t idx=1; idx<rxBufferCount; ++idx) {
+  for (uint32_t idx = 1; idx < rxBufferCount; ++idx) {
     uint8_t data = rxBuffer[idx];
-    if (data == RADIO_ADDRESS || data == UART_SYNC) {
+    if (_validHdr(data)) {
       uint8_t remain = rxBufferCount - idx;
       // If there's at least 2 bytes, check the length for validity too
-      if (remain > 1 && !crossfireLenIsSane(rxBuffer[idx+1]))
+      if (remain > 1 && !_lenIsSane(rxBuffer[idx+1]))
         continue;
 
       TRACE("Found 0x%02x with %u remain", data, remain);
@@ -410,27 +419,27 @@ void processCrossfireTelemetryData(uint8_t data) {
   }
 #endif
 
-  if (telemetryRxBufferCount == 0 && !(data == RADIO_ADDRESS || data == UART_SYNC)) {
-    TRACE("[XF] addr 0x%02X err", data);
+  if (telemetryRxBufferCount == 0 && !(_validHdr(data))) {
+    TRACE("[XF] invalid frame start %02X", data);
     return;
   }
 
-  if (telemetryRxBufferCount == 1 && !crossfireLenIsSane(data)) {
-    TRACE("[XF] len 0x%02X err", data);
+  if (telemetryRxBufferCount == 1 && !_lenIsSane(data)) {
+    TRACE("[XF] pkt len err (%d)", data);
     telemetryRxBufferCount = 0;
     return;
   }
 
-  if (telemetryRxBufferCount < TELEMETRY_RX_PACKET_SIZE) {
+  if (telemetryRxBufferCount < MAX_FRAME_LEN) {
     telemetryRxBuffer[telemetryRxBufferCount++] = data;
   } else {
-    TRACE("[XF] arr size %d err", telemetryRxBufferCount);
+    TRACE("[XF] buf size %d err", telemetryRxBufferCount);
     telemetryRxBufferCount = 0;
   }
 
   // telemetryRxBuffer[1] holds the packet length-2, check if the whole packet was received
-  while (telemetryRxBufferCount > 4 && (telemetryRxBuffer[1]+2) == telemetryRxBufferCount) {
-    if (checkCrossfireTelemetryFrameCRC()) {
+  while (telemetryRxBufferCount >= (MIN_PAYLOAD_LEN + 2) && (telemetryRxBuffer[1] + 2) == telemetryRxBufferCount) {
+    if (_checkFrameCRC(telemetryRxBuffer)) {
       processCrossfireTelemetryFrame();
       telemetryRxBufferCount = 0;
     }
@@ -487,11 +496,9 @@ bool crossfireTelemetryPush(uint8_t command, uint8_t *data, uint32_t length) {
     for (uint32_t i = 0; i < length; i++) {
       telemetryOutputPushByte(data[i]);
     }
-#if defined(PCBI6X)
-    telemetryOutputPushByte(crc8_hw(outputTelemetryBuffer + 2, 1 + length));
-#else
+
     telemetryOutputPushByte(crc8(outputTelemetryBuffer + 2, 1 + length));
-#endif
+
     telemetryOutputSetTrigger(command);
     return true;
   } else {

@@ -23,8 +23,7 @@
 // uint32_t telemetryErrors = 0;
 DMAFifo<TELEMETRY_FIFO_SIZE> telemetryDMAFifo __DMA (TELEMETRY_DMA_Channel_RX);
 
-#define TELEMETRY_USART_IRQ_PRIORITY 0 // was 6
-#define TELEMETRY_DMA_IRQ_PRIORITY   0 // was 7
+#define TELEMETRY_USART_IRQ_PRIORITY 0
 
 void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   TRACE("telemetryPortInit %d", baudrate);
