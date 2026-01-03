@@ -593,8 +593,9 @@ void lcdDrawFilledRect(coord_t x, coord_t y, coord_t w, coord_t h, uint8_t pat, 
 void drawTelemetryTopBar()
 {
   if (g_model.timers[0].mode) {
-    LcdFlags att = (timersStates[0].val < 0 ? BLINK : 0);
-    drawTimer(0, 0, timersStates[0].val, att, att);
+    int32_t val = timersStates[0].val;
+    LcdFlags att = (val < 0 ? BLINK : 0);
+    drawTimer(0, 0, val, att, att);
   } else {
     putsModelName(0, 0, g_model.header.name, g_eeGeneral.currModel, 0);
   }
