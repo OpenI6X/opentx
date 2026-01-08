@@ -22,11 +22,7 @@
 
 #if defined(AUX_SERIAL)
 uint8_t auxSerialMode = UART_MODE_COUNT;  // Prevent debug output before port is setup
-#if defined(DEBUG)
-Fifo<uint8_t, 256> auxSerialTxFifo;
-#else
 Fifo<uint8_t, 128> auxSerialTxFifo;
-#endif
 DMAFifo<32> auxSerialRxFifo __DMA (AUX_SERIAL_DMA_Channel_RX);
 
 void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = USART_WordLength_8b, uint16_t parity = USART_Parity_No, uint16_t stop = USART_StopBits_1)

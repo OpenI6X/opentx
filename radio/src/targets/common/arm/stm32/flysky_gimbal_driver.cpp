@@ -79,7 +79,7 @@ static void Parse_Character(STRUCT_HALL *hallBuffer, unsigned char ch)
     
     case CHECKSUM:
       if (hallBuffer->checkSum ==
-          crc16_hw(&hallBuffer->head, hallBuffer->length + 3)) {
+          crc16(&hallBuffer->head, hallBuffer->length + 3)) {
         hallBuffer->msg_OK = 1;
       }
       hallBuffer->status = GET_START;

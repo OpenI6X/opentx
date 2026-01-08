@@ -1413,7 +1413,7 @@ void menuModelSetup(event_t event)
   if (old_editMode > 0 && s_editMode == 0) {
     switch(menuVerticalPosition) {
 #if defined(PCBTARANIS) || defined(PCBI6X)
-    case ITEM_MODEL_INTERNAL_MODULE_BIND:
+    case ITEM_MODEL_INTERNAL_MODULE_BIND + 1: // for some reason index is off by one
       if (menuHorizontalPosition == 0)
         checkModelIdUnique(g_eeGeneral.currModel, INTERNAL_MODULE);
       break;

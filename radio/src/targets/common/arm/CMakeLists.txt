@@ -134,7 +134,7 @@ set(SRC
   telemetry/telemetry.cpp
   telemetry/telemetry_holders.cpp
   telemetry/telemetry_sensors.cpp
-  crc.cpp
+  # crc.cpp // PCBI6X uses crc_driver.cpp
   vario.cpp
   )
   

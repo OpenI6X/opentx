@@ -42,13 +42,8 @@ uint8_t createCrossfireBindFrame(uint8_t * frame)
   *buf++ = RADIO_ADDRESS;                             /* Origin Address */
   *buf++ = SUBCOMMAND_CRSF;                           /* sub command */
   *buf++ = SUBCOMMAND_CRSF_BIND;                      /* initiate bind */
-#if defined(PCBI6X)
-  *buf++ = crc8_BA_hw(frame + 2, 5);
-  *buf++ = crc8_hw(frame + 2, 6);
-#else
   *buf++ = crc8_BA(frame + 2, 5);
   *buf++ = crc8(frame + 2, 6);
-#endif
   return buf - frame;
 }
 
@@ -60,11 +55,7 @@ uint8_t createCrossfirePingFrame(uint8_t * frame)
   *buf++ = PING_DEVICES_ID;                           /* cmd type */
   *buf++ = BROADCAST_ADDRESS;                         /* Destination Address */
   *buf++ = RADIO_ADDRESS;                             /* Origin Address */
-#if defined(PCBI6X)
-  *buf++ = crc8_hw(frame + 2, 3);
-#else
   *buf++ = crc8(frame + 2, 3);
-#endif
   return buf - frame;
 }
 
@@ -78,13 +69,8 @@ uint8_t createCrossfireModelIDFrame(uint8_t* frame) {
   *buf++ = SUBCOMMAND_CRSF;                         /* sub command */
   *buf++ = COMMAND_MODEL_SELECT_ID;                 /* command of set model/receiver id */
   *buf++ = g_model.header.modelId[EXTERNAL_MODULE]; /* model ID */
-#if defined(PCBI6X)
-  *buf++ = crc8_BA_hw(frame + 2, 6);
-  *buf++ = crc8_hw(frame + 2, 7);
-#else
   *buf++ = crc8_BA(frame + 2, 6);
   *buf++ = crc8(frame + 2, 7);
-#endif
   return buf - frame;
 }
 
@@ -124,11 +110,8 @@ uint8_t createCrossfireChannelsFrame(uint8_t* frame, int16_t * pulses) {
     *buf++ = (sw != SWSRC_NONE) && getSwitch(sw, 0);  // commanded armed status in Switch mode
   }
 
-#if defined(PCBI6X)
-  *buf++ = crc8_hw(crc_start, 23 + lenAdjust);
-#else
   *buf++ = crc8(crc_start, 23 + lenAdjust);
-#endif
+
   return buf - frame;
 }
 
