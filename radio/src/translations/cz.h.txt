@@ -955,7 +955,7 @@
 #define TR_PASTE               "Vložit"
 #define TR_DELETE              "Odstranit"
 #define TR_INSERT              "Přidat"
-#define TR_RESET_FLIGHT        "Let"
+#define TR_RESET_FLIGHT        "Reset relace"
 #define TR_RESET_TIMER1        "Stopky1"
 #define TR_RESET_TIMER2        "Stopky2"
 #define TR_RESET_TIMER3        "Stopky3"
