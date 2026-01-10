@@ -740,11 +740,7 @@
 #else
 #define TR_TRIMS2OFFSETS       "\006Trimy => Subtrimy"
 #endif
-#if defined(COLORLCD)
-#define TR_OUTPUTS2FAILSAFE    "Outputs => Failsafe"
-#else
-#define TR_OUTPUTS2FAILSAFE    "\006Outputs => Failsafe"
-#endif
+#define TR_CHANNELS2FAILSAFE    "Channels=>Failsafe"
 #define TR_MENUMODELSEL        "MODEL"
 #define TR_MENUSETUP           "NASTAVENÍ"
 #define TR_MENUFLIGHTMODE      "LETOVÝ REŽIM"

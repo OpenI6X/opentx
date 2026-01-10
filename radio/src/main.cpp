@@ -52,15 +52,12 @@ void handleUsbConnection()
   if (!usbStarted() && usbPlugged()) {
     if (getSelectedUsbMode() == USB_UNSELECTED_MODE) {
       if (g_eeGeneral.USBMode == USB_UNSELECTED_MODE && popupMenuItemsCount == 0) {
-        POPUP_MENU_ADD_ITEM(STR_USB_JOYSTICK);
-  #if defined(USB_MSD)
-        POPUP_MENU_ADD_ITEM(STR_USB_MASS_STORAGE);
-  #endif
-#if defined(USB_SERIAL)
-        POPUP_MENU_ADD_ITEM(STR_USB_SERIAL);
-#endif
         POPUP_MENU_TITLE(STR_SELECT_MODE);
-        POPUP_MENU_START(onUSBConnectMenu);
+#if defined(USB_SERIAL)
+        POPUP_MENU_START(onUSBConnectMenu, 3, STR_USB_JOYSTICK, STR_USB_MASS_STORAGE, STR_USB_SERIAL);
+#else
+        POPUP_MENU_START(onUSBConnectMenu, 2, STR_USB_JOYSTICK, STR_USB_MASS_STORAGE);
+#endif
       }
       else {
         setSelectedUsbMode(g_eeGeneral.USBMode);

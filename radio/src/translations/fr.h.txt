@@ -753,11 +753,7 @@
 #else
   #define TR_TRIMS2OFFSETS             "\006Trims => Subtrims"
 #endif
-#if defined(COLORLCD)
-  #define TR_OUTPUTS2FAILSAFE          "Outputs => Failsafe"
-#else
-  #define TR_OUTPUTS2FAILSAFE          "\006Outputs => Failsafe"
-#endif
+#define TR_CHANNELS2FAILSAFE            "Channels=>Failsafe"
 #define TR_MENUMODELSEL                "MODELES"
 #define TR_MENUSETUP                   TR("CONF. MODELE", "CONFIGURATION")
 #define TR_MENUFLIGHTMODE              "PHASE DE VOL"
