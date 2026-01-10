@@ -106,12 +106,14 @@ void doMainScreenGraphics()
 
 void displayTrims(uint8_t phase)
 {
-  for (uint32_t i=0; i<4; i++) {
-    static coord_t x[4] = {TRIM_LH_X, TRIM_LV_X, TRIM_RV_X, TRIM_RH_X};
-    static uint8_t vert[4] = {0,1,1,0};
-    coord_t xm, ym;
+  static uint8_t x[4] = {TRIM_LH_X, TRIM_LV_X, TRIM_RV_X, TRIM_RH_X};
+  static uint8_t vert[4] = {0, 1, 1, 0};
+
+  for (uint8_t i = 0; i < 4; i++) {
+
+    coord_t ym;
     uint8_t stickIndex = CONVERT_MODE(i);
-    xm = x[stickIndex];
+    coord_t xm = x[stickIndex];
     uint8_t att = ROUND;
     int16_t val = getTrimValue(phase, i);
 
