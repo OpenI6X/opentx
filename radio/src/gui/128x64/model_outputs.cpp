@@ -227,11 +227,7 @@ void menuModelLimits(event_t event)
     if (sub==k && event==EVT_KEY_FIRST(KEY_ENTER) && !READ_ONLY() && (k != MAX_OUTPUT_CHANNELS) ) {
       killEvents(event);
       s_editMode = 0;
-      POPUP_MENU_ADD_ITEM(STR_EDIT);
-      POPUP_MENU_ADD_ITEM(STR_RESET);
-      POPUP_MENU_ADD_ITEM(STR_COPY_TRIMS_TO_OFS);
-      POPUP_MENU_ADD_ITEM(STR_COPY_STICKS_TO_OFS);
-      POPUP_MENU_START(onLimitsMenu);
+      POPUP_MENU_START(onLimitsMenu, 4, STR_EDIT, STR_RESET, STR_COPY_TRIMS_TO_OFS, STR_COPY_STICKS_TO_OFS);
     }
 
     if (k == MAX_OUTPUT_CHANNELS) {
