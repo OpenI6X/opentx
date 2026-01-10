@@ -25,6 +25,7 @@
 #include <string.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include "definitions.h"
 #include "opentx_types.h"
 #if defined(STM32)
