@@ -1,7 +1,8 @@
 /*
- * Copyright (C) OpenTX
+ * Copyright (C) OpenI6X
  *
  * Based on code named
+ *   opentx - https://github.com/opentx/opentx
  *   th9x - http://code.google.com/p/th9x
  *   er9x - http://code.google.com/p/er9x
  *   gruvin9x - http://code.google.com/p/gruvin9x
@@ -190,9 +191,9 @@
 
 #if defined(PCBI6X_ELRS) && !defined(DEBUG)
 #if defined(CRSF_EXTENDED_TYPES)
-#define CTOOL_DATA_SIZE (709/*strings buffer*/ + 44/*max popup packet*/ + (18*12)/*params*/ + 8/*devices*/ + 3/*data alignment*/) // 980
+#define CTOOL_DATA_SIZE (720/*strings buffer*/ + 44/*max popup packet*/ + (18*12)/*params*/ + 8/*devices*/ + 0/*data alignment*/) // 988
 #else
-#define CTOOL_DATA_SIZE (709/*strings buffer*/ + 44/*max popup packet*/ + (18*10)/*params*/ + 8/*devices*/ + 1/*data alignment*/) // 942
+#define CTOOL_DATA_SIZE (720/*strings buffer*/ + 44/*max popup packet*/ + (18*10)/*params*/ + 8/*devices*/ + 0/*data alignment*/) // 952
 #endif
 #else
 #define CTOOL_DATA_SIZE 680 // minimize RAM usage for DEBUG and non PCBI6X_ELRS builds
