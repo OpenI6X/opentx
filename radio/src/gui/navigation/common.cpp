@@ -76,8 +76,10 @@ void onSourceLongEnterPress(const char * result)
     checkIncDecSelection = MIXSRC_FIRST_POT;
   else if (result == STR_MENU_MAX)
     checkIncDecSelection = MIXSRC_MAX;
+#if defined(HELI)
   else if (result == STR_MENU_HELI)
     checkIncDecSelection = MIXSRC_FIRST_HELI;
+#endif
   else if (result == STR_MENU_TRIMS)
     checkIncDecSelection = MIXSRC_FIRST_TRIM;
   else if (result == STR_MENU_SWITCHES)

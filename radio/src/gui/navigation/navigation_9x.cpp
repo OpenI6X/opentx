@@ -171,8 +171,6 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
     checkIncDec_Ret = 0;
   }
 
-  // popup here
-
   if (i_flags & INCDEC_SOURCE) {
     if (event == EVT_KEY_LONG(KEY_ENTER)) {
       killEvents(event);
