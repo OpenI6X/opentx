@@ -32,7 +32,7 @@ See [Wiki](https://github.com/OpenI6X/opentx/wiki) for more.
 | Channels                  | 6/10       | 16                           |
 | Mixers                    | 3          | 32                           |
 | Models                    | 20         | 20 / unlimited<sup>[1]</sup> |
-| Protocols                 | AFHDS, AFHDS2A, PPM | AFHDS2A + 16Ch modes, PPM, CRSF |
+| Protocols                 | AFHDS, AFHDS2A, PPM | 16Ch AFHDS2A, PPM, CRSF |
 | Trainer                   | PPM        | PPM, SBUS                    |
 | Timers                    | _          | ✓                            |
 | Voice annoucements        | _          | ✓<sup>[2]</sup>              |
