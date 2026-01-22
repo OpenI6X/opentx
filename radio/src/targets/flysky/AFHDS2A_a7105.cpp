@@ -16,8 +16,6 @@
 #include "iface_a7105.h"
 #include "opentx.h"
 
-static uint8_t num_ch;
-
 inline uint32_t GetUIDHash(void) {
   return (uint32_t)(READ_REG(*((uint32_t *)UID_BASE))) ^
          (uint32_t)(READ_REG(*((uint32_t *)(UID_BASE + 4U)))) ^
@@ -98,13 +96,14 @@ void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type) {
   switch (type) {
     case AFHDS2A_PACKET_STICKS:
       packet[0] = 0x58;
-      for (uint32_t ch = 0; ch < num_ch; ++ch) {
-        // channelOutputs: -1024 to 1024
 #if defined(AFHDS2A_LQI_CH)
+      for (uint8_t ch = 0; ch < 17; ch++) {
+        // channelOutputs: -1024 to 1024
         const uint16_t channelMicros = (ch == (AFHDS2A_LQI_CH - 1)) ? 
                                            (1000 + 10 * telemetryData.rssi.value) : 
                                            (channelOutputs[ch] / 2 + PPM_CH_CENTER(ch));
 #else
+      for (uint8_t ch = 0; ch < 16; ch++) {
         const uint16_t channelMicros = channelOutputs[ch] / 2 + PPM_CH_CENTER(ch);
 #endif
         if (ch < 14) {
@@ -119,7 +118,7 @@ void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type) {
       break;
     case AFHDS2A_PACKET_FAILSAFE:
       packet[0] = 0x56;
-      for (uint8_t ch = 0; ch < num_ch; ch++) {
+      for (uint8_t ch = 0; ch < 14; ch++) { // 14 channels in failsafe for code simplicity
         if (g_model.moduleData[INTERNAL_MODULE].failsafeMode == FAILSAFE_CUSTOM &&
             g_model.failsafeChannels[ch] < FAILSAFE_CHANNEL_HOLD) {
           const uint16_t failsafeMicros = g_model.failsafeChannels[ch] / 2 + PPM_CH_CENTER(ch);
@@ -341,11 +340,6 @@ void initAFHDS2A() {
   A7105_Init();
   packet_count = 0;
   hopping_frequency_no = 0;
-  if (g_model.moduleData[INTERNAL_MODULE].subType & 0x04) {
-    num_ch = 17;
-  } else {
-    num_ch = 14;
-  }
   BIND_STOP;
   BIND_DONE;
 }

@@ -732,7 +732,7 @@ extern uint8_t            g_beepCnt;
 
 extern int32_t            chans[MAX_OUTPUT_CHANNELS];
 extern int16_t            ex_chans[MAX_OUTPUT_CHANNELS]; // Outputs (before LIMITS) of the last perMain
-extern int16_t            channelOutputs[MAX_OUTPUT_CHANNELS];
+extern int16_t            channelOutputs[MAX_OUTPUT_CHANNELS + 1]; // AFHDS2A may use 17 channels
 
 #define NUM_INPUTS      (MAX_INPUTS)
 
