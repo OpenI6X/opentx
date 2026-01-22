@@ -303,7 +303,6 @@ void ActionAFHDS2A();
 #define AUX34_SERIAL_USART_IRQHandler       USART3_4_IRQHandler
 #define AUX34_SERIAL_USART_IRQn             USART3_4_IRQn
 
-#define SPORT_MAX_BAUDRATE            400000
 
 // Telemetry
 #define TELEMETRY_RCC_AHB1Periph        (RCC_AHBPeriph_GPIOD | RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_DMA1)
