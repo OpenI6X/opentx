@@ -34,7 +34,11 @@ uint8_t mixWarning;
 
 
 int16_t calibratedAnalogs[NUM_CALIBRATED_ANALOGS];
-int16_t channelOutputs[MAX_OUTPUT_CHANNELS + 1] = {0}; // AFHDS2A may use 17 channels
+#if defined(AFHDS2A_LQI_CH) && (AFHDS2A_LQI_CH == 17)
+int16_t channelOutputs[MAX_OUTPUT_CHANNELS + 1] = {0}; // AFHDS2A LQI may 17th channel
+#else
+int16_t channelOutputs[MAX_OUTPUT_CHANNELS] = {0};
+#endif
 int16_t ex_chans[MAX_OUTPUT_CHANNELS] = {0}; // Outputs (before LIMITS) of the last perMain;
 
 #if defined(HELI)
