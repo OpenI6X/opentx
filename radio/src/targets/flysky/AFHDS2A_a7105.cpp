@@ -90,6 +90,25 @@ static void AFHDS2A_build_bind_packet(uint8_t * packet) {
   }
 }
 
+void setChannelValue(uint8_t * packet, uint8_t ch, int16_t output) {
+  uint16_t value;
+#if defined(AFHDS2A_LQI_CH)
+  if (ch == (AFHDS2A_LQI_CH - 1)
+    value = 1000 + 10 * telemetryData.rssi.value;
+  else
+#else
+  value = output / 2 + PPM_CH_CENTER(ch);
+#endif
+  if (ch < 14) {
+      packet[9 + ch * 2] = value & 0xFF;
+      packet[10 + ch * 2] = (value >> 8) & 0x0F;
+  } else {
+      packet[10 + (ch - 14) * 6] |= (value) << 4;
+      packet[12 + (ch - 14) * 6] |= (value) & 0xF0;
+      packet[14 + (ch - 14) * 6] |= (value >> 4) & 0xF0;
+  }
+}
+
 void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type) {
   memcpy(&packet[1], ID.rx_tx_addr, sizeof(ID.rx_tx_addr));
   memcpy(&packet[5], &g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], 4);
@@ -98,35 +117,21 @@ void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type) {
       packet[0] = 0x58;
 #if defined(AFHDS2A_LQI_CH)
       for (uint8_t ch = 0; ch < 17; ch++) {
-        // channelOutputs: -1024 to 1024
-        const uint16_t channelMicros = (ch == (AFHDS2A_LQI_CH - 1)) ? 
-                                           (1000 + 10 * telemetryData.rssi.value) : 
-                                           (channelOutputs[ch] / 2 + PPM_CH_CENTER(ch));
 #else
       for (uint8_t ch = 0; ch < 16; ch++) {
-        const uint16_t channelMicros = channelOutputs[ch] / 2 + PPM_CH_CENTER(ch);
 #endif
-        if (ch < 14) {
-            packet[9 + ch * 2] = channelMicros & 0xFF;
-            packet[10 + ch * 2] = (channelMicros >> 8) & 0x0F;
-        } else {
-            packet[10 + (ch - 14) * 6] |= (channelMicros ) << 4;
-            packet[12 + (ch - 14) * 6] |= (channelMicros ) & 0xF0;
-            packet[14 + (ch - 14) * 6] |= (channelMicros >> 4) & 0xF0;
-        }
+        setChannelValue(packet, ch, channelOutputs[ch]);
       }
       break;
     case AFHDS2A_PACKET_FAILSAFE:
       packet[0] = 0x56;
-      for (uint8_t ch = 0; ch < 14; ch++) { // 14 channels in failsafe for code simplicity
+      for (uint8_t ch = 0; ch < 16; ch++) {
         if (g_model.moduleData[INTERNAL_MODULE].failsafeMode == FAILSAFE_CUSTOM &&
             g_model.failsafeChannels[ch] < FAILSAFE_CHANNEL_HOLD) {
-          const uint16_t failsafeMicros = g_model.failsafeChannels[ch] / 2 + PPM_CH_CENTER(ch);
-          packet[9 + ch * 2] = failsafeMicros & 0xff;
-          packet[10 + ch * 2] = (failsafeMicros >> 8) & 0xff;
+          setChannelValue(packet, ch, g_model.failsafeChannels[ch]);
         } else {  // no values
-          packet[9 + ch * 2] = 0xff;
-          packet[10 + ch * 2] = 0xff;
+          packet[9 + ch * 2] = 0xFF;
+          packet[10 + ch * 2] = 0xFF;
         }
       }
       break;
@@ -137,28 +142,25 @@ void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type) {
       packet[11] = g_model.moduleData[INTERNAL_MODULE].afhds2a.servoFreq;
       packet[12] = g_model.moduleData[INTERNAL_MODULE].afhds2a.servoFreq >> 8;
       if (g_model.moduleData[INTERNAL_MODULE].subType & (AFHDS2A_SUBTYPE_PPM_IBUS & AFHDS2A_SUBTYPE_PPM_SBUS)) {
-        packet[13] = 0x01;  // PPM output enabled
+        packet[13] = 0x01;  // PPM
       } else {
-        packet[13] = 0x00;
+        packet[13] = 0x00;  // PWM
       }
       packet[14] = 0x00;
       for (uint32_t i = 15; i < 37; i++) {
         packet[i] = 0xff;
       }
-      packet[18] = 0x05;  // ?
-      packet[19] = 0xdc;  // ?
-      packet[20] = 0x05;  // ?
+      packet[18] = 0x05;    // ?
+      packet[19] = 0xdc;    // ?
+      packet[20] = 0x05;    // ?
       if (g_model.moduleData[INTERNAL_MODULE].subType & (AFHDS2A_SUBTYPE_PWM_SBUS & AFHDS2A_SUBTYPE_PPM_SBUS)) {
-        packet[21] = 0xdd;  // SBUS output enabled
+        packet[21] = 0xdd; // SBUS
       } else {
-        packet[21] = 0xde;  // IBUS
+        packet[21] = 0xde; // IBUS
       }
       break;
   }
-  if (hopping_frequency_no >= AFHDS2A_NUMFREQ)
-    packet[37] = 0x00;
-  else
-    packet[37] = 0;  //hopping_frequency_no+2;
+  packet[37] = 0x00;
 }
 
 void ActionAFHDS2A(void) {
@@ -175,14 +177,14 @@ void ActionAFHDS2A(void) {
 
   if (moduleState[INTERNAL_MODULE].mode == MODULE_MODE_BIND) {
     if (IS_BIND_DONE && IS_BIND_STOP) {
-      TRACE("Binding in progress...");
+      // TRACE("Binding in progress...");
       // __disable_irq(); crashes
       RadioState = ((TIM_CALL << CALLER) | (SEND << SEND_RES) | (AFHDS2A_BIND1));
       BIND_IN_PROGRESS;
       BIND_START;
     } else {
       if (IS_BIND_DONE) {
-        TRACE("Bind done!");
+        // TRACE("Bind done!");
         moduleState[INTERNAL_MODULE].mode = MODULE_MODE_NORMAL;
         s_editMode = EDIT_SELECT_MENU;
         storageDirty(EE_GENERAL);  // Save receiverId
@@ -191,7 +193,7 @@ void ActionAFHDS2A(void) {
     }
   } else {
     if (IS_BIND_IN_PROGRESS || IS_BIND_START) {
-      TRACE("Bind cancelled.");
+      // TRACE("Bind cancelled.");
       BIND_DONE;
       BIND_STOP;
       // __enable_irq();
