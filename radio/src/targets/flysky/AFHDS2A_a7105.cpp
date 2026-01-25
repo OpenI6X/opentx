@@ -29,17 +29,20 @@ void DisableGIO(void) {
   CLEAR_BIT(EXTI->IMR, RF_GIO2_PIN);
 }
 
-static void AFHDS2A_calc_channels() {
+static void AFHDS2A_calc_channels()
+{
   uint8_t idx = 0;
   uint32_t rnd = ID.MProtocol_id;
   uint8_t i;
-  while (idx < AFHDS2A_NUMFREQ) {
+  while (idx < AFHDS2A_NUMFREQ) 
+  {
     uint8_t band_no = ((((idx << 1) | ((idx >> 1) & 0b01)) + ID.rx_tx_addr[3]) & 0b11);
     rnd = rnd * 0x0019660D + 0x3C6EF35F;  // Randomization
 
     uint8_t next_ch = band_no * 41 + 1 + ((rnd >> idx) % 41);  // Channel range: 1..164
 
-    for (i = 0; i < idx; i++) {
+    for (i = 0; i < idx; i++) 
+    {
       // Keep the distance 5 between the channels
       uint8_t distance;
       if (next_ch > hopping_frequency[i])
@@ -47,18 +50,17 @@ static void AFHDS2A_calc_channels() {
       else
         distance = hopping_frequency[i] - next_ch;
 
-      if (distance < 5)
-        break;
+      if (distance < 5) break;
     }
 
-    if (i != idx)
-      continue;
+    if (i != idx) continue;
 
     hopping_frequency[idx++] = next_ch;
   }
 }
 
-static void AFHDS2A_build_bind_packet(uint8_t * packet) {
+static void AFHDS2A_build_bind_packet(uint8_t * packet)
+{
   uint8_t ch;
   uint8_t phase = RadioState & 0x0F;
   memcpy(&packet[1], ID.rx_tx_addr, 4);
@@ -90,7 +92,8 @@ static void AFHDS2A_build_bind_packet(uint8_t * packet) {
   }
 }
 
-void setChannelValue(uint8_t * packet, uint8_t ch, int16_t output) {
+void setChannelValue(uint8_t * packet, uint8_t ch, int16_t output)
+{
   uint16_t value;
 #if defined(AFHDS2A_LQI_CH)
   if (ch == (AFHDS2A_LQI_CH - 1)
@@ -109,7 +112,8 @@ void setChannelValue(uint8_t * packet, uint8_t ch, int16_t output) {
   }
 }
 
-void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type) {
+void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type)
+{
   memcpy(&packet[1], ID.rx_tx_addr, sizeof(ID.rx_tx_addr));
   memcpy(&packet[5], &g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], 4);
   switch (type) {
@@ -163,7 +167,8 @@ void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type) {
   packet[37] = 0x00;
 }
 
-void AFHDS2A_callback() {
+void AFHDS2A_callback()
+{
   uint8_t Channel;
   static uint8_t packet_type;
 
@@ -335,7 +340,8 @@ SendNoAntSwitch_:
   return;
 }
 
-void AFHDS2A_init() {
+void AFHDS2A_init()
+{
   RadioState = ((TIM_CALL << CALLER) | (SEND << SEND_RES) | (AFHDS2A_DATA));
   ID.MProtocol_id = GetUIDHash();
   AFHDS2A_calc_channels();
