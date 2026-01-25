@@ -163,7 +163,7 @@ void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type) {
   packet[37] = 0x00;
 }
 
-void ActionAFHDS2A(void) {
+void AFHDS2A_callback() {
   uint8_t Channel;
   static uint8_t packet_type;
 
@@ -335,7 +335,7 @@ SendNoAntSwitch_:
   return;
 }
 
-void initAFHDS2A() {
+void AFHDS2A_init() {
   RadioState = ((TIM_CALL << CALLER) | (SEND << SEND_RES) | (AFHDS2A_DATA));
   ID.MProtocol_id = GetUIDHash();
   AFHDS2A_calc_channels();
