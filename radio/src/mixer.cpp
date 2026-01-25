@@ -35,7 +35,7 @@ uint8_t mixWarning;
 
 int16_t calibratedAnalogs[NUM_CALIBRATED_ANALOGS];
 #if defined(AFHDS2A_LQI_CH) && (AFHDS2A_LQI_CH == 17)
-int16_t channelOutputs[MAX_OUTPUT_CHANNELS + 1] = {0}; // AFHDS2A LQI may 17th channel
+int16_t channelOutputs[MAX_OUTPUT_CHANNELS + 1] = {0}; // AFHDS2A LQI may use 17th channel
 #else
 int16_t channelOutputs[MAX_OUTPUT_CHANNELS] = {0};
 #endif

@@ -182,14 +182,12 @@ void AFHDS2A_callback()
 
   if (moduleState[INTERNAL_MODULE].mode == MODULE_MODE_BIND) {
     if (IS_BIND_DONE && IS_BIND_STOP) {
-      // TRACE("Binding in progress...");
       // __disable_irq(); crashes
       RadioState = ((TIM_CALL << CALLER) | (SEND << SEND_RES) | (AFHDS2A_BIND1));
       BIND_IN_PROGRESS;
       BIND_START;
     } else {
       if (IS_BIND_DONE) {
-        // TRACE("Bind done!");
         moduleState[INTERNAL_MODULE].mode = MODULE_MODE_NORMAL;
         s_editMode = EDIT_SELECT_MENU;
         storageDirty(EE_GENERAL);  // Save receiverId
@@ -198,7 +196,6 @@ void AFHDS2A_callback()
     }
   } else {
     if (IS_BIND_IN_PROGRESS || IS_BIND_START) {
-      // TRACE("Bind cancelled.");
       BIND_DONE;
       BIND_STOP;
       // __enable_irq();
