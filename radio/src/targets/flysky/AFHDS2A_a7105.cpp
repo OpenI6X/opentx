@@ -16,6 +16,13 @@
 #include "iface_a7105.h"
 #include "opentx.h"
 
+// #define AFHDS2A_16CH
+#if defined(AFHDS2A_16CH) 
+#define AFHDS2A_CHANNELS_MAX 16
+#else
+#define AFHDS2A_CHANNELS_MAX 14
+#endif
+
 inline uint32_t GetUIDHash(void) {
   return (uint32_t)(READ_REG(*((uint32_t *)UID_BASE))) ^
          (uint32_t)(READ_REG(*((uint32_t *)(UID_BASE + 4U)))) ^
@@ -105,11 +112,14 @@ void setChannelValue(uint8_t * packet, uint8_t ch, int16_t output)
   if (ch < 14) {
       packet[9 + ch * 2] = value & 0xFF;
       packet[10 + ch * 2] = (value >> 8) & 0x0F;
-  } else {
+  } 
+#if defined(AFHDS2A_16CH)
+  else {
       packet[10 + (ch - 14) * 6] |= (value) << 4;
       packet[12 + (ch - 14) * 6] |= (value) & 0xF0;
       packet[14 + (ch - 14) * 6] |= (value >> 4) & 0xF0;
   }
+#endif
 }
 
 void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type)
@@ -122,14 +132,14 @@ void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type)
 #if defined(AFHDS2A_LQI_CH)
       for (uint8_t ch = 0; ch < 17; ch++) {
 #else
-      for (uint8_t ch = 0; ch < 16; ch++) {
+      for (uint8_t ch = 0; ch < AFHDS2A_CHANNELS_MAX; ch++) {
 #endif
         setChannelValue(packet, ch, channelOutputs[ch]);
       }
       break;
     case AFHDS2A_PACKET_FAILSAFE:
       packet[0] = 0x56;
-      for (uint8_t ch = 0; ch < 16; ch++) {
+      for (uint8_t ch = 0; ch < AFHDS2A_CHANNELS_MAX; ch++) {
         if (g_model.moduleData[INTERNAL_MODULE].failsafeMode == FAILSAFE_CUSTOM &&
             g_model.failsafeChannels[ch] < FAILSAFE_CHANNEL_HOLD) {
           setChannelValue(packet, ch, g_model.failsafeChannels[ch]);
