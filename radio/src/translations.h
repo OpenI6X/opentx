@@ -941,6 +941,7 @@ extern const char STR_BLCOLOR[];
   extern const char STR_PTS[];
   extern const char STR_SMOOTH[];
   extern const char STR_COPY_STICKS_TO_OFS[];
+  extern const char STR_COPY_MIN_MAX_TO_OUTPUTS[];
   extern const char STR_COPY_TRIMS_TO_OFS[];
   extern const char STR_INCDEC[];
   extern const char STR_GLOBALVAR[];
