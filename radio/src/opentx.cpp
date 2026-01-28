@@ -1519,6 +1519,26 @@ void copyTrimsToOffset(uint8_t ch) {
   storageDirty(EE_MODEL);
 }
 
+void copyMinMaxToOutputs(uint8_t ch)
+{
+  LimitData *ld = limitAddress(ch);
+  int16_t min = ld->min;
+  int16_t max = ld->max;
+  int16_t center = ld->ppmCenter;
+
+  pauseMixerCalculations();
+
+  for (uint8_t chan = 0; chan < MAX_OUTPUT_CHANNELS; chan++) {
+    ld = limitAddress(chan);
+    ld->min = min;
+    ld->max = max;
+    ld->ppmCenter = center;
+  }
+
+  resumeMixerCalculations();
+  storageDirty(EE_MODEL);
+}
+
 void moveTrimsToOffsets()  // copy state of 3 primary to subtrim
 {
   int16_t zeros[MAX_OUTPUT_CHANNELS];
