@@ -1019,6 +1019,7 @@
 #define TR_PTS                 "pti"
 #define TR_SMOOTH              "Smussa"
 #define TR_COPY_STICKS_TO_OFS  TR("Cpy stick->subtrim", "Copia Stick su Offset")
+#define TR_COPY_MIN_MAX_TO_OUTPUTS     TR("Cpy min/max to all",  "Copy min/max/center to all outputs")
 #define TR_COPY_TRIMS_TO_OFS   TR("Cpy trim->subtrim", "Copia Trim in Subtrim")
 #define TR_INCDEC              "Inc/Decrementa"
 #define TR_GLOBALVAR           "Var Globale"
