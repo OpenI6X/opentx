@@ -18,8 +18,7 @@
  * GNU General Public License for more details.
  */
 
-#ifndef _POPUPS_H_
-#define _POPUPS_H_
+#pragma once
 
 #include <inttypes.h>
 #include "buzzer.h"
@@ -99,6 +98,7 @@ enum
   extern bool isEventCaughtByPopup();
   extern void POPUP_MENU_TITLE(const char * s);
   extern void POPUP_MENU_START(PopupMenuHandler handler);
+  extern void POPUP_MENU_START(PopupMenuHandler handler, int count, ...);
 #endif
 
 
@@ -107,5 +107,3 @@ enum
 #else
   #define POPUP_MENU_ADD_SD_ITEM(s)
 #endif
-
-#endif // _POPUPS_H_

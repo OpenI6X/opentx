@@ -18,8 +18,7 @@
  * GNU General Public License for more details.
  */
 
-#ifndef _MENUS_H_
-#define _MENUS_H_
+#pragma once
 
 #include "keys.h"
 
@@ -168,4 +167,3 @@ void menuStatisticsDebug2(event_t event);
 #if !defined(PCBI6X)
 void menuAboutView(event_t event);
 #endif
-#endif // _MENUS_H_

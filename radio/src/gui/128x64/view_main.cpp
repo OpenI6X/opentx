@@ -106,12 +106,14 @@ void doMainScreenGraphics()
 
 void displayTrims(uint8_t phase)
 {
-  for (uint32_t i=0; i<4; i++) {
-    static coord_t x[4] = {TRIM_LH_X, TRIM_LV_X, TRIM_RV_X, TRIM_RH_X};
-    static uint8_t vert[4] = {0,1,1,0};
-    coord_t xm, ym;
+  static uint8_t x[4] = {TRIM_LH_X, TRIM_LV_X, TRIM_RV_X, TRIM_RH_X};
+  static uint8_t vert[4] = {0, 1, 1, 0};
+
+  for (uint8_t i = 0; i < 4; i++) {
+
+    coord_t ym;
     uint8_t stickIndex = CONVERT_MODE(i);
-    xm = x[stickIndex];
+    coord_t xm = x[stickIndex];
     uint8_t att = ROUND;
     int16_t val = getTrimValue(phase, i);
 
@@ -258,13 +260,7 @@ void onMainViewMenu(const char *result)
   }
 #endif
   else if (result == STR_RESET_SUBMENU) {
-    POPUP_MENU_ADD_ITEM(STR_RESET_FLIGHT);
-    POPUP_MENU_ADD_ITEM(STR_RESET_TIMER1);
-    POPUP_MENU_ADD_ITEM(STR_RESET_TIMER2);
-    POPUP_MENU_ADD_ITEM(STR_RESET_TIMER3);
-#if defined(TELEMETRY_FRSKY)
-    POPUP_MENU_ADD_ITEM(STR_RESET_TELEMETRY);
-#endif
+    POPUP_MENU_START(onMainViewMenu, 5, STR_RESET_FLIGHT, STR_RESET_TIMER1, STR_RESET_TIMER2, STR_RESET_TIMER3, STR_RESET_TELEMETRY);
   }
 #if defined(TELEMETRY_FRSKY)
   else if (result == STR_RESET_TELEMETRY) {
@@ -326,23 +322,13 @@ void menuMainView(event_t event)
       killEvents(event);
 #if defined(PCBI6X)
       if (view_base == VIEW_CHAN_MONITOR) break;
-#else
-      if (modelHasNotes()) {
-        POPUP_MENU_ADD_ITEM(STR_VIEW_NOTES);
-      }
 #endif
 
 #if defined(PWR_BUTTON_SWITCH) && !defined(PWR_BUTTON_EMULATED)
-      POPUP_MENU_ADD_ITEM(STR_SAVEALLDATA);
+      POPUP_MENU_START(onMainViewMenu, 3, STR_SAVEALLDATA, STR_RESET_SUBMENU, STR_STATISTICS);
+#else
+      POPUP_MENU_START(onMainViewMenu, 2, STR_RESET_SUBMENU, STR_STATISTICS);
 #endif
-      POPUP_MENU_ADD_ITEM(STR_RESET_SUBMENU);
-
-      POPUP_MENU_ADD_ITEM(STR_STATISTICS);
-
-#if !defined(PCBI6X)
-      POPUP_MENU_ADD_ITEM(STR_ABOUT_US);
-#endif
-      POPUP_MENU_START(onMainViewMenu);
       break;
 
 #if MENUS_LOCK != 2 /*no menus*/

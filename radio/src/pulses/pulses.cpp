@@ -210,7 +210,7 @@ bool setupPulsesInternalModule(uint8_t protocol)
 {
   switch (protocol) {
     case PROTOCOL_CHANNELS_AFHDS2A_SPI:
-      // nothing needed, AFHDS2A does setup and sends frame in ActionAFHDS2A
+      // nothing needed, AFHDS2A does setup and sends frame in AFHDS2A_callback
       return true;
 
     default:

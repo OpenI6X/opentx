@@ -8,7 +8,7 @@
 
 # OpenI6X
 
-Goal of the project is to bring customized **EdgeTX / OpenTX** to FlySky I6X and other STM32F0 based radios.
+Goal of the project is to bring customized **EdgeTX / OpenTX** to Flysky I6X and other STM32F0 based radios.
 
 Join our [Discord](https://discord.gg/3vKfYNTVa2), [RCGroups](https://www.rcgroups.com/forums/showthread.php?3916435-FlySky-I6X-port-of-OpenTX) or [Telegram](https://t.me/otx_flysky_i6x) to contribute, discuss or get help.
 
@@ -27,12 +27,12 @@ See [Wiki](https://github.com/OpenI6X/opentx/wiki) for more.
 
 ## Comparison with original firmware
 
-| Feature                   | FlySky i6X | OpenI6X                      |
+| Feature                   | Flysky i6X | OpenI6X                      |
 |---------------------------|------------|------------------------------|
 | Channels                  | 6/10       | 16                           |
 | Mixers                    | 3          | 32                           |
 | Models                    | 20         | 20 / unlimited<sup>[1]</sup> |
-| Protocols                 | AFHDS, AFHDS2A, PPM | AFHDS2A + 16Ch modes, PPM, CRSF |
+| Protocols                 | AFHDS, AFHDS2A, PPM | 16Ch AFHDS2A, PPM, CRSF |
 | Trainer                   | PPM        | PPM, SBUS                    |
 | Timers                    | _          | ✓                            |
 | Voice annoucements        | _          | ✓<sup>[2]</sup>              |
@@ -41,7 +41,7 @@ See [Wiki](https://github.com/OpenI6X/opentx/wiki) for more.
 | Adjustable screen brightness | _       | ✓<sup>[3]</sup>              |
 | USB Modes                 | Joystick   | Joystick, Storage, Serial (Telemetry mirror, Debug) |
 | AUX Serial port           | _          | ✓ SBUS Trainer, Telemetry mirror, Debug |
-| FlySky FS-HZCZ03-ADJ Gimbal support | _   | ✓<sup>[4]</sup>    |
+| Flysky FS-HZCZ03-ADJ Gimbal support | _   | ✓<sup>[4]</sup>    |
 | Languages                 | EN, CN      | PL, EN, CZ, DE, ES, FI, FR, IT, NL, PT, SE |
 
 <sub>[1] Unlimited by using USB mass storage mode eeprom backup/restore.</sub><br>

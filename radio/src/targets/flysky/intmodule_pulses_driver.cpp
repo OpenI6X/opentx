@@ -92,7 +92,7 @@ void intmoduleAfhds2aStart() {
   NVIC_EnableIRQ(EXTI2_3_IRQn);
 
   intmoduleAfhds2aPulsesStart(3850); // was: 3776 us
-  initAFHDS2A();
+  AFHDS2A_init();
   SET_BIT(INTMODULE_TIMER->CR1, TIM_CR1_CEN);
 }
 
@@ -103,7 +103,7 @@ extern "C" void EXTI2_3_IRQHandler()
     WRITE_REG(EXTI->PR, RF_GIO2_PIN);
     DisableGIO();
     SETBIT(RadioState, CALLER, GPIO_CALL);
-    ActionAFHDS2A();
+    AFHDS2A_callback();
   }
 }
 
@@ -112,6 +112,6 @@ extern "C" void INTMODULE_TIMER_IRQHandler()
   WRITE_REG(INTMODULE_TIMER->SR, ~(TIM_SR_UIF));  // Clear the update interrupt flag (UIF)
   if (setupPulsesInternalModule()) {
     SETBIT(RadioState, CALLER, TIM_CALL);
-    ActionAFHDS2A();
+    AFHDS2A_callback();
   }
 }

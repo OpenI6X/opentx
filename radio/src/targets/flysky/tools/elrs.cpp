@@ -511,7 +511,6 @@ static void paramUnifiedDisplay(Parameter * param, uint8_t y, uint8_t attr) {
 
 static void paramBackExec(Parameter * param = 0) {
   currentFolderId = 0;
-  clearData();
   reloadAllParam();
   devicesLen = 0;
   expectedParamsCount = 0;

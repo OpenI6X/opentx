@@ -17,10 +17,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#include <stddef.h>
+#pragma once
 
-#ifndef _DFPLAYER_DRIVER_H_
-#define _DFPLAYER_DRIVER_H_
+#include <stddef.h>
 
 #if defined(__cplusplus)
 
@@ -47,5 +46,3 @@ void dfPlayerQueuePlayFile(uint16_t);
 // void dfPlayerQueueStopPlay(uint8_t id);
 
 #endif // __cplusplus
-
-#endif // _DFPLAYER_DRIVER_H_

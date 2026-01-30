@@ -189,3 +189,15 @@ void POPUP_MENU_START(PopupMenuHandler handler)
     popupMenuHandler = handler;
   }
 }
+
+void POPUP_MENU_START(PopupMenuHandler handler, int count, ...)
+{
+  va_list ap;
+  va_start(ap, count);
+  for(int i = 0; i < count; i += 1) {
+      const char* s = va_arg(ap, const char*);
+      POPUP_MENU_ADD_ITEM(s);
+  }
+  va_end(ap);
+  POPUP_MENU_START(handler);
+}

@@ -25,6 +25,7 @@
 #include <string.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include "definitions.h"
 #include "opentx_types.h"
 #if defined(STM32)
@@ -189,9 +190,9 @@
 
 #if defined(PCBI6X_ELRS) && !defined(DEBUG)
 #if defined(CRSF_EXTENDED_TYPES)
-#define CTOOL_DATA_SIZE (709/*strings buffer*/ + 44/*max popup packet*/ + (18*12)/*params*/ + 8/*devices*/ + 3/*data alignment*/) // 980
+#define CTOOL_DATA_SIZE (720/*strings buffer*/ + 44/*max popup packet*/ + (18*12)/*params*/ + 8/*devices*/ + 0/*data alignment*/) // 988
 #else
-#define CTOOL_DATA_SIZE (709/*strings buffer*/ + 44/*max popup packet*/ + (18*10)/*params*/ + 8/*devices*/ + 1/*data alignment*/) // 942
+#define CTOOL_DATA_SIZE (720/*strings buffer*/ + 44/*max popup packet*/ + (18*10)/*params*/ + 8/*devices*/ + 0/*data alignment*/) // 952
 #endif
 #else
 #define CTOOL_DATA_SIZE 680 // minimize RAM usage for DEBUG and non PCBI6X_ELRS builds
@@ -465,15 +466,6 @@ extern uint8_t mixerCurrentFlightMode;
 extern uint8_t lastFlightMode;
 extern uint8_t flightModeTransitionLast;
 
-#if defined(SIMU)
-  inline int availableMemory() { return 1000; }
-#elif !defined(SIMU)
-  extern unsigned char *heap;
-  extern int _end;
-  extern int _heap_end;
-  #define availableMemory() ((unsigned int)((unsigned char *)&_heap_end - heap))
-#endif
-
 void evalFlightModeMixes(uint8_t mode, uint8_t tick10ms);
 void evalMixes(uint8_t tick10ms);
 void doMixerCalculations();
@@ -740,61 +732,18 @@ extern uint8_t            g_beepCnt;
 
 extern int32_t            chans[MAX_OUTPUT_CHANNELS];
 extern int16_t            ex_chans[MAX_OUTPUT_CHANNELS]; // Outputs (before LIMITS) of the last perMain
+#if defined(AFHDS2A_LQI_CH) && (AFHDS2A_LQI_CH == 17)
+extern int16_t            channelOutputs[MAX_OUTPUT_CHANNELS + 1]; // AFHDS2A may use 17 channels
+#else
 extern int16_t            channelOutputs[MAX_OUTPUT_CHANNELS];
+#endif
 
 #define NUM_INPUTS      (MAX_INPUTS)
 
 int expo(int x, int k);
 
-inline void getMixSrcRange(const int source, int16_t & valMin, int16_t & valMax, LcdFlags * flags = 0)
-{
-  if (source >= MIXSRC_FIRST_TRIM && source <= MIXSRC_LAST_TRIM) {
-    valMax = g_model.extendedTrims ? TRIM_EXTENDED_MAX : TRIM_MAX;
-    valMin = -valMax;
-  }
-#if defined(LUA_INPUTS)
-  else if (source >= MIXSRC_FIRST_LUA && source <= MIXSRC_LAST_LUA) {
-    valMax = 30000;
-    valMin = -valMax;
-  }
-#endif
-  else if (source < MIXSRC_FIRST_CH) {
-    valMax = 100;
-    valMin = -valMax;
-  }
-  else if (source <= MIXSRC_LAST_CH) {
-    valMax = g_model.extendedLimits ? LIMIT_EXT_PERCENT : 100;
-    valMin = -valMax;
-  }
-#if defined(GVARS)
-  else if (source >= MIXSRC_FIRST_GVAR && source <= MIXSRC_LAST_GVAR) {
-    valMax = min<int>(CFN_GVAR_CST_MAX, MODEL_GVAR_MAX(source-MIXSRC_FIRST_GVAR));
-    valMin = max<int>(CFN_GVAR_CST_MIN, MODEL_GVAR_MIN(source-MIXSRC_FIRST_GVAR));
-    if (flags && g_model.gvars[source-MIXSRC_FIRST_GVAR].prec)
-      *flags |= PREC1;
-  }
-#endif
-  else if (source == MIXSRC_TX_VOLTAGE) {
-    valMax =  255;
-    valMin = 0;
-    if (flags)
-      *flags |= PREC1;
-  }
-  else if (source == MIXSRC_TX_TIME) {
-    valMax =  23 * 60 + 59;
-    valMin = 0;
-  }
-  else if (source >= MIXSRC_FIRST_TIMER && source <= MIXSRC_LAST_TIMER) {
-    valMax =  9 * 60 * 60 - 1;
-    valMin = -valMax;
-    if (flags)
-      *flags |= TIMEHOUR;
-  }
-  else {
-    valMax = 30000;
-    valMin = -valMax;
-  }
-}
+extern void getMixSrcRange(const int source, int16_t & valMin, int16_t & valMax, LcdFlags * flags = 0);
+
 #if defined(GVAR_MAX)
 inline void getGVarIncDecRange(int16_t & valMin, int16_t & valMax)
 {
