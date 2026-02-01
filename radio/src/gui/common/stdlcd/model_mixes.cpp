@@ -19,6 +19,7 @@
  */
 
 #include "opentx.h"
+#include "model_inputs_mixes_common.h"
 
 #define _STR_MAX(x)                     "/" #x
 #define STR_MAX(x)                     _STR_MAX(x)
@@ -127,30 +128,26 @@ bool swapMixes(uint8_t & idx, uint8_t up)
   return true;
 }
 
+void onMixesMenu(const char * result);
+
+const static CommonOps mixOps = {
+  deleteMix,
+  insertMix,
+  copyMix,
+  swapMixes,
+  reachMixesLimit,
+  (AddressFunc)mixAddress,
+  getMixesCount,
+  onMixesMenu,
+  menuModelMixOne,
+  MAX_MIXERS,
+  MAX_OUTPUT_CHANNELS
+};
+
 void onMixesMenu(const char * result)
 {
   uint8_t chn = mixAddress(s_currIdx)->destCh + 1;
-
-  if (result == STR_EDIT) {
-    pushMenu(menuModelMixOne);
-  }
-  else if (result == STR_INSERT_BEFORE || result == STR_INSERT_AFTER) {
-    if (!reachMixesLimit()) {
-      s_currCh = chn;
-      if (result == STR_INSERT_AFTER) { s_currIdx++; menuVerticalPosition++; }
-      insertMix(s_currIdx);
-      pushMenu(menuModelMixOne);
-    }
-  }
-  else if (result == STR_COPY || result == STR_MOVE) {
-    s_copyMode = (result == STR_COPY ? COPY_MODE : MOVE_MODE);
-    s_copySrcIdx = s_currIdx;
-    s_copySrcCh = chn;
-    s_copySrcRow = menuVerticalPosition;
-  }
-  else if (result == STR_DELETE) {
-    deleteMix(s_currIdx);
-  }
+  onCommonMenu(result, chn, &mixOps);
 }
 
 #if LCD_W >= 212
@@ -258,126 +255,7 @@ void menuModelMixAll(event_t event)
 
   uint8_t chn = mixAddress(s_currIdx)->destCh + 1;
 
-  switch (event) {
-    case EVT_ENTRY:
-    case EVT_ENTRY_UP:
-      s_copyMode = 0;
-      s_copyTgtOfs = 0;
-      break;
-    case EVT_KEY_LONG(KEY_EXIT):
-      if (s_copyMode && s_copyTgtOfs == 0) {
-        deleteMix(s_currIdx);
-        killEvents(event);
-        event = 0;
-      }
-      // no break
-    case EVT_KEY_BREAK(KEY_EXIT):
-      if (s_copyMode) {
-        if (s_copyTgtOfs) {
-          // cancel the current copy / move operation
-          if (s_copyMode == COPY_MODE) {
-            deleteMix(s_currIdx);
-          }
-          else {
-            do {
-              swapMixes(s_currIdx, s_copyTgtOfs > 0);
-              s_copyTgtOfs += (s_copyTgtOfs < 0 ? +1 : -1);
-            } while (s_copyTgtOfs != 0);
-            storageDirty(EE_MODEL);
-          }
-          menuVerticalPosition = s_copySrcRow + HEADER_LINE;
-          s_copyTgtOfs = 0;
-        }
-        s_copyMode = 0;
-        event = 0;
-      }
-      break;
-    case EVT_KEY_BREAK(KEY_ENTER):
-      if ((!s_currCh || (s_copyMode && !s_copyTgtOfs)) && !READ_ONLY()) {
-        s_copyMode = (s_copyMode == COPY_MODE ? MOVE_MODE : COPY_MODE);
-        s_copySrcIdx = s_currIdx;
-        s_copySrcCh = chn;
-        s_copySrcRow = sub;
-        break;
-      }
-      // no break
-
-    case EVT_KEY_LONG(KEY_ENTER):
-      killEvents(event);
-      if (s_copyTgtOfs) {
-        s_copyMode = 0;
-        s_copyTgtOfs = 0;
-      }
-      else {
-        if (READ_ONLY()) {
-          if (!s_currCh) {
-            pushMenu(menuModelMixOne);
-          }
-        }
-        else {
-          if (s_copyMode) s_currCh = 0;
-          if (s_currCh) {
-            if (reachMixesLimit()) break;
-            insertMix(s_currIdx);
-            pushMenu(menuModelMixOne);
-            s_copyMode = 0;
-          }
-          else {
-            event = 0;
-            s_copyMode = 0;
-            POPUP_MENU_START(onMixesMenu, 6, STR_EDIT, STR_INSERT_BEFORE, STR_INSERT_AFTER, STR_COPY, STR_MOVE, STR_DELETE);
-          }
-        }
-      }
-      break;
-    case EVT_KEY_LONG(KEY_LEFT):
-    case EVT_KEY_LONG(KEY_RIGHT):
-      if (s_copyMode && !s_copyTgtOfs) {
-        if (reachMixesLimit()) break;
-        s_currCh = chn;
-        if (event == EVT_KEY_LONG(KEY_RIGHT)) { s_currIdx++; menuVerticalPosition++; }
-        insertMix(s_currIdx);
-        pushMenu(menuModelMixOne);
-        s_copyMode = 0;
-        killEvents(event);
-      }
-      break;
-    case EVT_KEY_FIRST(KEY_UP):
-    case EVT_KEY_REPT(KEY_UP):
-    case EVT_KEY_FIRST(KEY_DOWN):
-    case EVT_KEY_REPT(KEY_DOWN):
-#if defined(ROTARY_ENCODER_NAVIGATION)
-    case EVT_ROTARY_RIGHT:
-    case EVT_ROTARY_LEFT:
-#endif
-      if (s_copyMode) {
-        uint8_t next_ofs = (IS_PREVIOUS_EVENT(event) ? s_copyTgtOfs - 1 : s_copyTgtOfs + 1);
-
-        if (s_copyTgtOfs==0 && s_copyMode==COPY_MODE) {
-          // insert a mix on the same channel (just above / just below)
-          if (reachMixesLimit()) break;
-          copyMix(s_currIdx);
-          if (IS_NEXT_EVENT(event))
-            s_currIdx++;
-          else if (sub - menuVerticalOffset >= 6)
-            menuVerticalOffset++;
-        }
-        else if (next_ofs==0 && s_copyMode==COPY_MODE) {
-          // delete the mix
-          deleteMix(s_currIdx);
-          if (IS_PREVIOUS_EVENT(event))
-            s_currIdx--;
-        }
-        else {
-          // only swap the mix with its neighbor
-          if (!swapMixes(s_currIdx, IS_PREVIOUS_EVENT(event))) break;
-          storageDirty(EE_MODEL);
-        }
-
-        s_copyTgtOfs = next_ofs;
-      }
-      break;
-  }
+  menuModelExposMixes_HandleEvent(event, chn, sub, &mixOps);
 
   lcdDrawNumber(FW*sizeof(TR_MIXER)+FW+FW/2, 0, getMixesCount(), RIGHT);
   lcdDrawText(FW*sizeof(TR_MIXER)+FW+FW/2, 0, STR_MAX(MAX_MIXERS));
