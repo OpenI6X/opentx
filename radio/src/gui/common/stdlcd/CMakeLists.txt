@@ -16,6 +16,7 @@ endif()
 add_definitions(-DGRAPHICS)
 set(GUI_SRC
  ${GUI_SRC}
+  ../common/stdlcd/model_inputs_mixes_common.cpp
   ../common/stdlcd/model_inputs.cpp
   ../common/stdlcd/model_mixes.cpp
   ../common/stdlcd/view_text.cpp
