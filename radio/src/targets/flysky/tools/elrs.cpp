@@ -517,9 +517,9 @@ static void paramUnifiedDisplay(Parameter * param, uint8_t y, uint8_t attr) {
 static void paramFolderLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   param->firstChildId = data[offset];
   while (data[offset] != 0xFF) {
+    param->lastChildId = data[offset];
     offset++;
   }
-  param->lastChildId = data[offset - 1];
   //TRACE("folder load %d-%d", param->firstChildId, param->lastChildId);
 }
 
@@ -696,7 +696,15 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
       if (paramId == lastParamId) { // if we have loaded all params
         allParamsLoaded = 1;
       } else if (allParamsLoaded == 0) {
-        paramId++; // paramId = 1 + (paramId % (paramsLen-1));
+        if (param->type == TYPE_FOLDER) {
+          if (param->lastChildId + 1 > lastParamId) { // prevent overflow
+            allParamsLoaded = 1;
+          } else {
+            paramId = param->lastChildId + 1; // skip folder items
+          }
+        } else {
+          paramId++;
+        }
       }
       paramTimeout = getTime() + 200;
     } else {
