@@ -260,7 +260,6 @@ void editName(coord_t x, coord_t y, char * name, uint8_t size, event_t event, ui
 void editSingleName(coord_t x, coord_t y, const char * label, char * name, uint8_t size, event_t event, uint8_t active);
 
 uint8_t editDelay(coord_t y, event_t event, uint8_t attr, const char * str, uint8_t delay);
-#define EDIT_DELAY(x, y, event, attr, str, delay) editDelay(y, event, attr, str, delay)
 
 extern const char * warningText;
 extern const char * warningInfoText;
