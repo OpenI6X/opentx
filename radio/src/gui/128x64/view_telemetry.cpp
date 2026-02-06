@@ -209,12 +209,12 @@ bool displayTelemetryScreen()
 }
 
 enum NavigationDirection {
-  none,
-  up,
-  down
+  NAVIGATION_DIRECTION_NONE,
+  NAVIGATION_DIRECTION_UP,
+  NAVIGATION_DIRECTION_DOWN
 };
-#define decrTelemetryScreen() direction = up
-#define incrTelemetryScreen() direction = down
+#define decrTelemetryScreen() direction = NAVIGATION_DIRECTION_UP
+#define incrTelemetryScreen() direction = NAVIGATION_DIRECTION_DOWN
 
 #if defined(PCBXLITE)
 #define EVT_KEY_PREVIOUS_VIEW          EVT_KEY_LONG(KEY_LEFT)
@@ -230,7 +230,7 @@ enum NavigationDirection {
 void menuViewTelemetry(event_t event)
 {
 #if defined(TELEMETRY_FRSKY)
-  enum NavigationDirection direction = none;
+  enum NavigationDirection direction = NAVIGATION_DIRECTION_NONE;
 
   switch (event) {
     case EVT_KEY_FIRST(KEY_EXIT):
@@ -259,16 +259,16 @@ void menuViewTelemetry(event_t event)
   }
 
   for (int i=0; i<=TELEMETRY_SCREEN_TYPE_MAX; i++) {
-    if (direction == up) {
+    if (direction == NAVIGATION_DIRECTION_UP) {
       if (selectedTelemView-- == 0)
         selectedTelemView = TELEMETRY_VIEW_MAX;
     }
-    else if (direction == down) {
+    else if (direction == NAVIGATION_DIRECTION_DOWN) {
       if (selectedTelemView++ == TELEMETRY_VIEW_MAX)
         selectedTelemView = 0;
     }
     else {
-      direction = down;
+      direction = NAVIGATION_DIRECTION_DOWN;
     }
     if (displayTelemetryScreen()) {
       return;
@@ -276,7 +276,7 @@ void menuViewTelemetry(event_t event)
   }
 
   drawTelemetryTopBar();
-  lcdDrawText(2*FW, 3*FH, "No Telemetry Screens");
+  lcdDrawText(LCD_W / 2, 3 * FH, "No Telemetry Screens", CENTERED);
   displayRssiLine();
 #endif
 }
