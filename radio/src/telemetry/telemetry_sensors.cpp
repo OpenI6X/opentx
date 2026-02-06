@@ -553,7 +553,7 @@ void TelemetrySensor::init(const char* label, uint8_t unit, uint8_t prec) {
 }
 
 void TelemetrySensor::init(uint16_t id) {
-  char label[4];
+  char label[TELEM_LABEL_LEN]; // 4
   label[0] = hex2zchar((id & 0xf000) >> 12);
   label[1] = hex2zchar((id & 0x0f00) >> 8);
   label[2] = hex2zchar((id & 0x00f0) >> 4);
