@@ -455,13 +455,14 @@ void check(event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t 
       l_posHorz = min<horzpos_t>(l_posHorz, MAXCOL(l_posVert));
       break;
 
+#if !defined(PCBI6X)
     case EVT_KEY_REPT(KEY_LEFT):  //dec
       if (l_posHorz==0) break;
       // no break
 
     case EVT_KEY_FIRST(KEY_LEFT)://dec
       if (!horTab || s_editMode>0) break;
-
+#endif
 #if defined(ROTARY_ENCODER_NAVIGATION)
     CASE_EVT_ROTARY_LEFT
       if (s_editMode != 0) break;
