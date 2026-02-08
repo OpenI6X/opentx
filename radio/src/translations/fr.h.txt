@@ -504,12 +504,12 @@
 #define LEN_VTMRMODES                  "\003"
 #define TR_VTMRMODES                   "OFF""ON\0""GZs""GZ%""GZt"
 
-#define LEN_VTRAINERMODES              "\022"
-#define TR_VTRAINER_MASTER_JACK        "Maître/Jack\0      "
-#define TR_VTRAINER_SLAVE_JACK         "Elève/Jack\0       "
-#define TR_VTRAINER_MASTER_SBUS_MODULE "Maître/SBUS Module"
-#define TR_VTRAINER_MASTER_CPPM_MODULE "Maître/CPPM Module"
-#define TR_VTRAINER_MASTER_BATTERY     "Maître/Série\0     "
+#define LEN_VTRAINERMODES              "\015"
+#define TR_VTRAINER_MASTER_JACK        "Maître/Jack\0 "
+#define TR_VTRAINER_SLAVE_JACK         "Elève/Jack\0  "
+#define TR_VTRAINER_MASTER_SBUS_MODULE "Maître/SBUS M"
+#define TR_VTRAINER_MASTER_CPPM_MODULE "Maître/CPPM M"
+#define TR_VTRAINER_MASTER_BATTERY     "Maître/Serial"
 #define TR_VTRAINER_BLUETOOTH          TR("Maître/BT\0        ""Elève/BT\0", "Maître/Bluetooth\0 ""Elève/Bluetooth\0  ")
 
 #define LEN_VFAILSAFE                  "\011"

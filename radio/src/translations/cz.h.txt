@@ -491,12 +491,12 @@
 #define LEN_VTMRMODES          "\004"
 #define TR_VTMRMODES           "VYP\0""ZAP\0""Pln>""Pln%""Pln*"
 
-#define LEN_VTRAINERMODES              "\022"
-#define TR_VTRAINER_MASTER_JACK        "Učitel/Jack\0      "
-#define TR_VTRAINER_SLAVE_JACK         "Žák/Jack\0         "
-#define TR_VTRAINER_MASTER_SBUS_MODULE "Učitel/SBUS Modul\0"
-#define TR_VTRAINER_MASTER_CPPM_MODULE "Učitel/CPPM Modul\0"
-#define TR_VTRAINER_MASTER_BATTERY     "Učitel/Serial\0    "
+#define LEN_VTRAINERMODES              "\015"
+#define TR_VTRAINER_MASTER_JACK        "Učitel/Jack\0 "
+#define TR_VTRAINER_SLAVE_JACK         "Žák/Jack\0    "
+#define TR_VTRAINER_MASTER_SBUS_MODULE "Učitel/SBUS M"
+#define TR_VTRAINER_MASTER_CPPM_MODULE "Učitel/CPPM M"
+#define TR_VTRAINER_MASTER_BATTERY     "Učitel/Serial"
 #define TR_VTRAINER_BLUETOOTH          TR("Master/BT\0        ""Slave/BT\0", "Master/Bluetooth\0 ""Slave/Bluetooth\0  ")
 
 #define LEN_VFAILSAFE          "\012"

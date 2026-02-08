@@ -500,12 +500,12 @@
 #define LEN_VTMRMODES          "\003"
 #define TR_VTMRMODES           "Av\0""På\0""GAs""GA%""GAt"
 
-#define LEN_VTRAINERMODES              "\022"
-#define TR_VTRAINER_MASTER_JACK        "Lärare/Uttag\0     "
-#define TR_VTRAINER_SLAVE_JACK         "Elev./Uttag\0      "
-#define TR_VTRAINER_MASTER_SBUS_MODULE "Lärare/SBUS-Modul\0"
-#define TR_VTRAINER_MASTER_CPPM_MODULE "Lärare/CPPM-Modul\0"
-#define TR_VTRAINER_MASTER_BATTERY     "Lärare/Serial\0    "
+#define LEN_VTRAINERMODES              "\015"
+#define TR_VTRAINER_MASTER_JACK        "Lärare/Uttag\0"
+#define TR_VTRAINER_SLAVE_JACK         "Elev./Uttag\0 "
+#define TR_VTRAINER_MASTER_SBUS_MODULE "Lärare/SBUS M"
+#define TR_VTRAINER_MASTER_CPPM_MODULE "Lärare/CPPM M"
+#define TR_VTRAINER_MASTER_BATTERY     "Lärare/Serial"
 #define TR_VTRAINER_BLUETOOTH          TR("Master/BT\0        ""Slave/BT\0", "Master/Bluetooth\0 ""Slave/Bluetooth\0  ")
 
 #define LEN_VFAILSAFE          "\011"
