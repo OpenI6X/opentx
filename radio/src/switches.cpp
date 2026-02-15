@@ -616,6 +616,9 @@ void checkSwitches()
       drawAlertBox(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP);
       if (last_bad_switches == 0xff /*|| last_bad_pots == 0xff*/) {
         AUDIO_ERROR_MESSAGE(AU_SWITCH_ALERT);
+        #if defined(DFPLAYER)
+            dfplayerWakeup(); // allow to play the throttle warning on startup
+        #endif
       }
       int x = SWITCH_WARNING_LIST_X, y = SWITCH_WARNING_LIST_Y;
       int numWarnings = 0;

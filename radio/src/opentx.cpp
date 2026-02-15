@@ -803,6 +803,10 @@ void checkThrottleStick()
       return;
     }
 
+#if defined(DFPLAYER)
+    dfplayerWakeup(); // allow to play the throttle warning on startup
+#endif
+
 #if defined(PWR_BUTTON_PRESS) || defined(PWR_BUTTON_EMULATED)
     uint32_t power = pwrCheck();
     if (power == e_power_off) {
@@ -1608,6 +1612,14 @@ void opentxInit()
   storageReadRadioSettings();
 #endif
 
+#if defined(GUI)
+  lcdSetContrast();
+#endif
+
+  currentBacklightBright = requiredBacklightBright = g_eeGeneral.backlightBright;
+  BACKLIGHT_ENABLE(); // we start the backlight during the startup animation
+
+
   // Radios handle UNEXPECTED_SHUTDOWN() differently:
   //  * radios with WDT and EEPROM and CPU controlled power use Reset status register
   //    and eeGeneral.unexpectedShutdown
@@ -1680,7 +1692,7 @@ void opentxInit()
 #endif
 #if defined(AUDIO)
   currentSpeakerVolume = requiredSpeakerVolume = g_eeGeneral.speakerVolume + VOLUME_LEVEL_DEF;
-  currentBacklightBright = requiredBacklightBright = g_eeGeneral.backlightBright; // TODO test if needed?
+
 #if !defined(SOFTWARE_VOLUME)
   setScaledVolume(currentSpeakerVolume);
 #endif
@@ -1690,10 +1702,9 @@ void opentxInit()
 #endif
 
 #if defined(DFPLAYER)
+  currentSpeakerVolume = requiredSpeakerVolume = g_eeGeneral.speakerVolume + VOLUME_LEVEL_DEF;
   setScaledVolume(currentSpeakerVolume);
 #endif
-
-  BACKLIGHT_ENABLE();
 
 #if defined(PCBHORUS)
   loadTheme();
@@ -1714,9 +1725,6 @@ void opentxInit()
     storageDirty(EE_GENERAL);
   }
 
-#if defined(GUI)
-  lcdSetContrast();
-#endif
   resetBacklightTimeout();
 
   startPulses();
