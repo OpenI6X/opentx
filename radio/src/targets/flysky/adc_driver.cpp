@@ -91,44 +91,37 @@ void adcInit()
 
   // set up analog inputs ADC8, ADC9(PB0, PB1)
   gpio_init.GPIO_Pin = 0b11;
-  gpio_init.GPIO_Mode = GPIO_Mode_AN;
+  // gpio_init.GPIO_Mode = GPIO_Mode_AN;
   GPIO_Init(GPIOB, &gpio_init);
 
   // battery voltage is on PC0(ADC10)
   gpio_init.GPIO_Pin = 0b1;
-  gpio_init.GPIO_Mode = GPIO_Mode_AN;
+  // gpio_init.GPIO_Mode = GPIO_Mode_AN;
   GPIO_Init(GPIOC, &gpio_init);
 
-  // init mode
-  ADC_InitTypeDef adc_init;
-  ADC_StructInit(&adc_init);
+  // Calibrate (recommended once after power-up)
+  ADC_MAIN->CR |= ADC_CR_ADCAL;
+  while(ADC_MAIN->CR & ADC_CR_ADCAL);
 
   // ADC configuration
-  adc_init.ADC_ContinuousConvMode = ENABLE; // ! select continuous conversion mode
-  adc_init.ADC_ExternalTrigConv = 0;
-  adc_init.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None; // select no ext triggering
-  adc_init.ADC_DataAlign = ADC_DataAlign_Right;                      // r 12-bit data alignment in ADC reg
+  ADC_InitTypeDef adc_init;
+  adc_init.ADC_ContinuousConvMode = ENABLE;
+  adc_init.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T1_TRGO;
+  adc_init.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
+  adc_init.ADC_DataAlign = ADC_DataAlign_Right;
   adc_init.ADC_Resolution = ADC_Resolution_12b;
   adc_init.ADC_ScanDirection = ADC_ScanDirection_Upward;
-
-  // load structure values to control and status registers
   ADC_Init(ADC_MAIN, &adc_init);
 
-  // configure each channel
   ADC_ChannelConfig(ADC_MAIN,
   #if !defined(FLYSKY_GIMBAL)
     ADC_Channel_0 | ADC_Channel_1 | ADC_Channel_2 | ADC_Channel_3 |
   #endif
     ADC_Channel_4 | ADC_Channel_5 | ADC_Channel_6 | ADC_Channel_7 | ADC_Channel_8 | ADC_Channel_9 | ADC_Channel_10, ADC_SAMPTIME);
 
-
-  // enable ADC
   ADC_Cmd(ADC_MAIN, ENABLE);
 
-  // enable DMA for ADC
   ADC_DMACmd(ADC_MAIN, ENABLE);
-
-  // -- init dma --
 
   // reset DMA1 channe1 to default values
   DMA_DeInit(ADC_DMA_Channel);
