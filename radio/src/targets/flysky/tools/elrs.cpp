@@ -57,11 +57,15 @@ struct Parameter {
 #else
     int16_t value;
 #endif
-    struct {
-      uint8_t timeout;      // COMMAND
-      uint8_t lastStatus;   // COMMAND
-      uint8_t status;       // COMMAND
-      uint8_t infoOffset;   // COMMAND, paramData info offset
+    struct { // COMMAND
+      uint8_t timeout;
+      uint8_t lastStatus;
+      uint8_t status;
+      uint8_t infoOffset;
+    };
+    struct { // FOLDER
+      uint8_t firstChildId;
+      uint8_t lastChildId;
     };
   };
 };
@@ -118,7 +122,7 @@ static struct LinkStat {
 
 static constexpr uint8_t ELRS_FLAGS_INFO_MAX_LEN = 20;
 static char elrsFlagsInfo[ELRS_FLAGS_INFO_MAX_LEN] = "";
-static uint8_t expectedParamsCount = 0;
+static uint8_t lastParamId = 0;
 
 static tmr10ms_t devicesRefreshTimeout = 50;
 static uint8_t allParamsLoaded = 0;
@@ -197,7 +201,7 @@ static void crossfireTelemetryPing() {
 }
 
 // static void updateParamsOffset() {
-//   uint16_t paramsSize = (expectedParamsCount + 1) * sizeof(Parameter); // + 1 for button (EXIT/DEVICES)
+//   uint16_t paramsSize = (lastParamId + 1) * sizeof(Parameter); // + 1 for button (EXIT/DEVICES)
 //   params = (Parameter *)&reusableBuffer.cToolData[BUFFER_SIZE - paramsSize];
 // }
 
@@ -452,14 +456,15 @@ static void paramFolderOpen(Parameter * param) {
   currentFolderId = param->id;
   reloadAllParam();
   if (param->type == TYPE_FOLDER) { // guard because it is reused for devices
-    paramId = param->id + 1; // UX hack: start loading from first folder item to fetch it faster
+    paramId = param->firstChildId;
+    lastParamId = param->lastChildId;
   }
   clearData();
 }
 
 static void paramFolderDeviceOpen(Parameter * param) {
   // if currentFolderId == devices folder, store only devices instead of params
-  expectedParamsCount = devicesLen;
+  lastParamId = devicesLen;
   devicesLen = 0;
   crossfireTelemetryPing(); //broadcast with standard handset ID to get all node respond correctly
   paramFolderOpen(param);
@@ -509,11 +514,20 @@ static void paramUnifiedDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   lcdDrawText(textIndent, y, tmp, attr | BOLD);
 }
 
+static void paramFolderLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+  param->firstChildId = data[offset];
+  while (data[offset] != 0xFF) {
+    param->lastChildId = data[offset];
+    offset++;
+  }
+  //TRACE("folder load %d-%d", param->firstChildId, param->lastChildId);
+}
+
 static void paramBackExec(Parameter * param = 0) {
   currentFolderId = 0;
   reloadAllParam();
   devicesLen = 0;
-  expectedParamsCount = 0;
+  lastParamId = 0;
 }
 
 static void changeDeviceId(uint8_t devId) {
@@ -527,7 +541,7 @@ static void changeDeviceId(uint8_t devId) {
     handsetId = 0xEA;
   }
   deviceId = devId;
-  expectedParamsCount = 0; //set this because next target wouldn't have the same count, and this trigger to request the new count
+  lastParamId = 0; //set this because next target wouldn't have the same count, and this trigger to request the new count
 }
 
 static void paramDeviceIdSelect(Parameter * param) {
@@ -539,7 +553,7 @@ static void paramDeviceIdSelect(Parameter * param) {
 static void parseDeviceInfoMessage(uint8_t* data) {
   uint8_t offset;
   uint8_t id = data[2];
-// TRACE("parseDev:%x, exp:%d, devs:%d", id, expectedParamsCount, devicesLen);
+// TRACE("parseDev:%x, exp:%d, devs:%d", id, lastParamId, devicesLen);
   offset = strlen((char*)&data[3]) + 1 + 3;
   if (!isExistingDevice(id)) {
     deviceIds[devicesLen] = id;
@@ -553,7 +567,7 @@ static void parseDeviceInfoMessage(uint8_t* data) {
 
       bufferPush((char *)&data[3], deviceParam.nameLength);
       storeParam(&deviceParam);
-      if (devicesLen == expectedParamsCount) { // was it the last one?
+      if (devicesLen == lastParamId) { // was it the last one?
         allParamsLoaded = 1;
       }
     }
@@ -562,14 +576,15 @@ static void parseDeviceInfoMessage(uint8_t* data) {
   if (deviceId == id && currentFolderId != otherDevicesId) {
     memcpy(&deviceName[0], (char *)&data[3], DEVICE_NAME_MAX_LEN);
     deviceIsELRS_TX = ((paramGetValue(&data[offset], 4) == 0x454C5253) && (deviceId == 0xEE)); // SerialNumber = 'E L R S' and ID is TX module
-    uint8_t newParamCount = data[offset+12];
-//    TRACE("deviceId match %x, newParamCount %d", deviceId, newParamCount);
+    uint8_t paramsTotal = data[offset + 12];
+//    TRACE("deviceId match %x, paramsTotal %d", deviceId, paramsTotal);
     reloadAllParam();
-    if (newParamCount != expectedParamsCount || newParamCount == 0) {
-      expectedParamsCount = newParamCount;
+    if (paramsTotal != lastParamId || paramsTotal == 0) {
+      lastParamId = paramsTotal;
+      TRACE("lastParamId %d", lastParamId);
       // updateParamsOffset();
       clearData();
-      if (newParamCount == 0) {
+      if (paramsTotal == 0) {
         // This device has no params so the Loading code never starts
         allParamsLoaded = 1;
       }
@@ -589,7 +604,7 @@ static const ParamFunctions functions[] = {
   // { .load=paramFloatLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // FLOAT(8)
   { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramTextSelectionDisplay }, // SELECT(9)
   { .load=paramStringLoad, .save=paramStringSave, .display=paramStringDisplay }, // STRING(10) editing
-  { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // FOLDER(11)
+  { .load=paramFolderLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay }, // FOLDER(11)
   { .load=paramInfoLoad, .save=noopSave, .display=paramStringDisplay }, // INFO(12)
   { .load=paramCommandLoad, .save=paramCommandSave, .display=paramUnifiedDisplay }, // COMMAND(13)
   { .load=noopLoad, .save=paramBackExec, .display=paramUnifiedDisplay }, // back(14)
@@ -630,7 +645,7 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
 
   // skip on first chunk of not current folder
   if (paramDataLen == 0 && data[5] != currentFolderId) {
-    if (paramId == expectedParamsCount) {
+    if (paramId == lastParamId) {
       allParamsLoaded = 1;
     }
     paramChunk = 0;
@@ -678,10 +693,18 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
     }
 
     if (paramPopup == nullptr) {
-      if (paramId == expectedParamsCount) { // if we have loaded all params
+      if (paramId == lastParamId) { // if we have loaded all params
         allParamsLoaded = 1;
       } else if (allParamsLoaded == 0) {
-        paramId++; // paramId = 1 + (paramId % (paramsLen-1));
+        if (param->type == TYPE_FOLDER) {
+          if (param->lastChildId + 1 > lastParamId) { // prevent overflow
+            allParamsLoaded = 1;
+          } else {
+            paramId = param->lastChildId + 1; // skip folder items
+          }
+        } else {
+          paramId++;
+        }
       }
       paramTimeout = getTime() + 200;
     } else {
@@ -737,10 +760,10 @@ static void refreshNext() {
       crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, paramPopup->id, STATUS_POLL);
       paramTimeout = time + paramPopup->timeout;
     }
-  } else if (time > devicesRefreshTimeout && expectedParamsCount < 1) {
+  } else if (time > devicesRefreshTimeout && lastParamId < 1) {
     devicesRefreshTimeout = time + 100; // 1s
     crossfireTelemetryPing();
-  } else if (time > paramTimeout && expectedParamsCount != 0) {
+  } else if (time > paramTimeout && lastParamId != 0) {
     if (allParamsLoaded < 1) {
       crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_READ, paramId, paramChunk);
       paramTimeout = time + ((deviceIsELRS_TX) ? 50 : 500); // 0.5s for local / 5s for remote devices
@@ -773,8 +796,8 @@ static void lcd_title() {
   }
 
   lcdInvertLine(0);
-  if (allParamsLoaded != 1 && expectedParamsCount > 0) {
-    luaLcdDrawGauge(0, 1, COL2, BAR_HEIGHT, paramId, expectedParamsCount);
+  if (allParamsLoaded != 1 && lastParamId > 0) {
+    luaLcdDrawGauge(0, 1, COL2, BAR_HEIGHT, paramId, lastParamId);
   } else {
     const char* textToDisplay = titleShowWarn ? elrsFlagsInfo :
                             (allParamsLoaded == 1) ? (char *)&deviceName[0] : TR_EXTERNALRF; // "External TX...";
@@ -811,7 +834,7 @@ static void handleDevicePageEvent(event_t event) {
     } else {
       if (currentFolderId == 0 && allParamsLoaded == 1) {
         if (deviceId != 0xEE) {
-          changeDeviceId(0xEE); // change device id clear expectedParamsCount, therefore the next ping will do reloadAllParam()
+          changeDeviceId(0xEE); // change device id, clear lastParamId, therefore the next ping will do reloadAllParam()
         } else {
 //          reloadAllParam(); // paramBackExec does it
         }
