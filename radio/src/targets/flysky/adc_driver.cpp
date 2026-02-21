@@ -100,8 +100,8 @@ void adcInit()
   GPIO_Init(GPIOC, &gpio_init);
 
   // Calibrate (recommended once after power-up)
-  ADC_MAIN->CR |= ADC_CR_ADCAL;
-  while(ADC_MAIN->CR & ADC_CR_ADCAL);
+  // ADC_MAIN->CR |= ADC_CR_ADCAL;
+  // while(ADC_MAIN->CR & ADC_CR_ADCAL);
 
   // ADC configuration
   ADC_InitTypeDef adc_init;
