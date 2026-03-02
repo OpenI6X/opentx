@@ -358,6 +358,13 @@ static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
     unitDisplay(param, y, offset);
 }
 
+// Skip empty values in front of TYPE_SELECT values list
+static uint8_t findNonEmptyValuesOffset(uint8_t * data) {
+  uint8_t i = 0;
+  while (data[i] == ';') { i++; }
+  return i;
+}
+
 static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   uint8_t size = (param->type == TYPE_UINT16 || param->type == TYPE_INT16) ? 2 : 1; // else INT8, SELECT
   uint8_t loadSize = 2 * size; // min + max at once
@@ -369,12 +376,14 @@ static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) 
 #endif
   param->size = size;
   uint8_t valuesLen = 0;
+  uint8_t valuesOffset = 0;
   if (param->type == TYPE_SELECT) {
     valuesLen = strlen((char*)&data[offset]) + 1; // + \0
+    valuesOffset = findNonEmptyValuesOffset(&data[offset]);
   }
   param->value = paramGetValue(&data[offset + valuesLen + (0 * size)], size);
   bufferPush((char *)&data[offset + valuesLen + (1 * size)], loadSize); // min + max at once
-  bufferPush((char*)&data[offset], valuesLen); // TYPE_SELECT values
+  bufferPush((char*)&data[offset + valuesOffset], valuesLen - valuesOffset); // TYPE_SELECT values
   unitLoad(param, data, offset + valuesLen + loadSize + 2 * size);
 }
 
