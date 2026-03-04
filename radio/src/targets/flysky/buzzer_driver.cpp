@@ -112,7 +112,7 @@ void audioEvent(unsigned int index)
         break;
 #if !defined(DFPLAYER)
       case AU_TRIM_MIDDLE:
-        playTone(120*16, 80, 20, PLAY_NOW);
+        playTone(120*16, 120, 20, PLAY_NOW);
         break;
       case AU_TRIM_MIN:
         playTone(TRIM_MIN*8 + 120*16, 80, 20, PLAY_NOW);
