@@ -358,12 +358,12 @@ void menuMainView(event_t event)
     case EVT_KEY_NEXT_VIEW:
       // TODO try to split those 2 cases on 9X
       g_eeGeneral.view = (event == EVT_KEY_PREVIOUS_VIEW ? (view_base == VIEW_COUNT - 1 ? 0 : view_base + 1) : (view_base == 0 ? VIEW_COUNT - 1 : view_base - 1));
-      storageDirty(EE_GENERAL);
+      // storageDirty(EE_GENERAL); // do not immediate store view change to prevent eeprom wear
       break;
 #else
     case EVT_KEY_NEXT_VIEW:
       g_eeGeneral.view = (view_base == 0 ? VIEW_COUNT - 1 : view_base - 1);
-      storageDirty(EE_GENERAL);
+      // storageDirty(EE_GENERAL); // do not immediate store view change to prevent eeprom wear
       break;
 #endif
 
