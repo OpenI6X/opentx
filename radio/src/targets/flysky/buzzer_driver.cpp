@@ -334,7 +334,8 @@ void buzzerHeartbeat()
 
       if (buzzerState.tone.freqIncr) {
         uint32_t freqChange = BUZZER_BUFFER_DURATION * buzzerState.tone.freqIncr;
-        buzzerState.freq += limit<uint32_t>(BEEP_MIN_FREQ, freqChange, BEEP_MAX_FREQ);
+        buzzerState.freq += freqChange;
+        buzzerState.freq = limit<uint32_t>(BEEP_MIN_FREQ, buzzerState.freq, BEEP_MAX_FREQ);
 
         buzzerOn(buzzerState.freq, g_eeGeneral.beepVolume);
       }
