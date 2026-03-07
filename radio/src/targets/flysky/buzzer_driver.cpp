@@ -329,13 +329,12 @@ void buzzerHeartbeat()
 {
   if (buzzerState.duration) {
 
-    if (buzzerState.duration > 10) {
-      buzzerState.duration -= 10; // ms
+    if (buzzerState.duration > BUZZER_SAMPLE_DURATION) {
+      buzzerState.duration -= BUZZER_SAMPLE_DURATION;
 
       if (buzzerState.tone.freqIncr) {
-        uint32_t freqChange = BUZZER_BUFFER_DURATION * buzzerState.tone.freqIncr;
-        buzzerState.freq += freqChange;
-        buzzerState.freq = limit<uint32_t>(BEEP_MIN_FREQ, buzzerState.freq, BEEP_MAX_FREQ);
+        uint32_t freqChange = BUZZER_SAMPLE_DURATION * buzzerState.tone.freqIncr;
+        buzzerState.freq = limit<uint32_t>(BEEP_MIN_FREQ, buzzerState.freq + freqChange, BEEP_MAX_FREQ);
 
         buzzerOn(buzzerState.freq, g_eeGeneral.beepVolume);
       }

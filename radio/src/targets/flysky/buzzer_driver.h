@@ -21,7 +21,7 @@
 #ifndef _BUZZER_DRIVER_H_
 #define _BUZZER_DRIVER_H_
 
-#define BUZZER_BUFFER_DURATION  (10) // ms
+#define BUZZER_SAMPLE_DURATION  (10) // ms
 
 #define BEEP_MIN_FREQ           (250)
 #define BEEP_MAX_FREQ           (15000)
