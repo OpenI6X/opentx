@@ -3,7 +3,7 @@ macro(add_lua_export_target target)
   add_custom_command(
     OUTPUT lua_exports_${target}.inc
     COMMAND ${CMAKE_C_COMPILER} -E ${ARGN} -DEXPORT ${RADIO_SRC_DIRECTORY}/dataconstants.h > lua_exports_${target}.txt
-    COMMAND ${PYTHON_EXECUTABLE} ${RADIO_DIRECTORY}/util/luaexport.py ${VERSION} lua_exports_${target}.txt lua_exports_${target}.inc lua_fields_${target}.txt
+    COMMAND ${Python3_EXECUTABLE} ${RADIO_DIRECTORY}/util/luaexport.py ${VERSION} lua_exports_${target}.txt lua_exports_${target}.inc lua_fields_${target}.txt
     )
   add_custom_target(lua_export_${target} DEPENDS lua_exports_${target}.inc)
 endmacro(add_lua_export_target)
@@ -39,7 +39,7 @@ set(LUA_INCLUDES_STM32F4
   -I${RADIO_SRC_DIRECTORY}/${STM32LIB_DIR}/CMSIS/Device/ST/STM32F4xx/Include
   )
 
-if(PYTHONINTERP_FOUND)
+if(Python3_Interpreter_FOUND)
   add_lua_export_target(x7      ${LUA_INCLUDES_STM32F2} -DPCBTARANIS -DPCBX7)
   add_lua_export_target(xlite   ${LUA_INCLUDES_STM32F2} -DPCBTARANIS -DPCBXLITE)
   add_lua_export_target(x9d     ${LUA_INCLUDES_STM32F2} -DPCBTARANIS -DPCBX9D)
