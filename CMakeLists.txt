@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.13)
 project(OpenTX)
 
 set(VERSION_MAJOR "2")
@@ -10,7 +11,6 @@ set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}${VERSION_SUFFI
 set(SDCARD_REVISION "0018")
 set(SDCARD_VERSION  ${VERSION_MAJOR}.${VERSION_MINOR}V${SDCARD_REVISION})
 
-cmake_minimum_required(VERSION 3.13)
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0023 OLD)
 if(POLICY CMP0042)
@@ -64,10 +64,12 @@ if(WIN32)
 endif()
 
 # Python check
-find_package("PythonInterp")
-if(PYTHONINTERP_FOUND)
-  message(STATUS "Python found, version: ${PYTHON_VERSION_STRING}")
-  get_filename_component(PYTHON_DIRECTORY ${PYTHON_EXECUTABLE} DIRECTORY)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+if(Python3_Interpreter_FOUND)
+  cmake_path(GET Python3_EXECUTABLE PARENT_PATH PYTHON_BIN_DIR)
+
+  message(STATUS "Python executable: ${Python3_EXECUTABLE}")
+  message(STATUS "Python bin directory: ${PYTHON_BIN_DIR}")
 else()
   message(WARNING "Python not found! Most firmware and simu flavors not buildable.")
   set(LUA NO)

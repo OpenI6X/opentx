@@ -189,10 +189,10 @@ add_custom_command(
   COMMAND arm-none-eabi-size bootloader.elf
 )
 
-if(PYTHONINTERP_FOUND)
+if(Python3_Interpreter_FOUND)
   add_custom_command(
     TARGET bootloader POST_BUILD
-    COMMAND ${PYTHON_EXECUTABLE} ${RADIO_DIRECTORY}/util/bin2lbm.py bootloader.bin bootloader.lbm
+    COMMAND ${Python3_EXECUTABLE} ${RADIO_DIRECTORY}/util/bin2lbm.py bootloader.bin bootloader.lbm
   )
 endif()
 

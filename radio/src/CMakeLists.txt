@@ -507,7 +507,6 @@ if(NOT MSVC)
     add_custom_command(
       TARGET firmware POST_BUILD
       COMMAND ${PROJECT_SOURCE_DIR}/tools/get-fw-size.sh firmware.elf 0x20000 0x4000
-      DEPENDS firmware
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
 
