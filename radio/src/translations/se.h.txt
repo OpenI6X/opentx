@@ -444,7 +444,7 @@
   #define TR_POTS_VSRCRAW              "\310F1\0""\310F2\0""\310F3\0""\310F4\0""\311S1\0""\311S2\0""\311LS\0""\311RS\0"
   #define TR_SW_VSRCRAW                "\312SA\0""\312SB\0""\312SC\0""\312SD\0""\312SE\0""\312SF\0""\312SG\0""\312SH\0""\312SI\0""\312SJ\0""\312SK\0""\312SL\0""\312SM\0""\312SN\0""\312SO\0""\312SP\0""\312SQ\0""\312SR\0"
 #elif defined(PCBI6X)
-  #define TR_POTS_VSRCRAW              "\310P1\0""\310P2\0"
+  #define TR_POTS_VSRCRAW              "\310VRA""\310VRB"
   #define TR_SW_VSRCRAW                "\312SA\0""\312SB\0""\312SC\0""\312SD\0""\312SE\0""\312SF\0"
 #elif defined(PCBXLITE)
   #define TR_POTS_VSRCRAW              "\310S1\0""\310S2\0"
@@ -500,12 +500,12 @@
 #define LEN_VTMRMODES          "\003"
 #define TR_VTMRMODES           "Av\0""På\0""GAs""GA%""GAt"
 
-#define LEN_VTRAINERMODES              "\022"
-#define TR_VTRAINER_MASTER_JACK        "Lärare/Uttag\0     "
-#define TR_VTRAINER_SLAVE_JACK         "Elev./Uttag\0      "
-#define TR_VTRAINER_MASTER_SBUS_MODULE "Lärare/SBUS-Modul\0"
-#define TR_VTRAINER_MASTER_CPPM_MODULE "Lärare/CPPM-Modul\0"
-#define TR_VTRAINER_MASTER_BATTERY     "Lärare/Serial\0    "
+#define LEN_VTRAINERMODES              "\015"
+#define TR_VTRAINER_MASTER_JACK        "Lärare/Uttag\0"
+#define TR_VTRAINER_SLAVE_JACK         "Elev./Uttag\0 "
+#define TR_VTRAINER_MASTER_SBUS_MODULE "Lärare/SBUS M"
+#define TR_VTRAINER_MASTER_CPPM_MODULE "Lärare/CPPM M"
+#define TR_VTRAINER_MASTER_BATTERY     "Lärare/Serial"
 #define TR_VTRAINER_BLUETOOTH          TR("Master/BT\0        ""Slave/BT\0", "Master/Bluetooth\0 ""Slave/Bluetooth\0  ")
 
 #define LEN_VFAILSAFE          "\011"

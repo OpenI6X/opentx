@@ -102,10 +102,11 @@ void editName(coord_t x, coord_t y, char * name, uint8_t size, event_t event, ui
           break;
 
 #if defined(PCBXLITE) || !defined(PCBTARANIS)
+#if !defined(PCBI6X)
         case EVT_KEY_BREAK(KEY_LEFT):
           if (cur>0) cur--;
           break;
-          
+#endif
         case EVT_KEY_BREAK(KEY_RIGHT):
           if (cur<size-1) cur++;
           break;
@@ -147,9 +148,10 @@ void editName(coord_t x, coord_t y, char * name, uint8_t size, event_t event, ui
               v = 'A' + v - 'a'; // toggle case
             }
           }
-#if !defined(PCBTARANIS)
-          if (event==EVT_KEY_LONG(KEY_LEFT))
-            killEvents(KEY_LEFT);
+#if defined(PCBI6X)
+          // Prevent going to next cursor pos when toggling case
+          if (event == EVT_KEY_LONG(KEY_RIGHT))
+            killEvents(KEY_RIGHT);
 #endif
           break;
       }

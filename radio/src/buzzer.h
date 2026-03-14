@@ -36,7 +36,6 @@ extern uint8_t hapticTick;
 void audioEvent(unsigned int index);
 
 #if defined(DFPLAYER)
-extern Fifo<uint16_t, 16> dfplayerFifo;
 extern uint32_t getAudioFileIndex(uint32_t i);
 extern bool isAudioFileReferenced(uint32_t i);
 void audioPlay(unsigned int index);

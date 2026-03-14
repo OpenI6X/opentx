@@ -112,7 +112,7 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
         AUDIO_KEY_ERROR();
       }
     }
-    else if (event==EVT_KEY_FIRST(KEY_LEFT) || event==EVT_KEY_REPT(KEY_LEFT) || (s_editMode>0 && (IS_ROTARY_LEFT(event) || event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_REPT(KEY_DOWN)))) {
+    else if (/*event==EVT_KEY_FIRST(KEY_LEFT) || event==EVT_KEY_REPT(KEY_LEFT) ||*/ (s_editMode>0 && (IS_ROTARY_LEFT(event) || event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_REPT(KEY_DOWN)))) {
       do {
         if (IS_KEY_REPT(event) && (i_flags & INCDEC_REP10)) {
           newval -= min(10, val-i_min);
@@ -455,13 +455,14 @@ void check(event_t event, uint8_t curr, const MenuHandlerFunc *menuTab, uint8_t 
       l_posHorz = min<horzpos_t>(l_posHorz, MAXCOL(l_posVert));
       break;
 
+#if !defined(PCBI6X)
     case EVT_KEY_REPT(KEY_LEFT):  //dec
       if (l_posHorz==0) break;
       // no break
 
     case EVT_KEY_FIRST(KEY_LEFT)://dec
       if (!horTab || s_editMode>0) break;
-
+#endif
 #if defined(ROTARY_ENCODER_NAVIGATION)
     CASE_EVT_ROTARY_LEFT
       if (s_editMode != 0) break;

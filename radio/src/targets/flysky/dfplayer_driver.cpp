@@ -25,7 +25,7 @@
 #include "board.h"
 
 static tmr10ms_t dfplayerLastCmdTime = 0;
-Fifo<uint16_t, 16> dfplayerFifo;
+static Fifo<uint16_t, 16> dfplayerFifo;
 
 static constexpr uint8_t DFP_PLAY         = 0x03; // root,         file: 0-2999, plays by filesystem order, fastest
 static constexpr uint8_t DFP_PLAY_MP3     = 0x12; // folder: mp3,  file: 0-2999, plays by filename, too slow

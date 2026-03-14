@@ -3,7 +3,6 @@
 
 # Imports
 import argparse
-import codecs
 import sys
 
 translations = {'cz_reduced': [('\\200', u'á'),
@@ -164,10 +163,10 @@ if args.reverse:
         translations[translation] = [(after, before) for (before, after) in translations[translation]]
 
 # Read the input file into a buffer
-in_file = codecs.open(args.input, "r", "utf-8")
+in_file = open(args.input, "r", encoding="utf-8")
 
 # Write the result to a temporary file
-out_file = codecs.open(args.output, 'w', 'utf-8')
+out_file = open(args.output, 'w', encoding='utf-8')
 
 for line in in_file.readlines():
     # Do the special chars replacements

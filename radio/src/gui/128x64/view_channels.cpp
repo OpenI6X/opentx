@@ -110,10 +110,11 @@ void menuChannelsView(event_t event)
     case EVT_KEY_NEXT_PAGE:
       g_eeGeneral.view = (g_eeGeneral.view + (4 * ALTERNATE_VIEW) + ALTERNATE_VIEW) % (4 * ALTERNATE_VIEW);
       break;
-
+#if !defined(PCBI6X)
     case EVT_KEY_PREVIOUS_PAGE:
       g_eeGeneral.view = (g_eeGeneral.view + (4 * ALTERNATE_VIEW) - ALTERNATE_VIEW) % (4 * ALTERNATE_VIEW);
       break;
+#endif
   }
 
   menuChannelsViewCommon(event);

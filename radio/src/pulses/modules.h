@@ -167,8 +167,18 @@ inline bool isModuleSBUS(uint8_t idx)
   #endif
 }
 
-// order is the same as in enum Protocols in myeeprom.h (none, ppm, pxx, dsm, crossfire, multi, r9m, sbus)
-static const int8_t maxChannelsModules[] = { 0, 8, 8, -2, 8, 4, 8, 8}; // relative to 8!
+// See enum ModuleType
+static const int8_t maxChannelsModules_M8[] = {
+  0, // MODULE_TYPE_NONE
+  8, // MODULE_TYPE_PPM
+  CROSSFIRE_CHANNELS_COUNT - 8, // MODULE_TYPE_CROSSFIRE
+#if defined(MULTIMODULE)
+  8, // MODULE_TYPE_MULTIMODULE
+#endif
+//  8, // MODULE_TYPE_SBUS
+// 14 - 8, // MODULE_TYPE_FLYSKY_AFHDS2A: 14 channels
+};
+
 static const int8_t maxChannelsXJT[] = { 0, 8, 0, 4 }; // relative to 8!
 
 constexpr int8_t MAX_TRAINER_CHANNELS_M8 = MAX_TRAINER_CHANNELS - 8;
@@ -179,7 +189,7 @@ inline int8_t maxModuleChannels_M8(uint8_t idx)
   if (isExtraModule(idx))
     return MAX_EXTRA_MODULE_CHANNELS_M8;
   else
-    return maxChannelsModules[g_model.moduleData[idx].type];
+    return maxChannelsModules_M8[g_model.moduleData[idx].type];
 }
 
 inline int8_t maxModuleChannels(uint8_t idx)

@@ -96,6 +96,7 @@ void audioEvent(unsigned int index)
     }
 #endif
     switch (index) {
+#if !defined(DFPLAYER)
       case AU_INACTIVITY:
         playTone(2250, 80, 20, PLAY_REPEAT(2));
         break;
@@ -103,13 +104,15 @@ void audioEvent(unsigned int index)
         playTone(1950, 160, 20, PLAY_REPEAT(2), 1);
         playTone(2550, 160, 20, PLAY_REPEAT(2), -1);
         break;
+#endif
       case AU_THROTTLE_ALERT:
       case AU_SWITCH_ALERT:
       case AU_ERROR:
         playTone(BEEP_DEFAULT_FREQ, 200, 20, PLAY_NOW);
         break;
+#if !defined(DFPLAYER)
       case AU_TRIM_MIDDLE:
-        playTone(120*16, 80, 20, PLAY_NOW);
+        playTone(120*16, 120, 20, PLAY_NOW);
         break;
       case AU_TRIM_MIN:
         playTone(TRIM_MIN*8 + 120*16, 80, 20, PLAY_NOW);
@@ -117,6 +120,7 @@ void audioEvent(unsigned int index)
       case AU_TRIM_MAX:
         playTone(TRIM_MAX*8 + 120*16, 80, 20, PLAY_NOW);
         break;
+#endif
       case AU_WARNING1:
         playTone(BEEP_DEFAULT_FREQ, 80, 20, PLAY_NOW);
         break;
@@ -143,6 +147,7 @@ void audioEvent(unsigned int index)
       case AU_MIX_WARNING_3:
         playTone(BEEP_DEFAULT_FREQ + 1680, 48, 30, PLAY_REPEAT(2));
         break;
+#if !defined(DFPLAYER)
       case AU_TIMER1_ELAPSED:
       case AU_TIMER2_ELAPSED:
       case AU_TIMER3_ELAPSED:
@@ -154,9 +159,12 @@ void audioEvent(unsigned int index)
       case AU_RSSI_RED:
         playTone(BEEP_DEFAULT_FREQ + 1800, 800, 20, PLAY_REPEAT(1) | PLAY_NOW);
         break;
+#endif
+#if !defined(PCBI6X)
       case AU_RAS_RED:
         playTone(450, 160, 40, PLAY_REPEAT(2), 1);
         break;
+#endif
       case AU_SPECIAL_SOUND_BEEP1:
         playTone(BEEP_DEFAULT_FREQ, 60, 20);
         break;
@@ -219,6 +227,7 @@ void audioEvent(unsigned int index)
       case AU_SPECIAL_SOUND_TICK:
         playTone(BEEP_DEFAULT_FREQ + 1500, 40, 400, PLAY_REPEAT(2));
         break;
+#if !defined(DFPLAYER)
       case AU_TELEMETRY_LOST:
         playTone(BEEP_DEFAULT_FREQ + 200, 40, 20);
       case AU_TRAINER_LOST:
@@ -231,6 +240,7 @@ void audioEvent(unsigned int index)
         playTone(BEEP_DEFAULT_FREQ, 40, 20);
         playTone(BEEP_DEFAULT_FREQ + 200, 40, 20);
         break;
+#endif
       default:
         break;
     }
@@ -319,12 +329,12 @@ void buzzerHeartbeat()
 {
   if (buzzerState.duration) {
 
-    if (buzzerState.duration > 10) {
-      buzzerState.duration -= 10; // ms
+    if (buzzerState.duration > BUZZER_SAMPLE_DURATION) {
+      buzzerState.duration -= BUZZER_SAMPLE_DURATION;
 
       if (buzzerState.tone.freqIncr) {
-        uint32_t freqChange = BUZZER_BUFFER_DURATION * buzzerState.tone.freqIncr;
-        buzzerState.freq += limit<uint32_t>(BEEP_MIN_FREQ, freqChange, BEEP_MAX_FREQ);
+        uint32_t freqChange = BUZZER_SAMPLE_DURATION * buzzerState.tone.freqIncr;
+        buzzerState.freq = limit<uint32_t>(BEEP_MIN_FREQ, buzzerState.freq + freqChange, BEEP_MAX_FREQ);
 
         buzzerOn(buzzerState.freq, g_eeGeneral.beepVolume);
       }

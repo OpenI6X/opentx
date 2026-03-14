@@ -6,10 +6,10 @@ foreach(translation ${translations})
   if(NOT(PCB STREQUAL X12S OR PCB STREQUAL X10) AND language STREQUAL "cz")
     set(language cz_reduced)
   endif()
-  if(PYTHONINTERP_FOUND)
+  if(Python3_Interpreter_FOUND)
     add_custom_command(
       OUTPUT ${target}
-      COMMAND ${PYTHON_EXECUTABLE} ${RADIO_DIRECTORY}/util/translate.py ${translation} ${target} ${language}
+      COMMAND ${Python3_EXECUTABLE} ${RADIO_DIRECTORY}/util/translate.py ${translation} ${target} ${language}
       DEPENDS ${translation}
       )
   endif()

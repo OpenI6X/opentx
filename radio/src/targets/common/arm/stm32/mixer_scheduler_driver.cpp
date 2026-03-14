@@ -80,11 +80,6 @@ extern "C" void MIXER_SCHEDULER_TIMER_IRQHandler(void)
   // set next period
   MIXER_SCHEDULER_TIMER->ARR = getMixerSchedulerPeriod() - 1;
 
-  //read ADCs 
-  DEBUG_TIMER_START(debugTimerAdcRead);
-  adcRead();
-  DEBUG_TIMER_STOP(debugTimerAdcRead);
- 
   // trigger mixer start
   mixerSchedulerISRTrigger();
 }
