@@ -209,10 +209,11 @@ static void enablePulsesInternalModule(uint8_t protocol)
 bool setupPulsesInternalModule(uint8_t protocol)
 {
   switch (protocol) {
+#if defined(AFHDS2A)
     case PROTOCOL_CHANNELS_AFHDS2A_SPI:
       // nothing needed, AFHDS2A does setup and sends frame in AFHDS2A_callback
       return true;
-
+#endif
     default:
       //mixerSchedulerSetPeriod(INTERNAL_MODULE, 10000 /*us*/); // used for USB sim for example
       return false;
