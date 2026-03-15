@@ -69,9 +69,7 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
   USART_Init(TELEMETRY_USART, &USART_InitStructure);
 
-  if (!g_eeGeneral.crsfFullDuplex) {
-    USART_InvPinCmd(TELEMETRY_USART, USART_InvPin_Tx | USART_InvPin_Rx, ENABLE);
-  }
+  USART_InvPinCmd(TELEMETRY_USART, USART_InvPin_Tx | USART_InvPin_Rx, ((g_eeGeneral.crsfFullDuplex) ? DISABLE : ENABLE));
 
 //   DMA_Cmd(TELEMETRY_DMA_Channel_RX, DISABLE); // done by DMA_DeInit
   USART_DMACmd(TELEMETRY_USART, USART_DMAReq_Rx, DISABLE);
