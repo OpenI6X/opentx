@@ -358,24 +358,47 @@ static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
     unitDisplay(param, y, offset);
 }
 
+static uint8_t findSelectMinValue(const uint8_t * data) {
+  uint8_t min = 0;
+  while (data[min] == ';') { min++; }
+  return min;
+}
+
+static uint8_t findSelectValuesCount(const uint8_t * data) {
+  int count = 0;
+  while (*data) {
+    if (*data++ == ';') continue;
+    count++;
+    while (*data && *data != ';') data++;
+  }
+  return count;
+}
+
 static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) {
-  uint8_t size = (param->type == TYPE_UINT16 || param->type == TYPE_INT16) ? 2 : 1; // else INT8, SELECT
-  uint8_t loadSize = 2 * size; // min + max at once
+  uint8_t valueSize = (param->type == TYPE_UINT16 || param->type == TYPE_INT16) ? 2 : 1; // else INT8, SELECT
+  uint8_t minmaxSize = 2 * valueSize; // min + max
 #if defined(CRSF_EXTENDED_TYPES)
   if (param->type == TYPE_FLOAT) {
-    size = 4;
-    loadSize = 13; // min + max + prec + step at once
+    valueSize = 4;
+    minmaxSize = 4 + 4 + 1 + 4; // min + max + prec + step
   }
 #endif
-  param->size = size;
-  uint8_t valuesLen = 0;
+  param->size = valueSize;
+  uint32_t optionsLen = 0;
   if (param->type == TYPE_SELECT) {
-    valuesLen = strlen((char*)&data[offset]) + 1; // + \0
+    optionsLen = strlen((char*)&data[offset]) + 1; // + \0
   }
-  param->value = paramGetValue(&data[offset + valuesLen + (0 * size)], size);
-  bufferPush((char *)&data[offset + valuesLen + (1 * size)], loadSize); // min + max at once
-  bufferPush((char*)&data[offset], valuesLen); // TYPE_SELECT values
-  unitLoad(param, data, offset + valuesLen + loadSize + 2 * size);
+  param->value = paramGetValue(&data[offset + optionsLen], valueSize);
+  if (param->type == TYPE_SELECT) {
+    uint8_t min = findSelectMinValue(&data[offset]);
+    uint8_t max = min + findSelectValuesCount(&data[offset]) - 1;
+    bufferPush((char*)&min, 1); // min
+    bufferPush((char*)&max, 1); // max
+    bufferPush((char*)&data[offset], optionsLen); // options
+  } else {
+    bufferPush((char *)&data[offset + valueSize], minmaxSize); // min + max
+  }
+  unitLoad(param, data, offset + optionsLen + valueSize + minmaxSize + valueSize); // [value] [min] [max] [default] [unit]
 }
 
 static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
@@ -419,30 +442,30 @@ static void paramInfoLoad(Parameter * param, uint8_t * data, uint8_t offset) {
 }
 
 static bool getSelectedOption(char * option, char * options, const uint8_t value) {
-  uint8_t current = 0;
+  uint8_t index = 0;
   while (*options != '\0') {
-    if (current == value) break;
-    if (*options++ == ';') current++;
+    if (index == value) break;
+    if (*options++ == ';') index++;
   }
   while (*options != ';' && *options != '\0') {
     *option++ = *options++;
   }
- *option = '\0';
-  return (current == value);
+  *option = '\0';
+  return (index == value);
 }
 
 static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  const uint32_t valuesOffset = param->offset + param->nameLength + 2 /* min, max */;
-  const uint32_t valuesLen = strlen((char*)&buffer[valuesOffset]);
+  const uint32_t optionsOffset = param->offset + param->nameLength + 2 /* min, max */;
+  const uint32_t optionsLen = strlen((char*)&buffer[optionsOffset]);
   char option[24];
-  if (!getSelectedOption(option, (char*)&buffer[valuesOffset], param->value)) {
+  if (!getSelectedOption(option, (char*)&buffer[optionsOffset], param->value)) {
     option[0] = 'E';
     option[1] = 'R';
     option[2] = 'R';
     option[3] = '\0';
   }
   lcdDrawText(COL2, y, option, attr);
-  unitDisplay(param, y, valuesOffset + valuesLen + 1);
+  unitDisplay(param, y, optionsOffset + optionsLen + 1);
 }
 
 static void paramFolderOpen(Parameter * param) {
