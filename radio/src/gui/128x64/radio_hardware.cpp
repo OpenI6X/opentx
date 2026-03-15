@@ -68,6 +68,7 @@ enum {
 #if defined(MENU_DIAG_ANAS_KEYS)
   ITEM_RADIO_HARDWARE_DEBUG,
 #endif
+  ITEM_RADIO_HARDWARE_CRSF_FULLDUPLEX,
 #if defined(EEPROM_RLC)
 #if defined(SDCARD)
   ITEM_RADIO_BACKUP_EEPROM,
@@ -137,6 +138,7 @@ void menuRadioHardware(event_t event)
     0 /* max bauds */,
 #endif
     0 /* Aux serial mode */,
+    0 /* CRSF full duplex */,
     BLUETOOTH_ROWS
     0 /*jitter filter*/,
 #if defined(MENU_DIAG_ANAS_KEYS)
@@ -276,6 +278,13 @@ void menuRadioHardware(event_t event)
         }
         break;
 #endif
+
+      case ITEM_RADIO_HARDWARE_CRSF_FULLDUPLEX:
+        g_eeGeneral.crsfFullDuplex = editCheckBox(g_eeGeneral.crsfFullDuplex, HW_SETTINGS_COLUMN2, y, "CRSF Duplex", attr, event);
+        if (attr && checkIncDec_Ret) {
+          storageDirty(EE_GENERAL);
+        }
+        break;
 
       case ITEM_RADIO_HARDWARE_JITTER_FILTER:
         g_eeGeneral.jitterFilter = 1 - editCheckBox(1 - g_eeGeneral.jitterFilter, HW_SETTINGS_COLUMN2, y, STR_JITTER_FILTER, attr, event);
