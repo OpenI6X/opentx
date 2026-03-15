@@ -219,6 +219,7 @@ enum ePhase {
 #define NOT_PASS       0
 #define PASS           1
 
+uint8_t A7105_Reset(void);
 void A7105_Sleep(void);
 void A7105_Init(void);
 void A7105_AdjustLOBaseFreq(void);

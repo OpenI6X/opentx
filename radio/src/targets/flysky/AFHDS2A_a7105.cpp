@@ -352,6 +352,7 @@ void AFHDS2A_init()
   RadioState = ((TIM_CALL << CALLER) | (SEND << SEND_RES) | (AFHDS2A_DATA));
   ID.MProtocol_id = GetUIDHash();
   AFHDS2A_calc_channels();
+  A7105_Reset();
   A7105_Init();
   packet_count = 0;
   hopping_frequency_no = 0;
