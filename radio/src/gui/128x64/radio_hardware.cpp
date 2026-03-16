@@ -68,6 +68,7 @@ enum {
 #if defined(MENU_DIAG_ANAS_KEYS)
   ITEM_RADIO_HARDWARE_DEBUG,
 #endif
+  ITEM_RADIO_HARDWARE_CRSF_FULLDUPLEX,
 #if defined(EEPROM_RLC)
 #if defined(SDCARD)
   ITEM_RADIO_BACKUP_EEPROM,
@@ -137,6 +138,7 @@ void menuRadioHardware(event_t event)
     0 /* max bauds */,
 #endif
     0 /* Aux serial mode */,
+    0 /* CRSF full duplex */,
     BLUETOOTH_ROWS
     0 /*jitter filter*/,
 #if defined(MENU_DIAG_ANAS_KEYS)
@@ -250,7 +252,7 @@ void menuRadioHardware(event_t event)
 
 #if defined(CROSSFIRE)
       case ITEM_RADIO_HARDWARE_SERIAL_BAUDRATE:
-        g_eeGeneral.telemetryBaudrate = editChoice(HW_SETTINGS_COLUMN2, y, STR_MAXBAUDRATE, "\005400k 115k 921k 1.87M3.75M5.25M", g_eeGeneral.telemetryBaudrate, 0, DIM(CROSSFIRE_BAUDRATES) - 1, attr, event);
+        g_eeGeneral.telemetryBaudrate = editChoice(HW_SETTINGS_COLUMN3, y, STR_MAXBAUDRATE, "\005400k 115k 921k 1.87M3.75M5.25M", g_eeGeneral.telemetryBaudrate, 0, DIM(CROSSFIRE_BAUDRATES) - 1, attr, event);
         if (attr) {
           storageDirty(EE_GENERAL);
           if (checkIncDec_Ret && IS_EXTERNAL_MODULE_ON()) {
@@ -269,7 +271,7 @@ void menuRadioHardware(event_t event)
 
 #if defined(AUX_SERIAL)
       case ITEM_RADIO_HARDWARE_AUX_SERIAL_MODE:
-        g_eeGeneral.auxSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, STR_AUX_SERIAL_MODE, STR_AUX_SERIAL_MODES, g_eeGeneral.auxSerialMode, 0, UART_MODE_MAX, attr, event);
+        g_eeGeneral.auxSerialMode = editChoice(HW_SETTINGS_COLUMN3, y, STR_AUX_SERIAL_MODE, STR_AUX_SERIAL_MODES, g_eeGeneral.auxSerialMode, 0, UART_MODE_MAX, attr, event);
         if (attr && checkIncDec_Ret) {
           auxSerialInit(g_eeGeneral.auxSerialMode, modelTelemetryProtocol());
           storageDirty(EE_GENERAL);
@@ -277,8 +279,17 @@ void menuRadioHardware(event_t event)
         break;
 #endif
 
+#if defined(CROSSFIRE)
+      case ITEM_RADIO_HARDWARE_CRSF_FULLDUPLEX:
+        g_eeGeneral.crsfFullDuplex = editCheckBox(g_eeGeneral.crsfFullDuplex, HW_SETTINGS_COLUMN3, y, "CRSF Duplex", attr, event);
+        if (attr && checkIncDec_Ret) {
+          storageDirty(EE_GENERAL);
+        }
+        break;
+#endif
+
       case ITEM_RADIO_HARDWARE_JITTER_FILTER:
-        g_eeGeneral.jitterFilter = 1 - editCheckBox(1 - g_eeGeneral.jitterFilter, HW_SETTINGS_COLUMN2, y, STR_JITTER_FILTER, attr, event);
+        g_eeGeneral.jitterFilter = 1 - editCheckBox(1 - g_eeGeneral.jitterFilter, HW_SETTINGS_COLUMN3, y, STR_JITTER_FILTER, attr, event);
         if (attr && checkIncDec_Ret) {
           storageDirty(EE_GENERAL);
         }

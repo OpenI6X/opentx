@@ -634,7 +634,7 @@ PACK(struct TrainerData {
   NOBACKUP(uint8_t jitterFilter : 1); /* 0 - active */ \
   NOBACKUP(uint8_t disableRssiPoweroffAlarm : 1);      \
   NOBACKUP(uint8_t USBMode : 2);                       \
-  NOBACKUP(uint8_t spare : 1);                         \
+  NOBACKUP(uint8_t crsfFullDuplex : 1);                \
   NOBACKUP(uint8_t ppmunit : 2);                       \
   NOBACKUP(int8_t beepVolume : 4);                     \
   NOBACKUP(int8_t wavVolume : 4);                      \
@@ -697,7 +697,7 @@ PACK(struct TrainerData {
 
 PACK(struct RadioData {
   NOBACKUP(uint8_t version);
-  NOBACKUP(uint16_t variant); // not used on PCBI6X, reuse for swconfig_t?
+  NOBACKUP(uint16_t variant); // not used on PCBI6X
   CalibData calib[NUM_CALIBRATED_ANALOGS];
   NOBACKUP(uint16_t chkSum);
   N_HORUS_FIELD(int8_t currModel);
