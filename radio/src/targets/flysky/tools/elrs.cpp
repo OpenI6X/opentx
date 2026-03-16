@@ -335,7 +335,7 @@ static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
 
 static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
     int32_t value = param->value;
-    uint8_t offset = param->offset + param->nameLength + (2 * param->size);
+    uint32_t offset = param->offset + param->nameLength + (2 * param->size);
     if (param->type == TYPE_FLOAT) {
 #if defined(CRSF_EXTENDED_TYPES)
       uint8_t prec = buffer[offset];
