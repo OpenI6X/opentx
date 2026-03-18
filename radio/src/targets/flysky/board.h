@@ -200,12 +200,14 @@ uint32_t isBootloaderStart(const uint8_t * buffer);
 void extmoduleSendNextFrame();
 
 // Trainer driver
-#define SLAVE_MODE()                    (false) // (g_model.trainerData.mode == TRAINER_MODE_SLAVE)
+#define SLAVE_MODE()                    (g_model.trainerData.mode == TRAINER_MODE_SLAVE)
 #define TRAINER_CONNECTED()           (true)
 
 #if defined(TRAINER_GPIO)
   void init_trainer_capture(void);
   void stop_trainer_capture(void);
+  void init_trainer_ppm(void);
+  void stop_trainer_ppm(void);
 #else
   #define init_trainer_capture()
 #endif
