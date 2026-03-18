@@ -21,6 +21,7 @@
 #include "opentx.h"
 
 void extmoduleSendNextFrame();
+void trainerSendNextFrame();
 
 void extmoduleStop() 
 {
@@ -149,7 +150,10 @@ extern "C" void EXTMODULE_TIMER_IRQHandler()
 {
   if (EXTMODULE_TIMER->SR & TIM_SR_CC2IF) {  // Compare PPM-OUT
     EXTMODULE_TIMER->SR &= ~TIM_SR_CC2IF;    // Clears interrupt on ch2
-    if (setupPulsesExternalModule()) {
+    if (currentTrainerMode == TRAINER_MODE_SLAVE) {
+      trainerSendNextFrame();
+    }
+    else if (setupPulsesExternalModule()) {
       extmoduleSendNextFrame();
     }
   }
