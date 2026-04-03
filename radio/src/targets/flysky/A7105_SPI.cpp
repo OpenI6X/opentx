@@ -170,7 +170,7 @@ uint8_t A7105_Reset() {
 	uint8_t result;
 	
 	A7105_WriteReg(A7105_00_MODE, 0x00);
-	// delay_ms(1);
+	delay_ms(1);
 	A7105_SetTxRxMode(TXRX_OFF);			             //Set both GPIO as output and low
 	result=A7105_ReadReg(A7105_10_PLL_II) == 0x9E; //check if is reset.
 	A7105_Strobe(A7105_STANDBY);
@@ -302,18 +302,12 @@ void A7105_Sleep(void) {
 	A7105_WriteReg(A7105_0C_GPIO2_PIN_II, 0x33);
 }
 
-#define ID_NORMAL  0x55201041 // used by Multiprotocol Module
-#define ID_NORMAL2 0x5475C52A // used by DeviationTX & erFly6
-
 void A7105_Init(void)
 {
 	uint8_t *A7105_Regs = 0;
-//	uint8_t vco_calibration0, vco_calibration1;
+	uint8_t vco_calibration1;
 
-  A7105_Reset();
-  delay_ms(1);
-
-	A7105_WriteID(ID_NORMAL2);
+	A7105_WriteID(0x5475C52A);
 
 	A7105_Regs = (uint8_t*) AFHDS2A_A7105_regs;
 
@@ -323,10 +317,9 @@ void A7105_Init(void)
 			A7105_WriteReg(i, val);
 	}
 
-	while (A7105_ReadReg(A7105_10_PLL_II) != 0x9E);
+  A7105_Strobe(A7105_STANDBY);
 
   // Calibration
-	A7105_Strobe(A7105_PLL);
 
 	//IF Filter Bank Calibration
 	A7105_WriteReg(A7105_02_CALC, 1);
@@ -346,7 +339,8 @@ void A7105_Init(void)
 	A7105_WriteReg(A7105_02_CALC, 2);
 	while (A7105_ReadReg(A7105_02_CALC));       // Wait for calibration to end
 
-	A7105_WriteReg(A7105_25_VCO_SBCAL_I, 0x0A);	//Reset VCO Band calibration
+  vco_calibration1 = 0x0A;
+	A7105_WriteReg(A7105_25_VCO_SBCAL_I, vco_calibration1);	// Reset VCO Band calibration
 
 	A7105_SetTxRxMode(TX_EN);
 	A7105_SetPower();

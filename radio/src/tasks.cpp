@@ -74,7 +74,9 @@ bool isModuleSynchronous(uint8_t moduleIdx)
 #if defined(MULTIMODULE)
     case PROTOCOL_CHANNELS_MULTIMODULE:
 #endif
+#if defined(AFHDS2A)
     case PROTOCOL_CHANNELS_AFHDS2A_SPI: // make AFHDS2A synchronous to make watchdog happy
+#endif
     // case PROTOCOL_CHANNELS_SBUS:
       return true;
   }

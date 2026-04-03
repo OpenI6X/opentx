@@ -37,7 +37,7 @@
   #include "flysky_ibus.h"
   #include "multi.h"
 #endif
-#if defined(PCBI6X)
+#if defined(AFHDS2A)
   #include "iface_a7105.h"
   #include "flysky_ibus.h"
 #endif

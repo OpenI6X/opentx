@@ -183,6 +183,7 @@
 #define RF_RF1_SET_PIN GPIO_BSRR_BS_11
 #define RF_RF1_RESET_PIN GPIO_BSRR_BR_11
 
+#if defined(AFHDS2A)
 void SPI_Write(uint8_t command);
 uint8_t SPI_SDI_Read(void);
 void a7105_csn_on(void); 
@@ -201,7 +202,7 @@ void AFHDS2A_callback();
 #define A7105_CSN_off a7105_csn_off()
 
 #define UID_BASE              ((uint32_t)0x1FFFF7ACU)       /*!< Unique device ID register base address */
-
+#endif // AFHDS2A
 
 #define INTMODULE_RCC_APB2Periph      (RCC_APB2Periph_TIM16 | RCC_APB2Periph_SPI1 | RCC_APB2Periph_SYSCFG)
 #define INTMODULE_TIMER               TIM16
