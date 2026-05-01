@@ -41,45 +41,47 @@ void extmoduleStop()
  */
 void extmoduleTimerStart()
 {
-  TRACE("extmoduleTimerStart");
+  static uint8_t init_done = 0;
+  bool timer_was_running = (EXTMODULE_TIMER->CR1 & TIM_CR1_CEN) != 0;
 
-  // GPIO_PinAFConfig(EXTMODULE_TX_GPIO, EXTMODULE_TX_GPIO_PinSource, 0);
+  if (!init_done) {
+    TRACE("extmoduleTimerStart init");
 
-  // GPIO_InitTypeDef GPIO_InitStructure;
-  // GPIO_InitStructure.GPIO_Pin = EXTMODULE_TX_GPIO_PIN;
-  // GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-  // GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  // GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  // GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  // GPIO_Init(EXTMODULE_TX_GPIO, &GPIO_InitStructure);
-  // GPIO_SetBits(EXTMODULE_TX_GPIO, EXTMODULE_TX_GPIO_PIN);  // Set high
+    EXTMODULE_TIMER->CR1 &= ~TIM_CR1_CEN;
+    EXTMODULE_TIMER->PSC = EXTMODULE_TIMER_FREQ / 2000000 - 1;  // 0.5uS
+    EXTMODULE_TIMER->ARR = 65535;
+    EXTMODULE_TIMER->CCR2 = GET_MODULE_PPM_DELAY(EXTERNAL_MODULE) * 2;
+    EXTMODULE_TIMER->CCMR1 = TIM_CCMR1_OC2M_1 | TIM_CCMR1_OC2M_0;
+    EXTMODULE_TIMER->BDTR |= TIM_BDTR_MOE;
+    EXTMODULE_TIMER->CCMR1 |= TIM_CCMR1_CC1S_0 | TIM_CCMR1_IC1F_1 | TIM_CCMR1_IC1F_0;
+    EXTMODULE_TIMER->EGR = 1;                                // Restart
 
-  EXTMODULE_TIMER->CR1 &= ~TIM_CR1_CEN;
-  EXTMODULE_TIMER->PSC = EXTMODULE_TIMER_FREQ / 2000000 - 1;  // 0.5uS
-  EXTMODULE_TIMER->ARR = 65535;
-  EXTMODULE_TIMER->CCR2 = GET_MODULE_PPM_DELAY(EXTERNAL_MODULE) * 2;
-  EXTMODULE_TIMER->CCMR1 = TIM_CCMR1_OC2M_1 | TIM_CCMR1_OC2M_0;
-  EXTMODULE_TIMER->BDTR |= TIM_BDTR_MOE;
-  // Channel 1: PPM IN         CC1 as input  | frequency used to sample input
-  EXTMODULE_TIMER->CCMR1 |= TIM_CCMR1_CC1S_0 | TIM_CCMR1_IC1F_1 | TIM_CCMR1_IC1F_0;
-  EXTMODULE_TIMER->EGR = 1;                                // Restart
+    NVIC_EnableIRQ(EXTMODULE_TIMER_IRQn);
+    NVIC_SetPriority(EXTMODULE_TIMER_IRQn, 2);
+
+    init_done = 1;
+  }
 
   if (g_model.trainerData.mode == TRAINER_MODE_MASTER_TRAINER_JACK) {
-    WRITE_REG(EXTMODULE_TIMER->SR, ~(TIM_SR_CC1IF));  // Clear capture interrupt flag (PPMIN)
-    EXTMODULE_TIMER->DIER |= TIM_DIER_CC1IE;          // Enable capture interrupt     (PPMIN)
-    EXTMODULE_TIMER->CCER |= TIM_CCER_CC1E | TIM_CCER_CC1P;  // 01: inverted/falling edge
+    if (!timer_was_running) {
+      WRITE_REG(EXTMODULE_TIMER->SR, ~(TIM_SR_CC1IF));
+    }
+    EXTMODULE_TIMER->DIER |= TIM_DIER_CC1IE;
+    EXTMODULE_TIMER->CCER |= TIM_CCER_CC1E | TIM_CCER_CC1P;
   }
 
   if (moduleState[EXTERNAL_MODULE].protocol == PROTOCOL_CHANNELS_PPM) {
-    WRITE_REG(EXTMODULE_TIMER->SR, ~(TIM_SR_CC2IF));  // Clear compare interrupt flag (PPMOUT)
-    EXTMODULE_TIMER->DIER |= TIM_DIER_CC2IE;          // Enable compare interrupt     (PPMOUT)
+    if (!timer_was_running) {
+      EXTMODULE_TIMER->CCR2 = GET_MODULE_PPM_DELAY(EXTERNAL_MODULE) * 2;
+      WRITE_REG(EXTMODULE_TIMER->SR, ~(TIM_SR_CC2IF));
+    }
+    EXTMODULE_TIMER->DIER |= TIM_DIER_CC2IE;
     EXTMODULE_TIMER->CCER |= TIM_CCER_CC2E;
   }
 
-  NVIC_EnableIRQ(EXTMODULE_TIMER_IRQn);
-  NVIC_SetPriority(EXTMODULE_TIMER_IRQn, 2);
-
-  EXTMODULE_TIMER->CR1 |= TIM_CR1_CEN; // Start counter
+  if (!timer_was_running) {
+    EXTMODULE_TIMER->CR1 |= TIM_CR1_CEN;
+  }
 }
 
 void extmodulePpmStart() 
