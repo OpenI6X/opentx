@@ -509,7 +509,7 @@
 #define TR_VTRAINER_BLUETOOTH          TR("Master/BT\0        ""Slave/BT\0", "Master/Bluetooth\0 ""Slave/Bluetooth\0  ")
 
 #define LEN_VFAILSAFE          "\011"
-#define TR_VFAILSAFE           "Ej givet\0""Lås Servo""Anpassat\0""Pulsfritt""Mottagare"
+#define TR_VFAILSAFE           "Lås Servo""Anpassat\0"
 
 
 #define LEN_VSENSORTYPES        "\010"

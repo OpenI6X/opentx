@@ -701,18 +701,21 @@ void checkFailsafe() {
     }
   }
 }
-#elif defined(PCBI6X)
-void checkFailsafe() {
-  for (int i = 0; i < NUM_MODULES; i++) {
-    if (isModuleA7105(i)) {
-      ModuleData &moduleData = g_model.moduleData[i];
-      if (HAS_RF_PROTOCOL_FAILSAFE(moduleData.rfProtocol) && moduleData.failsafeMode == FAILSAFE_NOT_SET) {
-        ALERT(STR_FAILSAFEWARN, STR_NO_FAILSAFE, AU_ERROR);
-        break;
-      }
-    }
-  }
-}
+//#elif defined(PCBI6X)
+//void checkFailsafe() {
+  /*
+  AFHDS2A is always Hold when not set therefore this warning is not needed
+  */
+  // for (int i = 0; i < NUM_MODULES; i++) {
+  //   if (isModuleA7105(i)) {
+  //     ModuleData &moduleData = g_model.moduleData[i];
+  //     if (HAS_RF_PROTOCOL_FAILSAFE(moduleData.rfProtocol) && moduleData.failsafeMode == FAILSAFE_NOT_SET) {
+  //       ALERT(STR_FAILSAFEWARN, STR_NO_FAILSAFE, AU_ERROR);
+  //       break;
+  //     }
+  //   }
+  // }
+//}
 #else
 #define checkFailsafe()
 #endif

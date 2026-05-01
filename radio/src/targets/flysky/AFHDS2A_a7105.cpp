@@ -143,7 +143,7 @@ void AFHDS2A_build_packet(uint8_t * packet, const uint8_t type)
         if (g_model.moduleData[INTERNAL_MODULE].failsafeMode == FAILSAFE_CUSTOM &&
             g_model.failsafeChannels[ch] < FAILSAFE_CHANNEL_HOLD) {
           setChannelValue(packet, ch, g_model.failsafeChannels[ch]);
-        } else {  // no values
+        } else {  // no values - Hold
           packet[9 + ch * 2] = 0xFF;
           packet[10 + ch * 2] = 0xFF;
         }

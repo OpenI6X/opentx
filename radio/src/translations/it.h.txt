@@ -504,8 +504,8 @@
 #define TR_VTRAINER_MASTER_BATTERY     "Master/Serial"
 #define TR_VTRAINER_BLUETOOTH          TR("Master/BT\0        ""Slave/BT\0", "Master/Bluetooth\0 ""Slave/Bluetooth\0  ")
 
-#define LEN_VFAILSAFE          "\013"
-#define TR_VFAILSAFE           "Non settato""Mantieni\0  ""Personali\0 ""No impulsi\0""Ricevente\0 "
+#define LEN_VFAILSAFE          "\011"
+#define TR_VFAILSAFE           "Mantieni\0""Personali"
 
 
 #define LEN_VSENSORTYPES        "\012"
