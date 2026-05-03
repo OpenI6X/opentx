@@ -65,6 +65,9 @@ enum {
   ITEM_RADIO_HARDWARE_AUX_SERIAL_MODE,
 #endif
   ITEM_RADIO_HARDWARE_JITTER_FILTER,
+#if defined(STICK_DEAD_ZONE)
+  ITEM_RADIO_HARDWARE_STICK_DEADZONE,
+#endif
 #if defined(MENU_DIAG_ANAS_KEYS)
   ITEM_RADIO_HARDWARE_DEBUG,
 #endif
@@ -283,6 +286,15 @@ void menuRadioHardware(event_t event)
           storageDirty(EE_GENERAL);
         }
         break;
+
+#if defined(STICK_DEAD_ZONE)
+      case ITEM_RADIO_HARDWARE_STICK_DEADZONE:
+        g_eeGeneral.stickDeadZone = editChoice(HW_SETTINGS_COLUMN2, y, STR_STICK_DEADZONE, "\002 0 2 4 8163264", g_eeGeneral.stickDeadZone, 0, 6, attr, event);
+//        if (attr && checkIncDec_Ret) {
+//          storageDirty(EE_GENERAL);
+//        }
+        break;
+#endif
 
 #if defined(MENU_DIAG_ANAS_KEYS)
       case ITEM_RADIO_HARDWARE_DEBUG:

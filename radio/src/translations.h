@@ -483,6 +483,7 @@ extern const char STR_PITCH_AT_MAX[];
 extern const char STR_REPEAT_AT_ZERO[];
 extern const char STR_RXCHANNELORD[];
 extern const char STR_STICKS[];
+extern const char STR_STICK_DEADZONE[];
 extern const char STR_POTS[];
 extern const char STR_SWITCHES[];
 extern const char STR_SWITCHES_DELAY[];

@@ -725,8 +725,9 @@ PACK(struct RadioData {
   NOBACKUP(uint8_t templateSetup);  // RETA order for receiver channels
   NOBACKUP(int8_t PPM_Multiplier);
   NOBACKUP(int8_t hapticLength);
-  N_HORUS_FIELD(N_TARANIS_FIELD(uint8_t reNavigation));
-  N_HORUS_FIELD(N_TARANIS_FIELD(uint8_t stickReverse));
+  N_HORUS_FIELD(N_TARANIS_FIELD(uint8_t reNavigation)); // TODO not used
+  NOBACKUP(uint8_t stickDeadZone : 3);
+  NOBACKUP(uint8_t stickDeadZoneSpare : 5);
   NOBACKUP(int8_t beepLength : 3);
   NOBACKUP(int8_t hapticStrength : 3);
   NOBACKUP(uint8_t gpsFormat : 1);

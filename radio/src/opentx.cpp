@@ -226,6 +226,10 @@ void generalDefault() {
   g_eeGeneral.variant = EEPROM_VARIANT;
 #endif
 
+#if defined(STICK_DEAD_ZONE)
+  g_eeGeneral.stickDeadZone = DEFAULT_STICK_DEADZONE;
+#endif
+
 #if defined(LCD_CONTRAST_DEFAULT)
   g_eeGeneral.contrast = LCD_CONTRAST_DEFAULT;
 #endif
