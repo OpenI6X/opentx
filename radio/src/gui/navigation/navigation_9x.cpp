@@ -132,6 +132,12 @@ int checkIncDec(event_t event, int val, int i_min, int i_max, unsigned int i_fla
   if (!READ_ONLY() && i_min==0 && i_max==1 && (event==EVT_KEY_BREAK(KEY_ENTER) || IS_ROTARY_BREAK(event))) {
     s_editMode = 0;
     newval = !val;
+
+    if (isValueAvailable && !isValueAvailable(newval)) {
+      newval = val;
+      killEvents(event);
+      AUDIO_KEY_ERROR();
+    }
   }
 
 #if defined(AUTOSWITCH)
