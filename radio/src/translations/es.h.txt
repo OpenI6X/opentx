@@ -684,6 +684,7 @@
 #define TR_GPS                 "GPS"
 #define TR_RXCHANNELORD        TR("Rx Orden canal", "Orden habitual canales")
 #define TR_STICKS              "Axis"
+#define TR_STICK_DEADZONE      "Dead zone"
 #define TR_POTS                "Pots"
 #define TR_SWITCHES            "Switches"
 #define TR_SWITCHES_DELAY      "Switches Delay"
