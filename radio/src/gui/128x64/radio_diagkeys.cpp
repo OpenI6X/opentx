@@ -62,6 +62,13 @@ void menuRadioDiagKeys(event_t event)
       y = MENU_HEADER_HEIGHT + FH*i;
       lcdDrawTextAtIndex(0, y, STR_VKEYS, (TRM_BASE-1-i), 0);
       displayKeyState(5*FW+2, y, KEY_SHIFT+(TRM_BASE-1-i));
+#elif defined(PCBI6X)
+      y = MENU_HEADER_HEIGHT + FH + FH*i;
+      if (i >= 1) {
+        // hide not existing LEFT key
+        lcdDrawTextAtIndex(0, y-FH, STR_VKEYS, (TRM_BASE-1-i), 0);
+        displayKeyState(5*FW+2, y-FH, KEY_MENU+(TRM_BASE-1-i));
+      }
 #else
       y = MENU_HEADER_HEIGHT + FH + FH*i;
       lcdDrawTextAtIndex(0, y, STR_VKEYS, (TRM_BASE-1-i), 0);

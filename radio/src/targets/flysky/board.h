@@ -236,7 +236,7 @@ enum EnumKeys
   KEY_PLUS = KEY_UP,
   KEY_RIGHT,
   KEY_LEFT,
-  KEY_BIND,
+  // KEY_BIND, // supported as KEY_RIGHT/LEFT,
   TRM_BASE,
   TRM_LH_DWN = TRM_BASE,
   TRM_LH_UP,
@@ -294,7 +294,7 @@ uint32_t readTrims(void);
 #define TRIMS_PRESSED()                 (readTrims())
 #define KEYS_PRESSED()                  (readKeys())
 
-#define BOOTLOADER_KEYS                0x2100
+#define BOOTLOADER_KEYS                ((1 << TRM_LH_UP) | (1 << TRM_RH_DWN))
 
 #define NUM_TRIMS                      4
 #define NUM_TRIMS_KEYS                 (NUM_TRIMS * 2)

@@ -422,7 +422,7 @@
   #define TR_VKEYS                     "Menu\0""Exit\0""Enter""Page\0""Plus\0""Moins"
 #else
   #define LEN_VKEYS                    "\005"
-  #define TR_VKEYS                     "Menu\0""Exit\0""Bas\0 ""Haut\0""Droit""Gauch"
+  #define TR_VKEYS                     "Menu\0""Exit\0""Bas\0 ""Haut\0""Droit"
 #endif
 
 #define LEN_VRENCODERS                 "\003"

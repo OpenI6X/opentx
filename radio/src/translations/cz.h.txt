@@ -402,7 +402,7 @@
 #define TR_VKEYS               "Menu\0""Exit\0""Enter""Page\0""Plus\0""Mínus"
 #else
 #define LEN_VKEYS              "\005"
-#define TR_VKEYS               "Menu\0""Exit\0""Dolů\0""Nhoru""Vprvo""Vlevo"
+#define TR_VKEYS               "Menu\0""Exit\0""Dolů\0""Nhoru""Vprvo"
 #endif
 
 #define LEN_VRENCODERS         "\003"
