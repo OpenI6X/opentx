@@ -46,6 +46,7 @@ const CrossfireSensor crossfireSensors[] = {
   {GPS_ID,         3, ZSTR_HDG,           UNIT_DEGREE,         2},
   {GPS_ID,         4, ZSTR_GPSALT,        UNIT_METERS,         0},
   {GPS_ID,         5, ZSTR_SATELLITES,    UNIT_RAW,            0},
+  {GPS_TIME_ID,    5, ZSTR_GPSDATETIME,   UNIT_DATETIME,       0},
   {ATTITUDE_ID,    0, ZSTR_PITCH,         UNIT_RADIANS,        3},
   {ATTITUDE_ID,    1, ZSTR_ROLL,          UNIT_RADIANS,        3},
   {ATTITUDE_ID,    2, ZSTR_YAW,           UNIT_RADIANS,        3},
@@ -73,6 +74,8 @@ const CrossfireSensor &getCrossfireSensor(uint8_t id, uint8_t subId) {
     return crossfireSensors[BATT_VOLTAGE_INDEX + subId];
   else if (id == GPS_ID)
     return crossfireSensors[GPS_LATITUDE_INDEX + subId];
+  else if (id == GPS_TIME_ID)
+    return crossfireSensors[GPS_TIME_INDEX];
   else if (id == CF_VARIO_ID)
     return crossfireSensors[VERTICAL_SPEED_INDEX];
   else if (id == ATTITUDE_ID)
@@ -144,6 +147,31 @@ void processCrossfireTelemetryFrame() {
       if (getCrossfireTelemetryValue<1>(17, value))
         processCrossfireTelemetryValue(GPS_SATELLITES_INDEX, value);
       break;
+
+    case GPS_TIME_ID:
+    {
+      // Payload: year (2B BE), month, day, hour, min, sec, millisecond (2B BE)
+      const CrossfireSensor & sensor = crossfireSensors[GPS_TIME_INDEX];
+      if (!getCrossfireTelemetryValue<2>(3, value))
+        break;
+      uint8_t year = (uint8_t)((uint16_t)value - 2000);
+      uint8_t month  = telemetryRxBuffer[5];
+      uint8_t day    = telemetryRxBuffer[6];
+      uint8_t hour   = telemetryRxBuffer[7];
+      uint8_t minute = telemetryRxBuffer[8];
+      uint8_t sec    = telemetryRxBuffer[9];
+      // Date record: low byte non-zero (acts as date/time discriminator)
+      uint32_t dateVal = ((uint32_t)year << 24) | ((uint32_t)month << 16)
+                       | ((uint32_t)day << 8) | 0xFF;
+      setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id, 0, sensor.subId,
+                        (int32_t)dateVal, UNIT_DATETIME, 0);
+      // Time record: low byte zero
+      uint32_t timeVal = ((uint32_t)hour << 24) | ((uint32_t)minute << 16)
+                       | ((uint32_t)sec << 8);
+      setTelemetryValue(PROTOCOL_TELEMETRY_CROSSFIRE, sensor.id, 0, sensor.subId,
+                        (int32_t)timeVal, UNIT_DATETIME, 0);
+      break;
+    }
 
     case BARO_ALT_ID:
       if (getCrossfireTelemetryValue<2>(3, value)) {
