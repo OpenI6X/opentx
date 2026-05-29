@@ -238,15 +238,12 @@ void AFHDS2A_callback();
 #define TRAINER_IN_GPIO_PIN           GPIO_Pin_9  // PF.09
 #define TRAINER_IN_GPIO_PinSource     GPIO_PinSource9
 #define TRAINER_GPIO_AF               GPIO_AF_0
-// #define TRAINER_TIMER                 EXTMODULE_TIMER
-// #define TRAINER_TIMER_IRQn            EXTMODULE_TIMER_IRQn
-// #define TRAINER_TIMER_IRQHandler      EXTMODULE_TIMER_IRQHandler
-// #define TRAINER_DMA                   DMA1
-// #define TRAINER_DMA_CHANNEL           DMA1_Channel5
-// #define TRAINER_DMA_IRQn              DMA1_Channel4_5_IRQn
-// #define TRAINER_DMA_IRQHandler        DMA1_Channel4_5_IRQHandler
-// #define TRAINER_DMA_FLAG_TC           DMA_IT_TCIF5
-// #define TRAINER_TIMER_FREQ            (PERI1_FREQUENCY * TIMER_MULT_APB1)
+#define TRAINER_TIMER                 EXTMODULE_TIMER
+#define TRAINER_TIMER_IRQn            EXTMODULE_TIMER_IRQn
+#define TRAINER_TIMER_IRQHandler      EXTMODULE_TIMER_IRQHandler
+#define TRAINER_TIMER_FREQ            EXTMODULE_TIMER_FREQ
+#define TRAINER_OUT_GPIO_PIN          EXTMODULE_TX_GPIO_PIN   // PF10
+#define TRAINER_OUT_GPIO_PinSource    EXTMODULE_TX_GPIO_PinSource
 
 // USB
 #define USB_RCC_APB1Periph_CRS          RCC_APB1Periph_CRS
