@@ -93,10 +93,11 @@ static constexpr uint8_t backButtonId = 100;
 static constexpr uint8_t otherDevicesId = 101;
 enum { BTN_NONE, BTN_BACK, BTN_DEVICES };
 
+static constexpr uint8_t handsetId = 0xEA;
+
 // Device communication state
 struct DeviceState {
   uint8_t id = 0xEE;
-  uint8_t handsetId = 0xEF;
   uint8_t isELRS_TX = 0;
   uint8_t paramCount = 0;
   char name[20] = {};
@@ -199,7 +200,7 @@ static void resetParamData() {
 
 static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t * data, const uint8_t size) {
   // TRACE("crsf cmd %x %x %x", cmd, index, size);
-  uint8_t crsfPushData[3 + size] = { device.id, device.handsetId, index };
+  uint8_t crsfPushData[3 + size] = { device.id, handsetId, index };
   for (uint32_t i = 0; i < size; i++) {
     crsfPushData[3 + i] = data[i];
   }
@@ -595,8 +596,6 @@ static void changeDeviceId(uint8_t devId) {
   //TRACE("changeDeviceId %x", devId);
   paramLoad.currentFolderId = 0;
   device.isELRS_TX = 0;
-  //if the selected device ID (target) is a TX Module, we use our Lua ID, so TX Flag that user is using our LUA
-  device.handsetId = (devId == 0xEE) ? 0xEF : 0xEA;
   device.id = devId;
   paramLoad.expectedCount = 0; //set this because next target wouldn't have the same count, and this trigger to request the new count
 }
@@ -1013,7 +1012,6 @@ void elrsStop() {
   paramBackExec();
   ui.paramPopup = nullptr;
   device.id = 0xEE;
-  device.handsetId = 0xEF;
   globalData.cToolRunning = 0;
   clearData();
   popMenu();
