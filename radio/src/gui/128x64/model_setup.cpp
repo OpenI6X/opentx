@@ -164,7 +164,7 @@ enum MenuModelSetupItems {
   #define EXTERNAL_MODULE_MODE_ROWS      (isModulePXX(EXTERNAL_MODULE) || isModuleDSM2(EXTERNAL_MODULE) || isModuleMultimodule(EXTERNAL_MODULE) || isModuleCrossfire(EXTERNAL_MODULE)) ? (uint8_t)1 : (uint8_t)0
 
   #define CURSOR_ON_CELL                 (true)
-  #define MODEL_SETUP_MAX_LINES          (HEADER_LINE+ITEM_MODEL_SETUP_MAX)
+
 #if NUM_POTS > 0 && !defined(PCBI6X)
   #define POT_WARN_ROWS                  ((g_model.potsWarnMode) ? (uint8_t)(NUM_POTS+NUM_SLIDERS) : (uint8_t)0)
 #else
@@ -363,7 +363,7 @@ void menuModelSetup(event_t event)
     TRAINER_ROWS });
 #endif
 
-  MENU_CHECK(menuTabModel, MENU_MODEL_SETUP, HEADER_LINE+MODEL_SETUP_MAX_LINES);
+  MENU_CHECK(menuTabModel, MENU_MODEL_SETUP, HEADER_LINE + ITEM_MODEL_SETUP_MAX);
 
 #if (defined(DSM2) || defined(PXX))
   if (menuEvent) {
@@ -398,7 +398,6 @@ void menuModelSetup(event_t event)
 
     LcdFlags blink = ((editMode > 0) ? BLINK|INVERS : INVERS);
     LcdFlags attr = (sub == k ? blink : 0);
-    //TRACE("k: %d max: %d", k, ITEM_MODEL_SETUP_MAX);
     switch (k) {
       case ITEM_MODEL_NAME:
         editSingleName(MODEL_SETUP_2ND_COLUMN, y, STR_MODELNAME, g_model.header.name, sizeof(g_model.header.name), event, attr);
