@@ -416,7 +416,7 @@
 #define TR_VKEYS               "Menu\0""Exit\0""Enter""Page\0""Plus\0""Minus"
 #else
 #define LEN_VKEYS              "\005"
-#define TR_VKEYS               "Menu\0""Exit\0""Ned\0 ""Upp\0 ""Höger""Vänst"
+#define TR_VKEYS               "Menu\0""Exit\0""Ned\0 ""Upp\0 ""Höger"
 #endif
 
 #define LEN_VRENCODERS         "\003"
@@ -686,6 +686,7 @@
 #define TR_GPS                 "GPS"
 #define TR_RXCHANNELORD        "Kanaler i RX"
 #define TR_STICKS              "Axis"
+#define TR_STICK_DEADZONE      "Dödläge"
 #define TR_POTS                "Pots"
 #define TR_SWITCHES            "Switches"
 #define TR_SWITCHES_DELAY      "Brytarfördröjning"

@@ -200,12 +200,14 @@ uint32_t isBootloaderStart(const uint8_t * buffer);
 void extmoduleSendNextFrame();
 
 // Trainer driver
-#define SLAVE_MODE()                    (false) // (g_model.trainerData.mode == TRAINER_MODE_SLAVE)
+#define SLAVE_MODE()                    (g_model.trainerData.mode == TRAINER_MODE_SLAVE)
 #define TRAINER_CONNECTED()           (true)
 
 #if defined(TRAINER_GPIO)
   void init_trainer_capture(void);
   void stop_trainer_capture(void);
+  void init_trainer_ppm(void);
+  void stop_trainer_ppm(void);
 #else
   #define init_trainer_capture()
 #endif
@@ -236,7 +238,7 @@ enum EnumKeys
   KEY_PLUS = KEY_UP,
   KEY_RIGHT,
   KEY_LEFT,
-  KEY_BIND,
+  // KEY_BIND, // supported as KEY_RIGHT/LEFT,
   TRM_BASE,
   TRM_LH_DWN = TRM_BASE,
   TRM_LH_UP,
@@ -294,10 +296,12 @@ uint32_t readTrims(void);
 #define TRIMS_PRESSED()                 (readTrims())
 #define KEYS_PRESSED()                  (readKeys())
 
-#define BOOTLOADER_KEYS                0x2100
+#define BOOTLOADER_KEYS                ((1 << TRM_LH_UP) | (1 << TRM_RH_DWN))
 
 #define NUM_TRIMS                      4
 #define NUM_TRIMS_KEYS                 (NUM_TRIMS * 2)
+
+#define DEFAULT_STICK_DEADZONE         4 // 2 << (4-1) => -16 to +16
 
 #define NUM_MOUSE_ANALOGS              0
 #define NUM_DUMMY_ANAS                 0

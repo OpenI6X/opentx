@@ -37,6 +37,9 @@ enum {
   ITEM_RADIO_HARDWARE_STICK2,
   ITEM_RADIO_HARDWARE_STICK3,
   ITEM_RADIO_HARDWARE_STICK4,
+#if defined(STICK_DEAD_ZONE)
+  ITEM_RADIO_HARDWARE_STICK_DEADZONE,
+#endif
   ITEM_RADIO_HARDWARE_LABEL_POTS,
   ITEM_RADIO_HARDWARE_POT1,
   ITEM_RADIO_HARDWARE_POT2,
@@ -127,6 +130,9 @@ void menuRadioHardware(event_t event)
       0 /* stick 2 */,
       0 /* stick 3 */,
       0 /* stick 4 */,
+#if defined(STICK_DEAD_ZONE)
+      0 /* stick deadzone */,
+#endif
     LABEL(Pots),
       POTS_ROWS,
     LABEL(Switches),
@@ -283,6 +289,15 @@ void menuRadioHardware(event_t event)
           storageDirty(EE_GENERAL);
         }
         break;
+
+#if defined(STICK_DEAD_ZONE)
+      case ITEM_RADIO_HARDWARE_STICK_DEADZONE:
+        g_eeGeneral.stickDeadZone = editChoice(HW_SETTINGS_COLUMN2, y, STR_STICK_DEADZONE, "\002 0 2 4 8163264", g_eeGeneral.stickDeadZone, 0, 6, attr, event, INDENT_WIDTH);
+//        if (attr && checkIncDec_Ret) {
+//          storageDirty(EE_GENERAL);
+//        }
+        break;
+#endif
 
 #if defined(MENU_DIAG_ANAS_KEYS)
       case ITEM_RADIO_HARDWARE_DEBUG:

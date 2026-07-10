@@ -402,7 +402,7 @@
 #define TR_VKEYS               "Menu\0""Exit\0""Enter""Page\0""Plus\0""Mínus"
 #else
 #define LEN_VKEYS              "\005"
-#define TR_VKEYS               "Menu\0""Exit\0""Dolů\0""Nhoru""Vprvo""Vlevo"
+#define TR_VKEYS               "Menu\0""Exit\0""Dolů\0""Nhoru""Vprvo"
 #endif
 
 #define LEN_VRENCODERS         "\003"
@@ -674,6 +674,7 @@
 #define TR_GPS                 "GPS"
 #define TR_RXCHANNELORD        TR("Pořadí kanálů", "Výchozí pořadí kanálů")
 #define TR_STICKS              "Páky"
+#define TR_STICK_DEADZONE      "Dead zone"
 #define TR_POTS                "Potenciometry"
 #define TR_SWITCHES            "Spínače"
 #define TR_SWITCHES_DELAY      TR3("Filtr přepínače", "Filtr přepínače", "Filtr poloh přepínače")

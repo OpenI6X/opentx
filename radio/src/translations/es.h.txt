@@ -419,7 +419,7 @@
 #define TR_VSWASHTYPE          "---\0""120\0""120X""140\0""90\0"
 
 #define LEN_VKEYS              "\005"
-#define TR_VKEYS               TR("Menu\0""Salir""Abajo""Arrib""Dcha.""Izqd.", "Menu\0""Salir""Enter""Pgna.""Mas\0 ""Menos")
+#define TR_VKEYS               "Menu\0""Salir""Abajo""Arrib""Dcha."
 
 #define LEN_VRENCODERS         "\003"
 #define TR_VRENCODERS          "REa""REb"
@@ -684,6 +684,7 @@
 #define TR_GPS                 "GPS"
 #define TR_RXCHANNELORD        TR("Rx Orden canal", "Orden habitual canales")
 #define TR_STICKS              "Axis"
+#define TR_STICK_DEADZONE      "Dead zone"
 #define TR_POTS                "Pots"
 #define TR_SWITCHES            "Switches"
 #define TR_SWITCHES_DELAY      "Switches Delay"

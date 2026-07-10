@@ -12,6 +12,7 @@ option(INVERT_GIMBAL_CH1 "Invert Gimbal CH1" NO)
 option(INVERT_GIMBAL_CH2 "Invert Gimbal CH2" NO)
 option(INVERT_GIMBAL_CH3 "Invert Gimbal CH3" NO)
 option(INVERT_GIMBAL_CH4 "Invert Gimbal CH4" NO)
+option(STICK_DEAD_ZONE "Enable sticks dead zone" YES)
 
 if(PCB STREQUAL I6X)
   set(PWR_BUTTON "SWITCH" CACHE STRING "Pwr button type (PRESS/SWITCH)")
@@ -38,6 +39,10 @@ if(PCB STREQUAL I6X)
   add_definitions(-DEEPROM_VARIANT=0)
   add_definitions(-DAFHDS2A)
   add_definitions(-DCLIPBOARD)
+endif()
+
+if(STICK_DEAD_ZONE)
+  add_definitions(-DSTICK_DEAD_ZONE)
 endif()
 
 if(NOT AFHDS2A_LQI_CH STREQUAL OFF)

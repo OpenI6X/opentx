@@ -410,6 +410,9 @@
 #elif defined(PCBTARANIS)
   #define LEN_VKEYS                    "\005"
   #define TR_VKEYS                     "Menu\0""Exit\0""Enter""Page\0""Plus\0""Minus"
+#elif defined(PCBI6X)
+  #define LEN_VKEYS                    "\004"
+  #define TR_VKEYS                     "Menu""Exit""Down""Up  ""Bind"
 #else
   #define LEN_VKEYS                    "\005"
   #define TR_VKEYS                     "Menu\0""Exit\0""Down\0""Up\0  ""Right""Left\0"
@@ -680,6 +683,7 @@
 #define TR_GPS                         "GPS"
 #define TR_RXCHANNELORD                TR("Def chan order", "Default channel order")
 #define TR_STICKS                      "Axis"
+#define TR_STICK_DEADZONE              "Dead zone"
 #define TR_POTS                        "Pots"
 #define TR_SWITCHES                    "Switches"
 #define TR_SWITCHES_DELAY              TR("Play delay", "Play delay (sw. mid pos)")

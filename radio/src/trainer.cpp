@@ -56,10 +56,10 @@ void checkTrainerSettings()
       case TRAINER_MODE_MASTER_TRAINER_JACK:
         stop_trainer_capture();
         break;
-#if !defined(PCBI6X)
       case TRAINER_MODE_SLAVE:
         stop_trainer_ppm();
         break;
+#if !defined(PCBI6X)
       case TRAINER_MODE_MASTER_CPPM_EXTERNAL_MODULE:
         stop_cppm_on_heartbeat_capture() ;
         break;
@@ -77,10 +77,10 @@ void checkTrainerSettings()
     currentTrainerMode = requiredTrainerMode;
 
     switch (requiredTrainerMode) {
-#if !defined(PCBI6X)
     case TRAINER_MODE_SLAVE:
       init_trainer_ppm();
       break;
+#if !defined(PCBI6X)
     case TRAINER_MODE_MASTER_CPPM_EXTERNAL_MODULE:
         init_cppm_on_heartbeat_capture();
         break;

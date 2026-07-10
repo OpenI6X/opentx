@@ -678,6 +678,7 @@
 #define TR_GPS                 "GPS"
 #define TR_RXCHANNELORD        "Ordine ch RX"
 #define TR_STICKS              "Axis"
+#define TR_STICK_DEADZONE      "Zona morta"
 #define TR_POTS                "Pot."
 #define TR_SWITCHES            "Interutt."
 #define TR_SWITCHES_DELAY      "Ritardo voce FV"

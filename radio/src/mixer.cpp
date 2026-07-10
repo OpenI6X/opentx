@@ -417,6 +417,10 @@ void evalInputs(uint8_t mode)
 {
   BeepANACenter anaCenter = 0;
 
+#if defined(STICK_DEAD_ZONE)
+  int16_t deadZoneOffset = g_eeGeneral.stickDeadZone ? 2 << (g_eeGeneral.stickDeadZone - 1) : 0;
+#endif
+
   for (uint32_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) {
     // normalization [0..2048] -> [-1024..1024]
     uint8_t ch = (i < NUM_STICKS ? CONVERT_MODE(i) : i);
@@ -435,6 +439,21 @@ void evalInputs(uint8_t mode)
 
     if (v < -RESX) v = -RESX;
     if (v >  RESX) v =  RESX;
+
+#if defined(STICK_DEAD_ZONE)
+    // dead zone invented by FlySky in my opinion it should go into ADC
+    if (g_eeGeneral.stickDeadZone && ch != THR_STICK) {
+      if (v > deadZoneOffset) {
+        // y=ax+b
+        v = (int16_t)((int32_t)(v - deadZoneOffset) * 1024L / (1024L - deadZoneOffset));
+      } else if (v < -deadZoneOffset) {
+        // y=ax+b
+        v = (int16_t)((int32_t)(v + deadZoneOffset) * 1024L / (1024L - deadZoneOffset));
+      } else {
+        v = 0;
+      }
+    }
+#endif
 
     if (g_model.throttleReversed && ch==THR_STICK) {
       v = -v;
