@@ -21,14 +21,14 @@
 #include "opentx.h"
 
 const CrossfireSensor crossfireSensors[] = {
-  {LINK_ID,        0, ZSTR_RX_RSSI1,      UNIT_DB,             0},
-  {LINK_ID,        1, ZSTR_RX_RSSI2,      UNIT_DB,             0},
+  {LINK_ID,        0, ZSTR_RX_RSSI1,      UNIT_DBM,            0},
+  {LINK_ID,        1, ZSTR_RX_RSSI2,      UNIT_DBM,            0},
   {LINK_ID,        2, ZSTR_RX_QUALITY,    UNIT_PERCENT,        0},
   {LINK_ID,        3, ZSTR_RX_SNR,        UNIT_DB,             0},
   {LINK_ID,        4, ZSTR_ANTENNA,       UNIT_RAW,            0},
   {LINK_ID,        5, ZSTR_RF_MODE,       UNIT_RAW,            0},
   {LINK_ID,        6, ZSTR_TX_POWER,      UNIT_MILLIWATTS,     0},
-  {LINK_ID,        7, ZSTR_TX_RSSI,       UNIT_DB,             0},
+  {LINK_ID,        7, ZSTR_TX_RSSI,       UNIT_DBM,            0},
   {LINK_ID,        8, ZSTR_TX_QUALITY,    UNIT_PERCENT,        0},
   {LINK_ID,        9, ZSTR_TX_SNR,        UNIT_DB,             0},
   {LINK_RX_ID,     0, ZSTR_RX_RSSI_PERC,  UNIT_PERCENT,        0},
