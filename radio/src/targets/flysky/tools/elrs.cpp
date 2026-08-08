@@ -343,9 +343,10 @@ static bool isExistingDevice(uint8_t devId) {
   return false;
 }
 
-static void unitLoad(Parameter * param, uint8_t * data, uint8_t offset) {
+// identical to unitLoad so reused as it
+static void paramInfoLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   uint8_t len = strlen((char*)&data[offset]) + 1;
-  bufferPush((char*)&data[offset], len);
+  bufferPush((char*)&data[offset], len); // info/unit + \0
 }
 
 static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
@@ -353,42 +354,33 @@ static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
 }
 
 static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
-    int32_t value = param->value;
-    // Unit string is at: name + 2*size (min+max) + [1 byte prec for FLOAT]
-    uint32_t unitOffset = param->offset + param->nameLength + (PARAM_VALUE_SIZE_MULT * param->size);
-    
-    if (param->type == TYPE_FLOAT) {
+  int32_t value = param->value;
+  // paramGetValue() returns the raw big-endian accumulation, so only the
+  // signed types need sign-extension here. The UINT8/UINT16 casts in the
+  // original chain were no-ops (value already fits), and for the non-extended
+  // build the int16_t union member is already sign-extended on promotion.
+  if (param->type == TYPE_INT8) {
+    value = (int8_t)value;
+  }
 #if defined(CRSF_EXTENDED_TYPES)
-      uint8_t prec = buffer[unitOffset];
-      if (prec > 0) {
-        attr |= (prec == 1 ? PREC1 : PREC2);
-      }
-      unitOffset += 1; // skip prec byte
-#else
-      return;
+  else if (param->type == TYPE_INT16) {
+    value = (int16_t)value;
+  }
 #endif
-    }
-    
-    // Cast value based on parameter type
-    switch (param->type) {
-      case TYPE_UINT8:
-        lcdDrawNumber(COL2, y, (uint8_t)value, attr);
-        break;
-      case TYPE_INT8:
-        lcdDrawNumber(COL2, y, (int8_t)value, attr);
-        break;
-      case TYPE_UINT16:
-        lcdDrawNumber(COL2, y, (uint16_t)value, attr);
-        break;
-      default: // TYPE_INT16, TYPE_FLOAT, or others
+  uint32_t unitOffset = param->offset + param->nameLength + (PARAM_VALUE_SIZE_MULT * param->size);
+  if (param->type == TYPE_FLOAT) {
 #if defined(CRSF_EXTENDED_TYPES)
-        lcdDrawNumber(COL2, y, (param->type == TYPE_INT16) ? (int16_t)value : (int32_t)value, attr);
-#else
-        lcdDrawNumber(COL2, y, (int16_t)value, attr);
-#endif
-        break;
+    uint8_t prec = buffer[unitOffset];
+    if (prec > 0) {
+      attr |= (prec == 1 ? PREC1 : PREC2);
     }
-    unitDisplay(param, y, unitOffset);
+    unitOffset += 1; // skip prec byte
+#else
+    return;
+#endif
+  }
+  lcdDrawNumber(COL2, y, value, attr);
+  unitDisplay(param, y, unitOffset);
 }
 
 static uint8_t findSelectMinValue(const uint8_t * data) {
@@ -453,7 +445,7 @@ static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) 
   
   // Unit string follows: [options/] value min max [prec for FLOAT] unit
   uint8_t unitDataOffset = offset + optionsLen + valueSize + minmaxSize + valueSize; // [value] [min] [max] [default] [unit]
-  unitLoad(param, data, unitDataOffset);
+  paramInfoLoad(param, data, unitDataOffset); // unitLoad
 }
 
 static void paramStringDisplay(Parameter * param, uint8_t y, uint8_t attr) {
@@ -489,11 +481,6 @@ static void paramMultibyteSave(Parameter * param) {
       data[i] = (uint8_t)((param->value >> (8 * i)) & 0xFF);
     }
   crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, (uint8_t *)&data, param->size);
-}
-
-static void paramInfoLoad(Parameter * param, uint8_t * data, uint8_t offset) {
-  uint8_t len = strlen((char*)&data[offset]) + 1;
-  bufferPush((char*)&data[offset], len); // info + \0
 }
 
 static bool getSelectedOption(char * option, char * options, const uint8_t value) {
@@ -668,7 +655,7 @@ static const ParamFunctions functions[] = {
   { .load=noopLoad, .save=paramFolderDeviceOpen, .display=paramUnifiedDisplay },         // 16: DEVICES_FOLDER
 };
 
-static ParamFunctions getFunctions(uint32_t type) {
+static const ParamFunctions getFunctions(uint32_t type) {
   // Types 0-8 all use the integer function set
   if (type <= TYPE_FLOAT) return functions[0];
   // Types 9-16 map to functions[1-8]
