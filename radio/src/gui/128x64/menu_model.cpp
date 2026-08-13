@@ -20,6 +20,23 @@
 
 #include "opentx.h"
 
+const MenuHandlerFunc menuTabModel[]  = {
+  menuModelSelect,
+  menuModelSetup,
+  CASE_HELI(menuModelHeli)
+  CASE_FLIGHT_MODES(menuModelFlightModesAll)
+  menuModelExposAll,
+  menuModelMixAll,
+  menuModelLimits,
+  menuModelCurvesAll,
+  menuModelLogicalSwitches,
+  menuModelSpecialFunctions,
+#if defined(LUA_MODEL_SCRIPTS)
+  menuModelCustomScripts,
+#endif
+  menuModelTelemetry,
+  menuModelDisplay,
+};
 
 uint8_t editDelay(coord_t y, event_t event, uint8_t attr, const char * str, uint8_t delay)
 {

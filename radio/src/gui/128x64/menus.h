@@ -92,18 +92,6 @@ void menuRadioHardware(event_t event);
 void menuRadioTools(event_t event);
 void menuRadioCalibration(event_t event);
 
-static const MenuHandlerFunc menuTabGeneral[]  = {
-#if defined(RADIO_TOOLS)
-  menuRadioTools,
-#endif
-  menuRadioSetup,
-  CASE_SDCARD(menuRadioSdManager)
-  menuRadioSpecialFunctions,
-  menuRadioTrainer,
-  menuRadioHardware,
-  menuRadioVersion
-};
-
 enum MenuModelIndexes {
   MENU_MODEL_SELECT,
   MENU_MODEL_SETUP,
@@ -142,28 +130,13 @@ void menuModelTelemetry(event_t event);
 void menuModelDisplay(event_t event);
 void menuModelTemplates(event_t event);
 void menuModelGVarOne(event_t event);
-
-static const MenuHandlerFunc menuTabModel[]  = {
-  menuModelSelect,
-  menuModelSetup,
-  CASE_HELI(menuModelHeli)
-  CASE_FLIGHT_MODES(menuModelFlightModesAll)
-  menuModelExposAll,
-  menuModelMixAll,
-  menuModelLimits,
-  menuModelCurvesAll,
-  menuModelLogicalSwitches,
-  menuModelSpecialFunctions,
-#if defined(LUA_MODEL_SCRIPTS)
-  menuModelCustomScripts,
-#endif
-  menuModelTelemetry,
-  menuModelDisplay,
-};
-
 void menuStatisticsView(event_t event);
 void menuStatisticsDebug(event_t event);
 void menuStatisticsDebug2(event_t event);
 #if !defined(PCBI6X)
 void menuAboutView(event_t event);
 #endif
+
+
+extern const MenuHandlerFunc menuTabModel[MENU_MODEL_PAGES_COUNT];
+extern const MenuHandlerFunc menuTabGeneral[MENU_RADIO_PAGES_COUNT];
