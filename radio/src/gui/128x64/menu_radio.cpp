@@ -37,3 +37,15 @@ void menuRadioSpecialFunctions(event_t event)
   }
 #endif
 }
+
+const MenuHandlerFunc menuTabGeneral[]  = {
+#if defined(RADIO_TOOLS)
+  menuRadioTools,
+#endif
+  menuRadioSetup,
+  CASE_SDCARD(menuRadioSdManager)
+  menuRadioSpecialFunctions,
+  menuRadioTrainer,
+  menuRadioHardware,
+  menuRadioVersion
+};
