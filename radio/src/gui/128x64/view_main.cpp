@@ -111,33 +111,31 @@ void displayTrims(uint8_t phase)
 
   for (uint8_t i = 0; i < 4; i++) {
 
+    if (getRawTrimValue(phase, i).mode == TRIM_MODE_NONE)
+      continue;
+
     coord_t ym;
     uint8_t stickIndex = CONVERT_MODE(i);
     coord_t xm = x[stickIndex];
     uint8_t att = ROUND;
     int16_t val = getTrimValue(phase, i);
 
-    if(getRawTrimValue(phase, i).mode == TRIM_MODE_NONE)
-      continue;
-
     int16_t dir = val;
     bool exttrim = false;
     if (val < TRIM_MIN || val > TRIM_MAX) {
       exttrim = true;
     }
-    if (val < -(TRIM_LEN+1)*4) {
-      val = -(TRIM_LEN+1);
+    val = (val * TRIM_LEN) / TRIM_MAX;
+    if (val < -TRIM_LEN) {
+      val = -TRIM_LEN;
     }
-    else if (val > (TRIM_LEN+1)*4) {
-      val = TRIM_LEN+1;
-    }
-    else {
-      val /= 4;
+    else if (val > TRIM_LEN) {
+      val = TRIM_LEN;
     }
 
     if (vert[i]) {
       ym = 31;
-      lcdDrawSolidVerticalLine(xm, ym-TRIM_LEN, TRIM_LEN*2);
+      lcdDrawSolidVerticalLine(xm, ym - TRIM_LEN, TRIM_LEN * 2 + 1);
       if (i!=2 || !g_model.thrTrim) {
         lcdDrawSolidVerticalLine(xm-1, ym-1,  3);
         lcdDrawSolidVerticalLine(xm+1, ym-1,  3);
@@ -161,7 +159,7 @@ void displayTrims(uint8_t phase)
     }
     else {
       ym = 60;
-      lcdDrawSolidHorizontalLine(xm-TRIM_LEN, ym, TRIM_LEN*2);
+      lcdDrawSolidHorizontalLine(xm - TRIM_LEN, ym, TRIM_LEN * 2 + 1);
       lcdDrawSolidHorizontalLine(xm-1, ym-1,  3);
       lcdDrawSolidHorizontalLine(xm-1, ym+1,  3);
       xm += val;
