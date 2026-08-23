@@ -31,12 +31,6 @@ enum data_type {
     TYPE_DEVICES_FOLDER = 16
 };
 
-#define CRSF_FRAMETYPE_DEVICE_PING 0x28
-#define CRSF_FRAMETYPE_DEVICE_INFO 0x29
-#define CRSF_FRAMETYPE_PARAMETER_SETTINGS_ENTRY 0x2B
-#define CRSF_FRAMETYPE_PARAMETER_READ 0x2C
-#define CRSF_FRAMETYPE_PARAMETER_WRITE 0x2D
-#define CRSF_FRAMETYPE_ELRS_STATUS 0x2E
 
 /**
  * INT16 and FLOAT support:
@@ -200,7 +194,7 @@ static void resetParamData() {
 
 static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t * data, const uint8_t size) {
   // TRACE("crsf cmd %x %x %x", cmd, index, size);
-  uint8_t crsfPushData[3 + size] = { device.id, handsetId, index };
+  uint8_t crsfPushData[60/*max: 3 + size*/] = { device.id, handsetId, index };
   for (uint32_t i = 0; i < size; i++) {
     crsfPushData[3 + i] = data[i];
   }
@@ -318,7 +312,7 @@ static void selectParam(int8_t step) {
   Parameter * param;
   do {
     param = getParam(newLineIndex);
-    if (param != 0 && param->nameLength != 0) break;
+    if (/*param != 0 &&*/ param->nameLength != 0) break;
     newLineIndex = newLineIndex + step;
     if (newLineIndex <= 0) newLineIndex = allocatedParamsCount;
     if (newLineIndex > allocatedParamsCount) newLineIndex = 1;
@@ -619,8 +613,8 @@ static void parseDeviceInfoMessage(uint8_t* data) {
   }
 
   if (device.id == id && paramLoad.currentFolderId != otherDevicesId) {
-    memcpy(&device.name[0], (char *)&data[3], 20);
-    device.isELRS_TX = ((paramGetValue(&data[offset], 4) == 0x454C5253) && (device.id == 0xEE)); // SerialNumber = 'E L R S' and ID is TX module
+    strncpy(&device.name[0], (char *)&data[3], 20);
+    device.isELRS_TX = ((paramGetValue(&data[offset], 4) == ELRS_SERIAL_ID) && (device.id == CSRF_ADDRESS_TX));
     uint8_t newParamCount = data[offset+12];
     
     reloadAllParam();
@@ -880,7 +874,7 @@ static void handleDevicePageEvent(event_t event) {
     } else {
       if (param != 0 && param->nameLength > 0) {
         if (param->type < TYPE_FOLDER) {
-          s_editMode = (s_editMode) ? 0 : 1;
+          s_editMode = (s_editMode) ? EDIT_SELECT_FIELD : EDIT_MODIFY_FIELD;
         }
         if (!s_editMode) {
           if (param->type == TYPE_COMMAND) {

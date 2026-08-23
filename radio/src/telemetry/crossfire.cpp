@@ -316,7 +316,7 @@ void processCrossfireTelemetryFrame() {
         }
       }
 #else
-      if (id == DEVICE_INFO_ID && telemetryRxBuffer[4] == MODULE_ADDRESS) {
+      if (id == DEVICE_INFO_ID && telemetryRxBuffer[4] == CSRF_ADDRESS_TX) {
         uint8_t nameSize = telemetryRxBuffer[1] - 18;
         // strncpy((char *)&crossfireModuleStatus.name, (const char *)&telemetryRxBuffer[5], CRSF_NAME_MAXSIZE);
         // crossfireModuleStatus.name[CRSF_NAME_MAXSIZE -1] = 0; // For some reason, GH din't like strlcpy
@@ -370,9 +370,9 @@ static bool _lenIsSane(uint8_t len)
 
 static bool _validHdr(uint8_t data)
 {
-  // All CRSF packets should start with UART_SYNC, but RADIO_ADDRESS is also accepted
+  // All CRSF packets should start with UART_SYNC, but CSRF_ADDRESS_RADIO is also accepted
   // for older modules which used the incorrect "destination address" start byte
-  return data == RADIO_ADDRESS || data == UART_SYNC;
+  return data == CSRF_ADDRESS_RADIO || data == UART_SYNC;
 }
 
 void crossfireTelemetrySeekStart(uint8_t *rxBuffer, uint8_t &rxBufferCount)
@@ -490,7 +490,7 @@ inline void runCrossfireTelemetryCallback(uint8_t command, uint8_t* data, uint8_
 bool crossfireTelemetryPush(uint8_t command, uint8_t *data, uint32_t length) {
   // TRACE("crsfPush %x", command);
   if (isCrossfireOutputBufferAvailable()) {
-    telemetryOutputPushByte(MODULE_ADDRESS);
+    telemetryOutputPushByte(CSRF_ADDRESS_TX);
     telemetryOutputPushByte(2 + length);  // 1(COMMAND) + data length + 1(CRC)
     telemetryOutputPushByte(command);     // COMMAND
     for (uint32_t i = 0; i < length; i++) {

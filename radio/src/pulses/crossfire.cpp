@@ -36,10 +36,10 @@ uint8_t createCrossfireBindFrame(uint8_t * frame)
   *buf++ = 7;                                         /* frame length */
   *buf++ = COMMAND_ID;                                /* cmd type */
   if (TELEMETRY_STREAMING())
-    *buf++ = RECEIVER_ADDRESS;                        /* Destination is receiver (unbind) */
+    *buf++ = CSRF_ADDRESS_RX;                        /* Destination is receiver (unbind) */
   else
-    *buf++ = MODULE_ADDRESS;                          /* Destination is module */
-  *buf++ = RADIO_ADDRESS;                             /* Origin Address */
+    *buf++ = CSRF_ADDRESS_TX;                          /* Destination is module */
+  *buf++ = CSRF_ADDRESS_RADIO;                             /* Origin Address */
   *buf++ = SUBCOMMAND_CRSF;                           /* sub command */
   *buf++ = SUBCOMMAND_CRSF_BIND;                      /* initiate bind */
   *buf++ = crc8_BA(frame + 2, 5);
@@ -53,8 +53,8 @@ uint8_t createCrossfirePingFrame(uint8_t * frame)
   *buf++ = UART_SYNC;                                 /* device address */
   *buf++ = 4;                                         /* frame length */
   *buf++ = PING_DEVICES_ID;                           /* cmd type */
-  *buf++ = BROADCAST_ADDRESS;                         /* Destination Address */
-  *buf++ = RADIO_ADDRESS;                             /* Origin Address */
+  *buf++ = CSRF_ADDRESS_BROADCAST;                         /* Destination Address */
+  *buf++ = CSRF_ADDRESS_RADIO;                             /* Origin Address */
   *buf++ = crc8(frame + 2, 3);
   return buf - frame;
 }
@@ -64,8 +64,8 @@ uint8_t createCrossfireModelIDFrame(uint8_t* frame) {
   *buf++ = UART_SYNC;                               /* device address */
   *buf++ = 8;                                       /* frame length */
   *buf++ = COMMAND_ID;                              /* cmd type */
-  *buf++ = MODULE_ADDRESS;                          /* Destination Address */
-  *buf++ = RADIO_ADDRESS;                           /* Origin Address */
+  *buf++ = CSRF_ADDRESS_TX;                          /* Destination Address */
+  *buf++ = CSRF_ADDRESS_RADIO;                           /* Origin Address */
   *buf++ = SUBCOMMAND_CRSF;                         /* sub command */
   *buf++ = COMMAND_MODEL_SELECT_ID;                 /* command of set model/receiver id */
   *buf++ = g_model.header.modelId[EXTERNAL_MODULE]; /* model ID */
@@ -87,7 +87,7 @@ uint8_t createCrossfireChannelsFrame(uint8_t* frame, int16_t * pulses) {
   uint8_t lenAdjust = (armingMode == ARMING_MODE_SWITCH) ? 1 : 0;
 
   uint8_t * buf = frame;
-  *buf++ = MODULE_ADDRESS;
+  *buf++ = CSRF_ADDRESS_TX;
   *buf++ = 24 + lenAdjust;      // 1(ID) + 22(channel data) + (+1 extra byte if Switch mode) + 1(CRC)
   uint8_t* crc_start = buf;
   *buf++ = CHANNELS_ID;

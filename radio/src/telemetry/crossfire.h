@@ -25,10 +25,20 @@
 #include "dataconstants.h"
 
 // Device address
-#define BROADCAST_ADDRESS              0x00
-#define RADIO_ADDRESS                  0xEA
-#define MODULE_ADDRESS                 0xEE
-#define RECEIVER_ADDRESS               0xEC
+#define CSRF_ADDRESS_BROADCAST         0x00
+#define CSRF_ADDRESS_RADIO             0xEA
+#define CSRF_ADDRESS_TX                0xEE
+#define CSRF_ADDRESS_RX                0xEC
+
+#define ELRS_SERIAL_ID                 0x454C5253
+
+#define CRSF_FRAMETYPE_DEVICE_PING     0x28
+#define CRSF_FRAMETYPE_DEVICE_INFO     0x29
+#define CRSF_FRAMETYPE_PARAMETER_SETTINGS_ENTRY 0x2B
+#define CRSF_FRAMETYPE_PARAMETER_READ  0x2C
+#define CRSF_FRAMETYPE_PARAMETER_WRITE 0x2D
+#define CRSF_FRAMETYPE_ELRS_STATUS     0x2E
+
 
 // Frame id
 #define GPS_ID                         0x02

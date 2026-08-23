@@ -502,7 +502,7 @@ static int luaCrossfireTelemetryPush(lua_State * L)
     uint8_t command = luaL_checkunsigned(L, 1);
     luaL_checktype(L, 2, LUA_TTABLE);
     uint8_t length = luaL_len(L, 2);
-    telemetryOutputPushByte(MODULE_ADDRESS);
+    telemetryOutputPushByte(CSRF_ADDRESS_TX);
     telemetryOutputPushByte(2 + length); // 1(COMMAND) + data length + 1(CRC)
     telemetryOutputPushByte(command); // COMMAND
     for (int i=0; i<length; i++) {
