@@ -198,7 +198,7 @@ static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const 
   for (uint32_t i = 0; i < size; i++) {
     crsfPushData[3 + i] = data[i];
   }
-  crossfireTelemetryPush(cmd, crsfPushData, sizeof(crsfPushData));
+  crossfireTelemetryPush(cmd, crsfPushData, 3 + size);
 }
 
 static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t value) {
