@@ -25,7 +25,7 @@ void eepromWaitEepromStandbyState(void);
 
 void i2cInit()
 {
-  LL_I2C_DeInit(I2C1);
+  LL_I2C_DeInit(I2C);
 
   LL_I2C_InitTypeDef I2C_InitStruct = {0};
   I2C_InitStruct.PeripheralMode = LL_I2C_MODE_I2C;
@@ -35,8 +35,8 @@ void i2cInit()
   I2C_InitStruct.OwnAddrSize = LL_I2C_OWNADDRESS1_7BIT;
   I2C_InitStruct.AnalogFilter = LL_I2C_ANALOGFILTER_DISABLE;
   I2C_InitStruct.DigitalFilter = 0x00;
-  LL_I2C_Init(I2C1, &I2C_InitStruct);
-  LL_I2C_Enable(I2C1);
+  LL_I2C_Init(I2C, &I2C_InitStruct);
+  LL_I2C_Enable(I2C);
 
   LL_GPIO_SetAFPin_8_15(I2C_GPIO, I2C_SCL_GPIO_PIN, I2C_GPIO_AF);
   LL_GPIO_SetAFPin_8_15(I2C_GPIO, I2C_SDA_GPIO_PIN, I2C_GPIO_AF);
