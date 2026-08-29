@@ -287,7 +287,7 @@ void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART
   USART_InitStruct.TransferDirection = LL_USART_DIRECTION_RX;
   USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
 //  USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
-  LL_USART_Init(AUX4_SERIAL_USART, &USART_InitStruct)
+  LL_USART_Init(AUX4_SERIAL_USART, &USART_InitStruct);
 
     aux4SerialRxFifo.channel = AUX4_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
     aux4SerialRxFifo.clear();

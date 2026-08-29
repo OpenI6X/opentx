@@ -242,6 +242,9 @@ void SystemCoreClockUpdate (void)
     case RCC_CFGR_SWS_HSE:  /* HSE used as system clock */
       SystemCoreClock = HSE_VALUE;
       break;
+    case RCC_CFGR_SWS_HSI48:  /* HSI48 used as system clock */
+      SystemCoreClock = HSI48_VALUE;
+      break;
     case RCC_CFGR_SWS_PLL:  /* PLL used as system clock */
       /* Get PLL clock source and multiplication factor ----------------------*/
       pllmull = RCC->CFGR & RCC_CFGR_PLLMUL;
@@ -292,67 +295,19 @@ void SystemCoreClockUpdate (void)
   */
 
 
-  static void SetSysClock(void)
-  {
-    __IO uint32_t StartUpCounter = 0, HSEStatus = 0;
-
-    /* SYSCLK, HCLK, PCLK configuration ----------------------------------------*/
-    /* Enable HSE */
-    RCC->CR |= ((uint32_t)RCC_CR_HSEON);
-
-    /* Wait till HSE is ready and if Time out is reached exit */
-    do
-    {
-      HSEStatus = RCC->CR & RCC_CR_HSERDY;
-      StartUpCounter++;
-    } while((HSEStatus == 0) && (StartUpCounter != HSE_STARTUP_TIMEOUT));
-
-    if ((RCC->CR & RCC_CR_HSERDY) != RESET)
-    {
-      HSEStatus = (uint32_t)0x01;
-    }
-    else
-    {
-      HSEStatus = (uint32_t)0x00;
-    }
-
-    if (HSEStatus == (uint32_t)0x01)
-    {
-      /* Enable Prefetch Buffer and set Flash Latency */
-      FLASH->ACR = FLASH_ACR_PRFTBE | FLASH_ACR_LATENCY;
-
-      /* HCLK = SYSCLK */
-      RCC->CFGR |= (uint32_t)RCC_CFGR_HPRE_DIV1;
-
-      /* PCLK = HCLK */
-      RCC->CFGR |= (uint32_t)RCC_CFGR_PPRE_DIV1;
-
-      /* PLL configuration = HSE * 6 = 48 MHz */
-      RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMUL));
-      RCC->CFGR |= (uint32_t)(RCC_CFGR_PLLSRC_HSE_PREDIV | RCC_CFGR_PLLXTPRE_HSE_PREDIV_DIV1 | RCC_CFGR_PLLMUL6);
-
-      /* Enable PLL */
-      RCC->CR |= RCC_CR_PLLON;
-
-      /* Wait till PLL is ready */
-      while((RCC->CR & RCC_CR_PLLRDY) == 0)
-      {
-      }
-
-      /* Select PLL as system clock source */
-      RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_SW));
-      RCC->CFGR |= (uint32_t)RCC_CFGR_SW_PLL;
-
-      /* Wait till PLL is used as system clock source */
-      while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != (uint32_t)RCC_CFGR_SWS_PLL)
-      {
-      }
-    }
-    else
-    { /* If HSE fails to start-up, the application will have wrong clock
-           configuration. User can add here some code to deal with this error */
-    }
-  }
+static void SetSysClock(void)
+{
+  /* Enable HSI48 (internal 48 MHz RC used as system clock on i6X) */
+  RCC->CR2 |= RCC_CR2_HSI48ON;
+  while ((RCC->CR2 & RCC_CR2_HSI48RDY) == 0) {}
+  /* Prefetch + 1 wait state required for 48 MHz */
+  FLASH->ACR = FLASH_ACR_PRFTBE | FLASH_ACR_LATENCY;
+  RCC->CFGR = (RCC->CFGR & (uint32_t)~RCC_CFGR_HPRE) | RCC_CFGR_HPRE_DIV1;
+  RCC->CFGR = (RCC->CFGR & (uint32_t)~RCC_CFGR_PPRE) | RCC_CFGR_PPRE_DIV1;
+  /* Select HSI48 as SYSCLK */
+  RCC->CFGR = (RCC->CFGR & (uint32_t)~RCC_CFGR_SW) | RCC_CFGR_SW_HSI48;
+  while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI48) {}
+}
 
 
 /**
