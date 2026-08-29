@@ -25,6 +25,15 @@ void eepromWaitEepromStandbyState(void);
 
 void i2cInit()
 {
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  GPIO_InitStruct.Pin = I2C_SCL_GPIO_PIN | I2C_SDA_GPIO_PIN;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Alternate = I2C_GPIO_AF;
+  LL_GPIO_Init(I2C_GPIO, &GPIO_InitStruct);
+
   LL_I2C_DeInit(I2C);
 
   LL_I2C_InitTypeDef I2C_InitStruct = {0};
@@ -36,18 +45,6 @@ void i2cInit()
   I2C_InitStruct.AnalogFilter = LL_I2C_ANALOGFILTER_DISABLE;
   I2C_InitStruct.DigitalFilter = 0x00;
   LL_I2C_Init(I2C, &I2C_InitStruct);
-  LL_I2C_Enable(I2C);
-
-  LL_GPIO_SetAFPin_8_15(I2C_GPIO, I2C_SCL_GPIO_PIN, I2C_GPIO_AF);
-  LL_GPIO_SetAFPin_8_15(I2C_GPIO, I2C_SDA_GPIO_PIN, I2C_GPIO_AF);
-
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-  GPIO_InitStruct.Pin        = I2C_SCL_GPIO_PIN | I2C_SDA_GPIO_PIN;
-  GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
-  GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
-  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_MEDIUM;
-  LL_GPIO_Init(I2C_GPIO, &GPIO_InitStruct);
 }
 
 uint32_t I2C_GetFlagStatus(const I2C_TypeDef *I2Cx, uint32_t flag)
