@@ -96,7 +96,7 @@ bool I2C_WaitEventCleared(uint32_t flag)
   */
 bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRead)
 {
-  if (!I2C_WaitEventCleared(I2C_FLAG_BUSY))
+  if (!I2C_WaitEventCleared(I2C_ISR_BUSY))
     return false;
 
   LL_I2C_HandleTransfer(I2C, I2C_ADDRESS_EEPROM, LL_I2C_ADDRSLAVE_7BIT, 2, LL_I2C_MODE_SOFTEND, LL_I2C_GENERATE_START_WRITE);
