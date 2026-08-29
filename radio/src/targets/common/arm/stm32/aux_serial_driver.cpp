@@ -33,6 +33,7 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
   GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate  = AUX_SERIAL_GPIO_AF;
   LL_GPIO_Init(AUX_SERIAL_GPIO, &GPIO_InitStruct);
 
   LL_USART_InitTypeDef usart_initstruct = {0};
@@ -227,6 +228,7 @@ void aux3SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
   GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate  = AUX3_SERIAL_GPIO_AF;
   LL_GPIO_Init(AUX3_SERIAL_GPIO, &GPIO_InitStruct);
 
   LL_USART_InitTypeDef USART_InitStruct = {0};
@@ -277,6 +279,7 @@ void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
   GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate  = AUX4_SERIAL_GPIO_AF;
   LL_GPIO_Init(AUX4_SERIAL_GPIO, &GPIO_InitStruct);
 
   LL_USART_InitTypeDef USART_InitStruct = {0};
