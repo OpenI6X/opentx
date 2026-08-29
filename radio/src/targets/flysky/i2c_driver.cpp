@@ -53,16 +53,12 @@ void i2cInit()
 uint32_t I2C_GetFlagStatus(const I2C_TypeDef *I2Cx, uint32_t flag)
 {
   switch(flag) {
-    case I2C_ISR_TXIS:
-      return LL_I2C_IsActiveFlag_TXIS(I2Cx);
-    case I2C_ISR_TC:
-      return LL_I2C_IsActiveFlag_TC(I2Cx);
-    case I2C_ISR_TCR:
-      return LL_I2C_IsActiveFlag_TCR(I2Cx);
-    case I2C_ISR_RXNE:
-      return LL_I2C_IsActiveFlag_RXNE(I2Cx);
-    case I2C_ISR_STOPF:
-      return LL_I2C_IsActiveFlag_STOP(I2Cx);
+    case I2C_ISR_TXIS:  return LL_I2C_IsActiveFlag_TXIS(I2Cx);
+    case I2C_ISR_TC:    return LL_I2C_IsActiveFlag_TC(I2Cx);
+    case I2C_ISR_TCR:   return LL_I2C_IsActiveFlag_TCR(I2Cx);
+    case I2C_ISR_RXNE:  return LL_I2C_IsActiveFlag_RXNE(I2Cx);
+    case I2C_ISR_STOPF: return LL_I2C_IsActiveFlag_STOP(I2Cx);
+    case I2C_ISR_BUSY:  return LL_I2C_IsActiveFlag_BUSY(I2Cx);
   }
   return 0;
 }
