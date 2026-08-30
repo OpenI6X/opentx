@@ -170,7 +170,7 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
 
     telemetryPortSetDirectionInput();
 
-    while (TELEMETRY_USART->ISR & USART_FLAG_RXNE) {
+    while (TELEMETRY_USART->ISR & USART_ISR_RXNE) {
       (void)TELEMETRY_USART->RDR;
     }
   }

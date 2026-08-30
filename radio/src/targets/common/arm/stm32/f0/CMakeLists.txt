@@ -18,15 +18,15 @@ add_library(stm32cube_ll OBJECT EXCLUDE_FROM_ALL
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_spi.c
 #  ${STM32CUBE_DIR}/Src/stm32f0xx_ll_usb.c
   # HAL drivers
-  ${STM32CUBE_DIR}/Src/stm32f0xx_hal.c
-  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pwr.c
-  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pwr_ex.c
-  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_rcc.c
-  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_rtc.c
-  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_i2c.c
+#  ${STM32CUBE_DIR}/Src/stm32f0xx_hal.c
+#  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pwr.c
+#  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pwr_ex.c
+#  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_rcc.c
+#  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_rtc.c
+#  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_i2c.c
 #  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pcd.c
-  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pcd_ex.c
-  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_flash.c
+#  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pcd_ex.c
+#  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_flash.c
 #  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_flash_ex.c
   )
 
