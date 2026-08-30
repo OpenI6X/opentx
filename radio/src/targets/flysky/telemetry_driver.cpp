@@ -64,9 +64,7 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
   USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
   USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_8;
-
   LL_USART_Init(TELEMETRY_USART, &USART_InitStruct);
-  LL_USART_Enable(TELEMETRY_USART);
 
 #if !defined(CRSF_FULLDUPLEX)
   LL_USART_SetTXPinLevel(TELEMETRY_USART, LL_USART_TXPIN_LEVEL_INVERTED);
@@ -96,10 +94,11 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
                                 | LL_DMA_PDATAALIGN_BYTE
                                 | LL_DMA_MDATAALIGN_BYTE;
 
-#if !defined(CRSF_FULLDUPLEX)
-  LL_USART_EnableHalfDuplex(TELEMETRY_USART);
+#if defined(CRSF_FULLDUPLEX)
+  TELEMETRY_USART->CR3 |= USART_CR3_DMAR;
+#else
+  TELEMETRY_USART->CR3 |= USART_CR3_DMAR | USART_CR3_HDSEL /*Half duplex*/;
 #endif
-  LL_USART_EnableDMAReq_RX(TELEMETRY_USART);
 
   LL_USART_Enable(TELEMETRY_USART);
   LL_DMA_EnableChannel(DMA1, TELEMETRY_DMA_Channel_RX_CH);
