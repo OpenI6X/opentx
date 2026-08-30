@@ -81,12 +81,12 @@ void SystemBootloaderJump() {
 
 void watchdogInit(unsigned int duration)
 {
-  IWDG->KR = 0x5555;    // Unlock registers
-  IWDG->PR = 3;         // Divide by 32 => 1kHz clock
-  IWDG->KR = 0x5555;    // Unlock registers
-  IWDG->RLR = duration; // 1.5 seconds nominal
-  IWDG->KR = 0xAAAA;    // reload
-  IWDG->KR = 0xCCCC;    // start
+  IWDG->KR = IWDG_KEY_WRITE_ACCESS_ENABLE;
+  IWDG->PR = IWDG_PRESCALER_32;               // Divide by 32 => 1kHz clock
+  IWDG->KR = IWDG_KEY_WRITE_ACCESS_ENABLE;
+  IWDG->RLR = duration;                       // 1.5 seconds nominal
+  IWDG->KR = IWDG_KEY_RELOAD;
+  IWDG->KR = IWDG_KEY_ENABLE;
 }
 
 void initBuzzerTimer()
