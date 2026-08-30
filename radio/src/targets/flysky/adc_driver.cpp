@@ -107,7 +107,7 @@ void adcInit()
   LL_ADC_StructInit(&ADC_InitStruct);
 
   /* Configure ADC initialization structure */
-  ADC_InitStruct.Clock = LL_ADC_CLOCK_SYNC_PCLK_DIV2;
+  ADC_InitStruct.Clock = LL_ADC_CLOCK_SYNC_PCLK_DIV4;
   ADC_InitStruct.Resolution = LL_ADC_RESOLUTION_12B;               // 12-bit resolution
   ADC_InitStruct.DataAlignment = LL_ADC_DATA_ALIGN_RIGHT;          // Right data alignment
   ADC_InitStruct.LowPowerMode = LL_ADC_LP_MODE_NONE;               // No low power mode
@@ -142,7 +142,7 @@ void adcInit()
 
   ADC_DMA_Channel->CPAR = (uint32_t) &ADC_MAIN->DR;
   ADC_DMA_Channel->CMAR = (uint32_t)&adcValues[FIRST_ANALOG_ADC];
-  ADC_DMA_Channel->CNDTR = NUM_ANALOGS;
+  ADC_DMA_Channel->CNDTR = NUM_ANALOGS_ADC;
   ADC_DMA_Channel->CCR = LL_DMA_MEMORY_INCREMENT
                         | LL_DMA_MODE_CIRCULAR
                         | LL_DMA_PRIORITY_HIGH
@@ -162,17 +162,15 @@ void adcInit()
 // and does not do 4 samples averaging.
 void adcRead()
 {
-  // adc dma finished?
   if (LL_DMA_IsActiveFlag_TC1(DMA1))
   {
-
+    LL_DMA_ClearFlag_TC1(DMA1);
 #if NUM_PWMANALOGS > 0
     if (ANALOGS_PWM_ENABLED())
     {
       analogPwmRead(adcValues);
     }
 #endif
-    // fine, arm DMA again:
     ADC_MAIN->CR |= (uint32_t)ADC_CR_ADSTART;
   }
 }
