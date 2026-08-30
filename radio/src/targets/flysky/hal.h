@@ -83,8 +83,6 @@
 #define I2C_GPIO                      GPIOB
 #define I2C_SCL_GPIO_PIN              LL_GPIO_PIN_10
 #define I2C_SDA_GPIO_PIN              LL_GPIO_PIN_11
-#define I2C_SCL_GPIO_PinSource        GPIO_PinSource10
-#define I2C_SDA_GPIO_PinSource        GPIO_PinSource11
 // 0x40B22536; //100kHz 0x10950C27; //400kHz
 // 0x00E51842 - CubeMX 48MHz, 400k, 200ns/200ns, analog on
 // 0x10D55F7C - CubeMX 48MHz, 100k, 300ns/300ns, analog on
@@ -207,7 +205,6 @@ void AFHDS2A_callback();
 #define INTMODULE_TIMER_IRQHandler    TIM16_IRQHandler
 // #define INTMODULE_TX_GPIO             GPIOA
 // #define INTMODULE_TX_GPIO_PIN         LL_GPIO_PIN_10 // PA.10
-// #define INTMODULE_TX_GPIO_PinSource   GPIO_PinSource10
 // #define INTMODULE_TX_GPIO_AF          GPIO_AF_TIM1
 // #define INTMODULE_DMA_CHANNEL         DMA_Channel_6
 // #define INTMODULE_DMA_STREAM          DMA2_Stream5
@@ -223,7 +220,6 @@ void AFHDS2A_callback();
 #define EXTMODULE_RCC_APB2Periph      LL_APB1_GRP2_PERIPH_TIM15 // TIM15_CH2
 #define EXTMODULE_TX_GPIO             GPIOF
 #define EXTMODULE_TX_GPIO_PIN         LL_GPIO_PIN_10 // PF.10
-#define EXTMODULE_TX_GPIO_PinSource   GPIO_PinSource10
 #define EXTMODULE_TX_GPIO_AF          LL_GPIO_AF_0
 #define EXTMODULE_TIMER               TIM15
 #define EXTMODULE_TIMER_IRQn          TIM15_IRQn
@@ -233,14 +229,12 @@ void AFHDS2A_callback();
 // Trainer Port
 #define TRAINER_GPIO                  GPIOF
 #define TRAINER_IN_GPIO_PIN           LL_GPIO_PIN_9  // PF.09
-#define TRAINER_IN_GPIO_PinSource     GPIO_PinSource9
 #define TRAINER_GPIO_AF               LL_GPIO_AF_0
 #define TRAINER_TIMER                 EXTMODULE_TIMER
 #define TRAINER_TIMER_IRQn            EXTMODULE_TIMER_IRQn
 #define TRAINER_TIMER_IRQHandler      EXTMODULE_TIMER_IRQHandler
 #define TRAINER_TIMER_FREQ            EXTMODULE_TIMER_FREQ
 #define TRAINER_OUT_GPIO_PIN          EXTMODULE_TX_GPIO_PIN   // PF10
-#define TRAINER_OUT_GPIO_PinSource    EXTMODULE_TX_GPIO_PinSource
 
 // USB
 #define USB_RCC_APB1Periph_CRS          LL_APB1_GRP1_PERIPH_CRS
@@ -268,8 +262,6 @@ void AFHDS2A_callback();
 #define AUX_SERIAL_GPIO                   GPIOA
 #define AUX_SERIAL_GPIO_PIN_TX            LL_GPIO_PIN_9 // PA9
 #define AUX_SERIAL_GPIO_PIN_RX            LL_GPIO_PIN_10 // PA10
-#define AUX_SERIAL_GPIO_PinSource_TX      GPIO_PinSource9
-#define AUX_SERIAL_GPIO_PinSource_RX      GPIO_PinSource10
 #define AUX_SERIAL_GPIO_AF                LL_GPIO_AF_1
 #define AUX_SERIAL_USART                  USART1
 #define AUX_SERIAL_USART_IRQHandler       USART1_IRQHandler
@@ -282,7 +274,6 @@ void AFHDS2A_callback();
 #define AUX3_SERIAL_RCC_APB1Periph         LL_APB1_GRP1_PERIPH_USART3
 #define AUX3_SERIAL_GPIO                   GPIOC
 #define AUX3_SERIAL_GPIO_PIN_TX            LL_GPIO_PIN_10 // PC10
-#define AUX3_SERIAL_GPIO_PinSource_TX      GPIO_PinSource10
 #define AUX3_SERIAL_GPIO_AF                LL_GPIO_AF_1
 #define AUX3_SERIAL_USART                  USART3
 
@@ -291,7 +282,6 @@ void AFHDS2A_callback();
 #define AUX4_SERIAL_RCC_APB1Periph         LL_APB1_GRP1_PERIPH_USART3
 #define AUX4_SERIAL_GPIO                   GPIOC
 #define AUX4_SERIAL_GPIO_PIN_RX            LL_GPIO_PIN_11 // PC11
-#define AUX4_SERIAL_GPIO_PinSource_RX      GPIO_PinSource11
 #define AUX4_SERIAL_GPIO_AF                LL_GPIO_AF_0
 #define AUX4_SERIAL_USART                  USART4
 #define AUX4_SERIAL_DMA_Channel_RX         DMA1_Channel6
@@ -307,8 +297,6 @@ void AFHDS2A_callback();
 #define TELEMETRY_TX_GPIO_PIN           LL_GPIO_PIN_5  // PD.05
 #define TELEMETRY_RX_GPIO               GPIOA
 #define TELEMETRY_RX_GPIO_PIN           LL_GPIO_PIN_15 // PA.15
-#define TELEMETRY_GPIO_PinSource_TX     GPIO_PinSource5
-#define TELEMETRY_GPIO_PinSource_RX     GPIO_PinSource15
 #define TELEMETRY_TX_GPIO_AF            LL_GPIO_AF_0
 #define TELEMETRY_RX_GPIO_AF            LL_GPIO_AF_1
 #define TELEMETRY_USART                 USART2
@@ -331,7 +319,6 @@ void AFHDS2A_callback();
   #define BACKLIGHT_GPIO_PIN            LL_GPIO_PIN_9
   #define BACKLIGHT_TIMER_FREQ          (PERI1_FREQUENCY * TIMER_MULT_APB1)
   #define BACKLIGHT_TIMER               TIM3
-  #define BACKLIGHT_GPIO_PinSource      GPIO_PinSource9
   #define BACKLIGHT_GPIO_AF             LL_GPIO_AF_0
   #define BACKLIGHT_CCMR2               TIM_CCMR2_OC4M_1 | TIM_CCMR2_OC4M_2 // Channel4, PWM
   #define BACKLIGHT_CCER                TIM_CCER_CC4P | TIM_CCER_CC4E
@@ -349,7 +336,6 @@ void AFHDS2A_callback();
 // Buzzer
 #define BUZZER_GPIO_PORT                GPIOA
 #define BUZZER_GPIO_PIN                 LL_GPIO_PIN_8
-#define BUZZER_GPIO_PinSource           GPIO_PinSource8
 #define BUZZER_RCC_AHBPeriph            LL_AHB1_GRP1_PERIPH_GPIOA
 #define BUZZER_GPIO_AF                  LL_GPIO_AF_2
 #define PWM_RCC_APB2Periph              LL_APB1_GRP2_PERIPH_TIM1
