@@ -28,11 +28,8 @@ DMAFifo<TELEMETRY_FIFO_SIZE> telemetryDMAFifo __DMA (TELEMETRY_DMA_Channel_RX);
 void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   TRACE("telemetryPortInit %d", baudrate);
 
-  NVIC_InitTypeDef NVIC_InitStructure;
-  NVIC_InitStructure.NVIC_IRQChannel = TELEMETRY_DMA_TX_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPriority = 1;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
+  NVIC_SetPriority(TELEMETRY_DMA_TX_IRQn, 1);
+  NVIC_EnableIRQ(TELEMETRY_DMA_TX_IRQn);
 
   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 

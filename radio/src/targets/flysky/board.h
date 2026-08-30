@@ -139,13 +139,13 @@ void delay_ms(uint32_t ms);
 #endif
 
 #define INIT_KEYS_PINS(GPIO) \
-  GPIO_InitStructure.GPIO_Pin = KEYS_ ## GPIO ## _PINS; \
-  GPIO_Init(GPIO, &GPIO_InitStructure)
+  gpio_init.Pin = KEYS_ ## GPIO ## _PINS; \
+  LL_GPIO_Init(GPIO, &gpio_init)
 
 #define SET_KEYS_PINS_HIGH(GPIO) \
-  GPIO_InitStructure.GPIO_Pin = KEYS_ ## GPIO ## _PINS; \
-  GPIO_Init(GPIO, &GPIO_InitStructure); \
-  GPIO_SetBits(GPIO, KEYS_ ## GPIO ## _PINS)
+  gpio_init.Pin = KEYS_ ## GPIO ## _PINS; \
+  LL_GPIO_Init(GPIO, &gpio_init); \
+  LL_GPIO_SetBits(GPIO, KEYS_ ## GPIO ## _PINS)
 
 // CPU Unique ID
 #define LEN_CPU_UID                     (3*8+2)
