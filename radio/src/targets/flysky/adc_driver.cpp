@@ -74,8 +74,6 @@ uint16_t adcValues[NUM_ANALOGS] __DMA;
 
 void adcInit()
 {
-  ADC_ClockModeConfig(ADC_MAIN, ADC_ClockMode_SynClkDiv4);
-
   // init gpio
   LL_GPIO_InitTypeDef gpio_init = {0};
 
@@ -112,7 +110,6 @@ void adcInit()
   ADC_InitStruct.Clock = LL_ADC_CLOCK_SYNC_PCLK_DIV2;
   ADC_InitStruct.Resolution = LL_ADC_RESOLUTION_12B;               // 12-bit resolution
   ADC_InitStruct.DataAlignment = LL_ADC_DATA_ALIGN_RIGHT;          // Right data alignment
-  ADC_InitStruct.ScanConvMode = LL_ADC_REG_SEQ_SCAN_DIR_FORWARD;   // Upward scan direction
   ADC_InitStruct.LowPowerMode = LL_ADC_LP_MODE_NONE;               // No low power mode
 
   /* Configure regular ADC group */
@@ -140,8 +137,8 @@ void adcInit()
 
   while (LL_ADC_IsActiveFlag_ADRDY(ADC_MAIN) == 0);
 
-  // reset DMA1 channe1 to default values
-  LL_DMA_DeInit(ADC_MAIN, ADC_DMA_Channel);
+// reset DMA channel to default values
+  LL_DMA_DeInit(DMA1, ADC_DMA_Channel_CH);
 
   ADC_DMA_Channel->CPAR = (uint32_t) &ADC_MAIN->DR;
   ADC_DMA_Channel->CMAR = (uint32_t)&adcValues[FIRST_ANALOG_ADC];
