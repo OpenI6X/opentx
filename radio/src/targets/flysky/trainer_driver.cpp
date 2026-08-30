@@ -22,16 +22,14 @@
 
 void init_trainer_ppm()
 {
-  // Configure PF10 (shared with EXTMODULE TX) as AF output for PPM slave out
-  GPIO_PinAFConfig(TRAINER_GPIO, TRAINER_OUT_GPIO_PinSource, TRAINER_GPIO_AF);
-
-  GPIO_InitTypeDef GPIO_InitStructure;
-  GPIO_InitStructure.GPIO_Pin = TRAINER_OUT_GPIO_PIN;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(TRAINER_GPIO, &GPIO_InitStructure);
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  GPIO_InitStruct.Pin = TRAINER_OUT_GPIO_PIN;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = TRAINER_GPIO_AF;
+  LL_GPIO_Init(TRAINER_GPIO, &GPIO_InitStruct);
 
   setupPulsesPPMTrainer();
 
@@ -78,11 +76,12 @@ void trainerSendNextFrame()
 
 void init_trainer_capture() {
   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-  GPIO_InitStruct.Pin        = TRAINER_IN_GPIO_PIN;
-  GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Pin = TRAINER_IN_GPIO_PIN;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull       = LL_GPIO_PULL_NO;  // erfly6: GPIO_PuPd_UP
-  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;  // erfly6: GPIO_PuPd_UP
+  GPIO_InitStruct.Alternate = TRAINER_GPIO_AF;
   LL_GPIO_Init(TRAINER_GPIO, &GPIO_InitStruct);
 
   extmoduleTimerStart();
