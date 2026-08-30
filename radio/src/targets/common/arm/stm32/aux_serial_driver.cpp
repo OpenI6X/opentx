@@ -182,7 +182,7 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
   if (!(getSelectedUsbMode() == USB_SERIAL_MODE)) {
     // Receive
     uint32_t status = AUX_SERIAL_USART->SR;
-    while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
+    while (status & (USART_ISR_RXNE | USART_FLAG_ERRORS)) {
       uint8_t data = AUX_SERIAL_USART->DR;
       if (!(status & USART_FLAG_ERRORS)) {
         switch (auxSerialMode) {
@@ -198,7 +198,7 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
   // Receive
 #if !defined(PCBI6X) // works but not needed
   uint32_t status = AUX_SERIAL_USART->ISR;
-  while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
+  while (status & (USART_ISR_RXNE | USART_FLAG_ERRORS)) {
     uint8_t data = AUX_SERIAL_USART->RDR;
     UNUSED(data);
     if (!(status & USART_FLAG_ERRORS)) {
@@ -354,7 +354,7 @@ if (LL_USART_IsActiveFlag_TXE(AUX3_SERIAL_USART)) {
 
   // Receive
   // uint32_t status = AUX4_SERIAL_USART->ISR;
-  // while (status & (USART_FLAG_RXNE | USART_FLAG_ERRORS)) {
+  // while (status & (USART_ISR_RXNE | USART_FLAG_ERRORS)) {
   //   uint8_t data = AUX4_SERIAL_USART->RDR;
   //   UNUSED(data);
   //   if (!(status & USART_FLAG_ERRORS)) {
