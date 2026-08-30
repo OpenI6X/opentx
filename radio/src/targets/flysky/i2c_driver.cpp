@@ -87,15 +87,18 @@ bool I2C_WaitEventCleared(uint32_t flag)
   * @param  NumByteToRead : number of bytes to read from the EEPROM.
   * @retval None
   */
+static constexpr uint16_t EEPROM_PAGE_SIZE  = 64;
+static constexpr uint16_t EEPROM_READ_CHUNK = EEPROM_PAGE_SIZE * 3;  // 192, must be <= 255
+
 bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRead)
 {
   if (!I2C_WaitEventCleared(I2C_ISR_BUSY))
     return false;
 
-  LL_I2C_HandleTransfer(I2C, I2C_ADDRESS_EEPROM, LL_I2C_ADDRSLAVE_7BIT, 2, LL_I2C_MODE_SOFTEND, LL_I2C_GENERATE_START_WRITE);
-  if (!I2C_WaitEvent(I2C_ISR_TXIS))
-    return false;
+  LL_I2C_HandleTransfer(I2C, I2C_ADDRESS_EEPROM, LL_I2C_ADDRSLAVE_7BIT,
+                        2, LL_I2C_MODE_SOFTEND, LL_I2C_GENERATE_START_WRITE);
 
+  // address
   LL_I2C_TransmitData8(I2C, (uint8_t)((ReadAddr & 0xFF00) >> 8));
   if (!I2C_WaitEvent(I2C_ISR_TXIS))
     return false;
@@ -104,37 +107,44 @@ bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRea
   if (!I2C_WaitEvent(I2C_ISR_TC))
     return false;
 
-  LL_I2C_HandleTransfer(I2C, I2C_ADDRESS_EEPROM, LL_I2C_ADDRSLAVE_7BIT, NumByteToRead, LL_I2C_MODE_AUTOEND, LL_I2C_GENERATE_START_READ);
+  // data
+  uint32_t request = LL_I2C_GENERATE_START_READ;
 
   while (NumByteToRead) {
-    if (!I2C_WaitEvent(I2C_ISR_RXNE))
+    uint16_t chunk;
+    uint32_t mode;
+
+    if (NumByteToRead > EEPROM_READ_CHUNK) {
+      chunk = EEPROM_READ_CHUNK;
+      mode  = LL_I2C_MODE_RELOAD;
+    } else {
+      chunk = NumByteToRead;
+      mode  = LL_I2C_MODE_AUTOEND;
+    }
+
+    LL_I2C_HandleTransfer(I2C, I2C_ADDRESS_EEPROM, LL_I2C_ADDRSLAVE_7BIT, chunk, mode, request);
+
+    NumByteToRead -= chunk;
+
+    while (chunk--) {
+      if (!I2C_WaitEvent(I2C_ISR_RXNE))
+        return false;
+      *pBuffer++ = LL_I2C_ReceiveData8(I2C);
+    }
+
+    if (!I2C_WaitEvent(NumByteToRead ? I2C_ISR_TCR : I2C_ISR_STOPF))
       return false;
 
-    *pBuffer++ = LL_I2C_ReceiveData8(I2C);
-    NumByteToRead--;
+    request = LL_I2C_GENERATE_NOSTARTSTOP;
   }
-
-  if (!I2C_WaitEvent(I2C_ISR_STOPF))
-    return false;
 
   return true;
 }
 
-void eepromReadBlock(uint8_t * buffer, size_t address, size_t size)
+void eepromReadBlock(uint8_t* buffer, size_t address, size_t size)
 {
-  const uint8_t maxSize = 255; // LL_I2C_HandleTransfer can handle up to 255 bytes at once
-  uint32_t offset = 0;
-  while (size > maxSize) {
-    size -= maxSize;
-    while (!I2C_EE_ReadBlock(buffer + offset, address + offset, maxSize)) {
-      i2cInit();
-    }
-    offset += maxSize;
-  }
-  if (size) {
-    while (!I2C_EE_ReadBlock(buffer + offset, address + offset, size)) {
-      i2cInit();
-    }
+  while (!I2C_EE_ReadBlock(buffer, (uint16_t)address, (uint16_t)size)) {
+    i2cInit();
   }
 }
 
