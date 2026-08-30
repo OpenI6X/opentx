@@ -45,6 +45,7 @@ void buzzerInit()
   gpio_init.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   gpio_init.Pull       = LL_GPIO_PULL_NO;
   gpio_init.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  gpio_init.Alternate  = BUZZER_GPIO_AF;
   LL_GPIO_Init(BUZZER_GPIO_PORT, &gpio_init);
 }
 

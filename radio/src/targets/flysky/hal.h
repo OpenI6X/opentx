@@ -147,6 +147,17 @@
 */
 
 // Internal Module
+
+#define READBIT(A, B) ((A >> (B & 7)) & 1)
+#define SETBIT(T, B, V) (T = V ? T | (1<<B) : T & ~(1<<B))
+#define SET_BIT(REG, BIT)     ((REG) |= (BIT))
+#define CLEAR_BIT(REG, BIT)   ((REG) &= ~(BIT))
+#define READ_BIT(REG, BIT)    ((REG) & (BIT))
+#define CLEAR_REG(REG)        ((REG) = (0x0))
+#define WRITE_REG(REG, VAL)   ((REG) = (VAL))
+#define READ_REG(REG)         ((REG))
+#define MODIFY_REG(REG, CLEARMASK, SETMASK)  WRITE_REG((REG), (((READ_REG(REG)) & (~(CLEARMASK))) | (SETMASK)))
+
 // #define RF_SCK_GPIO_PORT GPIOE
 // #define RF_SCK_PIN_MASK GPIO_IDR_13
 // #define RF_SDIO_GPIO_PORT GPIOE
@@ -340,6 +351,7 @@ void AFHDS2A_callback();
 #define BUZZER_GPIO_PIN                 LL_GPIO_PIN_8
 #define BUZZER_GPIO_PinSource           GPIO_PinSource8
 #define BUZZER_RCC_AHBPeriph            LL_AHB1_GRP1_PERIPH_GPIOA
+#define BUZZER_GPIO_AF                  LL_GPIO_AF_2
 #define PWM_RCC_APB2Periph              LL_APB1_GRP2_PERIPH_TIM1
 #define PWM_TIMER                       TIM1
 
