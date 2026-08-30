@@ -164,7 +164,7 @@ void adcRead()
 {
   if (LL_DMA_IsActiveFlag_TC1(DMA1))
   {
-    LL_DMA_ClearFlag_TC1(DMA1);
+//    LL_DMA_ClearFlag_TC1(DMA1);
 #if NUM_PWMANALOGS > 0
     if (ANALOGS_PWM_ENABLED())
     {
