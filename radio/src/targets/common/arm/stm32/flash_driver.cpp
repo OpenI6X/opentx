@@ -43,7 +43,7 @@ void lockFlash()
 
 void waitFlashIdle()
 {
-  while (FLASH->SR & FLASH_FLAG_BSY) {
+  while (FLASH->SR & FLASH_SR_BSY) {
     WDG_RESET();
   }
 }
