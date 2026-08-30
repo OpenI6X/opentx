@@ -188,7 +188,6 @@ void AFHDS2A_callback();
 #define A7105_CSN_on a7105_csn_on()
 #define A7105_CSN_off a7105_csn_off()
 
-#define UID_BASE              ((uint32_t)0x1FFFF7ACU)       /*!< Unique device ID register base address */
 #endif // AFHDS2A
 
 #define INTMODULE_RCC_APB2Periph      (LL_APB1_GRP2_PERIPH_TIM16 | LL_APB1_GRP2_PERIPH_SPI1 | LL_APB1_GRP2_PERIPH_SYSCFG)
@@ -329,7 +328,7 @@ void AFHDS2A_callback();
 
   // Standard, fixed brightness
   #define BACKLIGHT_STD_RCC_APB1Periph      0
-  #define BACKLIGHT_STD_RCC_AHB1Periph      RCC_AHBPeriph_GPIOF
+  #define BACKLIGHT_STD_RCC_AHB1Periph      LL_AHB1_GRP1_PERIPH_GPIOF
   #define BACKLIGHT_STD_GPIO                GPIOF
   #define BACKLIGHT_STD_GPIO_PIN            LL_GPIO_PIN_3
 
