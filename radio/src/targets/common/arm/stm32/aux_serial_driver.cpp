@@ -43,6 +43,7 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_
   usart_initstruct.Parity              = parity;
   usart_initstruct.TransferDirection   = LL_USART_DIRECTION_TX_RX;
   usart_initstruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
+  usart_initstruct.OverSampling        = LL_USART_OVERSAMPLING_16;
 
   LL_USART_Init(AUX_SERIAL_USART, &usart_initstruct);
 //  LL_USART_ConfigAsyncMode(AUX_SERIAL_USART);
@@ -147,7 +148,6 @@ void auxSerialSbusInit()
 void auxSerialStop()
 {
 #if defined(SBUS_TRAINER)
-  LL_DMA_DisableChannel(DMA1, AUX_SERIAL_DMA_Channel_RX_CH);
   LL_DMA_DeInit(DMA1, AUX_SERIAL_DMA_Channel_RX_CH);
 #endif
   LL_USART_DeInit(AUX_SERIAL_USART);
@@ -181,9 +181,9 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
 #if defined(CLI)
   if (!(getSelectedUsbMode() == USB_SERIAL_MODE)) {
     // Receive
-    uint32_t status = AUX_SERIAL_USART->SR;
+    uint32_t status = AUX_SERIAL_USART->ISR;
     while (status & (USART_ISR_RXNE | USART_FLAG_ERRORS)) {
-      uint8_t data = AUX_SERIAL_USART->DR;
+      uint8_t data = AUX_SERIAL_USART->RDR;
       if (!(status & USART_FLAG_ERRORS)) {
         switch (auxSerialMode) {
           case UART_MODE_DEBUG:
@@ -191,7 +191,7 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
             break;
         }
       }
-      status = AUX_SERIAL_USART->SR;
+      status = AUX_SERIAL_USART->ISR;
     }
   }
 #endif
@@ -238,7 +238,7 @@ void aux3SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART
   USART_InitStruct.Parity = parity;
   USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX;
   USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
-//  USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
+  USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
   LL_USART_Init(AUX3_SERIAL_USART, &USART_InitStruct);
 
   LL_USART_Enable(AUX3_SERIAL_USART);
@@ -289,13 +289,12 @@ void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART
   USART_InitStruct.Parity = parity;
   USART_InitStruct.TransferDirection = LL_USART_DIRECTION_RX;
   USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
-//  USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
+  USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_8;
   LL_USART_Init(AUX4_SERIAL_USART, &USART_InitStruct);
 
     aux4SerialRxFifo.channel = AUX4_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
     aux4SerialRxFifo.clear();
-    // USART_ITConfig(AUX4_SERIAL_USART, USART_IT_RXNE, DISABLE);
-    AUX4_SERIAL_USART->CR1 &= ~(USART_CR1_RXNEIE /*| USART_CR1_TXEIE*/);
+    LL_USART_DisableIT_RXNE(AUX4_SERIAL_USART);
 
     AUX4_SERIAL_DMA_Channel_RX->CPAR = (uint32_t) &AUX4_SERIAL_USART->RDR;
     AUX4_SERIAL_DMA_Channel_RX->CMAR = (uint32_t) aux4SerialRxFifo.buffer();
@@ -330,7 +329,7 @@ void aux4SerialStop(void)
 
 void aux4SerialSetIdleCb(void (*cb)()) {
   aux4SerialIdleCb = cb;
-  AUX4_SERIAL_USART->CR1 |= USART_CR1_IDLEIE;
+  LL_USART_EnableIT_IDLE(AUX4_SERIAL_USART);
 }
 #endif // AUX4_SERIAL
 
@@ -340,7 +339,7 @@ extern "C" void AUX34_SERIAL_USART_IRQHandler(void)
 {
   // Send
 #if defined(AUX3_SERIAL)
-if (LL_USART_IsActiveFlag_TXE(AUX3_SERIAL_USART)) {
+  if (LL_USART_IsActiveFlag_TXE(AUX3_SERIAL_USART)) {
     uint8_t txchar;
     if (aux3SerialTxFifo.pop(txchar)) {
       /* Write one byte to the transmit data register */
@@ -349,7 +348,7 @@ if (LL_USART_IsActiveFlag_TXE(AUX3_SERIAL_USART)) {
     else {
       LL_USART_DisableIT_TXE(AUX3_SERIAL_USART);
     }
-}
+  }
 #endif
 
   // Receive
@@ -366,10 +365,9 @@ if (LL_USART_IsActiveFlag_TXE(AUX3_SERIAL_USART)) {
 
   // Idle
 #if defined(AUX4_SERIAL)
-  uint32_t status = AUX4_SERIAL_USART->ISR;
-  if (status & USART_FLAG_IDLE) {
-    AUX4_SERIAL_USART->ICR = USART_ICR_IDLECF;
-    aux4SerialIdleCb();
+  if (LL_USART_IsActiveFlag_IDLE(AUX4_SERIAL_USART)) {
+    LL_USART_ClearFlag_IDLE(AUX4_SERIAL_USART);
+    if (aux4SerialIdleCb) aux4SerialIdleCb();
   }
 #endif
 }
