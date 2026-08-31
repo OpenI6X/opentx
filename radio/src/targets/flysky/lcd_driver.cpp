@@ -128,7 +128,7 @@ static void lcdSendGFX(uint8_t data) {
 }
 
 void lcdInit() {
-  LL_GPIO_InitTypeDef gpio_init = {0};
+  LL_GPIO_InitTypeDef gpio_init; // = {0};
   // Set all GPIO directions to output
   gpio_init.Mode       = LL_GPIO_MODE_OUTPUT;
   gpio_init.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
