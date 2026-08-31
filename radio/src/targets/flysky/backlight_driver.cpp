@@ -22,7 +22,7 @@
 
 void backlightInit()
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
   GPIO_InitStruct.Pin        = BACKLIGHT_GPIO_PIN;
   GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
@@ -41,7 +41,7 @@ void backlightInit()
 
   // Standard backlight
 #if defined(BACKLIGHT_STD_GPIO_PIN)
-  LL_GPIO_InitTypeDef gpio_init = {0};
+  LL_GPIO_InitTypeDef gpio_init; // = {0};
   gpio_init.Pin        = BACKLIGHT_STD_GPIO_PIN;
   gpio_init.Mode       = LL_GPIO_MODE_OUTPUT;
   gpio_init.OutputType = LL_GPIO_OUTPUT_PUSHPULL;

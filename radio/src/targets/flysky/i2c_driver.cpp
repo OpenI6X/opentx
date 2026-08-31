@@ -25,7 +25,7 @@ void eepromWaitEepromStandbyState(void);
 
 void i2cInit()
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
   GPIO_InitStruct.Pin = I2C_SCL_GPIO_PIN | I2C_SDA_GPIO_PIN;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
@@ -36,7 +36,7 @@ void i2cInit()
 
   LL_I2C_DeInit(I2C);
 
-  LL_I2C_InitTypeDef I2C_InitStruct = {0};
+  LL_I2C_InitTypeDef I2C_InitStruct; // = {0};
   I2C_InitStruct.PeripheralMode = LL_I2C_MODE_I2C;
   I2C_InitStruct.Timing = I2C_TIMING;
   I2C_InitStruct.OwnAddress1 = 0x00;
