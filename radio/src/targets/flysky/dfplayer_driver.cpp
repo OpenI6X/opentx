@@ -145,7 +145,7 @@ void dfplayerWakeup() {
 
 void dfplayerInit() {
     // setup BUSY pin
-    LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+    LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
     GPIO_InitStruct.Pin   = DFPLAYER_GPIO_PIN_BUSY;
     GPIO_InitStruct.Mode  = LL_GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull  = LL_GPIO_PULL_DOWN;

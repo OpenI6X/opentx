@@ -93,7 +93,7 @@ void extmodulePpmStart()
 
   EXTERNAL_MODULE_ON();
 
-  LL_GPIO_InitTypeDef gpio_initstruct = {0};
+  LL_GPIO_InitTypeDef gpio_initstruct; // = {0};
   gpio_initstruct.Pin        = EXTMODULE_TX_GPIO_PIN;
   gpio_initstruct.Mode       = LL_GPIO_MODE_ALTERNATE;
   gpio_initstruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;

@@ -39,7 +39,7 @@ extern volatile uint32_t g_pfnVectors[VECTOR_TABLE_SIZE];
 //audio
 void buzzerInit()
 {
-  LL_GPIO_InitTypeDef gpio_init = {0};
+  LL_GPIO_InitTypeDef gpio_init; // = {0};
   gpio_init.Pin        = BUZZER_GPIO_PIN;
   gpio_init.Mode       = LL_GPIO_MODE_ALTERNATE;
   gpio_init.OutputType = LL_GPIO_OUTPUT_PUSHPULL;

@@ -189,7 +189,7 @@ uint32_t switchState(uint8_t index)
 
 void keysInit()
 {
-  LL_GPIO_InitTypeDef gpio_init = {0};
+  LL_GPIO_InitTypeDef gpio_init; // = {0};
   gpio_init.Mode  = LL_GPIO_MODE_INPUT;
   gpio_init.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   gpio_init.Speed = LL_GPIO_SPEED_FREQ_LOW;

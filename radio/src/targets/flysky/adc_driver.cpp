@@ -75,7 +75,7 @@ uint16_t adcValues[NUM_ANALOGS] __DMA;
 void adcInit()
 {
   // init gpio
-  LL_GPIO_InitTypeDef gpio_init = {0};
+  LL_GPIO_InitTypeDef gpio_init; // = {0};
 
   // Set up analog inputs ADC0...ADC7 (PA0...PA7)
   #if defined(FLYSKY_GIMBAL)
@@ -102,9 +102,8 @@ void adcInit()
   // while(ADC_MAIN->CR & ADC_CR_ADCAL);
 
   /* Initialize ADC structures */
-  LL_ADC_InitTypeDef ADC_InitStruct = {0};
-  LL_ADC_REG_InitTypeDef ADC_REG_InitStruct = {0};
-  LL_ADC_StructInit(&ADC_InitStruct);
+  LL_ADC_InitTypeDef ADC_InitStruct; // = {0};
+  LL_ADC_REG_InitTypeDef ADC_REG_InitStruct; // = {0};
 
   /* Configure ADC initialization structure */
   ADC_InitStruct.Clock = LL_ADC_CLOCK_SYNC_PCLK_DIV4;
