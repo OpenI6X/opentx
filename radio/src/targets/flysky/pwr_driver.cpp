@@ -21,7 +21,7 @@
 #include "opentx.h"
 
 void pwrInit() {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
 
   // Init EXT Module PWR
   GPIO_InitStruct.Pin        = EXTMODULE_PWR_GPIO_PIN;

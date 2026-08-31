@@ -22,7 +22,7 @@
 
 void init_trainer_ppm()
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
   GPIO_InitStruct.Pin = TRAINER_OUT_GPIO_PIN;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
@@ -75,7 +75,7 @@ void trainerSendNextFrame()
 }
 
 void init_trainer_capture() {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
   GPIO_InitStruct.Pin = TRAINER_IN_GPIO_PIN;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;

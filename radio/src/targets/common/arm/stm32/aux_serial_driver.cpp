@@ -27,7 +27,7 @@ DMAFifo<32> auxSerialRxFifo __DMA (AUX_SERIAL_DMA_Channel_RX);
 
 void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_DATAWIDTH_8B, uint16_t parity = LL_USART_PARITY_NONE, uint16_t stop = LL_USART_STOPBITS_1)
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
   GPIO_InitStruct.Pin        = AUX_SERIAL_GPIO_PIN_TX | AUX_SERIAL_GPIO_PIN_RX;
   GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
@@ -36,7 +36,7 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_
   GPIO_InitStruct.Alternate  = AUX_SERIAL_GPIO_AF;
   LL_GPIO_Init(AUX_SERIAL_GPIO, &GPIO_InitStruct);
 
-  LL_USART_InitTypeDef usart_initstruct = {0};
+  LL_USART_InitTypeDef usart_initstruct; // = {0};
   usart_initstruct.BaudRate            = baudrate;
   usart_initstruct.DataWidth           = lenght;
   usart_initstruct.StopBits            = stop;
@@ -222,7 +222,7 @@ Fifo<uint8_t, 16> aux3SerialTxFifo;
 
 void aux3SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_DATAWIDTH_8B, uint16_t parity = LL_USART_PARITY_NONE, uint16_t stop = LL_USART_STOPBITS_1)
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
   GPIO_InitStruct.Pin        = AUX3_SERIAL_GPIO_PIN_TX;
   GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
@@ -231,7 +231,7 @@ void aux3SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART
   GPIO_InitStruct.Alternate  = AUX3_SERIAL_GPIO_AF;
   LL_GPIO_Init(AUX3_SERIAL_GPIO, &GPIO_InitStruct);
 
-  LL_USART_InitTypeDef USART_InitStruct = {0};
+  LL_USART_InitTypeDef USART_InitStruct; // = {0};
   USART_InitStruct.BaudRate = baudrate;
   USART_InitStruct.DataWidth = lenght;
   USART_InitStruct.StopBits = stop;
@@ -273,7 +273,7 @@ void (*aux4SerialIdleCb)(void);
 
 void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_DATAWIDTH_8B, uint16_t parity = LL_USART_PARITY_NONE, uint16_t stop = LL_USART_STOPBITS_1)
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
   GPIO_InitStruct.Pin        = AUX4_SERIAL_GPIO_PIN_RX;
   GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
@@ -282,7 +282,7 @@ void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART
   GPIO_InitStruct.Alternate  = AUX4_SERIAL_GPIO_AF;
   LL_GPIO_Init(AUX4_SERIAL_GPIO, &GPIO_InitStruct);
 
-  LL_USART_InitTypeDef USART_InitStruct = {0};
+  LL_USART_InitTypeDef USART_InitStruct; // = {0};
   USART_InitStruct.BaudRate = baudrate;
   USART_InitStruct.DataWidth = lenght;
   USART_InitStruct.StopBits = stop;

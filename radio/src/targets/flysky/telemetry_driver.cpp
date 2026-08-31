@@ -31,7 +31,7 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   NVIC_SetPriority(TELEMETRY_DMA_TX_IRQn, 1);
   NVIC_EnableIRQ(TELEMETRY_DMA_TX_IRQn);
 
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
 
   GPIO_InitStruct.Pin        = TELEMETRY_TX_GPIO_PIN;
   GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
@@ -56,7 +56,7 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   // IDLE
 //  LL_USART_EnableIT_IDLE(TELEMETRY_USART);
 
-  LL_USART_InitTypeDef USART_InitStruct = {0};
+  LL_USART_InitTypeDef USART_InitStruct; // = {0};
   USART_InitStruct.BaudRate = baudrate;
   USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
   USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
