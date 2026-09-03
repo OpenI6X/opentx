@@ -93,13 +93,14 @@ void extmodulePpmStart()
 
   EXTERNAL_MODULE_ON();
 
-  LL_GPIO_InitTypeDef gpio_initstruct; // = {0};
-  gpio_initstruct.Pin        = EXTMODULE_TX_GPIO_PIN;
-  gpio_initstruct.Mode       = LL_GPIO_MODE_ALTERNATE;
-  gpio_initstruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
-  gpio_initstruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  gpio_initstruct.Pull       = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(EXTMODULE_TX_GPIO, &gpio_initstruct);
+  LL_GPIO_InitTypeDef GPIO_InitStructure; // = {0};
+  GPIO_InitStructure.Pin        = EXTMODULE_TX_GPIO_PIN;
+  GPIO_InitStructure.Mode       = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStructure.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStructure.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStructure.Pull       = LL_GPIO_PULL_NO;
+  GPIO_InitStructure.Alternate  = EXTMODULE_TX_GPIO_AF;
+  LL_GPIO_Init(EXTMODULE_TX_GPIO, &GPIO_InitStructure);
 
   extmoduleTimerStart();
 }
