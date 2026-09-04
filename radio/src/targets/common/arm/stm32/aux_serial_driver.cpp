@@ -339,7 +339,7 @@ extern "C" void AUX34_SERIAL_USART_IRQHandler(void)
 {
   // Send
 #if defined(AUX3_SERIAL)
-  if (LL_USART_IsActiveFlag_TXE(AUX3_SERIAL_USART)) {
+  if (LL_USART_IsEnabledIT_TXE(AUX3_SERIAL_USART) && LL_USART_IsActiveFlag_TXE(AUX3_SERIAL_USART)) {
     uint8_t txchar;
     if (aux3SerialTxFifo.pop(txchar)) {
       /* Write one byte to the transmit data register */
