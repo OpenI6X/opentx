@@ -33,22 +33,15 @@
 //     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
 // }
 
-void delay_01us(uint32_t nb)
+void delay_us(uint16_t us)
 {
-    TIM6->SR = 0;
-    TIM6->PSC = 0;
-    //104,166666667ns
-    TIM6->ARR = 4 * nb;
-    TIM6->CR1 |= TIM_CR1_CEN;
-    while (!(TIM6->SR & TIM_SR_UIF));
-}
-void delay_us(uint32_t nb)
-{
-    TIM6->SR = 0;
-    TIM6->PSC = 0;
-    TIM6->ARR = 47 * nb;
-    TIM6->CR1 |= TIM_CR1_CEN;
-    while (!(TIM6->SR & TIM_SR_UIF));
+  TIM6->CR1  = TIM_CR1_OPM; // OPM + CEN=0 (stop + one-shot)
+  TIM6->PSC = 48 - 1;       // 48MHz / 48 = 1MHz => 1 tick = 1us
+  TIM6->EGR  = TIM_EGR_UG;  // load PSC, CNT = 0
+  TIM6->SR = 0;
+  TIM6->ARR = us - 1;
+  TIM6->CR1 |= TIM_CR1_CEN;
+  while (!(TIM6->SR & TIM_SR_UIF));
 }
 #else
 void delaysInit(void)
