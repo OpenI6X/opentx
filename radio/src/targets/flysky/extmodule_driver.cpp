@@ -77,8 +77,8 @@ void extmoduleTimerStart()
     EXTMODULE_TIMER->CCER |= TIM_CCER_CC2E;
   }
 
-  NVIC_EnableIRQ(EXTMODULE_TIMER_IRQn);
   NVIC_SetPriority(EXTMODULE_TIMER_IRQn, 2);
+  NVIC_EnableIRQ(EXTMODULE_TIMER_IRQn);
 
   EXTMODULE_TIMER->CR1 |= TIM_CR1_CEN; // Start counter
 }
