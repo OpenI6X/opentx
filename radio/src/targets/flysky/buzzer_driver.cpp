@@ -78,6 +78,179 @@ void audioTimerCountdown(uint8_t timer, int value)
   }
 }
 
+struct AudioToneData {
+  int8_t frequencyOffset; // 30Hz steps relative to BEEP_DEFAULT_FREQ
+  uint8_t duration;       // 2ms units
+  uint8_t pause;          // 2ms units
+  uint8_t options;        // flags in bits 0..4, encoded frequency increment in bits 5..7
+};
+
+static_assert(sizeof(AudioToneData) == 4, "AudioToneData must remain compact");
+
+template<int Frequency>
+struct EncodedAudioFrequency {
+  static_assert((Frequency - BEEP_DEFAULT_FREQ) % 30 == 0, "Audio frequency must use 30Hz steps");
+  static_assert((Frequency - BEEP_DEFAULT_FREQ) / 30 >= -128 &&
+                (Frequency - BEEP_DEFAULT_FREQ) / 30 <= 127, "Audio frequency is out of range");
+  static constexpr int8_t value = (Frequency - BEEP_DEFAULT_FREQ) / 30;
+};
+
+template<int Time>
+struct EncodedAudioTime {
+  static_assert(Time >= 0 && Time <= 510 && Time % 2 == 0, "Audio time must use 2ms steps");
+  static constexpr uint8_t value = Time / 2;
+};
+
+template<int Flags, int Increment>
+struct EncodedAudioOptions {
+  static_assert((Flags & ~0x1f) == 0, "Unsupported audio flags");
+  static_assert(Increment >= -1 && Increment <= 6, "Audio frequency increment is out of range");
+  static constexpr uint8_t value = Flags | ((Increment + 1) << 5);
+};
+
+#define AUDIO_TONE(freq, duration, pause, flags, increment) { \
+  EncodedAudioFrequency<freq>::value, \
+  EncodedAudioTime<duration>::value, \
+  EncodedAudioTime<pause>::value, \
+  EncodedAudioOptions<flags, increment>::value \
+}
+
+// Tone sequences are stored in AUDIO_SOUNDS order, from
+// AU_SPECIAL_SOUND_BEEP1 through AU_SPECIAL_SOUND_ALARMC.
+static constexpr AudioToneData specialSoundTones[] = {
+  AUDIO_TONE(BEEP_DEFAULT_FREQ,        60,  20, 0,              0),  // BEEP1
+  AUDIO_TONE(BEEP_DEFAULT_FREQ,       120,  20, 0,              0),  // BEEP2
+  AUDIO_TONE(BEEP_DEFAULT_FREQ,       200,  20, 0,              0),  // BEEP3
+  AUDIO_TONE(BEEP_DEFAULT_FREQ + 600, 120,  40, PLAY_REPEAT(2), 0),  // WARN1
+  AUDIO_TONE(BEEP_DEFAULT_FREQ + 900, 120,  40, PLAY_REPEAT(2), 0),  // WARN2
+  AUDIO_TONE(BEEP_DEFAULT_FREQ + 900,  80,  20, PLAY_REPEAT(2), 2),  // CHEEP
+  AUDIO_TONE(BEEP_DEFAULT_FREQ + 1500, 40,  80, PLAY_REPEAT(10), 0), // RATATA
+  AUDIO_TONE(BEEP_DEFAULT_FREQ + 1500, 40, 400, PLAY_REPEAT(2), 0),  // TICK
+  AUDIO_TONE(450,                     160,  40, PLAY_REPEAT(2), 2),  // SIREN
+
+  AUDIO_TONE(BEEP_DEFAULT_FREQ + 750,  40,  20, PLAY_REPEAT(10), 0), // RING
+  AUDIO_TONE(BEEP_DEFAULT_FREQ + 750,  40,  80, PLAY_REPEAT(1),  0),
+  AUDIO_TONE(BEEP_DEFAULT_FREQ + 750,  40,  20, PLAY_REPEAT(10), 0),
+
+  AUDIO_TONE(2550,  80,  20, PLAY_REPEAT(2), -1), // SCIFI
+  AUDIO_TONE(1950,  80,  20, PLAY_REPEAT(2),  1),
+  AUDIO_TONE(2250,  80,  20, 0,               0),
+
+  AUDIO_TONE(2250,  40,  20, PLAY_REPEAT(1), 0), // ROBOT
+  AUDIO_TONE(1650, 120,  20, PLAY_REPEAT(1), 0),
+  AUDIO_TONE(2550, 120,  20, PLAY_REPEAT(1), 0),
+
+  AUDIO_TONE(BEEP_DEFAULT_FREQ + 1200, 40, 20, PLAY_REPEAT(2), 0), // CHIRP
+  AUDIO_TONE(BEEP_DEFAULT_FREQ + 1620, 40, 20, PLAY_REPEAT(3), 0),
+
+  AUDIO_TONE(1650, 80, 40, 0,              0), // TADA
+  AUDIO_TONE(2850, 80, 40, 0,              0),
+  AUDIO_TONE(3450, 60, 36, PLAY_REPEAT(2), 0),
+
+  AUDIO_TONE(2550, 40,  80, PLAY_REPEAT(3), 0), // CRICKET
+  AUDIO_TONE(2550, 40, 160, PLAY_REPEAT(1), 0),
+  AUDIO_TONE(2550, 40,  80, PLAY_REPEAT(3), 0),
+
+  AUDIO_TONE(1650, 30,  70, PLAY_REPEAT(2), 0), // ALARMC
+  AUDIO_TONE(2250, 60, 160, PLAY_REPEAT(1), 0),
+  AUDIO_TONE(1650, 60,  80, PLAY_REPEAT(2), 0),
+  AUDIO_TONE(2250, 30, 170, PLAY_REPEAT(1), 0),
+};
+
+// Exclusive end offset of every sequence in specialSoundTones.
+static constexpr uint8_t specialSoundEnds[] = {
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 15, 18, 20, 23, 26, 30
+};
+
+static_assert(DIM(specialSoundEnds) == AU_SPECIAL_SOUND_LAST - AU_SPECIAL_SOUND_FIRST,
+              "Missing special sound sequence");
+static_assert(specialSoundEnds[DIM(specialSoundEnds) - 1] == DIM(specialSoundTones),
+              "Invalid special sound sequence offsets");
+
+#undef AUDIO_TONE
+
+static bool playSpecialSound(unsigned int index)
+{
+  if (index < AU_SPECIAL_SOUND_FIRST || index >= AU_SPECIAL_SOUND_LAST) {
+    return false;
+  }
+
+  uint8_t sound = index - AU_SPECIAL_SOUND_FIRST;
+  uint8_t first = (sound == 0 ? 0 : specialSoundEnds[sound - 1]);
+  uint8_t end = specialSoundEnds[sound];
+
+  while (first < end) {
+    const AudioToneData & tone = specialSoundTones[first++];
+    playTone(BEEP_DEFAULT_FREQ + 30 * tone.frequencyOffset,
+             2 * tone.duration,
+             2 * tone.pause,
+             tone.options & 0x1f,
+             (tone.options >> 5) - 1);
+  }
+  return true;
+}
+
+static void playRegularSound(unsigned int index)
+{
+#if !defined(DFPLAYER)
+  if (index == AU_INACTIVITY) {
+    playTone(2250, 80, 20, PLAY_REPEAT(2));
+    return;
+  }
+  if (index == AU_TX_BATTERY_LOW) {
+    playTone(1950, 160, 20, PLAY_REPEAT(2), 1);
+    playTone(2550, 160, 20, PLAY_REPEAT(2), -1);
+    return;
+  }
+  if (index >= AU_TRIM_MIDDLE && index <= AU_TRIM_MAX) {
+    uint16_t frequency = (index == AU_TRIM_MIDDLE ? 120 * 16 + 100 :
+                         (index == AU_TRIM_MIN ? TRIM_MIN * 8 + 120 * 16 :
+                                                TRIM_MAX * 8 + 120 * 16));
+    playTone(frequency, index == AU_TRIM_MIDDLE ? 120 : 80, 20, PLAY_NOW);
+    return;
+  }
+#endif
+
+  if (index == AU_THROTTLE_ALERT || index == AU_SWITCH_ALERT || index == AU_ERROR) {
+    playTone(BEEP_DEFAULT_FREQ, 200, 20, PLAY_NOW);
+    return;
+  }
+  if (index >= AU_WARNING1 && index <= AU_WARNING3) {
+    uint16_t duration = (index == AU_WARNING1 ? 80 : (index == AU_WARNING2 ? 160 : 200));
+    playTone(BEEP_DEFAULT_FREQ, duration, 20, PLAY_NOW);
+    return;
+  }
+  if (index >= AU_STICK1_MIDDLE && index <= AU_POT2_MIDDLE) {
+    playTone(BEEP_DEFAULT_FREQ + 1500, 80, 20, PLAY_NOW);
+    return;
+  }
+  if (index >= AU_MIX_WARNING_1 && index <= AU_MIX_WARNING_3) {
+    uint8_t warning = index - AU_MIX_WARNING_1;
+    playTone(BEEP_DEFAULT_FREQ + 1440 + 120 * warning, 48, 30, PLAY_REPEAT(warning));
+    return;
+  }
+
+#if !defined(DFPLAYER)
+  if (index >= AU_TIMER1_ELAPSED && index <= AU_TIMER3_ELAPSED) {
+    playTone(BEEP_DEFAULT_FREQ + 150, 300, 20, PLAY_NOW);
+    return;
+  }
+  if (index == AU_RSSI_ORANGE || index == AU_RSSI_RED) {
+    playTone(BEEP_DEFAULT_FREQ + (index == AU_RSSI_ORANGE ? 1500 : 1800),
+             800, 20, index == AU_RSSI_ORANGE ? PLAY_NOW : PLAY_REPEAT(1) | PLAY_NOW);
+    return;
+  }
+  if (index >= AU_TELEMETRY_LOST && index <= AU_TRAINER_BACK) {
+    bool back = (index == AU_TELEMETRY_BACK || index == AU_TRAINER_BACK);
+    if (index == AU_TELEMETRY_LOST || index == AU_TELEMETRY_BACK) {
+      playTone(BEEP_DEFAULT_FREQ + (back ? -200 : 200), 40, 20);
+    }
+    playTone(BEEP_DEFAULT_FREQ, 40, 20);
+    playTone(BEEP_DEFAULT_FREQ + (back ? 200 : -200), 40, 20);
+  }
+#endif
+}
+
 void audioEvent(unsigned int index)
 {
   if (index == AU_NONE)
@@ -95,155 +268,10 @@ void audioEvent(unsigned int index)
       return;
     }
 #endif
-    switch (index) {
-#if !defined(DFPLAYER)
-      case AU_INACTIVITY:
-        playTone(2250, 80, 20, PLAY_REPEAT(2));
-        break;
-      case AU_TX_BATTERY_LOW:
-        playTone(1950, 160, 20, PLAY_REPEAT(2), 1);
-        playTone(2550, 160, 20, PLAY_REPEAT(2), -1);
-        break;
-#endif
-      case AU_THROTTLE_ALERT:
-      case AU_SWITCH_ALERT:
-      case AU_ERROR:
-        playTone(BEEP_DEFAULT_FREQ, 200, 20, PLAY_NOW);
-        break;
-#if !defined(DFPLAYER)
-      case AU_TRIM_MIDDLE:
-        playTone(120*16 + 100, 120, 20, PLAY_NOW);
-        break;
-      case AU_TRIM_MIN:
-        playTone(TRIM_MIN*8 + 120*16, 80, 20, PLAY_NOW);
-        break;
-      case AU_TRIM_MAX:
-        playTone(TRIM_MAX*8 + 120*16, 80, 20, PLAY_NOW);
-        break;
-#endif
-      case AU_WARNING1:
-        playTone(BEEP_DEFAULT_FREQ, 80, 20, PLAY_NOW);
-        break;
-      case AU_WARNING2:
-        playTone(BEEP_DEFAULT_FREQ, 160, 20, PLAY_NOW);
-        break;
-      case AU_WARNING3:
-        playTone(BEEP_DEFAULT_FREQ, 200, 20, PLAY_NOW);
-        break;
-      case AU_STICK1_MIDDLE:
-      case AU_STICK2_MIDDLE:
-      case AU_STICK3_MIDDLE:
-      case AU_STICK4_MIDDLE:
-      case AU_POT1_MIDDLE:
-      case AU_POT2_MIDDLE:
-        playTone(BEEP_DEFAULT_FREQ + 1500, 80, 20, PLAY_NOW);
-        break;
-      case AU_MIX_WARNING_1:
-        playTone(BEEP_DEFAULT_FREQ + 1440, 48, 30);
-        break;
-      case AU_MIX_WARNING_2:
-        playTone(BEEP_DEFAULT_FREQ + 1560, 48, 30, PLAY_REPEAT(1));
-        break;
-      case AU_MIX_WARNING_3:
-        playTone(BEEP_DEFAULT_FREQ + 1680, 48, 30, PLAY_REPEAT(2));
-        break;
-#if !defined(DFPLAYER)
-      case AU_TIMER1_ELAPSED:
-      case AU_TIMER2_ELAPSED:
-      case AU_TIMER3_ELAPSED:
-        playTone(BEEP_DEFAULT_FREQ + 150, 300, 20, PLAY_NOW);
-        break;
-      case AU_RSSI_ORANGE:
-        playTone(BEEP_DEFAULT_FREQ + 1500, 800, 20, PLAY_NOW);
-        break;
-      case AU_RSSI_RED:
-        playTone(BEEP_DEFAULT_FREQ + 1800, 800, 20, PLAY_REPEAT(1) | PLAY_NOW);
-        break;
-#endif
-#if !defined(PCBI6X)
-      case AU_RAS_RED:
-        playTone(450, 160, 40, PLAY_REPEAT(2), 1);
-        break;
-#endif
-      case AU_SPECIAL_SOUND_BEEP1:
-        playTone(BEEP_DEFAULT_FREQ, 60, 20);
-        break;
-      case AU_SPECIAL_SOUND_BEEP2:
-        playTone(BEEP_DEFAULT_FREQ, 120, 20);
-        break;
-      case AU_SPECIAL_SOUND_BEEP3:
-        playTone(BEEP_DEFAULT_FREQ, 200, 20);
-        break;
-      case AU_SPECIAL_SOUND_WARN1:
-        playTone(BEEP_DEFAULT_FREQ + 600, 120, 40, PLAY_REPEAT(2));
-        break;
-      case AU_SPECIAL_SOUND_WARN2:
-        playTone(BEEP_DEFAULT_FREQ + 900, 120, 40, PLAY_REPEAT(2));
-        break;
-      case AU_SPECIAL_SOUND_CHEEP:
-        playTone(BEEP_DEFAULT_FREQ + 900, 80, 20, PLAY_REPEAT(2), 2);
-        break;
-      case AU_SPECIAL_SOUND_RING:
-        playTone(BEEP_DEFAULT_FREQ + 750, 40, 20, PLAY_REPEAT(10));
-        playTone(BEEP_DEFAULT_FREQ + 750, 40, 80, PLAY_REPEAT(1));
-        playTone(BEEP_DEFAULT_FREQ + 750, 40, 20, PLAY_REPEAT(10));
-        break;
-      case AU_SPECIAL_SOUND_SCIFI:
-        playTone(2550, 80, 20, PLAY_REPEAT(2), -1);
-        playTone(1950, 80, 20, PLAY_REPEAT(2), 1);
-        playTone(2250, 80, 20, 0);
-        break;
-      case AU_SPECIAL_SOUND_ROBOT:
-        playTone(2250, 40, 20, PLAY_REPEAT(1));
-        playTone(1650, 120, 20, PLAY_REPEAT(1));
-        playTone(2550, 120, 20, PLAY_REPEAT(1));
-        break;
-      case AU_SPECIAL_SOUND_CHIRP:
-        playTone(BEEP_DEFAULT_FREQ + 1200, 40, 20, PLAY_REPEAT(2));
-        playTone(BEEP_DEFAULT_FREQ + 1620, 40, 20, PLAY_REPEAT(3));
-        break;
-      case AU_SPECIAL_SOUND_TADA:
-        playTone(1650, 80, 40);
-        playTone(2850, 80, 40);
-        playTone(3450, 60, 36, PLAY_REPEAT(2));
-        break;
-      case AU_SPECIAL_SOUND_CRICKET:
-        playTone(2550, 40, 80, PLAY_REPEAT(3));
-        playTone(2550, 40, 160, PLAY_REPEAT(1));
-        playTone(2550, 40, 80, PLAY_REPEAT(3));
-        break;
-      case AU_SPECIAL_SOUND_SIREN:
-        playTone(450, 160, 40, PLAY_REPEAT(2), 2);
-        break;
-      case AU_SPECIAL_SOUND_ALARMC:
-        playTone(1650, 30, 70, PLAY_REPEAT(2));
-        playTone(2250, 60, 160, PLAY_REPEAT(1));
-        playTone(1650, 60, 80, PLAY_REPEAT(2));
-        playTone(2250, 30, 170, PLAY_REPEAT(1));
-        break;
-      case AU_SPECIAL_SOUND_RATATA:
-        playTone(BEEP_DEFAULT_FREQ + 1500, 40, 80, PLAY_REPEAT(10));
-        break;
-      case AU_SPECIAL_SOUND_TICK:
-        playTone(BEEP_DEFAULT_FREQ + 1500, 40, 400, PLAY_REPEAT(2));
-        break;
-#if !defined(DFPLAYER)
-      case AU_TELEMETRY_LOST:
-        playTone(BEEP_DEFAULT_FREQ + 200, 40, 20);
-      case AU_TRAINER_LOST:
-        playTone(BEEP_DEFAULT_FREQ, 40, 20);
-        playTone(BEEP_DEFAULT_FREQ - 200, 40, 20);
-        break;
-      case AU_TELEMETRY_BACK:
-        playTone(BEEP_DEFAULT_FREQ - 200, 40, 20);
-      case AU_TRAINER_BACK:
-        playTone(BEEP_DEFAULT_FREQ, 40, 20);
-        playTone(BEEP_DEFAULT_FREQ + 200, 40, 20);
-        break;
-#endif
-      default:
-        break;
+    if (playSpecialSound(index)) {
+      return;
     }
+    playRegularSound(index);
   }
 }
 
