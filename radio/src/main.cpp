@@ -19,6 +19,9 @@
  */
 
 #include "opentx.h"
+#if defined(USB_LOGS)
+#include "usb_logs.h"
+#endif
 
 uint8_t currentSpeakerVolume = VOLUME_LEVEL_MAX;
 uint8_t requiredSpeakerVolume = VOLUME_LEVEL_MAX;
@@ -424,6 +427,11 @@ void perMain()
     logsWrite();
     #endif
   }
+#if defined(USB_LOGS)
+  else if (getSelectedUsbMode() == USB_SERIAL_MODE) {
+    usbLogsWrite();
+  }
+#endif
 
   handleUsbConnection();
 
