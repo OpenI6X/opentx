@@ -408,7 +408,11 @@ void crossfireTelemetrySeekStart(uint8_t *rxBuffer, uint8_t &rxBufferCount)
 void processCrossfireTelemetryData(uint8_t data) {
 
 #if !defined(DEBUG) && defined(USB_SERIAL)
+#if defined(USB_LOGS)
+  if (getSelectedUsbMode() == USB_SERIAL_MODE && !isFunctionActive(FUNCTION_LOGS)) {
+#else
   if (getSelectedUsbMode() == USB_SERIAL_MODE) {
+#endif
     usbSerialPutc(data);
   }
 #endif
