@@ -44,7 +44,7 @@ static void usbLogsWriteHeader()
     }
   }
 
-  for (uint32_t i=1; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS+1; i++) {
+  for (uint32_t i = 1; i < NUM_STICKS+NUM_POTS + NUM_SLIDERS+1; i++) {
     const char * p = STR_VSRCRAW + i * STR_VSRCRAW[0] + 2;
     for (uint8_t j=0; j<STR_VSRCRAW[0]-1; ++j) {
       if (!*p) break;
@@ -77,7 +77,7 @@ void usbLogsWrite()
 
   if (isFunctionActive(FUNCTION_LOGS) && logDelay > 0) {
     tmr10ms_t tmr10ms = get_tmr10ms();
-    if (lastUsbLogTime != 0 && (tmr10ms_t)(tmr10ms - lastUsbLogTime) < (tmr10ms_t)logDelay*10) {
+    if (lastUsbLogTime != 0 && (tmr10ms_t)(tmr10ms - lastUsbLogTime) < (tmr10ms_t)logDelay * 10) {
       return;
     }
     lastUsbLogTime = tmr10ms;
@@ -90,7 +90,7 @@ void usbLogsWrite()
   serialPrintf("%d,", tmr10ms);
 
 #if defined(TELEMETRY_FRSKY)
-  for (int i=0; i<MAX_TELEMETRY_SENSORS; i++) {
+  for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
     if (isTelemetryFieldAvailable(i)) {
       TelemetrySensor & sensor = g_model.telemetrySensors[i];
       TelemetryItem & telemetryItem = telemetryItems[i];
@@ -124,7 +124,7 @@ void usbLogsWrite()
   }
 #endif
 
-  for (uint32_t i=0; i<NUM_STICKS+NUM_POTS+NUM_SLIDERS; i++) {
+  for (uint32_t i =0; i  < NUM_STICKS+NUM_POTS + NUM_SLIDERS; i++) {
     serialPrintf("%d,", calibratedAnalogs[i]);
   }
 
