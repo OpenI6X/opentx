@@ -5,6 +5,10 @@ option(LUA_COMPILER "Pre-compile and save Lua scripts" OFF)
 option(LUA_ALLOCATOR_TRACER "Trace Lua memory (de)allocations to debug port (also needs DEBUG=YES NANO=NO)" OFF)
 
 option(USB_SERIAL "Enable USB serial (CDC)" OFF) # 1.1kB
+option(USB_LOGS "Enable USB logs via VCP (reuses USB Serial)" OFF)
+if(USB_LOGS)
+  set(USB_SERIAL ON CACHE BOOL "Forced by USB_LOGS" FORCE)
+endif()
 set(ARCH ARM)
 
 if(NOT CPU_TYPE STREQUAL STM32F0)
@@ -96,6 +100,11 @@ if(DEBUG OR CLI OR USB_SERIAL)
       )
   endif()
   add_definitions(-DUSB_SERIAL)
+
+  if(USB_LOGS)
+    add_definitions(-DUSB_LOGS)
+  endif()
+
 endif()
 
 if(NOT CPU_TYPE STREQUAL STM32F0)
