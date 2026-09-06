@@ -265,6 +265,9 @@ if(SDCARD)
   set(SRC ${SRC} sdcard.cpp rtc.cpp logs.cpp)
   set(FIRMWARE_SRC ${FIRMWARE_SRC} ${FATFS_SRC})
 endif()
+if(USB_LOGS)
+  set(SRC ${SRC} usb_logs.cpp)
+endif()
 
 set(SRC ${SRC} rtc.cpp)
 

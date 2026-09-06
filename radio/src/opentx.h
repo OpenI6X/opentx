@@ -864,7 +864,7 @@ enum FunctionsActive {
   FUNCTION_TRAINER,
   FUNCTION_INSTANT_TRIM = FUNCTION_TRAINER+4,
   FUNCTION_VARIO,
-#if defined(SDCARD)
+#if defined(SDCARD) || defined(USB_LOGS)
   FUNCTION_LOGS,
 #endif
   FUNCTION_BACKGND_MUSIC,
@@ -994,6 +994,10 @@ enum AUDIO_SOUNDS {
 
 #if defined(HAPTIC)
 #include "haptic.h"
+#endif
+
+#if defined(USB_LOGS)
+#include "usb_logs.h"
 #endif
 
 #if defined(SDCARD)
