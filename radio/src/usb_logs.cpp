@@ -22,7 +22,7 @@ uint32_t getLogicalSwitchesStates(uint8_t first)
 
 static void usbLogsWriteHeader()
 {
-  serialPrintf("Time,");
+  serialPrintf("Date,Time,");
 
   char label[TELEM_LABEL_LEN+7];
   for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
@@ -87,7 +87,11 @@ void usbLogsWrite()
       usbHeaderSent = true;
     }
 
-  serialPrintf("%d,", tmr10ms);
+  uint8_t hours = tmr10ms / 100 / 60 / 60;
+  uint8_t minutes = (tmr10ms / 100 / 60) % 60;
+  uint8_t seconds = (tmr10ms / 100) % 60;
+  uint8_t g_ms100 = tmr10ms % 100;
+  serialPrintf("2027-01-01,%02d:%02d:%02d.%02d0,", hours, minutes, seconds, g_ms100);
 
 #if defined(TELEMETRY_FRSKY)
   for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
