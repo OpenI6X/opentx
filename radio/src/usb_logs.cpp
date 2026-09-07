@@ -5,17 +5,22 @@
 
 uint8_t logDelay = 0;
 
-#define GET_2POS_STATE(sw) (switchState(SW_ ## sw ## 0) ? -1 : 1)
-#define GET_3POS_STATE(sw) (switchState(SW_ ## sw ## 0) ? -1 : (switchState(SW_ ## sw ## 2) ? 1 : 0))
-
 static tmr10ms_t lastUsbLogTime = 0;
 static bool usbHeaderSent = false;
+
+static inline int8_t getSwitchLogState(uint8_t idx)
+{
+  if (IS_CONFIG_3POS(idx))
+    return switchState(idx * 3) ? -1 : (switchState(idx * 3 + 2) ? 1 : 0);
+  else
+    return switchState(idx * 3) ? -1 : 1;
+}
 
 uint32_t getLogicalSwitchesStates(uint8_t first)
 {
   uint32_t result = 0;
-  for (uint32_t i = 0; i < MAX_LOGICAL_SWITCHES; i++) {
-    result |= (getSwitch(SWSRC_FIRST_LOGICAL_SWITCH+first+i) << i);
+  for (uint32_t i = first; i < MAX_LOGICAL_SWITCHES; i++) {
+    result |= (getSwitch(SWSRC_FIRST_LOGICAL_SWITCH + i) << i);
   }
   return result;
 }
@@ -54,6 +59,12 @@ static void usbLogsWriteHeader()
   }
 
   serialPrintf("SA,SB,SC,SD,SE,SF,LSW,TxBat(V)\n");
+//   for (int i = 0; i < NUM_SWITCHES; i++) {
+//    if (SWITCH_EXISTS(i)) {
+//      serialPrintf("S%c,", 'A' + i);
+//    }
+//  }
+//  serialPrintf("LSW,TxBat(V)\n");
 }
 
 void usbLogsInit()
@@ -120,32 +131,17 @@ void usbLogsWrite()
     }
   }
 
-  for (uint32_t i =0; i  < NUM_STICKS+NUM_POTS + NUM_SLIDERS; i++) {
+  for (uint32_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++) {
     serialPrintf("%d,", calibratedAnalogs[i]);
   }
 
-#if defined(PCBI6X)
-  serialPrintf("%d,%d,%d,%d,%d,%d,0x%03X,", // 3 => 12 bits => MAX 12 LOGICAL SWITCHES
-      GET_3POS_STATE(SA),
-      GET_3POS_STATE(SB),
-      GET_3POS_STATE(SC),
-      GET_3POS_STATE(SD),
-      GET_2POS_STATE(SE),
-      GET_2POS_STATE(SF),
-      getLogicalSwitchesStates(0));
-#elif defined(PCBTARANIS) || defined(PCBHORUS)
-  serialPrintf("%d,%d,%d,%d,%d,%d,%d,%d,0x%08X%08X,",
-      GET_3POS_STATE(SA),
-      GET_3POS_STATE(SB),
-      GET_3POS_STATE(SC),
-      GET_3POS_STATE(SD),
-      GET_3POS_STATE(SE),
-      GET_2POS_STATE(SF),
-      GET_3POS_STATE(SG),
-      GET_2POS_STATE(SH),
-      getLogicalSwitchesStates(32),
-      getLogicalSwitchesStates(0));
-#endif
+  for (int i = 0; i < NUM_SWITCHES; i++) {
+//    if (SWITCH_EXISTS(i)) {
+      serialPrintf("%d,", getSwitchLogState(i));
+//    }
+  }
+
+  serialPrintf("0x%03X,", getLogicalSwitchesStates(0));
 
   div_t qr = div(g_vbat100mV, 10);
   serialPrintf("%d.%d\n", abs(qr.quot), abs(qr.rem));
