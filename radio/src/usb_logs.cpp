@@ -1,5 +1,5 @@
 #include "opentx.h"
-#if defined(USB_LOGS)
+
 #include "usb_logs.h"
 #include "serial.h"
 
@@ -44,9 +44,9 @@ static void usbLogsWriteHeader()
     }
   }
 
-  for (uint32_t i = 1; i < NUM_STICKS+NUM_POTS + NUM_SLIDERS+1; i++) {
+  for (uint32_t i = 1; i < NUM_STICKS+NUM_POTS + NUM_SLIDERS + 1; i++) {
     const char * p = STR_VSRCRAW + i * STR_VSRCRAW[0] + 2;
-    for (uint8_t j=0; j<STR_VSRCRAW[0]-1; ++j) {
+    for (uint8_t j = 0; j < STR_VSRCRAW[0] - 1; ++j) {
       if (!*p) break;
       serialPutc(*p++);
     }
@@ -64,12 +64,6 @@ void usbLogsInit()
 
 void usbLogsWrite()
 {
-#if defined(USB_SERIAL)
-  if (getSelectedUsbMode() != USB_SERIAL_MODE) {
-    usbHeaderSent = false;
-    return;
-  }
-#endif
   if (!isFunctionActive(FUNCTION_LOGS) || logDelay == 0) {
     usbHeaderSent = false;
     return;
@@ -93,7 +87,6 @@ void usbLogsWrite()
   uint8_t g_ms100 = tmr10ms % 100;
   serialPrintf("2027-01-01,%02d:%02d:%02d.%02d0,", hours, minutes, seconds, g_ms100);
 
-#if defined(TELEMETRY_FRSKY)
   for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
     if (isTelemetryFieldAvailable(i)) {
       TelemetrySensor & sensor = g_model.telemetrySensors[i];
@@ -102,23 +95,23 @@ void usbLogsWrite()
         if (sensor.unit == UNIT_GPS) {
           if (telemetryItem.gps.longitude && telemetryItem.gps.latitude) {
             div_t qr = div((int)telemetryItem.gps.latitude, 1000000);
-            if (telemetryItem.gps.latitude < 0) serialPrintf("-");
+            if (telemetryItem.gps.latitude < 0) serialPutc('-');
             serialPrintf("%d.%06d ", abs(qr.quot), abs(qr.rem));
             qr = div((int)telemetryItem.gps.longitude, 1000000);
-            if (telemetryItem.gps.longitude < 0) serialPrintf("-");
+            if (telemetryItem.gps.longitude < 0) serialPutc('-');
             serialPrintf("%d.%06d,", abs(qr.quot), abs(qr.rem));
           } else {
-            serialPrintf(",");
+            serialPutc(',');
           }
         // } else if (sensor.unit == UNIT_DATETIME) {
         //   serialPrintf("%4d-%02d-%02d %02d:%02d:%02d,", telemetryItem.datetime.year, telemetryItem.datetime.month, telemetryItem.datetime.day, telemetryItem.datetime.hour, telemetryItem.datetime.min, telemetryItem.datetime.sec);
         } else if (sensor.prec == 2) {
           div_t qr = div((int)telemetryItem.value, 100);
-          if (telemetryItem.value < 0) serialPrintf("-");
+          if (telemetryItem.value < 0) serialPutc('-');
           serialPrintf("%d.%02d,", abs(qr.quot), abs(qr.rem));
         } else if (sensor.prec == 1) {
           div_t qr = div((int)telemetryItem.value, 10);
-          if (telemetryItem.value < 0) serialPrintf("-");
+          if (telemetryItem.value < 0) serialPutc('-');
           serialPrintf("%d.%d,", abs(qr.quot), abs(qr.rem));
         } else {
           serialPrintf("%d,", telemetryItem.value);
@@ -126,7 +119,6 @@ void usbLogsWrite()
       }
     }
   }
-#endif
 
   for (uint32_t i =0; i  < NUM_STICKS+NUM_POTS + NUM_SLIDERS; i++) {
     serialPrintf("%d,", calibratedAnalogs[i]);
@@ -159,4 +151,3 @@ void usbLogsWrite()
   serialPrintf("%d.%d\n", abs(qr.quot), abs(qr.rem));
   }
 }
-#endif
