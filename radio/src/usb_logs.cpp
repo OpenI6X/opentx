@@ -92,58 +92,58 @@ void usbLogsWrite()
       usbHeaderSent = true;
     }
 
-  uint8_t hours = tmr10ms / 100 / 60 / 60;
-  uint8_t minutes = (tmr10ms / 100 / 60) % 60;
-  uint8_t seconds = (tmr10ms / 100) % 60;
-  uint8_t g_ms100 = tmr10ms % 100;
-  serialPrintf("2027-01-01,%02d:%02d:%02d.%02d0,", hours, minutes, seconds, g_ms100);
+    uint8_t hours = tmr10ms / 100 / 60 / 60;
+    uint8_t minutes = (tmr10ms / 100 / 60) % 60;
+    uint8_t seconds = (tmr10ms / 100) % 60;
+    uint8_t g_ms100 = tmr10ms % 100;
+    serialPrintf("2000-01-01,%02d:%02d:%02d.%02d0,", hours, minutes, seconds, g_ms100);
 
-  for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
-    if (isTelemetryFieldAvailable(i)) {
-      TelemetrySensor & sensor = g_model.telemetrySensors[i];
-      TelemetryItem & telemetryItem = telemetryItems[i];
-      if (sensor.logs) {
-        if (sensor.unit == UNIT_GPS) {
-          if (telemetryItem.gps.longitude && telemetryItem.gps.latitude) {
-            div_t qr = div((int)telemetryItem.gps.latitude, 1000000);
-            if (telemetryItem.gps.latitude < 0) serialPutc('-');
-            serialPrintf("%d.%06d ", abs(qr.quot), abs(qr.rem));
-            qr = div((int)telemetryItem.gps.longitude, 1000000);
-            if (telemetryItem.gps.longitude < 0) serialPutc('-');
-            serialPrintf("%d.%06d,", abs(qr.quot), abs(qr.rem));
+    for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
+      if (isTelemetryFieldAvailable(i)) {
+        TelemetrySensor & sensor = g_model.telemetrySensors[i];
+        TelemetryItem & telemetryItem = telemetryItems[i];
+        if (sensor.logs) {
+          if (sensor.unit == UNIT_GPS) {
+            if (telemetryItem.gps.longitude && telemetryItem.gps.latitude) {
+              div_t qr = div((int)telemetryItem.gps.latitude, 1000000);
+              if (telemetryItem.gps.latitude < 0) serialPutc('-');
+              serialPrintf("%d.%06d ", abs(qr.quot), abs(qr.rem));
+              qr = div((int)telemetryItem.gps.longitude, 1000000);
+              if (telemetryItem.gps.longitude < 0) serialPutc('-');
+              serialPrintf("%d.%06d,", abs(qr.quot), abs(qr.rem));
+            } else {
+              serialPutc(',');
+            }
+          // } else if (sensor.unit == UNIT_DATETIME) {
+          //   serialPrintf("%4d-%02d-%02d %02d:%02d:%02d,", telemetryItem.datetime.year, telemetryItem.datetime.month, telemetryItem.datetime.day, telemetryItem.datetime.hour, telemetryItem.datetime.min, telemetryItem.datetime.sec);
+          } else if (sensor.prec == 2) {
+            div_t qr = div((int)telemetryItem.value, 100);
+            if (telemetryItem.value < 0) serialPutc('-');
+            serialPrintf("%d.%02d,", abs(qr.quot), abs(qr.rem));
+          } else if (sensor.prec == 1) {
+            div_t qr = div((int)telemetryItem.value, 10);
+            if (telemetryItem.value < 0) serialPutc('-');
+            serialPrintf("%d.%d,", abs(qr.quot), abs(qr.rem));
           } else {
-            serialPutc(',');
+            serialPrintf("%d,", telemetryItem.value);
           }
-        // } else if (sensor.unit == UNIT_DATETIME) {
-        //   serialPrintf("%4d-%02d-%02d %02d:%02d:%02d,", telemetryItem.datetime.year, telemetryItem.datetime.month, telemetryItem.datetime.day, telemetryItem.datetime.hour, telemetryItem.datetime.min, telemetryItem.datetime.sec);
-        } else if (sensor.prec == 2) {
-          div_t qr = div((int)telemetryItem.value, 100);
-          if (telemetryItem.value < 0) serialPutc('-');
-          serialPrintf("%d.%02d,", abs(qr.quot), abs(qr.rem));
-        } else if (sensor.prec == 1) {
-          div_t qr = div((int)telemetryItem.value, 10);
-          if (telemetryItem.value < 0) serialPutc('-');
-          serialPrintf("%d.%d,", abs(qr.quot), abs(qr.rem));
-        } else {
-          serialPrintf("%d,", telemetryItem.value);
         }
       }
     }
-  }
 
-  for (uint32_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++) {
-    serialPrintf("%d,", calibratedAnalogs[i]);
-  }
+    for (uint32_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++) {
+      serialPrintf("%d,", calibratedAnalogs[i]);
+    }
 
-  for (int i = 0; i < NUM_SWITCHES; i++) {
-//    if (SWITCH_EXISTS(i)) {
-      serialPrintf("%d,", getSwitchLogState(i));
-//    }
-  }
+    for (int i = 0; i < NUM_SWITCHES; i++) {
+  //    if (SWITCH_EXISTS(i)) {
+        serialPrintf("%d,", getSwitchLogState(i));
+  //    }
+    }
 
-  serialPrintf("0x%03X,", getLogicalSwitchesStates(0));
+    serialPrintf("0x%03X,", getLogicalSwitchesStates(0));
 
-  div_t qr = div(g_vbat100mV, 10);
-  serialPrintf("%d.%d\n", abs(qr.quot), abs(qr.rem));
+    div_t qr = div(g_vbat100mV, 10);
+    serialPrintf("%d.%d\n", abs(qr.quot), abs(qr.rem));
   }
 }
