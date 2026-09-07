@@ -37,12 +37,12 @@ extern "C" {
 
 /* These are external variables imported from CDC core to be used for IN
    transfer management. */
-extern uint8_t  APP_Rx_Buffer []; /* Write CDC received data in this buffer.
+extern uint8_t  UserTxBufferFS []; /* Write CDC received data in this buffer.
                                      These data will be sent over USB IN endpoint
                                      in the CDC core functions. */
-extern volatile uint32_t APP_Rx_ptr_in;    /* Increment this pointer or roll it back to
+extern volatile uint32_t APP_Tx_ptr_in;    /* Increment this pointer or roll it back to
                                      start address when writing received data
-                                     in the buffer APP_Rx_Buffer. */
+                                     in the buffer UserTxBufferFS. */
 extern volatile uint32_t APP_Rx_ptr_out;
 
 /* Private function prototypes -----------------------------------------------*/
@@ -145,10 +145,6 @@ static uint16_t VCP_Ctrl (uint32_t Cmd, uint8_t* Buf, uint32_t Len)
   return USBD_OK;
 }
 
-// some debug vars
-uint16_t usbWraps = 0;
-uint16_t charsWritten = 0;
-
 void usbSerialPutc(uint8_t c)
 {
 
@@ -162,33 +158,19 @@ void usbSerialPutc(uint8_t c)
 
   if (!cdcConnected) return;
 
-  uint32_t prim = __get_PRIMASK();
-  __disable_irq();
-  uint32_t txDataLen = APP_RX_DATA_SIZE + APP_Rx_ptr_in - APP_Rx_ptr_out;
-  if (!prim) __enable_irq();
-
-  if (txDataLen >= APP_RX_DATA_SIZE) {
-    txDataLen -= APP_RX_DATA_SIZE;
-  }
-  if (txDataLen > (APP_RX_DATA_SIZE - CDC_DATA_MAX_PACKET_SIZE)) return;    // buffer is too full, skip this write
-
-  ++charsWritten;
-
   /*
-    APP_Rx_Buffer and associated variables must be modified
+    UserTxBufferFS and associated variables must be modified
     atomically, because they are used from the interrupt
   */
 
   /* Read PRIMASK register, check interrupt status before you disable them */
   /* Returns 0 if they are enabled, or non-zero if disabled */
-  prim = __get_PRIMASK();
+  uint32_t prim = __get_PRIMASK();
   __disable_irq();
-  APP_Rx_Buffer[APP_Rx_ptr_in++] = c;
-  if(APP_Rx_ptr_in >= APP_RX_DATA_SIZE)
-  {
-    APP_Rx_ptr_in = 0;
-    ++usbWraps;
-  }
+
+  UserTxBufferFS[APP_Tx_ptr_in] = c;
+  APP_Tx_ptr_in = (APP_Tx_ptr_in + 1) % APP_TX_DATA_SIZE;
+
   if (!prim) __enable_irq();
 }
 

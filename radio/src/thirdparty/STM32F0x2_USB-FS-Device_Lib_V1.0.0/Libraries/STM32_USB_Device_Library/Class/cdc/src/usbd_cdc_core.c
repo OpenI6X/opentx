@@ -104,11 +104,11 @@ static __IO uint32_t  usbd_cdc_AltSet  = 0;
 
 uint8_t USB_Rx_Buffer   [CDC_DATA_MAX_PACKET_SIZE] ;
 
-uint8_t APP_Rx_Buffer   [APP_RX_DATA_SIZE] ; 
+uint8_t UserTxBufferFS   [APP_TX_DATA_SIZE] ; 
 
 uint8_t CmdBuff[CDC_CMD_PACKET_SZE] ;
 __IO uint32_t last_packet = 0;
-volatile uint32_t APP_Rx_ptr_in  = 0; // modified by OpenTX
+volatile uint32_t APP_Tx_ptr_in  = 0; // modified by OpenTX
 volatile uint32_t APP_Rx_ptr_out = 0; // modified by OpenTX
 uint32_t APP_Rx_length  = 0;
 
@@ -239,7 +239,7 @@ uint8_t  usbd_cdc_Init (void  *pdev,
                                uint8_t cfgidx)
 {
 
-  APP_Rx_ptr_in  = 0; // modified by OpenTX
+  APP_Tx_ptr_in  = 0; // modified by OpenTX
   APP_Rx_ptr_out = 0; // modified by OpenTX
   APP_Rx_length  = 0;  // modified by OpenTX
   USB_Tx_State = USB_CDC_IDLE;  // modified by OpenTX
@@ -477,7 +477,7 @@ uint8_t  usbd_cdc_DataIn (void *pdev, uint8_t epnum)
       /* Prepare the available data buffer to be sent on IN endpoint */
       DCD_EP_Tx (pdev,
                  CDC_IN_EP,
-                 (uint8_t*)&APP_Rx_Buffer[USB_Tx_ptr],
+                 (uint8_t*)&UserTxBufferFS[USB_Tx_ptr],
                  USB_Tx_length);
     }
   }  
@@ -548,25 +548,25 @@ static void Handle_USBAsynchXfer (void *pdev)
   
   if(USB_Tx_State != 1)
   {
-    if (APP_Rx_ptr_out == APP_RX_DATA_SIZE)
+    if (APP_Rx_ptr_out == APP_TX_DATA_SIZE)
     {
       APP_Rx_ptr_out = 0;
     }
     
-    if(APP_Rx_ptr_out == APP_Rx_ptr_in) 
+    if(APP_Rx_ptr_out == APP_Tx_ptr_in) 
     {
       USB_Tx_State = 0; 
       return;
     }
     
-    if(APP_Rx_ptr_out > APP_Rx_ptr_in) /* rollback */
+    if(APP_Rx_ptr_out > APP_Tx_ptr_in) /* rollback */
     { 
-      APP_Rx_length = APP_RX_DATA_SIZE - APP_Rx_ptr_out;
+      APP_Rx_length = APP_TX_DATA_SIZE - APP_Rx_ptr_out;
       
     }
     else 
     {
-      APP_Rx_length = APP_Rx_ptr_in - APP_Rx_ptr_out;
+      APP_Rx_length = APP_Tx_ptr_in - APP_Rx_ptr_out;
       
     }
     
@@ -586,13 +586,13 @@ static void Handle_USBAsynchXfer (void *pdev)
       APP_Rx_ptr_out += APP_Rx_length;
       APP_Rx_length = 0;
       if (USB_Tx_length == CDC_DATA_IN_PACKET_SIZE) last_packet = 1; //IBA
-      if (APP_Rx_ptr_in == 64) APP_Rx_ptr_in=0;
+      if (APP_Tx_ptr_in == 64) APP_Tx_ptr_in=0;
     }
     USB_Tx_State = 1; 
     
     DCD_EP_Tx (pdev,
                CDC_IN_EP,
-               (uint8_t*)&APP_Rx_Buffer[USB_Tx_ptr],
+               (uint8_t*)&UserTxBufferFS[USB_Tx_ptr],
                USB_Tx_length);
   }  
   

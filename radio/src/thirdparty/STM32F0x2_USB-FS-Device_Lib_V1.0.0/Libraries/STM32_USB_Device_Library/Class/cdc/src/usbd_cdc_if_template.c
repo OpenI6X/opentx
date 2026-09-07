@@ -34,12 +34,12 @@
 /* Private variables ---------------------------------------------------------*/
 /* These are external variables imported from CDC core to be used for IN 
    transfer management. */
-extern uint8_t  APP_Rx_Buffer []; /* Write CDC received data in this buffer.
+extern uint8_t  UserTxBufferFS []; /* Write CDC received data in this buffer.
                                      These data will be sent over USB IN endpoint
                                      in the CDC core functions. */
-extern uint32_t APP_Rx_ptr_in;    /* Increment this pointer or roll it back to
+extern uint32_t APP_Tx_ptr_in;    /* Increment this pointer or roll it back to
                                      start address when writing received data
-                                     in the buffer APP_Rx_Buffer. */
+                                     in the buffer UserTxBufferFS. */
 
 /* Private function prototypes -----------------------------------------------*/
 static uint16_t TEMPLATE_Init     (void);
@@ -157,16 +157,16 @@ static uint16_t TEMPLATE_DataTx (uint8_t* Buf, uint32_t Len)
   /* Get the data to be sent */
   for (i = 0; i < Len; i++)
   {
-    /* APP_Rx_Buffer[APP_Rx_ptr_in] = XXX_ReceiveData(XXX); */
+    /* UserTxBufferFS[APP_Tx_ptr_in] = XXX_ReceiveData(XXX); */
   }
 
   /* Increment the in pointer */
-  APP_Rx_ptr_in++;
+  APP_Tx_ptr_in++;
   
   /* To avoid buffer overflow */
-  if(APP_Rx_ptr_in == APP_RX_DATA_SIZE)
+  if(APP_Tx_ptr_in == APP_TX_DATA_SIZE)
   {
-    APP_Rx_ptr_in = 0;
+    APP_Tx_ptr_in = 0;
   }  
   
   return USBD_OK;

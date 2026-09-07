@@ -75,12 +75,12 @@
 #define CDC_IN_FRAME_INTERVAL        4    /* Number of frames between IN transfers */
 #if defined(STM32F0)
 #if defined(DEBUG)
-#define APP_RX_DATA_SIZE             256
+#define APP_TX_DATA_SIZE             256
 #else
-#define APP_RX_DATA_SIZE             128
+#define APP_TX_DATA_SIZE             128
 #endif
 #else
-#define APP_RX_DATA_SIZE             512 // USB serial port output buffer. TODO: tune this buffer size /* Total size of IN buffer: APP_RX_DATA_SIZE*8/MAX_BAUDARATE*1000 should be > CDC_IN_FRAME_INTERVAL */
+#define APP_TX_DATA_SIZE             512 // USB serial port output buffer. TODO: tune this buffer size /* Total size of IN buffer: APP_TX_DATA_SIZE*8/MAX_BAUDARATE*1000 should be > CDC_IN_FRAME_INTERVAL */
 #endif
 #define APP_FOPS                     VCP_fops
 

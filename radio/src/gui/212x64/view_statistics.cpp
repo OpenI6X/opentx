@@ -177,7 +177,7 @@ void menuStatisticsDebug(event_t event)
   lcdDrawTextAlignedLeft(MENU_DEBUG_ROW4, "Usb");
   lcdDrawNumber(MENU_DEBUG_COL1_OFS, MENU_DEBUG_ROW4, charsWritten, LEFT);
   lcdDrawText(lcdLastRightPos, MENU_DEBUG_ROW4, " ");
-  lcdDrawNumber(lcdLastRightPos, MENU_DEBUG_ROW4, APP_Rx_ptr_in, LEFT);
+  lcdDrawNumber(lcdLastRightPos, MENU_DEBUG_ROW4, APP_Tx_ptr_in, LEFT);
   lcdDrawText(lcdLastRightPos, MENU_DEBUG_ROW4, " ");
   lcdDrawNumber(lcdLastRightPos, MENU_DEBUG_ROW4, APP_Rx_ptr_out, LEFT);
   lcdDrawText(lcdLastRightPos, MENU_DEBUG_ROW4, " ");

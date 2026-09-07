@@ -52,10 +52,8 @@ void usbSerialPutc(uint8_t c);
 
 // Used in view_statistics.cpp
 #if defined(DEBUG) && !defined(BOOT)
-extern uint16_t usbWraps;
-extern uint16_t charsWritten;
-extern volatile uint32_t APP_Rx_ptr_in;
-extern volatile uint32_t APP_Rx_ptr_out;
+extern volatile uint32_t APP_Tx_ptr_in;
+extern volatile uint32_t APP_Tx_ptr_out;
 #endif
 
 #endif
