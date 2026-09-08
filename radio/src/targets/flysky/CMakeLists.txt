@@ -49,6 +49,11 @@ if(NOT AFHDS2A_LQI_CH STREQUAL OFF)
   add_definitions(-DAFHDS2A_LQI_CH=${AFHDS2A_LQI_CH})
 endif()
 
+set(TARGET_SRC
+    ${TARGET_SRC}
+    ../../thirdparty/mini_print/mini_vsnprintf.c
+    )
+
 if(FLYSKY_GIMBAL STREQUAL YES)
   add_definitions(-DFLYSKY_GIMBAL)
   set(TARGET_SRC

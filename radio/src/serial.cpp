@@ -20,6 +20,8 @@
 
 #include "opentx.h"
 #include "serial.h"
+#include "thirdparty/mini_print/mini_vsnprintf.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -42,7 +44,7 @@ void serialPrintf(const char * format, ...)
   char tmp[PRINTF_BUFFER_SIZE+1];
 
   va_start(arglist, format);
-  vsnprintf(tmp, PRINTF_BUFFER_SIZE, format, arglist);
+  mini_vsnprintf(tmp, PRINTF_BUFFER_SIZE, format, arglist);
   tmp[PRINTF_BUFFER_SIZE] = '\0';
   va_end(arglist);
 
