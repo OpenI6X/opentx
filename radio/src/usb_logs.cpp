@@ -90,6 +90,7 @@ void usbLogsWrite()
     if (!usbHeaderSent) {
       usbLogsWriteHeader();
       usbHeaderSent = true;
+      return; // skip first log line after header to do not overload buffer
     }
 
     uint8_t hours = tmr10ms / 100 / 60 / 60;
