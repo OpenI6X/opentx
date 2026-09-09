@@ -45,7 +45,7 @@ void serialPrintf(const char * format, ...)
 
   va_start(arglist, format);
   mini_vsnprintf(tmp, PRINTF_BUFFER_SIZE, format, arglist);
-  tmp[PRINTF_BUFFER_SIZE] = '\0';
+  // tmp[PRINTF_BUFFER_SIZE] = '\0'; // guaranted by vsnprintf
   va_end(arglist);
 
   const char *t = tmp;
