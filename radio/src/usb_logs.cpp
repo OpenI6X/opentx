@@ -43,8 +43,7 @@ static void usbLogsWriteHeader()
           strncat(label, STR_VTELEMUNIT+1+3*unit, 3);
           strcat(label, ")");
         }
-        strcat(label, ",");
-        serialPrintf("%s", label);
+        serialPrintf("%s,", label);
       }
     }
   }
