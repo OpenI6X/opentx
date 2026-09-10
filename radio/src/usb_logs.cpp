@@ -29,7 +29,7 @@ static void usbLogsWriteHeader()
 {
   serialPrintf("Date,Time,");
 
-  char label[TELEM_LABEL_LEN+7];
+  char label[TELEM_LABEL_LEN + 6];
   for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
     if (isTelemetryFieldAvailable(i)) {
       TelemetrySensor & sensor = g_model.telemetrySensors[i];
@@ -40,7 +40,7 @@ static void usbLogsWriteHeader()
         if (unit == UNIT_CELLS) unit = UNIT_VOLTS;
         if (UNIT_RAW < unit && unit < UNIT_FIRST_VIRTUAL) {
           strcat(label, "(");
-          strncat(label, STR_VTELEMUNIT+1+3*unit, 3);
+          strncat(label, STR_VTELEMUNIT + 1 + 3 * unit, 3);
           strcat(label, ")");
         }
         serialPrintf("%s,", label);
