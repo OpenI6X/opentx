@@ -31,7 +31,16 @@ void menuRadioTrainer(event_t event)
   uint8_t y;
   bool slave = SLAVE_MODE();
 
-  MENU(STR_MENUTRAINER, menuTabGeneral, MENU_RADIO_TRAINER, (slave ? HEADER_LINE : HEADER_LINE+6), { HEADER_LINE_COLUMNS NAVIGATION_LINE_BY_LINE|2, NAVIGATION_LINE_BY_LINE|2, NAVIGATION_LINE_BY_LINE|2, NAVIGATION_LINE_BY_LINE|2, 0, 0 });
+  MENU(STR_MENUTRAINER, menuTabGeneral, MENU_RADIO_TRAINER, (slave ? HEADER_LINE : HEADER_LINE+6), 
+    { 
+      HEADER_LINE_COLUMNS 
+      NAVIGATION_LINE_BY_LINE|2, 
+      NAVIGATION_LINE_BY_LINE|2, 
+      NAVIGATION_LINE_BY_LINE|2, 
+      NAVIGATION_LINE_BY_LINE|2, 
+      (uint8_t)((g_model.trainerData.mode == TRAINER_MODE_MASTER_TRAINER_JACK) ? 0 : HIDDEN_ROW),
+      0 
+    });
 
   if (slave) {
     lcdDrawText(LCD_W/2, 4*FH, STR_SLAVE, CENTERED);
@@ -77,21 +86,24 @@ void menuRadioTrainer(event_t event)
     y += FH;
   }
 
-  attr = (menuVerticalPosition==HEADER_LINE+4) ? blink : 0;
-  lcdDrawTextAlignedLeft(MENU_HEADER_HEIGHT+1+5*FH, STR_MULTIPLIER);
-  lcdDrawNumber(LEN_MULTIPLIER*FW+3*FW, MENU_HEADER_HEIGHT+1+5*FH, g_eeGeneral.PPM_Multiplier+10, attr|PREC1|RIGHT);
-  if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.PPM_Multiplier, -10, 40);
+  if (g_model.trainerData.mode == TRAINER_MODE_MASTER_TRAINER_JACK) {
+    attr = (menuVerticalPosition==HEADER_LINE+4) ? blink : 0;
+    lcdDrawTextAlignedLeft(y, STR_MULTIPLIER);
+    lcdDrawNumber(LEN_MULTIPLIER*FW+3*FW, y, g_eeGeneral.PPM_Multiplier+10, attr|PREC1|RIGHT);
+    if (attr) CHECK_INCDEC_GENVAR(event, g_eeGeneral.PPM_Multiplier, -10, 40);
+  }
+  y += FH;
 
   attr = (menuVerticalPosition==HEADER_LINE+5) ? INVERS : 0;
   if (attr)
     s_editMode = 0;
-  lcdDrawText(0*FW, MENU_HEADER_HEIGHT+1+6*FH, STR_CAL, attr);
+  lcdDrawText(0*FW, y, STR_CAL, attr);
   for (uint32_t i=0; i<4; i++) {
     uint8_t x = (i*TRAINER_CALIB_COLUMN_WIDTH + 16) * FW/2;
     if (g_eeGeneral.ppmunit == PPM_PERCENT_PREC1) {
-      lcdDrawNumber(x, MENU_HEADER_HEIGHT+1+6*FH, (trainerInput[i]-g_eeGeneral.trainer.calib[i])*2, PREC1|RIGHT);
+      lcdDrawNumber(x, y, (trainerInput[i]-g_eeGeneral.trainer.calib[i])*2, PREC1|RIGHT);
     } else {
-      lcdDrawNumber(x, MENU_HEADER_HEIGHT+1+6*FH, (trainerInput[i]-g_eeGeneral.trainer.calib[i])/5, RIGHT);
+      lcdDrawNumber(x, y, (trainerInput[i]-g_eeGeneral.trainer.calib[i])/5, RIGHT);
     }
   }
 
