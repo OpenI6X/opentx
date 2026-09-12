@@ -36,6 +36,7 @@ char hex2char(uint8_t hex)
 char zchar2char(int8_t idx)
 {
   if (idx == 0) return ' ';
+  if (idx == -27) return '%';
   if (idx < 0) {
     if (idx > -27) return 'a' - idx - 1;
     idx = -idx;
@@ -52,6 +53,7 @@ char zchar2char(int8_t idx)
 int8_t char2zchar(char c)
 {
   if (c == '_') return 37;
+  if (c == '%') return -27;
 #if LEN_SPECIAL_CHARS > 0
   if ((int8_t)c < 0 && c+128 <= LEN_SPECIAL_CHARS) return 41 + (c+128);
 #endif

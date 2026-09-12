@@ -182,6 +182,8 @@ for line in in_file.readlines():
                 c = "\\%03o" % (-ord(c) + ord('a') + 255)
             elif ord(c) >= ord('0') and ord(c) <= ord('9'):
                 c = "\\%03o" % (ord(c) - ord('0') + 27)
+            elif c == '%':
+                c = "\\345"
             after = after + c
         line = line[:32] + after + line[-2:]
     out_file.write(line)

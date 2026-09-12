@@ -390,6 +390,7 @@ static const char specialCharsTab[] = "_-.,";
 static inline int8_t char2idx(char c)
 {
   if (c==' ') return 0;
+  if (c=='%') return -27;
   if (c>='A' && c<='Z') return 1+c-'A';
   if (c>='a' && c<='z') return -1-c+'a';
   if (c>='0' && c<='9') return 27+c-'0';
@@ -404,6 +405,7 @@ static inline int8_t char2idx(char c)
 static inline char idx2char(int8_t idx)
 {
   if (idx == 0) return ' ';
+  if (idx == -27) return '%';
   if (idx < 0) {
     if (idx > -27) return 'a' - idx - 1;
     idx = -idx;
