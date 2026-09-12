@@ -61,8 +61,11 @@ int mini_vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
                    spec == 'X' || spec == 'p') {
             neg = 0;
             pre = 0; /* 2 if %p → leading "0x" */
+#if defined(DEBUG)
             digs = (spec == 'X') ? "0123456789ABCDEF" : "0123456789abcdef";
-
+#else
+            digs = "0123456789ABCDEF";
+#endif
             if (spec == 'd') {
                 int v = va_arg(ap, int);
                 if (v < 0) {
