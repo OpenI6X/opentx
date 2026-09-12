@@ -145,6 +145,21 @@ static uint16_t VCP_Ctrl (uint32_t Cmd, uint8_t* Buf, uint32_t Len)
   return USBD_OK;
 }
 
+// return the bytes free in the circular buffer
+uint32_t usbSerialFreeSpace()
+{
+  // functionally equivalent to:
+  //
+  //      (APP_Tx_ptr_out > APP_Tx_ptr_in ? APP_Tx_ptr_out - APP_Tx_ptr_in :
+  //      APP_TX_DATA_SIZE - APP_Tx_ptr_in + APP_Tx_ptr_in)
+  //
+  //  but without the impact of the condition check.
+
+  return ((APP_Rx_ptr_out - APP_Tx_ptr_in) +
+          (-((int)(APP_Rx_ptr_out <= APP_Tx_ptr_in)) & APP_TX_DATA_SIZE)) -
+         1;
+}
+
 void usbSerialPutc(uint8_t c)
 {
 
