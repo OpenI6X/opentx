@@ -575,7 +575,7 @@
 #define TR_MOVINGMODEL         "Przenieś model."
 #define TR_LOADINGMODEL        "Załaduj model.."
 #define TR_NAME                "Nazwa"
-#define TR_MODELNAME           "Nazw. modelu"
+#define TR_MODELNAME           "Nazwa modelu"
 #define TR_PHASENAME           "Nazwa fazy"
 #define TR_MIXNAME             "Nazwa mix"
 #define TR_INPUTNAME           "Nazwa"
@@ -583,13 +583,13 @@
 #define TR_BITMAP              "Obrazek"
 #define TR_TIMER               TR("Timer", "Timer ")
 #define TR_ELIMITS             TR("Limi+25%", "Kanał +/- 125% ")
-#define TR_ETRIMS              TR("E.Trym ", "Poszer Trymery")
-#define TR_TRIMINC             "Krok Trym"
-#define TR_DISPLAY_TRIMS       TR("Pok.Trym.","Pokaż Trymery")
+#define TR_ETRIMS              TR("E.trym ", "Poszer Trymery")
+#define TR_TRIMINC             "Krok trym"
+#define TR_DISPLAY_TRIMS       TR("Pok.trym.","Pokaż Trymery")
 #define TR_TTRACE              TR("Źród gaz", INDENT "Źródło gazu ")
 #define TR_TTRIM               TR("TryGaz", INDENT "TrymWolnObrotó")
 #define TR_BEEPCTR             TR("ŚrodBeep", "Pikn.Środka")
-#define TR_USE_GLOBAL_FUNCS    TR("Funk.Glb.","Użyj Funkcji Glb")
+#define TR_USE_GLOBAL_FUNCS    TR("Fun.globalne","Użyj Funkcji Glb")
 #define TR_PROTO               TR(INDENT "Proto", INDENT "Protokół")
   #define TR_PPMFRAME          INDENT "Ramka PPM"
 #define TR_REFRESHRATE               TR(INDENT "Refresh", INDENT "Refresh rate")
@@ -684,7 +684,7 @@
 #define TR_RXCHANNELORD        TR("Kolejn.kan.", "Bazowa kolejność kanałów")
 #define TR_STICKS              "Drążki"
 #define TR_STICK_DEADZONE      "Dead zone"
-#define TR_POTS                "Pots"
+#define TR_POTS                "Pokrętła"
 #define TR_SWITCHES            "Przełącz"
 #define TR_SWITCHES_DELAY      "Opóźn.przeł."
 #define TR_SLAVE               "Uczeń"
@@ -703,8 +703,8 @@
   #define TR_MOVESTICKSPOTS    "Poruszaj drążkami/pot"
 #else
   #define TR_MENUTOSTART       CENTER "\010" TR_ENTER " KALIBRUJ"
-  #define TR_SETMIDPOINT       TR(CENTER "\002Cenruj drążki/potencj",CENTER "\010Ustaw drązki/potencj na środku")
-  #define TR_MOVESTICKSPOTS    "Poruszaj drążkami/pot"
+  #define TR_SETMIDPOINT       TR(CENTER "\002Cenruj drążki/pokręt.",CENTER "\010Ustaw drązki/potencj na środku")
+  #define TR_MOVESTICKSPOTS    "Poruszaj drążkami/pok"
 #endif
 #define TR_RXBATT              "Rx Batt:"
 #define TR_TXnRX               "Tx:\0Rx:"
@@ -726,7 +726,7 @@
 #define TR_MODEL               "MODEL"
 #define TR_FM                  "FL"
 #define TR_MIX                 "MIX"
-#define TR_EEPROMLOWMEM        "Niska pamięć EEPROM"
+#define TR_EEPROMLOWMEM        "Mało pamięci EEPROM"
 #define TR_ALERT               "\006UWAGA"
 #define TR_PRESSANYKEYTOSKIP   "Wciśnij guzik->ignoruj"
 #define TR_THROTTLENOTIDLE     "Gaz nie na zerze"
@@ -748,11 +748,11 @@
 #if defined(COLORLCD)
   #define TR_TRIMS2OFFSETS     "Trymery => Subtrimy"
 #else
-  #define TR_TRIMS2OFFSETS     "\006Trims => Subtrims"
+  #define TR_TRIMS2OFFSETS     "\006Trymy => Podtrymy"
 #endif
 #define TR_CHANNELS2FAILSAFE    "Channels=>Failsafe"
 #define TR_MENUMODELSEL        TR("WYB.MODEL","WYBÓR MODELU")
-#define TR_MENUSETUP           TR("USTAW","USTAW MODELU")
+#define TR_MENUSETUP           TR("USTAWIENIA","USTAW MODELU")
 #define TR_MENUFLIGHTMODE     "FAZA LOTU"
 #define TR_MENUFLIGHTMODES    "FAZY LOTU"
 #define TR_MENUHELISETUP       "USTAW HELI"
@@ -807,8 +807,8 @@
 #define TR_SYNCMENU            "[Synch]"
 #define TR_LIMIT               INDENT "Limit"
 #define TR_MINRSSI             "Min Rssi"
-#define TR_LATITUDE            "Szer. geo."
-#define TR_LONGITUDE           "Dł.   geo."
+#define TR_LATITUDE            "Szer.geo."
+#define TR_LONGITUDE           "Dł.geo."
 #define TR_GPSCOORD            TR("Koord.GPS","Typ koordynat GPS")
 #define TR_VARIO               TR("Wario","Wariometr")
 #define TR_PITCH_AT_ZERO       "Ton przy zerze"
@@ -892,7 +892,7 @@
 #define TR_SD_INFO             "Informacje"
 #define TR_SD_FORMAT           "Formatuj"
 #define TR_NA                  "[X]"
-#define TR_HARDWARE            "HARDWARE"
+#define TR_HARDWARE            "SPRZĘT"
 #define TR_FORMATTING          "Formatowanie.."
 #define TR_TEMP_CALIB          "Temp. kalibracji"
 #define TR_TIME                "Czas"
@@ -924,7 +924,7 @@
 #define TR_GVARS               "Zmien.Glob."
 #define TR_GLOBAL_VAR          "Zmienna Globalna"
 #define TR_MENUGLOBALVARS      "ZMIENNE GLOBALNE"
-#define TR_OWN                 "Własność"
+#define TR_OWN                 " \043 "
 #define TR_DATE                "Data"
 #define TR_MONTHS              { "Jan", "Fev", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" }
 #define TR_ROTARY_ENCODER      "R.Encs"
@@ -1094,21 +1094,21 @@
 #define TR_CHR_HOUR            'h'
 #define TR_CHR_INPUT           'I'   // Values between A-I will work
 
-#define TR_BEEP_VOLUME         "Głoś. piku"
-#define TR_WAV_VOLUME          "Głoś. wav"
-#define TR_BG_VOLUME           "Głoś. tła"
+#define TR_BEEP_VOLUME         "Głośn.piku"
+#define TR_WAV_VOLUME          "Głośn.wav"
+#define TR_BG_VOLUME           "Głośn.tła"
 
 #define TR_TOP_BAR             "GórnPas"
 #define TR_ALTITUDE            INDENT "Wysokość"
 #define TR_SCALE               "Skala"
-#define TR_VIEW_CHANNELS       "Pokaż Kanały"
-#define TR_VIEW_NOTES          "Pokaż Notki"
+#define TR_VIEW_CHANNELS       "Pokaż kanały"
+#define TR_VIEW_NOTES          "Pokaż notki"
 #define TR_MODEL_SELECT        "WybierzModel"
 #define TR_MODS_FORBIDDEN      "Modyfikacje zabronione!"
 #define TR_UNLOCKED            "Odblokowane"
 #define TR_ID                  "ID"
 #define TR_PRECISION           "Precyzja"
-#define TR_RATIO               "Współcz."
+#define TR_RATIO               "Skala"
 #define TR_FORMULA             "Formuła"
 #define TR_CELLINDEX           "ID celi"
 #define TR_LOGS                "Logi"
@@ -1121,7 +1121,7 @@
 #define TR_AUTOOFFSET          "Auto ofset"
 #define TR_ONLYPOSITIVE        "Dodatni"
 #define TR_FILTER              "Filtr"
-#define TR_TELEMETRYFULL       "Wszyskie sloty zajęte!"
+#define TR_TELEMETRYFULL       "Sloty zajęte!"
 #define TR_SERVOS_OK           "Servos OK"
 #define TR_SERVOS_KO           "Servos KO"
 //TODO: translation
@@ -1144,12 +1144,12 @@
 #define TR_ADDMAINVIEW         "Add main view"
 #define TR_BACKGROUND_COLOR    "Background color"
 #define TR_MAIN_COLOR          "Main color"
-#define TR_TEXT_VIEWER                 "Text Viever"
+#define TR_TEXT_VIEWER         "Text Viewer"
 
 #define TR_MENU_INPUTS         "\314Wejścia"
 #define TR_MENU_LUA            "\322SkryptyLUA"
 #define TR_MENU_STICKS         "\307Drążki"
-#define TR_MENU_POTS           "\310Pots"
+#define TR_MENU_POTS           "\310Pokr"
 #define TR_MENU_MAX            "\315MAX"
 #define TR_MENU_HELI           "\316Cyclic"
 #define TR_MENU_TRIMS          "\313Trymy"
