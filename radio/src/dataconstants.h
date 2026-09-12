@@ -239,6 +239,17 @@ enum UartModes {
   UART_MODE_MAX = UART_MODE_COUNT-1
 };
 
+enum UsbSerialModes {
+  USB_SERIAL_MODE_OFF,
+  USB_SERIAL_MODE_TELEMETRY_MIRROR,
+#if defined(SBUS_TRAINER)
+  USB_SERIAL_MODE_SBUS_TRAINER,
+#endif
+  USB_SERIAL_MODE_USB_LOGS,
+  USB_SERIAL_MODE_COUNT,
+  USB_SERIAL_MODE_MAX = USB_SERIAL_MODE_COUNT-1
+};
+
 #if defined(PCBHORUS)
   #define LEN_SWITCH_NAME              3
   #define LEN_ANA_NAME                 3
