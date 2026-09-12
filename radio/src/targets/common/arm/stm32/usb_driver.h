@@ -49,6 +49,7 @@ bool usbStarted();
 int getSelectedUsbMode();
 void setSelectedUsbMode(int mode);
 
+uint32_t usbSerialFreeSpace();
 void usbSerialPutc(uint8_t c);
 
 // Used in view_statistics.cpp
