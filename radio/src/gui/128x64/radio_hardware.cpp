@@ -299,7 +299,8 @@ void menuRadioHardware(event_t event)
 
 #if defined(USB_SERIAL)
       case ITEM_RADIO_HARDWARE_USB_SERIAL_MODE:
-        g_eeGeneral.usbSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, "USB-VCP", STR_AUX_SERIAL_MODES, g_eeGeneral.usbSerialMode, 0, USB_SERIAL_MODE_MAX, attr, event);
+        // manual string until SBUS Trainer will work for it as well
+        g_eeGeneral.usbSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, "USB-VCP", "\014OFF/Debug\0  Telem MirrorLogs", g_eeGeneral.usbSerialMode, 0, USB_SERIAL_MODE_MAX, attr, event);
         break;
 #endif
 
