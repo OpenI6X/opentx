@@ -29,6 +29,7 @@
 
 void serialPutc(char c) {
 #if !defined(BOOT) && defined(USB_SERIAL)
+  // TODO not checking USB_MODE to do not break DEBUG output
   if (getSelectedUsbMode() == USB_SERIAL_MODE)
     usbSerialPutc(c);
 #endif
