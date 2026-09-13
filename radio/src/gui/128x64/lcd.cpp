@@ -661,11 +661,9 @@ void drawTimer(coord_t x, coord_t y, int32_t tme, LcdFlags att, LcdFlags att2)
   lcdDrawNumber(lcdNextPos, y, qr.rem, (att2|LEADING0|LEFT) & (~RIGHT), 2);
 }
 
-// TODO to be optimized with drawValueWithUnit
 void putsVolts(coord_t x, coord_t y, uint16_t volts, LcdFlags att)
 {
-  lcdDrawNumber(x, y, (int16_t)volts, (~NO_UNIT) & (att | ((att&PREC2)==PREC2 ? 0 : PREC1)));
-  if (~att & NO_UNIT) lcdDrawChar(lcdLastRightPos, y, 'V', att);
+  drawValueWithUnit(x, y, (int16_t)volts, UNIT_VOLTS, att | ((att&PREC2)==PREC2 ? 0 : PREC1));
 }
 
 void putsVBat(coord_t x, coord_t y, LcdFlags att)
