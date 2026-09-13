@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(OpenTX)
 
 set(VERSION_MAJOR "2")
-set(VERSION_MINOR "2")
+set(VERSION_MINOR "3")
 set(VERSION_REVISION "0")
 string(TIMESTAMP BUILD_YEAR "%Y")
 set(VERSION_SUFFIX $ENV{OPENTX_VERSION_SUFFIX})
