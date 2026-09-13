@@ -358,7 +358,7 @@ void menuSpecialFunctions(event_t event, CustomFunctionData * functions, CustomF
               INCDEC_ENABLE_CHECK(isSourceAvailable);
             }
           }
-#if defined(SDCARD)
+#if defined(SDCARD) || defined(USB_LOGS)
           else if (func == FUNC_LOGS) {
             if (val_displayed) {
               lcdDrawNumber(MODEL_SPECIAL_FUNC_3RD_COLUMN, y, val_displayed, attr|PREC1|LEFT);
