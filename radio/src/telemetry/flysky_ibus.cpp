@@ -306,7 +306,7 @@ void processFlySkyTelemetryFrame(uint8_t * frame) {
     || (g_eeGeneral.auxSerialMode == UART_MODE_TELEMETRY_MIRROR)
 #endif
 #if !defined(DEBUG) && defined(USB_SERIAL)
-    ||(getSelectedUsbMode() == USB_SERIAL_MODE)
+    ||(getSelectedUsbMode() == USB_SERIAL_MODE && g_eeGeneral.usbSerialMode == USB_SERIAL_MODE_TELEMETRY_MIRROR)
 #endif
   ) {
     // header: MP[type][size][RSSI] followed by 4*7 bytes of telemetry data, skip rx and tx id
