@@ -25,16 +25,17 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#define PRINTF_BUFFER_SIZE    48
+#define PRINTF_BUFFER_SIZE    128
 
 void serialPutc(char c) {
 #if !defined(BOOT) && defined(USB_SERIAL)
-  // TODO not checking USB_MODE to do not break DEBUG output
-  if (getSelectedUsbMode() == USB_SERIAL_MODE)
+  if (getSelectedUsbMode() == USB_SERIAL_MODE) {
     usbSerialPutc(c);
+    return;
+  }
 #endif
 #if defined(AUX_SERIAL)
-  if (auxSerialTracesEnabled()) 
+  if (auxSerialTracesEnabled())
     auxSerialPutc(c);
 #endif
 }
