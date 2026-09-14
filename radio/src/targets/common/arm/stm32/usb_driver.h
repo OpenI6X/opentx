@@ -50,6 +50,8 @@ void setSelectedUsbMode(int mode);
 
 uint32_t usbSerialFreeSpace();
 void usbSerialPutc(uint8_t c);
+void serialTxBufferClear();
+bool usbTelemMirrorActive();
 
 // Used in view_statistics.cpp
 #if defined(DEBUG) && !defined(BOOT)

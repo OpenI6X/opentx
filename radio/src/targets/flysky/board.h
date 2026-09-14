@@ -443,6 +443,7 @@ void auxSerialPutc(char c);
 #define auxSerialTelemetryInit(protocol) //auxSerialInit(UART_MODE_TELEMETRY, protocol)
 void auxSerialSbusInit(void);
 void auxSerialStop(void);
+void auxSerialClearTx();
 #endif
 
 #if defined(FLYSKY_GIMBAL)

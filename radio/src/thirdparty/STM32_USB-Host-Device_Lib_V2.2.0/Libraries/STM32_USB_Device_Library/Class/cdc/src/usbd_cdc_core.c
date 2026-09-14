@@ -176,7 +176,8 @@ __ALIGN_BEGIN uint8_t USB_Rx_Buffer   [CDC_DATA_MAX_PACKET_SIZE] __ALIGN_END ;
     #pragma data_alignment=4   
   #endif
 #endif /* USB_OTG_HS_INTERNAL_DMA_ENABLED */
-__ALIGN_BEGIN uint8_t UserTxBufferFS   [APP_TX_DATA_SIZE] __ALIGN_END ; 
+extern uint8_t serialBuffer[];
+#define UserTxBufferFS serialBuffer 
 
 
 #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
