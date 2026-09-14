@@ -35,7 +35,7 @@ void serialPutc(char c) {
   }
 #endif
 #if defined(AUX_SERIAL)
-  if (auxSerialTracesEnabled()) 
+  if (auxSerialTracesEnabled())
     auxSerialPutc(c);
 #endif
 }
