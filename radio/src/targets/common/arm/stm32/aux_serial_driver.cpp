@@ -22,7 +22,8 @@
 
 #if defined(AUX_SERIAL)
 uint8_t auxSerialMode = UART_MODE_COUNT;  // Prevent debug output before port is setup
-Fifo<uint8_t, 128> auxSerialTxFifo;
+#include "serial_buffer_union.h"
+extern SerialBufferUnion serialBuffer;
 DMAFifo<32> auxSerialRxFifo __DMA (AUX_SERIAL_DMA_Channel_RX);
 
 void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_DATAWIDTH_8B, uint16_t parity = LL_USART_PARITY_NONE, uint16_t stop = LL_USART_STOPBITS_1)
@@ -73,6 +74,7 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_
 #endif // SBUS_TRAINER
   }
   else {
+    serialTxBufferClear(); // clear for all TX modes
     LL_USART_Enable(AUX_SERIAL_USART);
 #if !defined(PCBI6X)
     LL_USART_EnableIT_RXNE(AUX_SERIAL_USART);
@@ -91,13 +93,7 @@ void auxSerialInit(unsigned int mode, unsigned int protocol)
 
   switch (mode) {
     case UART_MODE_TELEMETRY_MIRROR:
-// The same baudrate for Crossfire and AFHDS2A
-// #if defined(CROSSFIRE)
-//       if (protocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
-//         auxSerialSetup(CROSSFIRE_TELEM_MIRROR_BAUDRATE, false);
-//         break;
-//       }
-// #endif
+      // The same baudrate for Crossfire and AFHDS2A, CROSSFIRE_TELEM_MIRROR_BAUDRATE
       auxSerialSetup(AFHDS2A_TELEM_MIRROR_BAUDRATE, false);
       break;
 
@@ -131,9 +127,9 @@ void auxSerialPutc(char c)
 {
 #if !defined(SIMU)
   // do not wait, it can cause reboot and EdgeTX is not doing it
-  if (auxSerialTxFifo.isFull()) return;
+  if (serialBuffer.auxSerialTxFifo.isFull()) return;
 
-  auxSerialTxFifo.push(c);
+  serialBuffer.auxSerialTxFifo.push(c);
   LL_USART_EnableIT_TXE(AUX_SERIAL_USART);
 #endif
 }
@@ -168,7 +164,7 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
   // Send
   if (LL_USART_IsActiveFlag_TXE(AUX_SERIAL_USART)) {
     uint8_t txchar;
-    if (auxSerialTxFifo.pop(txchar)) {
+    if (serialBuffer.auxSerialTxFifo.pop(txchar)) {
       /* Write one byte to the transmit data register */
       LL_USART_TransmitData8(AUX_SERIAL_USART, txchar);
    }
