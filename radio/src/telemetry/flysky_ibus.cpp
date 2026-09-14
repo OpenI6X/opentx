@@ -316,11 +316,14 @@ void processFlySkyTelemetryFrame(uint8_t * frame) {
     frame[7] = AFHDS2A_RXPACKET_SIZE - 8;
 
     for (uint8_t c = 4; c < AFHDS2A_RXPACKET_SIZE; c++) {
-#if defined(AUX_SERIAL)
-      auxSerialPutc(frame[c]);
-#endif
 #if !defined(DEBUG) && defined(USB_SERIAL)
-      usbSerialPutc(frame[c]);
+      if (usbTelemMirrorActive()) {
+        usbSerialPutc(frame[c]);
+      } else
+#endif
+#if defined(AUX_SERIAL)
+      if (g_eeGeneral.auxSerialMode == UART_MODE_TELEMETRY_MIRROR)
+        auxSerialPutc(frame[c]);
 #endif
     }
   }
