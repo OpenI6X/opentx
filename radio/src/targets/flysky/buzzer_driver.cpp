@@ -126,7 +126,7 @@ static constexpr AudioToneData specialSoundTones[] = {
   AUDIO_TONE(BEEP_DEFAULT_FREQ + 900,  80,  20, PLAY_REPEAT(2), 2),  // CHEEP
   AUDIO_TONE(BEEP_DEFAULT_FREQ + 1500, 40,  80, PLAY_REPEAT(10), 0), // RATATA
   AUDIO_TONE(BEEP_DEFAULT_FREQ + 1500, 40, 400, PLAY_REPEAT(2), 0),  // TICK
-  AUDIO_TONE(450,                     160,  40, PLAY_REPEAT(2), 2),  // SIREN
+  AUDIO_TONE(990 + 450,                     160,  40, PLAY_REPEAT(2), 2),  // SIREN
 
   AUDIO_TONE(BEEP_DEFAULT_FREQ + 750,  40,  20, PLAY_REPEAT(10), 0), // RING
   AUDIO_TONE(BEEP_DEFAULT_FREQ + 750,  40,  80, PLAY_REPEAT(1),  0),
@@ -275,23 +275,70 @@ void audioEvent(unsigned int index)
   }
 }
 
+#if defined(BUZZER_SINE)
+#define SINE_SAMPLES 16
+
+static const uint8_t sineTable[5][SINE_SAMPLES] = {
+  {   0,   1,   5,  10,  16,  22,  27,  31,  32,  31,  27,  22,  16,  10,   5,   1 }, // Vol 0 (peak 32)
+  {   0,   2,   9,  20,  32,  44,  55,  62,  64,  62,  55,  44,  32,  20,   9,   2 }, // Vol 1 (peak 64)
+  {   0,   4,  17,  35,  57,  80,  98, 111, 115, 111,  98,  80,  57,  35,  17,   4 }, // Vol 2 (peak 115)
+  {   0,   7,  26,  56,  90, 124, 154, 173, 180, 173, 154, 124,  90,  56,  26,   7 }, // Vol 3 (peak 180)
+  {   0,  10,  37,  79, 128, 177, 219, 246, 255, 246, 219, 177, 128,  79,  37,  10 }  // Vol 4 (peak 255)
+};
+#endif
+
+// 2-sample circular buffer for carrier-modulated square wave: [Volume, 0]
+static uint8_t squareBuffer[2] = { 0, 0 };
+
+// Logarithmic carrier duty levels (0..255) for volume settings (-2 to +2)
+// Vol 0 (-18 dB), Vol 1 (-12 dB), Vol 2 (-7 dB), Vol 3 (-3 dB), Vol 4 (0 dB full-scale)
+static const uint8_t volumeAmplitudes[5] = { 32, 64, 115, 180, 255 };
+
+void buzzerInit()
+{
+  GPIO_InitTypeDef gpio_init;
+  gpio_init.GPIO_Pin = BUZZER_GPIO_PIN;
+  gpio_init.GPIO_Mode = GPIO_Mode_AF;
+  gpio_init.GPIO_OType = GPIO_OType_PP;
+  gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
+  gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_Init(BUZZER_GPIO_PORT, &gpio_init);
+
+  GPIO_PinAFConfig(BUZZER_GPIO_PORT, BUZZER_GPIO_PinSource, GPIO_AF_2);
+
+  // TIM1: Ultrasonic PWM carrier at 187.5 kHz (48MHz / 256)
+  BUZZER_CARRIER_TIMER->PSC   = 0;
+  BUZZER_CARRIER_TIMER->ARR   = 255;
+  BUZZER_CARRIER_TIMER->CCR1  = 0;
+  BUZZER_CARRIER_TIMER->CCMR1 = TIM_OCMode_PWM1 | TIM_CCMR1_OC1PE;
+  BUZZER_CARRIER_TIMER->CCER  = TIM_CCER_CC1E;
+  BUZZER_CARRIER_TIMER->BDTR |= TIM_BDTR_MOE;
+  BUZZER_CARRIER_TIMER->EGR   = TIM_EGR_UG;            // Force shadow register reload to 0
+  BUZZER_CARRIER_TIMER->SR    = (U16)~TIM_FLAG_Update;
+
+  // TIM2: Audio half-cycle timer triggering DMA
+  BUZZER_TIMER->PSC  = 0;
+  BUZZER_TIMER->DIER = TIM_DIER_UDE;
+
+  // DMA1 Channel 2: Circular 2-sample transfer to BUZZER_CARRIER_TIMER->CCR1
+  DMA1_Channel2->CPAR  = (uint32_t)&(BUZZER_CARRIER_TIMER->CCR1);
+  DMA1_Channel2->CMAR  = (uint32_t)squareBuffer;
+  DMA1_Channel2->CNDTR = 2;
+  DMA1_Channel2->CCR   = DMA_CCR_DIR | DMA_CCR_CIRC | DMA_CCR_MINC | DMA_CCR_PSIZE_0;
+}
+
 static void setVolume(int8_t volume)
 {
-  volume += 2;
-  switch (volume) {
-    case 0: PWM_TIMER->CCR1 = PWM_TIMER->ARR / 16; break;
-    case 1: PWM_TIMER->CCR1 = PWM_TIMER->ARR / 8; break;
-    case 2: PWM_TIMER->CCR1 = PWM_TIMER->ARR / 4; break;
-    case 3: PWM_TIMER->CCR1 = PWM_TIMER->ARR / 3; break;
-    case 4: PWM_TIMER->CCR1 = PWM_TIMER->ARR / 2; break;
-  }
+  volume = limit<int8_t>(0, volume + 2, 4);
+  squareBuffer[0] = volumeAmplitudes[volume];
 }
 
 static void setFrequency(uint32_t freq)
 {
-  PWM_TIMER->ARR = 1000000 / freq - 1; // freq below 16Hz will overflow 16bit ARR (never happen)
-  if (PWM_TIMER->CNT > PWM_TIMER->ARR) // fixes vario noise on descent
-    PWM_TIMER->CNT = 0;
+  freq = limit<uint32_t>(BEEP_MIN_FREQ, freq, BEEP_MAX_FREQ);
+  BUZZER_TIMER->ARR = (24000000 / freq) - 1;
+  if (BUZZER_TIMER->CNT > BUZZER_TIMER->ARR)
+    BUZZER_TIMER->CNT = 0;
 }
 
 static unsigned int getToneLength(uint16_t len)
@@ -304,23 +351,47 @@ static unsigned int getToneLength(uint16_t len)
       result = (result * 341) >> 10; // * 0,333 == /3
   }
   else if (g_eeGeneral.beepLength > 0) {
-    result *= (1+g_eeGeneral.beepLength);
+    result *= (1 + g_eeGeneral.beepLength);
   }
   return result;
 }
 
 static void buzzerOn(uint32_t freq, int8_t volume)
 {
+//  if (!(BUZZER_TIMER->DIER & TIM_DIER_UDE))
+//    buzzerHardwareInit();
+
   setFrequency(freq);
   setVolume(volume);
-  PWM_TIMER->CR1 = TIM_CR1_CEN;
+
+  // If a tone is already playing (e.g. during a frequency sweep), only update freq/vol
+  if (!(DMA1_Channel2->CCR & DMA_CCR_EN)) {
+    DMA1_Channel2->CNDTR = 2;
+    DMA1_Channel2->CCR  |= DMA_CCR_EN;
+
+    BUZZER_CARRIER_TIMER->CNT   = 0;
+    BUZZER_TIMER->CNT        = 0;
+    BUZZER_TIMER->SR         = 0;
+    BUZZER_CARRIER_TIMER->SR    = (U16)~TIM_FLAG_Update;
+
+    BUZZER_CARRIER_TIMER->CR1  |= TIM_CR1_CEN;
+    BUZZER_TIMER->CR1       |= TIM_CR1_CEN;
+    BUZZER_CARRIER_TIMER->BDTR |= TIM_BDTR_MOE;
+  }
 }
 
 static void buzzerOff()
 {
-  PWM_TIMER->CR1 &= ~TIM_CR1_CEN;
-  PWM_TIMER->CNT = 0;                     //
-  PWM_TIMER->SR = (U16)~TIM_FLAG_Update;  // solves random hiss issue when timer stopped
+  BUZZER_TIMER->CR1          &= ~TIM_CR1_CEN;
+  BUZZER_CARRIER_TIMER->CR1     &= ~TIM_CR1_CEN;
+  BUZZER_CARRIER_TIMER->BDTR    &= ~TIM_BDTR_MOE;
+  DMA1_Channel2->CCR &= ~DMA_CCR_EN;
+  BUZZER_CARRIER_TIMER->CCR1     = 0;
+  BUZZER_CARRIER_TIMER->EGR      = TIM_EGR_UG;    // Flush 0 immediately to active shadow register
+  BUZZER_CARRIER_TIMER->SR       = (U16)~TIM_FLAG_Update;
+  BUZZER_TIMER->SR            = 0;
+  BUZZER_CARRIER_TIMER->CNT      = 0;
+  BUZZER_TIMER->CNT           = 0;
 }
 
 void playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t flags, int8_t freqIncr)

@@ -300,7 +300,7 @@ uint32_t readTrims(void);
 #define NUM_TRIMS                      4
 #define NUM_TRIMS_KEYS                 (NUM_TRIMS * 2)
 
-#define DEFAULT_STICK_DEADZONE         4 // 2 << (4-1) => -16 to +16
+#define DEFAULT_STICK_DEADZONE         5 // 2 << (5-1) => -32 to +32
 
 #define NUM_MOUSE_ANALOGS              0
 #define NUM_DUMMY_ANAS                 0
@@ -424,7 +424,6 @@ uint8_t telemetryGetByte(uint8_t * byte);
 extern volatile bool pendingTelemetryPollFrame;
 
 // Audio driver
-void initBuzzerTimer(void);
 
 #define VOLUME_LEVEL_MAX  30 // dfplayer max
 #define VOLUME_LEVEL_DEF  23

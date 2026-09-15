@@ -351,8 +351,10 @@ void AFHDS2A_callback();
 #define BUZZER_GPIO_PIN                 GPIO_Pin_8
 #define BUZZER_GPIO_PinSource           GPIO_PinSource8
 #define BUZZER_RCC_AHBPeriph            RCC_AHBPeriph_GPIOA
-#define PWM_RCC_APB2Periph              RCC_APB2Periph_TIM1
-#define PWM_TIMER                       TIM1
+#define BUZZER_RCC_APB1Periph           RCC_APB1Periph_TIM2
+#define BUZZER_RCC_APB2Periph           RCC_APB2Periph_TIM1
+#define BUZZER_CARRIER_TIMER            TIM1
+#define BUZZER_TIMER                    TIM2
 
 // DFPlayer
 #if defined(DFPLAYER)
@@ -382,10 +384,10 @@ void AFHDS2A_callback();
 #define RCC_AHB1_LIST                   (I2C_RCC_AHB1Periph | BACKLIGHT_STD_RCC_AHB1Periph | BACKLIGHT_RCC_AHB1Periph | LCD_RCC_AHB1Periph | KEYS_RCC_AHB1Periph | BUZZER_RCC_AHBPeriph \
                                          | PWR_RCC_AHB1Periph | EXTMODULE_RCC_AHBPeriph | CRC_RCC_AHB1Periph | TELEMETRY_RCC_AHB1Periph | AUX_SERIAL_RCC_AHB1Periph \
                                          | AUX3_SERIAL_RCC_AHB1Periph | AUX4_SERIAL_RCC_AHB1Periph | ADC_RCC_AHB1Periph | USB_RCC_AHBPeriph_GPIO)
-#define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | RCC_APB1Periph_TIM6 /*delays*/ | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph \
+#define RCC_APB1_LIST                   (I2C_RCC_APB1Periph | RCC_APB1Periph_TIM6 /*delays*/ | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph | BUZZER_RCC_APB1Periph \
                                          | TELEMETRY_RCC_APB1Periph | BACKLIGHT_STD_RCC_APB1Periph | BACKLIGHT_RCC_APB1Periph | RCC_APB1Periph_USB \
                                          | AUX3_SERIAL_RCC_APB1Periph | AUX4_SERIAL_RCC_APB1Periph | USB_RCC_APB1Periph_CRS)
-#define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB2Periph | PWM_RCC_APB2Periph | INTMODULE_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph \
+#define RCC_APB2_LIST                   (MIXER_SCHEDULER_TIMER_RCC_APB2Periph | BUZZER_RCC_APB2Periph | INTMODULE_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph \
                                          | AUX_SERIAL_RCC_APB2Periph | ADC_RCC_APB2Periph)
 
 #endif // _HAL_H_
