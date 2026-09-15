@@ -306,8 +306,8 @@ void buzzerInit()
 
   GPIO_PinAFConfig(BUZZER_GPIO_PORT, BUZZER_GPIO_PinSource, GPIO_AF_2);
 
-  // TIM1: Ultrasonic PWM carrier at 187.5 kHz (48MHz / 256)
-  BUZZER_CARRIER_TIMER->PSC   = 0;
+  //  TIM1: Ultrasonic PWM carrier. PSC = 3 -> 48MHz / (3 + 1) / 256 = 46.875 kHz
+  BUZZER_CARRIER_TIMER->PSC   = 3;
   BUZZER_CARRIER_TIMER->ARR   = 255;
   BUZZER_CARRIER_TIMER->CCR1  = 0;
   BUZZER_CARRIER_TIMER->CCMR1 = TIM_OCMode_PWM1 | TIM_CCMR1_OC1PE;
