@@ -337,7 +337,7 @@ static void setFrequency(uint32_t freq)
 {
   freq = limit<uint32_t>(BEEP_MIN_FREQ, freq, BEEP_MAX_FREQ);
   BUZZER_TIMER->ARR = (24000000 / freq) - 1;
-  if (BUZZER_TIMER->CNT > BUZZER_TIMER->ARR)
+  if (BUZZER_TIMER->CNT > BUZZER_TIMER->ARR) // fixes vario noise on descent
     BUZZER_TIMER->CNT = 0;
 }
 
@@ -358,9 +358,6 @@ static unsigned int getToneLength(uint16_t len)
 
 static void buzzerOn(uint32_t freq, int8_t volume)
 {
-//  if (!(BUZZER_TIMER->DIER & TIM_DIER_UDE))
-//    buzzerHardwareInit();
-
   setFrequency(freq);
   setVolume(volume);
 
