@@ -424,7 +424,6 @@ uint8_t telemetryGetByte(uint8_t * byte);
 extern volatile bool pendingTelemetryPollFrame;
 
 // Audio driver
-void initBuzzerTimer(void);
 
 #define VOLUME_LEVEL_MAX  30 // dfplayer max
 #define VOLUME_LEVEL_DEF  23

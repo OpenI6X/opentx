@@ -36,20 +36,6 @@ volatile uint32_t __attribute__((section(".ram_vector,\"aw\",%nobits @"))) ram_v
 extern volatile uint32_t g_pfnVectors[VECTOR_TABLE_SIZE];
 #endif
 
-//audio
-void buzzerInit()
-{
-  GPIO_InitTypeDef gpio_init;
-  gpio_init.GPIO_Pin = BUZZER_GPIO_PIN;
-  gpio_init.GPIO_Mode = GPIO_Mode_AF;
-  gpio_init.GPIO_OType = GPIO_OType_PP;
-  gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_Init(BUZZER_GPIO_PORT, &gpio_init);
-
-  GPIO_PinAFConfig(BUZZER_GPIO_PORT, BUZZER_GPIO_PinSource, GPIO_AF_2);
-}
-
 #define __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH()  do {SYSCFG->CFGR1 &= ~(SYSCFG_CFGR1_MEM_MODE); \
                                              SYSCFG->CFGR1 |= SYSCFG_CFGR1_MEM_MODE_0;  \
                                             }while(0)
@@ -90,19 +76,6 @@ void watchdogInit(unsigned int duration)
   IWDG->KR = 0xCCCC;    // start
 }
 
-void initBuzzerTimer()
-{
-  PWM_TIMER->PSC = 48 - 1; // 48MHz -> 1MHz
-  PWM_TIMER->CR1 &= ~(TIM_CR1_DIR | TIM_CR1_CMS | TIM_CR1_CKD);
-  PWM_TIMER->CR1 |= TIM_CounterMode_Up | TIM_CKD_DIV1;
-  PWM_TIMER->ARR = 400; // count up to
-  PWM_TIMER->CCR1 = 200; // ARR/2 = PWM duty 50%
-  // PWM_TIMER->RCR = 0;
-  PWM_TIMER->CCMR1 |= TIM_OCMode_PWM1;
-  PWM_TIMER->CCER |= TIM_OCPolarity_Low | TIM_CCER_CC1E; // TIM_OCPOLARITY_LOW + enable Capture compare channel
-  PWM_TIMER->BDTR |= TIM_BDTR_MOE;
-}
-
 void boardInit()
 {
 #if defined(BOOT)
@@ -135,7 +108,6 @@ void boardInit()
   adcInit();
 //   delaysInit();
   lcdInit(); // delaysInit() must be called before
-  initBuzzerTimer();
   init2MhzTimer();
   init5msTimer();
   __enable_irq();
