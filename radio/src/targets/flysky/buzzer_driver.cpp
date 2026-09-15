@@ -314,7 +314,7 @@ void buzzerInit()
   BUZZER_CARRIER_TIMER->CCER  = TIM_CCER_CC1E;
   BUZZER_CARRIER_TIMER->BDTR |= TIM_BDTR_MOE;
   BUZZER_CARRIER_TIMER->EGR   = TIM_EGR_UG;            // Force shadow register reload to 0
-  BUZZER_CARRIER_TIMER->SR    = (U16)~TIM_FLAG_Update;
+//  BUZZER_CARRIER_TIMER->SR    = (U16)~TIM_FLAG_Update;
 
   // TIM2: Audio half-cycle timer triggering DMA
   BUZZER_TIMER->PSC  = 0;
@@ -324,18 +324,17 @@ void buzzerInit()
   DMA1_Channel2->CPAR  = (uint32_t)&(BUZZER_CARRIER_TIMER->CCR1);
   DMA1_Channel2->CMAR  = (uint32_t)squareBuffer;
   DMA1_Channel2->CNDTR = 2;
-  DMA1_Channel2->CCR   = DMA_CCR_DIR | DMA_CCR_CIRC | DMA_CCR_MINC | DMA_CCR_PSIZE_0;
+  DMA1_Channel2->CCR   = DMA_CCR_DIR | DMA_CCR_CIRC | DMA_CCR_MINC | DMA_CCR_PSIZE_0 | TIM_CR1_CEN;
 }
 
 static void setVolume(int8_t volume)
 {
-  volume = limit<int8_t>(0, volume + 2, 4);
-  squareBuffer[0] = volumeAmplitudes[volume];
+  squareBuffer[0] = volumeAmplitudes[volume + 2];
 }
 
 static void setFrequency(uint32_t freq)
 {
-  freq = limit<uint32_t>(BEEP_MIN_FREQ, freq, BEEP_MAX_FREQ);
+  // freq = limit<uint32_t>(BEEP_MIN_FREQ, freq, BEEP_MAX_FREQ);
   BUZZER_TIMER->ARR = (24000000 / freq) - 1;
   if (BUZZER_TIMER->CNT > BUZZER_TIMER->ARR) // fixes vario noise on descent
     BUZZER_TIMER->CNT = 0;
@@ -362,17 +361,17 @@ static void buzzerOn(uint32_t freq, int8_t volume)
   setVolume(volume);
 
   // If a tone is already playing (e.g. during a frequency sweep), only update freq/vol
-  if (!(DMA1_Channel2->CCR & DMA_CCR_EN)) {
-    DMA1_Channel2->CNDTR = 2;
-    DMA1_Channel2->CCR  |= DMA_CCR_EN;
+  if (!(BUZZER_TIMER->CR1 & TIM_CR1_CEN)) {
+    // DMA1_Channel2->CNDTR = 2;
+    // DMA1_Channel2->CCR  |= DMA_CCR_EN;
 
     BUZZER_CARRIER_TIMER->CNT   = 0;
-    BUZZER_TIMER->CNT        = 0;
-    BUZZER_TIMER->SR         = 0;
-    BUZZER_CARRIER_TIMER->SR    = (U16)~TIM_FLAG_Update;
+    BUZZER_TIMER->CNT           = 0;
+    // BUZZER_TIMER->SR            = 0;
+    // BUZZER_CARRIER_TIMER->SR    = (U16)~TIM_FLAG_Update;
 
     BUZZER_CARRIER_TIMER->CR1  |= TIM_CR1_CEN;
-    BUZZER_TIMER->CR1       |= TIM_CR1_CEN;
+    BUZZER_TIMER->CR1          |= TIM_CR1_CEN;
     BUZZER_CARRIER_TIMER->BDTR |= TIM_BDTR_MOE;
   }
 }
@@ -382,13 +381,13 @@ static void buzzerOff()
   BUZZER_TIMER->CR1          &= ~TIM_CR1_CEN;
   BUZZER_CARRIER_TIMER->CR1     &= ~TIM_CR1_CEN;
   BUZZER_CARRIER_TIMER->BDTR    &= ~TIM_BDTR_MOE;
-  DMA1_Channel2->CCR &= ~DMA_CCR_EN;
+  // DMA1_Channel2->CCR &= ~DMA_CCR_EN;
   BUZZER_CARRIER_TIMER->CCR1     = 0;
   BUZZER_CARRIER_TIMER->EGR      = TIM_EGR_UG;    // Flush 0 immediately to active shadow register
-  BUZZER_CARRIER_TIMER->SR       = (U16)~TIM_FLAG_Update;
-  BUZZER_TIMER->SR            = 0;
-  BUZZER_CARRIER_TIMER->CNT      = 0;
-  BUZZER_TIMER->CNT           = 0;
+  // BUZZER_CARRIER_TIMER->SR       = (U16)~TIM_FLAG_Update;
+  // BUZZER_TIMER->SR            = 0;
+  // BUZZER_CARRIER_TIMER->CNT      = 0;
+  // BUZZER_TIMER->CNT           = 0;
 }
 
 void playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t flags, int8_t freqIncr)
