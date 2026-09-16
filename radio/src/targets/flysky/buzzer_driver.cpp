@@ -296,22 +296,21 @@ static const uint8_t volumeAmplitudes[5] = { 32, 64, 115, 180, 255 };
 
 void buzzerInit()
 {
-  GPIO_InitTypeDef gpio_init;
-  gpio_init.GPIO_Pin = BUZZER_GPIO_PIN;
-  gpio_init.GPIO_Mode = GPIO_Mode_AF;
-  gpio_init.GPIO_OType = GPIO_OType_PP;
-  gpio_init.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  gpio_init.GPIO_Speed = GPIO_Speed_2MHz;
-  GPIO_Init(BUZZER_GPIO_PORT, &gpio_init);
-
-  GPIO_PinAFConfig(BUZZER_GPIO_PORT, BUZZER_GPIO_PinSource, GPIO_AF_2);
+  LL_GPIO_InitTypeDef gpio_init; // = {0};
+  gpio_init.Pin        = BUZZER_GPIO_PIN;
+  gpio_init.Mode       = LL_GPIO_MODE_ALTERNATE;
+  gpio_init.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  gpio_init.Pull       = LL_GPIO_PULL_NO;
+  gpio_init.Speed      = LL_GPIO_SPEED_FREQ_LOW;
+  gpio_init.Alternate  = BUZZER_GPIO_AF;
+  LL_GPIO_Init(BUZZER_GPIO_PORT, &gpio_init);
 
   // TIM1: Ultrasonic PWM carrier. PSC = 3 -> 48MHz / (3 + 1) / 256 = 46.875 kHz
   BUZZER_CARRIER_TIMER->PSC   = 3;
   BUZZER_CARRIER_TIMER->ARR   = 255;
   BUZZER_CARRIER_TIMER->CCR1  = 0;
-  BUZZER_CARRIER_TIMER->CCMR1 = TIM_OCMode_PWM1 | TIM_CCMR1_OC1PE;
-  BUZZER_CARRIER_TIMER->CCER  = TIM_CCER_CC1E;
+  BUZZER_CARRIER_TIMER->CCMR1 = LL_TIM_OCMODE_PWM1 | TIM_CCMR1_OC1PE;
+  BUZZER_CARRIER_TIMER->CCER  = LL_TIM_CHANNEL_CH1;
   BUZZER_CARRIER_TIMER->BDTR |= TIM_BDTR_MOE;
   BUZZER_CARRIER_TIMER->EGR   = TIM_EGR_UG;            // Force shadow register reload to 0
 
