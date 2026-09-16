@@ -3,13 +3,13 @@
  * HW CRC can be 16x faster than lookup table implementation
  *
  */
-#include "stm32f0xx_crc.h"
+#include "opentx.h"
 #include "crc_driver.h"
 
 uint8_t crc8(const uint8_t * ptr, uint32_t len) {
   CRC->INIT = CRC8_INIT_VAL;
   CRC->POL = CRC8_POL_D5;
-  CRC->CR = CRC_PolSize_8;
+  CRC->CR = LL_CRC_POLYLENGTH_8B;
   CRC->CR |= CRC_CR_RESET;
   for (uint32_t i = 0; i < len; i++) {
     *(__IO uint8_t*)(CRC_BASE) = (*ptr++);
@@ -20,7 +20,7 @@ uint8_t crc8(const uint8_t * ptr, uint32_t len) {
 uint8_t crc8_BA(const uint8_t * ptr, uint32_t len) {
   CRC->INIT = CRC8_INIT_VAL;
   CRC->POL = CRC8_POL_BA;
-  CRC->CR = CRC_PolSize_8;
+  CRC->CR = LL_CRC_POLYLENGTH_8B;
   CRC->CR |= CRC_CR_RESET;
   for (uint32_t i = 0; i < len; i++) {
     *(__IO uint8_t*)(CRC_BASE) = (*ptr++);
@@ -32,7 +32,7 @@ uint8_t crc8_BA(const uint8_t * ptr, uint32_t len) {
 uint16_t crc16(const uint8_t * ptr, uint32_t len) {
   CRC->INIT = CRC16_INIT_VAL;
   CRC->POL = CRC16_POL_1021;
-  CRC->CR = CRC_PolSize_16;
+  CRC->CR = LL_CRC_POLYLENGTH_16B;
   CRC->CR |= CRC_CR_RESET;
   for (uint32_t i = 0; i < len; i++) {
     *(__IO uint8_t*)(CRC_BASE) = (*ptr++);
