@@ -342,12 +342,9 @@ static void setFrequency(uint32_t freq)
 
 static unsigned int getToneLength(uint16_t len)
 {
-  unsigned int result = len; // default
-  if (g_eeGeneral.beepLength < 0) { // result /= (1-g_eeGeneral.beepLength);
-    if (g_eeGeneral.beepLength == -1) // result /= (1+1);
-      result /= 2;
-    else // result /= (1+2);
-      result = (result * 341) >> 10; // * 0,333 == /3
+  unsigned int result = len;
+  if (g_eeGeneral.beepLength < 0) {
+    result /= (1 - g_eeGeneral.beepLength);
   }
   else if (g_eeGeneral.beepLength > 0) {
     result *= (1 + g_eeGeneral.beepLength);
