@@ -192,7 +192,7 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
   }
 #endif
   // Receive
-#if !defined(PCBI6X) // works but not needed
+#if defined(LUA) // PCBI6X: works but not needed
   uint32_t status = AUX_SERIAL_USART->ISR;
   while (status & (USART_ISR_RXNE | USART_FLAG_ERRORS)) {
     uint8_t data = AUX_SERIAL_USART->RDR;
@@ -205,7 +205,7 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
     }
     status = AUX_SERIAL_USART->ISR;
   }
-#endif // PCBI6X
+#endif
 }
 #endif // AUX_SERIAL
 
