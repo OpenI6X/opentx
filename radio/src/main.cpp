@@ -428,7 +428,7 @@ void perMain()
     #endif
   }
 #if defined(USB_LOGS)
-  else if (getSelectedUsbMode() == USB_SERIAL_MODE) {
+  else if (getSelectedUsbMode() == USB_SERIAL_MODE && g_eeGeneral.usbSerialMode == USB_SERIAL_MODE_LOGS) {
     usbLogsWrite();
   }
 #endif
