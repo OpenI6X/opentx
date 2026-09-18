@@ -80,11 +80,11 @@ void usbLogsWrite()
   }
 
   if (isFunctionActive(FUNCTION_LOGS) && logDelay > 0) {
-    tmr10ms_t currentTimer = g_eeGeneral.globalTimer + sessionTimer; // get_tmr10ms();
-    if (lastUsbLogTime != 0 && (tmr10ms_t)(currentTimer - lastUsbLogTime) < (tmr10ms_t)logDelay * 10) {
+    tmr10ms_t tmr10ms = get_tmr10ms();
+    if (lastUsbLogTime != 0 && (tmr10ms_t)(tmr10ms - lastUsbLogTime) < (tmr10ms_t)logDelay * 10) {
       return;
     }
-    lastUsbLogTime = currentTimer;
+    lastUsbLogTime = tmr10ms;
 
     if (!usbHeaderSent) {
       usbLogsWriteHeader();
@@ -92,10 +92,10 @@ void usbLogsWrite()
       return; // skip first log line after header to do not overload buffer
     }
 
-    uint8_t hours = currentTimer / 100 / 60 / 60;
-    uint8_t minutes = (currentTimer / 100 / 60) % 60;
-    uint8_t seconds = (currentTimer / 100) % 60;
-    uint8_t g_ms100 = currentTimer % 100;
+    uint8_t hours = tmr10ms / 100 / 60 / 60;
+    uint8_t minutes = (tmr10ms / 100 / 60) % 60;
+    uint8_t seconds = (tmr10ms / 100) % 60;
+    uint8_t g_ms100 = tmr10ms % 100;
     serialPrintf("2000-01-01,%02d:%02d:%02d.%02d0,", hours, minutes, seconds, g_ms100);
 
     for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
