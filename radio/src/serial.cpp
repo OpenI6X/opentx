@@ -43,7 +43,7 @@ void serialPutc(char c) {
 void serialPrintf(const char * format, ...)
 {
   va_list arglist;
-  char tmp[PRINTF_BUFFER_SIZE+1];
+  char tmp[PRINTF_BUFFER_SIZE];
 
   va_start(arglist, format);
   mini_vsnprintf(tmp, PRINTF_BUFFER_SIZE, format, arglist);
