@@ -289,7 +289,7 @@ void menuRadioHardware(event_t event)
 
 #if defined(AUX_SERIAL)
       case ITEM_RADIO_HARDWARE_AUX_SERIAL_MODE:
-        g_eeGeneral.auxSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, "AUX1", STR_AUX_SERIAL_MODES, g_eeGeneral.auxSerialMode, 0, UART_MODE_MAX, attr, event);
+        g_eeGeneral.auxSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, "AUX1", STR_AUX_SERIAL_MODES, g_eeGeneral.auxSerialMode, 0, UART_MODE_MAX, attr, event, INDENT_WIDTH);
         if (attr && checkIncDec_Ret) {
           auxSerialInit(g_eeGeneral.auxSerialMode, modelTelemetryProtocol());
           // storageDirty(EE_GENERAL);
@@ -299,8 +299,7 @@ void menuRadioHardware(event_t event)
 
 #if defined(USB_SERIAL)
       case ITEM_RADIO_HARDWARE_USB_SERIAL_MODE:
-        // manual string until SBUS Trainer will work for it as well
-        g_eeGeneral.usbSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, "USB-VCP", "\014OFF/Debug\0  Telem MirrorLogs", g_eeGeneral.usbSerialMode, 0, USB_SERIAL_MODE_MAX, attr, event);
+        g_eeGeneral.usbSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, "USB-VCP", "\014OFF/Debug\0  Telem MirrorLogs", g_eeGeneral.usbSerialMode, USB_SERIAL_MODE_OFF, USB_SERIAL_MODE_MAX, attr, event, INDENT_WIDTH);
         break;
 #endif
 
