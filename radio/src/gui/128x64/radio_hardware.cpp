@@ -64,8 +64,12 @@ enum {
   ITEM_RADIO_HARDWARE_BLUETOOTH_DISTANT_ADDR,
   ITEM_RADIO_HARDWARE_BLUETOOTH_NAME,
 #endif
+  ITEM_RADIO_HARDWARE_SERIAL_PORT_LABEL,
 #if defined(AUX_SERIAL)
   ITEM_RADIO_HARDWARE_AUX_SERIAL_MODE,
+#endif
+#if defined(USB_SERIAL)
+  ITEM_RADIO_HARDWARE_USB_SERIAL_MODE,
 #endif
   ITEM_RADIO_HARDWARE_JITTER_FILTER,
 #if defined(MENU_DIAG_ANAS_KEYS)
@@ -142,7 +146,13 @@ void menuRadioHardware(event_t event)
 #if defined(CROSSFIRE)
     0 /* max bauds */,
 #endif
-    0 /* Aux serial mode */,
+    LABEL(Serial ports),
+#if defined(AUX_SERIAL)
+      0 /* Aux serial mode */,
+#endif
+#if defined(USB_SERIAL)
+      0 /* USB serial mode */,
+#endif
     BLUETOOTH_ROWS
     0 /*jitter filter*/,
 #if defined(MENU_DIAG_ANAS_KEYS)
@@ -273,13 +283,23 @@ void menuRadioHardware(event_t event)
         break;
 #endif
 
+      case ITEM_RADIO_HARDWARE_SERIAL_PORT_LABEL:
+        lcdDrawTextAlignedLeft(y, STR_AUX_SERIAL_MODE);
+        break;
+
 #if defined(AUX_SERIAL)
       case ITEM_RADIO_HARDWARE_AUX_SERIAL_MODE:
-        g_eeGeneral.auxSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, STR_AUX_SERIAL_MODE, STR_AUX_SERIAL_MODES, g_eeGeneral.auxSerialMode, 0, UART_MODE_MAX, attr, event);
+        g_eeGeneral.auxSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, "AUX1", STR_AUX_SERIAL_MODES, g_eeGeneral.auxSerialMode, 0, UART_MODE_MAX, attr, event, INDENT_WIDTH);
         if (attr && checkIncDec_Ret) {
           auxSerialInit(g_eeGeneral.auxSerialMode, modelTelemetryProtocol());
-          storageDirty(EE_GENERAL);
+          // storageDirty(EE_GENERAL);
         }
+        break;
+#endif
+
+#if defined(USB_SERIAL)
+      case ITEM_RADIO_HARDWARE_USB_SERIAL_MODE:
+        g_eeGeneral.usbSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, "USB-VCP", "\014OFF/Debug\0  Telem MirrorLogs", g_eeGeneral.usbSerialMode, USB_SERIAL_MODE_OFF, USB_SERIAL_MODE_MAX, attr, event, INDENT_WIDTH);
         break;
 #endif
 
