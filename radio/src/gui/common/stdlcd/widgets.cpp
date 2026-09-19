@@ -117,7 +117,7 @@ void editName(coord_t x, coord_t y, char * name, uint8_t size, event_t event, ui
 #elif defined(PCBTARANIS)
         case EVT_KEY_LONG(KEY_ENTER):
 #else
-        case EVT_KEY_LONG(KEY_LEFT):
+        // case EVT_KEY_LONG(KEY_LEFT): // PCBI6X: KEY_LEFT not present
         case EVT_KEY_LONG(KEY_RIGHT):
 #endif
           

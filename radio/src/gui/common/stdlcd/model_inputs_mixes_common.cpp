@@ -117,7 +117,7 @@ void menuModelExposMixes_HandleEvent(event_t event, uint8_t chn, int8_t sub, con
         }
       }
       break;
-    case EVT_KEY_LONG(KEY_LEFT):
+    // case EVT_KEY_LONG(KEY_LEFT): // PCBI6X: KEY_LEFT not present
     case EVT_KEY_LONG(KEY_RIGHT):
       if (s_copyMode && !s_copyTgtOfs) {
         if (ops->reachLimitFunc()) break;

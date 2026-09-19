@@ -309,7 +309,7 @@ void menuMainView(event_t event)
     */
 
     case EVT_KEY_NEXT_PAGE:
-    case EVT_KEY_PREVIOUS_PAGE:
+    // case EVT_KEY_PREVIOUS_PAGE: // PCBI6X: KEY_LEFT not present
             if (view_base == VIEW_INPUTS)
               g_eeGeneral.view ^= ALTERNATE_VIEW;
             else
