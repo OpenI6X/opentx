@@ -25,7 +25,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#define PRINTF_BUFFER_SIZE    48
+#define PRINTF_BUFFER_SIZE    128
 
 void serialPutc(char c) {
 #if !defined(BOOT) && defined(USB_SERIAL)

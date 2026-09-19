@@ -5,6 +5,10 @@ option(LUA_COMPILER "Pre-compile and save Lua scripts" OFF)
 option(LUA_ALLOCATOR_TRACER "Trace Lua memory (de)allocations to debug port (also needs DEBUG=YES NANO=NO)" OFF)
 
 option(USB_SERIAL "Enable USB serial (CDC)" OFF) # 1.1kB
+option(USB_LOGS "Enable USB logs via VCP (reuses USB Serial)" OFF)
+if(USB_LOGS)
+  set(USB_SERIAL ON CACHE BOOL "Forced by USB_LOGS" FORCE)
+endif()
 set(ARCH ARM)
 
 if(NOT CPU_TYPE STREQUAL STM32F0)
@@ -84,6 +88,10 @@ if(DEBUG OR CLI OR USB_SERIAL)
     ../common/arm/stm32/usbd_cdc.cpp
   )
   add_definitions(-DUSB_SERIAL)
+
+if(USB_LOGS)
+  add_definitions(-DUSB_LOGS)
+endif()
 
 # disable USB_SERIAL if it will exceed flash size
 # if ((NOT TRANSLATIONS STREQUAL EN) AND DFPLAYER STREQUAL YES AND USB_MSD STREQUAL YES AND PCBI6X_ELRS STREQUAL YES AND PCBI6X_INAV STREQUAL YES AND USB_SERIAL STREQUAL YES)

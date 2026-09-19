@@ -408,7 +408,11 @@ void crossfireTelemetrySeekStart(uint8_t *rxBuffer, uint8_t &rxBufferCount)
 void processCrossfireTelemetryData(uint8_t data) {
 
 #if !defined(DEBUG) && defined(USB_SERIAL)
+#if defined(USB_LOGS)
+  if (getSelectedUsbMode() == USB_SERIAL_MODE && !isFunctionActive(FUNCTION_LOGS)) {
+#else
   if (getSelectedUsbMode() == USB_SERIAL_MODE) {
+#endif
     usbSerialPutc(data);
   }
 #endif
@@ -463,7 +467,7 @@ void crossfireSetDefault(int index, uint16_t id, uint8_t subId)
     unit = UNIT_GPS;
   uint8_t prec = min<uint8_t>(2, sensor.precision);
   telemetrySensor.init(sensor.name, unit, prec);
-#if defined(SDCARD) // no sdcard logs on i6X
+#if defined(SDCARD) || defined(USB_LOGS)
   if (id == LINK_ID) {
     telemetrySensor.logs = true;
   }
