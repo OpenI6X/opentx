@@ -93,9 +93,11 @@ void usbLogsWrite()
     }
 
     uint32_t currentTime = g_eeGeneral.globalTimer + sessionTimer; // seconds
-    uint8_t hours = currentTime / 60 / 60;
-    uint8_t minutes = (currentTime / 60) % 60;
-    uint8_t seconds = (currentTime) % 60;
+    div_t timeQr = div((int)currentTime, 60);
+    uint8_t seconds = timeQr.rem;
+    timeQr = div(timeQr.quot, 60);
+    uint8_t minutes = timeQr.rem;
+    uint8_t hours = timeQr.quot;
     uint8_t g_ms100 = (tmr10ms + 500) % 100;
     serialPrintf("2000-01-01,%02d:%02d:%02d.%02d0,", hours, minutes, seconds, g_ms100);
 
@@ -144,7 +146,8 @@ void usbLogsWrite()
 
     serialPrintf("0x%03X,", getLogicalSwitchesStates(0));
 
-    div_t qr = div(g_vbat100mV, 10);
-    serialPrintf("%d.%d\n", abs(qr.quot), abs(qr.rem));
+    int quot = g_vbat100mV / 10;
+    int rem = g_vbat100mV % 10;
+    serialPrintf("%d.%d\n", abs(quot), abs(rem));
   }
 }
