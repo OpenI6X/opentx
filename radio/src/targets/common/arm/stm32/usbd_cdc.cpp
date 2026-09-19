@@ -56,7 +56,7 @@ extern "C" const CDC_IF_Prop_TypeDef VCP_fops =
   VCP_Init,
   VCP_DeInit,
   VCP_Ctrl,
-  0,
+  0, // can be VCP_DataTx, but we don't use it
   VCP_DataRx
 };
 
