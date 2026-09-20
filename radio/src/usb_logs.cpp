@@ -119,6 +119,8 @@ void usbLogsWrite()
             }
           // } else if (sensor.unit == UNIT_DATETIME) {
           //   serialPrintf("%4d-%02d-%02d %02d:%02d:%02d,", telemetryItem.datetime.year, telemetryItem.datetime.month, telemetryItem.datetime.day, telemetryItem.datetime.hour, telemetryItem.datetime.min, telemetryItem.datetime.sec);
+          } else if (sensor.unit == UNIT_TEXT) {
+            serialPrintf("\"%s\",", telemetryItem.text);
           } else if (sensor.prec == 2) {
             div_t qr = div((int)telemetryItem.value, 100);
             if (telemetryItem.value < 0) serialPutc('-');
