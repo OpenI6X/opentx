@@ -104,8 +104,12 @@ void usbLogsWrite()
     for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
       if (isTelemetryFieldAvailable(i)) {
         TelemetrySensor & sensor = g_model.telemetrySensors[i];
-        TelemetryItem & telemetryItem = telemetryItems[i];
+        TelemetryItem telemetryItem;
+
         if (sensor.logs) {
+          if (TELEMETRY_STREAMING() && !telemetryItems[i].isOld())
+            telemetryItem = telemetryItems[i];
+
           if (sensor.unit == UNIT_GPS) {
             if (telemetryItem.gps.longitude && telemetryItem.gps.latitude) {
               div_t qr = div((int)telemetryItem.gps.latitude, 1000000);
@@ -147,6 +151,10 @@ void usbLogsWrite()
     }
 
     serialPrintf("0x%03X,", getLogicalSwitchesStates(0));
+
+    // for (uint8_t channel = 0; channel < MAX_OUTPUT_CHANNELS; channel++) {
+    //   serialPrintf("%d,", PPM_CENTER+channelOutputs[channel]/2); // in us
+    // }
 
     int quot = g_vbat100mV / 10;
     int rem = g_vbat100mV % 10;
