@@ -25,9 +25,11 @@
 #include "fifo.h"
 #include "usbd_conf.h"
 
+#define AUX_SERIAL_TX_FIFO_SIZE 128
+
 union SerialBufferUnion {
   uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
-  Fifo<uint8_t, 128> auxSerialTxFifo;
+  Fifo<uint8_t, AUX_SERIAL_TX_FIFO_SIZE> auxSerialTxFifo;
   // Fifo has a user-provided constructor, so without this the
   // union's implicit default constructor would be deleted.
   SerialBufferUnion() : auxSerialTxFifo() {}
