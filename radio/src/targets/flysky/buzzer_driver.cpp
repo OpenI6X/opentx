@@ -306,7 +306,7 @@ void buzzerInit()
 
   GPIO_PinAFConfig(BUZZER_GPIO_PORT, BUZZER_GPIO_PinSource, GPIO_AF_2);
 
-  //  TIM1: Ultrasonic PWM carrier. PSC = 3 -> 48MHz / (3 + 1) / 256 = 46.875 kHz
+  // TIM1: Ultrasonic PWM carrier. PSC = 3 -> 48MHz / (3 + 1) / 256 = 46.875 kHz
   BUZZER_CARRIER_TIMER->PSC   = 3;
   BUZZER_CARRIER_TIMER->ARR   = 255;
   BUZZER_CARRIER_TIMER->CCR1  = 0;
@@ -314,17 +314,20 @@ void buzzerInit()
   BUZZER_CARRIER_TIMER->CCER  = TIM_CCER_CC1E;
   BUZZER_CARRIER_TIMER->BDTR |= TIM_BDTR_MOE;
   BUZZER_CARRIER_TIMER->EGR   = TIM_EGR_UG;            // Force shadow register reload to 0
-//  BUZZER_CARRIER_TIMER->SR    = (U16)~TIM_FLAG_Update;
 
-  // TIM2: Audio half-cycle timer triggering DMA
+  // 1. Remap TIM2 DMA requests (CH2/CH4) to DMA1 Channel 7
+  SYSCFG->CFGR1 |= SYSCFG_CFGR1_TIM2_DMA_RMP;
+
+  // 2. TIM2: Audio half-cycle timer triggering DMA via CH2 compare event
   BUZZER_TIMER->PSC  = 0;
-  BUZZER_TIMER->DIER = TIM_DIER_UDE;
+  // BUZZER_TIMER->CCR2 = 0;              // Match at counter rollover
+  BUZZER_TIMER->DIER = TIM_DIER_CC2DE; // Capture/Compare 2 DMA request enable (replaces TIM_DIER_UDE)
 
-  // DMA1 Channel 2: Circular 2-sample transfer to BUZZER_CARRIER_TIMER->CCR1
-  DMA1_Channel2->CPAR  = (uint32_t)&(BUZZER_CARRIER_TIMER->CCR1);
-  DMA1_Channel2->CMAR  = (uint32_t)squareBuffer;
-  DMA1_Channel2->CNDTR = 2;
-  DMA1_Channel2->CCR   = DMA_CCR_DIR | DMA_CCR_CIRC | DMA_CCR_MINC | DMA_CCR_PSIZE_0 | TIM_CR1_CEN;
+  // 3. DMA1 Channel 7: Circular 2-sample transfer to BUZZER_CARRIER_TIMER->CCR1
+  BUZZER_DMA_CHANNEL->CPAR  = (uint32_t)&(BUZZER_CARRIER_TIMER->CCR1);
+  BUZZER_DMA_CHANNEL->CMAR  = (uint32_t)squareBuffer;
+  BUZZER_DMA_CHANNEL->CNDTR = 2;
+  BUZZER_DMA_CHANNEL->CCR   = DMA_CCR_DIR | DMA_CCR_CIRC | DMA_CCR_MINC | DMA_CCR_PSIZE_0 | DMA_CCR_EN;
 }
 
 static void setVolume(int8_t volume)
@@ -359,13 +362,12 @@ static void buzzerOn(uint32_t freq, int8_t volume)
 
   // If a tone is already playing (e.g. during a frequency sweep), only update freq/vol
   if (!(BUZZER_TIMER->CR1 & TIM_CR1_CEN)) {
-    // DMA1_Channel2->CNDTR = 2;
-    // DMA1_Channel2->CCR  |= DMA_CCR_EN;
+    // BUZZER_DMA_CHANNEL->CNDTR = 2;
+    // BUZZER_DMA_CHANNEL->CCR  |= DMA_CCR_EN;
 
     BUZZER_CARRIER_TIMER->CNT   = 0;
     BUZZER_TIMER->CNT           = 0;
     // BUZZER_TIMER->SR            = 0;
-    // BUZZER_CARRIER_TIMER->SR    = (U16)~TIM_FLAG_Update;
 
     BUZZER_CARRIER_TIMER->CR1  |= TIM_CR1_CEN;
     BUZZER_TIMER->CR1          |= TIM_CR1_CEN;
@@ -378,10 +380,9 @@ static void buzzerOff()
   BUZZER_TIMER->CR1          &= ~TIM_CR1_CEN;
   BUZZER_CARRIER_TIMER->CR1     &= ~TIM_CR1_CEN;
   BUZZER_CARRIER_TIMER->BDTR    &= ~TIM_BDTR_MOE;
-  // DMA1_Channel2->CCR &= ~DMA_CCR_EN;
+  // BUZZER_DMA_CHANNEL->CCR         &= ~DMA_CCR_EN;
   BUZZER_CARRIER_TIMER->CCR1     = 0;
   BUZZER_CARRIER_TIMER->EGR      = TIM_EGR_UG;    // Flush 0 immediately to active shadow register
-  // BUZZER_CARRIER_TIMER->SR       = (U16)~TIM_FLAG_Update;
   // BUZZER_TIMER->SR            = 0;
   // BUZZER_CARRIER_TIMER->CNT      = 0;
   // BUZZER_TIMER->CNT           = 0;

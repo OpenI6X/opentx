@@ -352,9 +352,10 @@ void AFHDS2A_callback();
 #define BUZZER_GPIO_PinSource           GPIO_PinSource8
 #define BUZZER_RCC_AHBPeriph            RCC_AHBPeriph_GPIOA
 #define BUZZER_RCC_APB1Periph           RCC_APB1Periph_TIM2
-#define BUZZER_RCC_APB2Periph           RCC_APB2Periph_TIM1
+#define BUZZER_RCC_APB2Periph           (RCC_APB2Periph_TIM1 | RCC_APB2Periph_SYSCFG)
 #define BUZZER_CARRIER_TIMER            TIM1
 #define BUZZER_TIMER                    TIM2
+#define BUZZER_DMA_CHANNEL              DMA1_Channel7 // requires SYSCFG_CFGR1_TIM2_DMA_RMP
 
 // DFPlayer
 #if defined(DFPLAYER)
