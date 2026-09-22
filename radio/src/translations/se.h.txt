@@ -71,19 +71,26 @@
 #define TR_TRNCHN              "KN1KN2KN3KN4"
 
 #if defined(PCBI6X)
-#define LEN_AUX_SERIAL_MODES   "\022"
+#define LEN_AUX_SERIAL_MODES   "\021"
 #if defined(CLI) || defined(DEBUG)
-#define TR_AUX_SERIAL_MODES    "Debug\0      ""Spegling av S-Port""SBUS Trainer\0     "
+#define TR_AUX_SERIAL_MODES    "Debug\0           ""Speglad telemetri""SBUS Trainer\0    "
 #else
-#define TR_AUX_SERIAL_MODES    "OFF\0        ""Spegling av S-Port""SBUS Trainer\0     "
+#define TR_AUX_SERIAL_MODES    "OFF\0             ""Speglad telemetri""SBUS Trainer\0    "
 #endif
 #else
-#define LEN_AUX_SERIAL_MODES   "\022"
+#define LEN_AUX_SERIAL_MODES   "\021"
 #if defined(CLI) || defined(DEBUG)
-#define TR_AUX_SERIAL_MODES    "Debug\0            ""Spegling av S-Port""Telemetri\0        ""SBUS Trainer\0     ""LUA\0              "
+#define TR_AUX_SERIAL_MODES    "Debug\0           ""Speglad telemetri""Telemetri\0       ""SBUS Trainer\0    ""LUA\0             "
 #else
-#define TR_AUX_SERIAL_MODES    "Av\0               ""Spegling av S-Port""Telemetri\0        ""SBUS Trainer\0     ""LUA\0              "
+#define TR_AUX_SERIAL_MODES    "Av\0              ""Speglad telemetri""Telemetri\0       ""SBUS Trainer\0    ""LUA\0             "
 #endif
+#endif
+
+#define LEN_USB_SERIAL_MODES   "\021"
+#if defined(DEBUG)
+#define TR_USB_SERIAL_MODES    "Debug\0           ""Speglad telemetri""Logs\0            "
+#else
+#define TR_USB_SERIAL_MODES    "OFF\0             ""Speglad telemetri""Logs\0            "
 #endif
 
 #define LEN_SWTYPES            "\006"
