@@ -299,7 +299,7 @@ void menuRadioHardware(event_t event)
 
 #if defined(USB_SERIAL)
       case ITEM_RADIO_HARDWARE_USB_SERIAL_MODE:
-        g_eeGeneral.usbSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, "USB-VCP", "\014OFF/Debug\0  Telem MirrorLogs", g_eeGeneral.usbSerialMode, USB_SERIAL_MODE_OFF, USB_SERIAL_MODE_MAX, attr, event, INDENT_WIDTH);
+        g_eeGeneral.usbSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, "USB-VCP", STR_USB_SERIAL_MODES, g_eeGeneral.usbSerialMode, USB_SERIAL_MODE_OFF, USB_SERIAL_MODE_MAX, attr, event, INDENT_WIDTH);
         break;
 #endif
 
