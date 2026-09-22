@@ -35,7 +35,7 @@ int mini_vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
             continue;
         }
 
-        /* number padding: '0' flag + decimal width, consumed for every spec */
+        /* '0' flag + width + optional precision (.N, used by %s) */
         zero = 0;
         if (*fmt == '0') {
             zero = 1;
@@ -45,6 +45,16 @@ int mini_vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
         while (*fmt >= '0' && *fmt <= '9')
             width = width * 10 + (*fmt++ - '0');
 
+// not needed, use string limit instead of precision for simplicity
+#if defined(PRINTF_DOT_MODIFIER)
+        int prec = -1; /* -1 = unlimited */
+        if (*fmt == '.') {
+            prec = 0;
+            fmt++;
+            while (*fmt >= '0' && *fmt <= '9')
+                prec = prec * 10 + (*fmt++ - '0');
+        }
+#endif
         spec = *fmt;
         if (spec)
             fmt++;
@@ -53,7 +63,13 @@ int mini_vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
             s = va_arg(ap, const char *);
             if (!s)
                 s = "";
-            while (*s)
+            /* %3s or %.3s: max chars; no padding. 0 / omitted = unlimited */
+#if defined(PRINTF_DOT_MODIFIER)
+            n = (prec >= 0) ? prec : (width ? width : 0xff);
+#else
+            n = width ? width : 0xff;
+#endif
+            while (*s && n--)
                 PUT(*s++);
         } else if (spec == 'c') {
             PUT(va_arg(ap, int));
