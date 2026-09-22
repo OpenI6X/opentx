@@ -36,14 +36,13 @@ static void usbLogsWriteHeader()
       if (sensor.logs) {
         memset(label, 0, sizeof(label));
         zchar2str(label, sensor.label, TELEM_LABEL_LEN);
+        serialPrintf("%s", label);
         uint8_t unit = sensor.unit;
         if (unit == UNIT_CELLS) unit = UNIT_VOLTS;
         if (UNIT_RAW < unit && unit < UNIT_FIRST_VIRTUAL) {
-          strcat(label, "(");
-          strncat(label, STR_VTELEMUNIT + 1 + 3 * unit, 3);
-          strcat(label, ")");
+           serialPrintf("(%3s)", STR_VTELEMUNIT + 1 + 3 * unit);
         }
-        serialPrintf("%s,", label);
+        serialPutc(',');
       }
     }
   }
