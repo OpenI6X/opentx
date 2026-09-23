@@ -10,10 +10,7 @@ static bool usbHeaderSent = false;
 
 static inline int8_t getSwitchLogState(uint8_t idx)
 {
-  if (IS_CONFIG_3POS(idx))
-    return switchState(idx * 3) ? -1 : (switchState(idx * 3 + 2) ? 1 : 0);
-  else
-    return switchState(idx * 3) ? -1 : 1;
+  return switchState(idx * 3) ? -1 : ((!IS_CONFIG_3POS(idx) || switchState(idx * 3 + 2)) ? 1 : 0);
 }
 
 uint32_t getLogicalSwitchesStates(uint8_t first)
@@ -57,18 +54,31 @@ static void usbLogsWriteHeader()
   }
 
   serialPrintf("SA,SB,SC,SD,SE,SF,LSW,TxBat(V)\n");
-//   for (int i = 0; i < NUM_SWITCHES; i++) {
-//    if (SWITCH_EXISTS(i)) {
-//      serialPrintf("S%c,", 'A' + i);
-//    }
-//  }
-//  serialPrintf("LSW,TxBat(V)\n");
+  // for (int i = 0; i < NUM_SWITCHES; i++) {
+  // //  if (SWITCH_EXISTS(i)) {
+  //    serialPrintf("S%c,", 'A' + i);
+  // //  }
+  //  }
+  // serialPrintf("LSW,TxBat(V)\n");
+
+  // serialPrintf("SA,SB,SC,SD,SE,SF,LSW,");
+  // for (uint8_t channel = 0; channel < MAX_OUTPUT_CHANNELS; channel++) {
+  //   serialPrintf("CH%d(us),", channel+1);
+  // }
+  // serialPrintf("TxBat(V)\n");
 }
 
 void usbLogsInit()
 {
   lastUsbLogTime = 0;
   usbHeaderSent = false;
+}
+
+static void logGPSCoord(int coord)
+{
+  div_t qr = div(coord, 1000000);
+  if (coord < 0) serialPutc('-');
+  serialPrintf("%d.%06d", abs(qr.quot), abs(qr.rem));
 }
 
 void usbLogsWrite()
@@ -111,15 +121,11 @@ void usbLogsWrite()
 
           if (sensor.unit == UNIT_GPS) {
             if (telemetryItem.gps.longitude && telemetryItem.gps.latitude) {
-              div_t qr = div((int)telemetryItem.gps.latitude, 1000000);
-              if (telemetryItem.gps.latitude < 0) serialPutc('-');
-              serialPrintf("%d.%06d ", abs(qr.quot), abs(qr.rem));
-              qr = div((int)telemetryItem.gps.longitude, 1000000);
-              if (telemetryItem.gps.longitude < 0) serialPutc('-');
-              serialPrintf("%d.%06d,", abs(qr.quot), abs(qr.rem));
-            } else {
-              serialPutc(',');
+              logGPSCoord((int)telemetryItem.gps.latitude);
+              serialPutc(' ');
+              logGPSCoord((int)telemetryItem.gps.longitude);
             }
+            serialPutc(',');
           // } else if (sensor.unit == UNIT_DATETIME) {
           //   serialPrintf("%4d-%02d-%02d %02d:%02d:%02d,", telemetryItem.datetime.year, telemetryItem.datetime.month, telemetryItem.datetime.day, telemetryItem.datetime.hour, telemetryItem.datetime.min, telemetryItem.datetime.sec);
           } else if (sensor.unit == UNIT_TEXT) {
