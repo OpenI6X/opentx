@@ -53,19 +53,11 @@ static void usbLogsWriteHeader()
     serialPutc(',');
   }
 
-  serialPrintf("SA,SB,SC,SD,SE,SF,LSW,TxBat(V)\n");
-  // for (int i = 0; i < NUM_SWITCHES; i++) {
-  // //  if (SWITCH_EXISTS(i)) {
-  //    serialPrintf("S%c,", 'A' + i);
-  // //  }
-  //  }
-  // serialPrintf("LSW,TxBat(V)\n");
-
-  // serialPrintf("SA,SB,SC,SD,SE,SF,LSW,");
-  // for (uint8_t channel = 0; channel < MAX_OUTPUT_CHANNELS; channel++) {
-  //   serialPrintf("CH%d(us),", channel+1);
-  // }
-  // serialPrintf("TxBat(V)\n");
+  serialPrintf("SA,SB,SC,SD,SE,SF,LSW,");
+  for (uint8_t channel = 0; channel < MAX_OUTPUT_CHANNELS; channel++) {
+    serialPrintf("CH%d(us),", channel+1);
+  }
+  serialPrintf("TxBat(V)\n");
 }
 
 void usbLogsInit()
@@ -157,9 +149,9 @@ void usbLogsWrite()
 
     serialPrintf("0x%03X,", getLogicalSwitchesStates(0));
 
-    // for (uint8_t channel = 0; channel < MAX_OUTPUT_CHANNELS; channel++) {
-    //   serialPrintf("%d,", PPM_CENTER+channelOutputs[channel]/2); // in us
-    // }
+    for (uint8_t channel = 0; channel < MAX_OUTPUT_CHANNELS; channel++) {
+      serialPrintf("%d,", PPM_CENTER+channelOutputs[channel]/2); // in us
+    }
 
     int quot = g_vbat100mV / 10;
     int rem = g_vbat100mV % 10;
