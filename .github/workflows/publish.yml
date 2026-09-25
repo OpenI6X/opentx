@@ -105,6 +105,7 @@ jobs:
       - name: Resolve tag and release notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }} # never let gh guess the repo from git remotes
           INPUT_TAG: ${{ inputs.tag }}
           CHANGELOG_INPUT: ${{ inputs.changelog }}
         run: |

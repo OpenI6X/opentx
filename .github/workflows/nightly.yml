@@ -114,6 +114,9 @@ jobs:
     permissions:
       contents: write # required to create the release
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4 # gives gh a proper git repo context (it shells out to git)
+
       - name: Download all firmware artifacts
         uses: actions/download-artifact@v4
         with:
@@ -123,12 +126,13 @@ jobs:
       - name: Publish nightly release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }} # never let gh guess the repo from git remotes
         run: |
           DATE=$(date -u +%Y-%m-%d)
           SHA_SHORT="${GITHUB_SHA::7}"
 
           # Collect commit subjects since the previous nightly (none on first run)
-          if gh api "repos/${{ github.repository }}/compare/nightly...${GITHUB_SHA}" > compare.json 2>/dev/null; then
+          if gh api "repos/${GH_REPO}/compare/nightly...${GITHUB_SHA}" > compare.json 2>/dev/null; then
             jq -r '.commits[] | "- " + (.commit.message | split("\n")[0])' compare.json | head -n 30 > changes.md || true
           fi
 
@@ -147,14 +151,23 @@ jobs:
             fi
           } > notes.md
 
-          # Replace the previous nightly release (assets are date-stamped,
-          # so old ones would otherwise pile up)
-          gh release delete nightly --cleanup-tag --yes || true
-          gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/nightly" || true
+          # ---- rolling 'nightly' tag: create on first run, move afterwards ----
+          # (idempotent — no deleting of refs, so no "422 Reference does not exist")
+          if gh api "repos/${GH_REPO}/git/refs/tags/nightly" > /dev/null 2>&1; then
+            echo "Moving existing 'nightly' tag to ${SHA_SHORT}..."
+            gh api -X PATCH "repos/${GH_REPO}/git/refs/tags/nightly" -f sha="${GITHUB_SHA}" -F force=true
+          else
+            echo "Creating 'nightly' tag at ${SHA_SHORT}..."
+            gh api -X POST "repos/${GH_REPO}/git/refs" -f ref="refs/tags/nightly" -f sha="${GITHUB_SHA}"
+          fi
+
+          # ---- replace the previous nightly release (the tag itself is kept) ----
+          gh release delete nightly --yes || true
 
           gh release create nightly \
             --target "${GITHUB_SHA}" \
             --prerelease \
             --title "Nightly ${DATE}" \
             --notes-file notes.md \
-            nightly/*.zip
+            nightly/*.zip \
+          || gh release upload nightly --clobber nightly/*.zip
