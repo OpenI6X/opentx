@@ -472,16 +472,16 @@ void menuMainView(event_t event)
         // Logical Switches
         uint8_t index = 0;
         uint8_t y = LCD_H - 20;
-        for (uint8_t line = 0; line < 2; line++) {
-          for (uint8_t column = 0; column < MAX_LOGICAL_SWITCHES / 2; column++) {
+        const uint8_t LINE_WIDTH = 6;
+        const uint8_t LINE_MARGIN = 1;
+        // for (uint8_t line = 0; line < 2; line++) {
+          for (uint8_t column = 0; column < MAX_LOGICAL_SWITCHES; column++) {
             int8_t len = getSwitch(SWSRC_SW1 + index) ? 10 : 1;
-            uint8_t x = (16 + 3 * column);
-            lcdDrawSolidVerticalLine(x - 1, y - len, len);
-            lcdDrawSolidVerticalLine(x, y - len, len);
+            uint8_t x = (16 + (LINE_WIDTH + LINE_MARGIN) * column);
+            lcdDrawFilledRect(x - 1, y - len, LINE_WIDTH, len, SOLID, 0);
             index++;
           }
-          y += 12;
-        }
+        // }
       }
       break;
   }
