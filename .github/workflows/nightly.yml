@@ -84,11 +84,30 @@ jobs:
       - name: Build OpenI6X
         run: python3 ./tools/build-flysky.py -b${{ matrix.board }} -tALL "${GITHUB_WORKSPACE}"
 
+      - name: Package per-board ZIP
+        run: |
+          NIGHT=$(date -u +%Y%m%d)
+          BOARD=$(printf '%s' "${{ matrix.board }}" | tr '[:upper:]' '[:lower:]')
+          export ZIP_NAME="output/open${BOARD}_${NIGHT}.zip"
+          python3 <<'EOF'
+          import zipfile, glob, os, sys
+          name = os.environ["ZIP_NAME"]
+          bins = sorted(glob.glob("output/*.bin"))
+          if not bins:
+              sys.exit("ERROR: no .bin files found in output/")
+          with zipfile.ZipFile(name, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+              for f in bins:
+                  z.write(f, os.path.basename(f))
+          print("Created %s (%d files):" % (name, len(bins)))
+          for f in bins:
+              print("  - " + os.path.basename(f))
+          EOF
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: nightly-${{ matrix.suffix }}
-          path: output/
+          path: output/*.zip
           if-no-files-found: error
 
   release:
@@ -121,8 +140,8 @@ jobs:
             echo ""
             echo "Automatic nightly build of \`master\` @ ${SHA_SHORT}."
             echo ""
-            echo "Variants: \`I6X\` · \`I6X_DFPLAYER\` · \`I6X_HELI\` · \`I6X_HELI_DFPLAYER\` — all translations."
-            echo "Flash the \`.bin\` matching your radio variant and preferred language."
+            echo "Each ZIP contains all language versions for one board variant: \`I6X\` · \`I6X_DFPLAYER\` · \`I6X_HELI\` · \`I6X_HELI_DFPLAYER\`."
+            echo "Flash the \`.bin\` from the ZIP matching your radio variant and preferred language."
             if [ -f changes.md ]; then
               echo ""
               echo "**Changes since previous nightly:**"
@@ -141,4 +160,4 @@ jobs:
             --prerelease \
             --title "Nightly ${DATE}" \
             --notes-file notes.md \
-            nightly/*.bin
+            nightly/*.zip

@@ -5,6 +5,9 @@ name: publish
 #      optionally paste a custom changelog, and it builds + creates the tag + release.
 #   2. tag push — push a tag like v2.10.0 and it builds + publishes that tag.
 #
+# Assets are attached as one ZIP per board variant (e.g. openi6x_heli_v2.10.0.zip),
+# each containing all language .bin files for that board.
+#
 # Changelog precedence:
 #   workflow input  >  CHANGELOG.md section for the version  >  auto-generated commit list
 
@@ -58,11 +61,32 @@ jobs:
       - name: Build OpenI6X
         run: python3 ./tools/build-flysky.py -b${{ matrix.board }} -tALL "${GITHUB_WORKSPACE}"
 
+      - name: Package per-board ZIP
+        env:
+          ZIP_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          VERSION=$(printf '%s' "$ZIP_VERSION" | tr -d '[:space:]')
+          BOARD=$(printf '%s' "${{ matrix.board }}" | tr '[:upper:]' '[:lower:]')
+          export ZIP_NAME="open${BOARD}_${VERSION}.zip"
+          python3 <<'EOF'
+          import zipfile, glob, os, sys
+          name = os.environ["ZIP_NAME"]
+          bins = sorted(glob.glob("output/*.bin"))
+          if not bins:
+              sys.exit("ERROR: no .bin files found in output/")
+          with zipfile.ZipFile(name, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+              for f in bins:
+                  z.write(f, os.path.basename(f))
+          print("Created %s (%d files):" % (name, len(bins)))
+          for f in bins:
+              print("  - " + os.path.basename(f))
+          EOF
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-${{ matrix.suffix }}
-          path: output/
+          path: output/*.zip
           if-no-files-found: error
 
   release:
@@ -144,5 +168,5 @@ jobs:
           gh release create "$TAG" $TARGET $FLAGS \
             --title "OpenI6X ${TAG}" \
             --notes-file notes.md \
-            release/*.bin \
-          || gh release upload "$TAG" --clobber release/*.bin
+            release/*.zip \
+          || gh release upload "$TAG" --clobber release/*.zip
