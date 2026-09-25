@@ -24,6 +24,9 @@
 
 #include "opentx.h"
 
+#include "serial_buffer_union.h"
+static uint8_t (&UserTxBufferFS)[APP_TX_DATA_SIZE] = serialBuffer.UserTxBufferFS;
+
 extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
@@ -37,9 +40,6 @@ extern "C" {
 
 /* These are external variables imported from CDC core to be used for IN
    transfer management. */
-extern uint8_t  UserTxBufferFS []; /* Write CDC received data in this buffer.
-                                     These data will be sent over USB IN endpoint
-                                     in the CDC core functions. */
 extern volatile uint32_t APP_Tx_ptr_in;    /* Increment this pointer or roll it back to
                                      start address when writing received data
                                      in the buffer UserTxBufferFS. */
@@ -143,6 +143,21 @@ static uint16_t VCP_Ctrl (uint32_t Cmd, uint8_t* Buf, uint32_t Len)
   }
 
   return USBD_OK;
+}
+
+// return the bytes free in the circular buffer
+uint32_t usbSerialFreeSpace()
+{
+  // functionally equivalent to:
+  //
+  //      (APP_Tx_ptr_out > APP_Tx_ptr_in ? APP_Tx_ptr_out - APP_Tx_ptr_in :
+  //      APP_TX_DATA_SIZE - APP_Tx_ptr_in + APP_Tx_ptr_in)
+  //
+  //  but without the impact of the condition check.
+
+  return ((APP_Rx_ptr_out - APP_Tx_ptr_in) +
+          (-((int)(APP_Rx_ptr_out <= APP_Tx_ptr_in)) & APP_TX_DATA_SIZE)) -
+         1;
 }
 
 void usbSerialPutc(uint8_t c)

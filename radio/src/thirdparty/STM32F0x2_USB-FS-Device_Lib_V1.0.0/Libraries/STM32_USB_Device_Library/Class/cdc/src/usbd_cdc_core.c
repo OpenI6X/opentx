@@ -104,7 +104,8 @@ static __IO uint32_t  usbd_cdc_AltSet  = 0;
 
 uint8_t USB_Rx_Buffer   [CDC_DATA_MAX_PACKET_SIZE] ;
 
-uint8_t UserTxBufferFS   [APP_TX_DATA_SIZE] ; 
+extern uint8_t serialBuffer[];
+#define UserTxBufferFS serialBuffer
 
 uint8_t CmdBuff[CDC_CMD_PACKET_SZE] ;
 __IO uint32_t last_packet = 0;

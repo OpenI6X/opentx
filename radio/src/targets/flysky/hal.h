@@ -302,8 +302,8 @@ void AFHDS2A_callback();
 #define TELEMETRY_USART                 USART2
 #define TELEMETRY_DMA_Channel_TX        DMA1_Channel4
 #define TELEMETRY_DMA_Channel_TX_CH     LL_DMA_CHANNEL_4
-#define TELEMETRY_DMA_TX_IRQn           DMA1_Channel4_5_IRQn
-#define TELEMETRY_DMA_TX_IRQHandler     DMA1_Channel4_5_IRQHandler
+#define TELEMETRY_DMA_TX_IRQn           DMA1_Channel4_5_6_7_IRQn
+#define TELEMETRY_DMA_TX_IRQHandler     DMA1_Channel4_5_6_7_IRQHandler
 #define TELEMETRY_DMA_TX_FLAG_TC        DMA1_IT_TC4
 #define TELEMETRY_DMA_Channel_RX        DMA1_Channel5
 #define TELEMETRY_DMA_Channel_RX_CH     LL_DMA_CHANNEL_5

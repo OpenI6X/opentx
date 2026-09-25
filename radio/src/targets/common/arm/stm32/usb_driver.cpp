@@ -127,6 +127,7 @@ void usbStart()
 #if defined(USB_SERIAL)
     case USB_SERIAL_MODE:
       // initialize USB as CDC device (virtual serial port)
+      // serialTxBufferClear();
 #if defined(STM32F0)
       USBD_Init(&USB_Device_dev, &USR_desc, &USBD_CDC_cb, &USR_cb);
 #else

@@ -41,6 +41,7 @@ const char STR_OPEN9X[]  =
     ISTR(TRNCHN)
 #if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
     ISTR(AUX_SERIAL_MODES)
+    ISTR(USB_SERIAL_MODES)
     ISTR(SWTYPES)
     ISTR(POTTYPES)
 #if NUM_SLIDERS > 0

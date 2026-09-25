@@ -52,6 +52,7 @@ set(TARGET_SRC
   ${TARGET_SRC}
 #  ../common/arm/stm32/rtc_driver.cpp
 #  ../common/arm/stm32/cpu_id.cpp
+  ../common/arm/stm32/serial_buffer.cpp
   ${AUX_SERIAL_DRIVER}
   )
 

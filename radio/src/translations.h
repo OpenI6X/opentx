@@ -134,7 +134,8 @@ extern const char STR_OPEN9X[];
 #define OFS_TRNCHN             (OFS_TRNMODE + sizeof(TR_TRNMODE))
 #if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
   #define OFS_AUX_SERIAL_MODES       (OFS_TRNCHN + sizeof(TR_TRNCHN))
-  #define OFS_SWTYPES          (OFS_AUX_SERIAL_MODES + sizeof(TR_AUX_SERIAL_MODES))
+  #define OFS_USB_SERIAL_MODES       (OFS_AUX_SERIAL_MODES + sizeof(TR_AUX_SERIAL_MODES))
+  #define OFS_SWTYPES          (OFS_USB_SERIAL_MODES + sizeof(TR_USB_SERIAL_MODES))
   #define OFS_POTTYPES         (OFS_SWTYPES + sizeof(TR_SWTYPES))
   #define OFS_SLIDERTYPES      (OFS_POTTYPES + sizeof(TR_POTTYPES))
 #if NUM_SLIDERS > 0
@@ -250,6 +251,7 @@ extern const char STR_OPEN9X[];
 #define STR_TRNMODE             (STR_OPEN9X + OFS_TRNMODE)
 #define STR_TRNCHN              (STR_OPEN9X + OFS_TRNCHN)
 #define STR_AUX_SERIAL_MODES      (STR_OPEN9X + OFS_AUX_SERIAL_MODES)
+#define STR_USB_SERIAL_MODES      (STR_OPEN9X + OFS_USB_SERIAL_MODES)
 #define STR_SWTYPES             (STR_OPEN9X + OFS_SWTYPES)
 #define STR_POTTYPES            (STR_OPEN9X + OFS_POTTYPES)
 #define STR_SLIDERTYPES         (STR_OPEN9X + OFS_SLIDERTYPES)
