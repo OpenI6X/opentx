@@ -128,7 +128,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }} # never let gh guess the repo from git remotes
         run: |
-          DATE=$(date -u +%Y-%m-%d)
           SHA_SHORT="${GITHUB_SHA::7}"
 
           # ---- changelog: what changed since the previous nightly ----
@@ -155,7 +154,7 @@ jobs:
           [ -s changes.md ] || echo "_No commit changes found._" > changes.md
 
           {
-            echo "### OpenI6X nightly — ${DATE}"
+            echo "### OpenI6X nightly build"
             echo ""
             echo "Automatic nightly build of \`master\` @ ${SHA_SHORT}."
             echo ""
@@ -198,7 +197,7 @@ jobs:
           gh release create nightly \
             --target "${GITHUB_SHA}" \
             --prerelease \
-            --title "Nightly ${DATE}" \
+            --title "Nightly build" \
             --notes-file notes.md \
             nightly/*.zip \
           || gh release upload nightly --clobber nightly/*.zip
