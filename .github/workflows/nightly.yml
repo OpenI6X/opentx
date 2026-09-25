@@ -1,7 +1,7 @@
 name: nightly
 
 # Automatic nightly releases: builds all firmware variants from the default
-# branch (master) and publishes them as a rolling "nightly" pre-release.
+# branch (master) and publishes them as a rolling "nightly-latest" pre-release.
 # - Runs every night on a schedule (cron is in UTC!)
 # - Can also be triggered manually from the Actions tab
 # - Skips the build/release if master hasn't changed since the last nightly
@@ -41,11 +41,11 @@ jobs:
             exit 0
           fi
 
-          if STATUS=$(gh api "repos/${{ github.repository }}/compare/nightly...${GITHUB_SHA}" --jq .status 2>/dev/null); then
-            echo "Compare status vs 'nightly' tag: $STATUS"
+          if STATUS=$(gh api "repos/${{ github.repository }}/compare/nightly-latest...${GITHUB_SHA}" --jq .status 2>/dev/null); then
+            echo "Compare status vs 'nightly-latest' tag: $STATUS"
           else
             STATUS="no-previous-nightly"
-            echo "No previous 'nightly' tag found — first run."
+            echo "No previous 'nightly-latest' tag found — first run."
           fi
 
           if [ "$STATUS" = "identical" ]; then
@@ -151,23 +151,23 @@ jobs:
             fi
           } > notes.md
 
-          # ---- rolling 'nightly' tag: create on first run, move afterwards ----
-          # (idempotent — no deleting of refs, so no "422 Reference does not exist")
-          if gh api "repos/${GH_REPO}/git/refs/tags/nightly" > /dev/null 2>&1; then
-            echo "Moving existing 'nightly' tag to ${SHA_SHORT}..."
-            gh api -X PATCH "repos/${GH_REPO}/git/refs/tags/nightly" -f sha="${GITHUB_SHA}" -F force=true
-          else
-            echo "Creating 'nightly' tag at ${SHA_SHORT}..."
-            gh api -X POST "repos/${GH_REPO}/git/refs" -f ref="refs/tags/nightly" -f sha="${GITHUB_SHA}"
-          fi
+          # ---- rolling 'nightly-latest' tag: force-push ----
+          # git handles both cases (create on first run, move afterwards) with no
+          # existence checks — the refs API GET prefix-matches (e.g. it "finds"
+          # nightly-latest when asked about nightly) while PATCH needs an exact
+          # ref, which caused HTTP 422 here before.
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f nightly-latest "${GITHUB_SHA}"
+          git push -f origin "refs/tags/nightly-latest"
 
           # ---- replace the previous nightly release (the tag itself is kept) ----
-          gh release delete nightly --yes || true
+          gh release delete nightly-latest --yes || true
 
-          gh release create nightly \
+          gh release create nightly-latest \
             --target "${GITHUB_SHA}" \
             --prerelease \
             --title "Nightly ${DATE}" \
             --notes-file notes.md \
             nightly/*.zip \
-          || gh release upload nightly --clobber nightly/*.zip
+          || gh release upload nightly-latest --clobber nightly/*.zip
