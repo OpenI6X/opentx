@@ -9,9 +9,6 @@ on:
 permissions:
   contents: read
 
-env:
-  DOCKER_IMAGE: ajjjjjjjj/opentx-docker-i6x:1.5.0
-
 jobs:
   # EN-only build for feature branches
   # (CircleCI: branches.ignore [master, /.*-maintenance/])
@@ -19,7 +16,7 @@ jobs:
     name: build-en
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ajjjjjjjj/opentx-docker-i6x:1.5.0
     if: github.ref_name != 'master' && !endsWith(github.ref_name, '-maintenance')
     steps:
       - name: Checkout
@@ -41,7 +38,7 @@ jobs:
     name: build-${{ matrix.suffix }}
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ajjjjjjjj/opentx-docker-i6x:1.5.0
     if: github.ref_name == 'master' || endsWith(github.ref_name, '-maintenance')
     strategy:
       fail-fast: false

@@ -33,15 +33,12 @@ on:
 permissions:
   contents: read
 
-env:
-  DOCKER_IMAGE: ajjjjjjjj/opentx-docker-i6x:1.5.0
-
 jobs:
   build:
     name: build-${{ matrix.suffix }}
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DOCKER_IMAGE }}
+      image: ajjjjjjjj/opentx-docker-i6x:1.5.0
     strategy:
       fail-fast: false
       matrix:
