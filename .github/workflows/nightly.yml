@@ -1,7 +1,7 @@
 name: nightly
 
 # Automatic nightly releases: builds all firmware variants from the default
-# branch (master) and publishes them as a rolling "nightly-latest" pre-release.
+# branch (master) and publishes them as a rolling "nightly" pre-release.
 # - Runs every night on a schedule (cron is in UTC!)
 # - Can also be triggered manually from the Actions tab
 # - Skips the build/release if master hasn't changed since the last nightly
@@ -41,11 +41,11 @@ jobs:
             exit 0
           fi
 
-          if STATUS=$(gh api "repos/${{ github.repository }}/compare/nightly-latest...${GITHUB_SHA}" --jq .status 2>/dev/null); then
-            echo "Compare status vs 'nightly-latest' tag: $STATUS"
+          if STATUS=$(gh api "repos/${{ github.repository }}/compare/nightly...${GITHUB_SHA}" --jq .status 2>/dev/null); then
+            echo "Compare status vs 'nightly' tag: $STATUS"
           else
             STATUS="no-previous-nightly"
-            echo "No previous 'nightly-latest' tag found — first run."
+            echo "No previous 'nightly' tag found — first run."
           fi
 
           if [ "$STATUS" = "identical" ]; then
@@ -131,10 +131,28 @@ jobs:
           DATE=$(date -u +%Y-%m-%d)
           SHA_SHORT="${GITHUB_SHA::7}"
 
-          # Collect commit subjects since the previous nightly (none on first run)
+          # ---- changelog: what changed since the previous nightly ----
+          # Each entry: - [abc1234](commit-url) Subject (@github-author)
+          # Fallback for the very first run (no nightly tag yet):
+          # list the last 10 commits on the branch.
+          PREV_SHA=""
+          CHANGELOG_LINK=""
           if gh api "repos/${GH_REPO}/compare/nightly...${GITHUB_SHA}" > compare.json 2>/dev/null; then
-            jq -r '.commits[] | "- " + (.commit.message | split("\n")[0])' compare.json | head -n 30 > changes.md || true
+            PREV_SHA=$(jq -r '.base_commit.sha' compare.json)
+            TOTAL=$(jq '.commits | length' compare.json)
+            CHANGELOG_HEADING="Changes since previous nightly (\`${PREV_SHA:0:7}\`)"
+            jq -r '.commits[] | "- [\(.sha[0:7])](\(.html_url)) \(.commit.message | split("\n")[0])" + (if .author.login then " (@" + .author.login + ")" else "" end)' compare.json 2>/dev/null | head -n 30 > changes.md || true
+            if [ "${TOTAL:-0}" -gt 30 ]; then
+              echo "- …and $((TOTAL - 30)) more commits" >> changes.md
+            fi
+            CHANGELOG_LINK="**Full changelog:** ${GITHUB_SERVER_URL}/${GH_REPO}/compare/${PREV_SHA}...${GITHUB_SHA}"
+          else
+            echo "No previous 'nightly' tag — using the last 10 commits as changelog."
+            CHANGELOG_HEADING="First nightly — recent commits"
+            gh api "repos/${GH_REPO}/commits?sha=${GITHUB_SHA}&per_page=10" \
+              --jq '.[] | "- [\(.sha[0:7])](\(.html_url)) \(.commit.message | split("\n")[0])" + (if .author.login then " (@" + .author.login + ")" else "" end)' > changes.md 2>/dev/null || true
           fi
+          [ -s changes.md ] || echo "_No commit changes found._" > changes.md
 
           {
             echo "### OpenI6X nightly — ${DATE}"
@@ -143,31 +161,44 @@ jobs:
             echo ""
             echo "Each ZIP contains all language versions for one board variant: \`I6X\` · \`I6X_DFPLAYER\` · \`I6X_HELI\` · \`I6X_HELI_DFPLAYER\`."
             echo "Flash the \`.bin\` from the ZIP matching your radio variant and preferred language."
-            if [ -f changes.md ]; then
+            echo ""
+            echo "#### ${CHANGELOG_HEADING}"
+            echo ""
+            cat changes.md
+            if [ -n "$CHANGELOG_LINK" ]; then
               echo ""
-              echo "**Changes since previous nightly:**"
-              echo ""
-              cat changes.md
+              echo "$CHANGELOG_LINK"
             fi
           } > notes.md
 
-          # ---- rolling 'nightly-latest' tag: force-push ----
+          # Mirror the notes into the Actions run summary so they are also
+          # visible on the workflow run page, not just the release page
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            cat notes.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          # ---- rolling 'nightly' tag: force-push ----
           # git handles both cases (create on first run, move afterwards) with no
-          # existence checks — the refs API GET prefix-matches (e.g. it "finds"
-          # nightly-latest when asked about nightly) while PATCH needs an exact
-          # ref, which caused HTTP 422 here before.
+          # existence checks — the refs API GET prefix-matches (a GET for "nightly"
+          # also "finds" e.g. "nightly-latest") while PATCH needs an exact ref,
+          # which caused HTTP 422 here before.
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -f nightly-latest "${GITHUB_SHA}"
-          git push -f origin "refs/tags/nightly-latest"
+          git tag -f nightly "${GITHUB_SHA}"
+          git push -f origin "refs/tags/nightly"
+
+          # ---- one-time cleanup of the pre-existing 'nightly-latest' tag/release ----
+          # (no-op once they are gone; kept so re-runs stay self-healing)
+          gh release delete nightly-latest --yes || true
+          git push origin :refs/tags/nightly-latest || true
 
           # ---- replace the previous nightly release (the tag itself is kept) ----
-          gh release delete nightly-latest --yes || true
+          gh release delete nightly --yes || true
 
-          gh release create nightly-latest \
+          gh release create nightly \
             --target "${GITHUB_SHA}" \
             --prerelease \
             --title "Nightly ${DATE}" \
             --notes-file notes.md \
             nightly/*.zip \
-          || gh release upload nightly-latest --clobber nightly/*.zip
+          || gh release upload nightly --clobber nightly/*.zip
