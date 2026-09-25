@@ -1,0 +1,148 @@
+name: publish
+
+# Publish a normal (versioned) release:
+#   1. workflow_dispatch — run it from the Actions tab: enter a tag (e.g. v2.10.0),
+#      optionally paste a custom changelog, and it builds + creates the tag + release.
+#   2. tag push — push a tag like v2.10.0 and it builds + publishes that tag.
+#
+# Changelog precedence:
+#   workflow input  >  CHANGELOG.md section for the version  >  auto-generated commit list
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, e.g. v2.10.0 (created at the selected branch's HEAD)"
+        required: true
+        type: string
+      changelog:
+        description: "Custom changelog / release notes (Markdown). Leave empty to use CHANGELOG.md section or auto-generate"
+        required: false
+        type: string
+      prerelease:
+        description: "Mark as pre-release"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  DOCKER_IMAGE: ajjjjjjjj/opentx-docker-i6x:1.5.0
+
+jobs:
+  build:
+    name: build-${{ matrix.suffix }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.DOCKER_IMAGE }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - board: I6X
+            suffix: std
+          - board: I6X_DFPLAYER
+            suffix: std-dfplayer
+          - board: I6X_HELI
+            suffix: heli
+          - board: I6X_HELI_DFPLAYER
+            suffix: heli-dfplayer
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build OpenI6X
+        run: python3 ./tools/build-flysky.py -b${{ matrix.board }} -tALL "${GITHUB_WORKSPACE}"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.suffix }}
+          path: output/
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # required to create the tag and the release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4 # for CHANGELOG.md
+
+      - name: Download all firmware artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+
+      - name: Resolve tag and release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_TAG: ${{ inputs.tag }}
+          CHANGELOG_INPUT: ${{ inputs.changelog }}
+        run: |
+          set -euo pipefail
+
+          # ---------- 1. Determine the tag ----------
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG=$(printf '%s' "$INPUT_TAG" | tr -d '[:space:]')
+            TARGET="--target ${GITHUB_SHA}" # create the tag at the branch HEAD we built
+          else
+            TAG="${GITHUB_REF_NAME}" # tag push: tag already exists
+            TARGET=""
+          fi
+          echo "Publishing release for tag: ${TAG}"
+
+          # ---------- 2. Resolve release notes ----------
+          # a) custom changelog from the workflow input
+          if [ -n "$CHANGELOG_INPUT" ]; then
+            echo "Using changelog from workflow input."
+            printf '%s\n' "$CHANGELOG_INPUT" > notes.md
+
+          else
+            # b) matching section from CHANGELOG.md ("## 2.10.0", "## v2.10.0", "## [2.10.0] - date", ...)
+            VERSION="${TAG#v}"
+            VERSION_ESC=$(printf '%s' "$VERSION" | sed 's/\./\\./g')
+            if [ -f CHANGELOG.md ]; then
+              START=$(grep -n -E "^#{1,3}[[:space:]]*\[?v?${VERSION_ESC}\]?([[:space:]].*)?$" CHANGELOG.md | head -n1 | cut -d: -f1 || true)
+            else
+              START=""
+            fi
+
+            if [ -n "$START" ]; then
+              echo "Using CHANGELOG.md section for ${VERSION} (line ${START})."
+              awk -v s="$START" 'NR>s && /^#{1,3}[[:space:]]/{exit} NR>s' CHANGELOG.md \
+                | sed -e '/./,$!d' \
+                | awk 'NF{last=NR} {lines[NR]=$0} END{for(i=1;i<=last;i++) print lines[i]}' > notes.md
+            else
+              # c) fallback: commit list since the previous tag
+              echo "No CHANGELOG.md section found — generating notes from commits."
+              PREV=$(gh api "repos/${GITHUB_REPOSITORY}/tags?per_page=100" --jq '.[].name' \
+                     | grep -vxF -e "$TAG" -e "nightly" | head -n1 || true)
+              if [ -n "$PREV" ]; then
+                gh api "repos/${GITHUB_REPOSITORY}/compare/${PREV}...${GITHUB_SHA}" \
+                  --jq '.commits[] | "- " + (.commit.message | split("\n")[0])' | head -n 30 > notes.md || true
+              fi
+              [ -f notes.md ] || echo "_No changelog provided._" > notes.md
+              [ -s notes.md ] || echo "_No changelog provided._" > notes.md
+            fi
+          fi
+
+          # ---------- 3. Create the release with the firmware attached ----------
+          FLAGS=""
+          if [ "${{ inputs.prerelease }}" = "true" ]; then
+            FLAGS="--prerelease"
+          fi
+
+          # (re-run safety: if the release already exists, just replace its assets)
+          gh release create "$TAG" $TARGET $FLAGS \
+            --title "OpenI6X ${TAG}" \
+            --notes-file notes.md \
+            release/*.bin \
+          || gh release upload "$TAG" --clobber release/*.bin

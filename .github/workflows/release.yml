@@ -1,0 +1,70 @@
+name: openi6x-release
+
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOCKER_IMAGE: ajjjjjjjj/opentx-docker-i6x:1.5.0
+
+jobs:
+  # EN-only build for feature branches
+  # (CircleCI: branches.ignore [master, /.*-maintenance/])
+  build-en:
+    name: build-en
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.DOCKER_IMAGE }}
+    if: github.ref_name != 'master' && !endsWith(github.ref_name, '-maintenance')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build OpenI6X
+        run: python3 ./tools/build-flysky.py -bI6X_DFPLAYER -bI6X_HELI -bI6X -tEN "${GITHUB_WORKSPACE}"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-en
+          path: output/
+          if-no-files-found: error
+
+  # Full builds (all translations) for release branches
+  # (CircleCI: branches.only [master, /.*-maintenance/])
+  build:
+    name: build-${{ matrix.suffix }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.DOCKER_IMAGE }}
+    if: github.ref_name == 'master' || endsWith(github.ref_name, '-maintenance')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - board: I6X
+            suffix: std
+          - board: I6X_DFPLAYER
+            suffix: std-dfplayer
+          - board: I6X_HELI
+            suffix: heli
+          - board: I6X_HELI_DFPLAYER
+            suffix: heli-dfplayer
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build OpenI6X
+        run: python3 ./tools/build-flysky.py -b${{ matrix.board }} -tALL "${GITHUB_WORKSPACE}"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.suffix }}
+          path: output/
+          if-no-files-found: error

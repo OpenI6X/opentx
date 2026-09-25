@@ -1,0 +1,144 @@
+name: nightly
+
+# Automatic nightly releases: builds all firmware variants from the default
+# branch (master) and publishes them as a rolling "nightly" pre-release.
+# - Runs every night on a schedule (cron is in UTC!)
+# - Can also be triggered manually from the Actions tab
+# - Skips the build/release if master hasn't changed since the last nightly
+#   (use the "force" input on manual runs to override)
+
+on:
+  schedule:
+    - cron: "0 1 * * *" # 01:00 UTC daily (03:00 CEST / 02:00 CET Warsaw time)
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Build and release even if there are no new commits"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  DOCKER_IMAGE: ajjjjjjjj/opentx-docker-i6x:1.5.0
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check for new commits
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.force || 'false' }}" = "true" ]; then
+            echo "Forced run — building regardless of new commits."
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if STATUS=$(gh api "repos/${{ github.repository }}/compare/nightly...${GITHUB_SHA}" --jq .status 2>/dev/null); then
+            echo "Compare status vs 'nightly' tag: $STATUS"
+          else
+            STATUS="no-previous-nightly"
+            echo "No previous 'nightly' tag found — first run."
+          fi
+
+          if [ "$STATUS" = "identical" ]; then
+            echo "No new commits since last nightly — skipping."
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: build-${{ matrix.suffix }}
+    needs: check
+    if: needs.check.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.DOCKER_IMAGE }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - board: I6X
+            suffix: std
+          - board: I6X_DFPLAYER
+            suffix: std-dfplayer
+          - board: I6X_HELI
+            suffix: heli
+          - board: I6X_HELI_DFPLAYER
+            suffix: heli-dfplayer
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build OpenI6X
+        run: python3 ./tools/build-flysky.py -b${{ matrix.board }} -tALL "${GITHUB_WORKSPACE}"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-${{ matrix.suffix }}
+          path: output/
+          if-no-files-found: error
+
+  release:
+    name: Publish nightly release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # required to create the release
+    steps:
+      - name: Download all firmware artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: nightly
+          merge-multiple: true
+
+      - name: Publish nightly release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          SHA_SHORT="${GITHUB_SHA::7}"
+
+          # Collect commit subjects since the previous nightly (none on first run)
+          if gh api "repos/${{ github.repository }}/compare/nightly...${GITHUB_SHA}" > compare.json 2>/dev/null; then
+            jq -r '.commits[] | "- " + (.commit.message | split("\n")[0])' compare.json | head -n 30 > changes.md || true
+          fi
+
+          {
+            echo "### OpenI6X nightly — ${DATE}"
+            echo ""
+            echo "Automatic nightly build of \`master\` @ ${SHA_SHORT}."
+            echo ""
+            echo "Variants: \`I6X\` · \`I6X_DFPLAYER\` · \`I6X_HELI\` · \`I6X_HELI_DFPLAYER\` — all translations."
+            echo "Flash the \`.bin\` matching your radio variant and preferred language."
+            if [ -f changes.md ]; then
+              echo ""
+              echo "**Changes since previous nightly:**"
+              echo ""
+              cat changes.md
+            fi
+          } > notes.md
+
+          # Replace the previous nightly release (assets are date-stamped,
+          # so old ones would otherwise pile up)
+          gh release delete nightly --cleanup-tag --yes || true
+          gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/nightly" || true
+
+          gh release create nightly \
+            --target "${GITHUB_SHA}" \
+            --prerelease \
+            --title "Nightly ${DATE}" \
+            --notes-file notes.md \
+            nightly/*.bin
