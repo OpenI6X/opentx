@@ -92,7 +92,7 @@ Note: the official FlySky updater **cannot** be used for this.
 Remove the R53 bridge, power-cycle the radio, calibrate your sticks (see the [manual](https://github.com/OpenI6X/opentx/wiki/Manual)) and set up your first model.
 
 > [!TIP]
-> Flashing third-party firmware is done at your own risk. OpenI6X is a community project and is **not affiliated with or endorsed by FlySky**. Read the [flashing guide](https://github.com/OpenI6X/opentx/wiki/Flashing-&-Upgrading) before you start — and if in doubt, ask on [Discord](https://discord.gg/3vKfYNTVa2).
+> Using third-party firmware is done at your own risk. OpenI6X is a community project and is **not affiliated with or endorsed by FlySky**. Read the [flashing guide](https://github.com/OpenI6X/opentx/wiki/Flashing-&-Upgrading) before you start — and if in doubt, ask on [Discord](https://discord.gg/3vKfYNTVa2).
 
 ## Hardware mods
 
