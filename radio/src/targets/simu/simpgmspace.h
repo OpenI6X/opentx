@@ -229,7 +229,7 @@ void simuMain();
 #define USART_ClearFlag(...)
 
 #if defined(STM32)
-inline void GPIO_Init(GPIO_TypeDef* GPIOx, GPIO_InitTypeDef* GPIO_InitStruct) { }
+inline void LL_GPIO_Init(GPIO_TypeDef* GPIOx, GPIO_InitTypeDef* GPIO_InitStruct) { }
 #define TIM_DeInit(...)
 #define TIM_SetCompare2(...)
 #define TIM_ClearFlag(...)

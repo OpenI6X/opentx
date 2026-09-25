@@ -44,7 +44,7 @@ void SystemBootloaderJump() {
     typedef void (*pFunction)(void);
     pFunction JumpToApplication;
 
-    RCC_DeInit();
+    LL_RCC_DeInit();
 
     SysTick->CTRL = 0;
     SysTick->LOAD = 0;
@@ -68,12 +68,12 @@ void SystemBootloaderJump() {
 
 void watchdogInit(unsigned int duration)
 {
-  IWDG->KR = IWDG_WriteAccess_Enable;
-  IWDG->PR = IWDG_Prescaler_32;         // Divide by 32 => 1kHz clock
-  IWDG->KR = IWDG_WriteAccess_Enable;
-  IWDG->RLR = duration; // 1.5 seconds nominal
-  IWDG->KR = 0xAAAA;    // reload
-  IWDG->KR = 0xCCCC;    // start
+  IWDG->KR = IWDG_KEY_WRITE_ACCESS_ENABLE;
+  IWDG->PR = IWDG_PRESCALER_32;               // Divide by 32 => 1kHz clock
+  IWDG->KR = IWDG_KEY_WRITE_ACCESS_ENABLE;
+  IWDG->RLR = duration;                       // 1.5 seconds nominal
+  IWDG->KR = IWDG_KEY_RELOAD;
+  IWDG->KR = IWDG_KEY_ENABLE;
 }
 
 void boardInit()
@@ -88,9 +88,9 @@ void boardInit()
 #endif
 
 #if !defined(SIMU)
-  RCC_AHBPeriphClockCmd(RCC_AHB1_LIST, ENABLE);
-  RCC_APB1PeriphClockCmd(RCC_APB1_LIST, ENABLE);
-  RCC_APB2PeriphClockCmd(RCC_APB2_LIST, ENABLE);
+  LL_AHB1_GRP1_EnableClock(RCC_AHB1_GRP1_LIST);
+  LL_APB1_GRP1_EnableClock(RCC_APB1_GRP1_LIST);
+  LL_APB1_GRP2_EnableClock(RCC_APB1_GRP2_LIST);
 
   pwrInit();
   keysInit();
@@ -119,7 +119,14 @@ void boardInit()
   usbInit();
 
 #if defined(DEBUG)
-  DBGMCU_APB1PeriphConfig(DBGMCU_IWDG_STOP | DBGMCU_TIM1_STOP | DBGMCU_TIM2_STOP | DBGMCU_TIM3_STOP | DBGMCU_TIM6_STOP | DBGMCU_TIM14_STOP, ENABLE);
+  LL_DBGMCU_APB1_GRP2_FreezePeriph(LL_DBGMCU_APB1_GRP2_TIM1_STOP);
+  LL_DBGMCU_APB1_GRP1_FreezePeriph(
+      LL_DBGMCU_APB1_GRP1_IWDG_STOP |
+      LL_DBGMCU_APB1_GRP1_TIM2_STOP |
+      LL_DBGMCU_APB1_GRP1_TIM3_STOP |
+      LL_DBGMCU_APB1_GRP1_TIM6_STOP |
+      LL_DBGMCU_APB1_GRP1_TIM14_STOP
+  );
 #endif
 
   backlightInit();
