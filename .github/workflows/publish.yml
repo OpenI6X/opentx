@@ -62,9 +62,10 @@ jobs:
         env:
           ZIP_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
         run: |
-          VERSION=$(printf '%s' "$ZIP_VERSION" | tr -d '[:space:]')
+          VERSION=$(printf '%s' "$ZIP_VERSION" | tr -d '[:space:]' | tr '/' '-')
           BOARD=$(printf '%s' "${{ matrix.board }}" | tr '[:upper:]' '[:lower:]')
-          export ZIP_NAME="open${BOARD}_${VERSION}.zip"
+          # must be inside output/ — the upload step below globs output/*.zip
+          export ZIP_NAME="output/open${BOARD}_${VERSION}.zip"
           python3 <<'EOF'
           import zipfile, glob, os, sys
           name = os.environ["ZIP_NAME"]
