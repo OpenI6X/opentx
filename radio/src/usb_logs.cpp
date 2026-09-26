@@ -2,6 +2,40 @@
 
 #include "usb_logs.h"
 #include "serial.h"
+#include "strhelpers.h"
+
+static void usbLogPuts(const char * s)
+{
+  while (*s)
+    serialPutc(*s++);
+}
+
+static void usbLogPutsN(const char * s, size_t n)
+{
+  while (n-- && *s)
+    serialPutc(*s++);
+}
+
+static void usbLogUnsigned(uint32_t value, uint8_t minDigits = 0, uint8_t radix = 10)
+{
+  char buf[12];
+  char * end = strAppendUnsigned(buf, value, 0, radix);
+  uint8_t len = (uint8_t)(end - buf);
+  while (len < minDigits) {
+    serialPutc('0');
+    len++;
+  }
+  usbLogPuts(buf);
+}
+
+static void usbLogSigned(int32_t value, uint8_t minDigits = 0, uint8_t radix = 10)
+{
+  if (value < 0) {
+    serialPutc('-');
+    value = -value;
+  }
+  usbLogUnsigned((uint32_t)value, minDigits, radix);
+}
 
 uint8_t logDelay = 0;
 
@@ -24,7 +58,7 @@ uint32_t getLogicalSwitchesStates(uint8_t first)
 
 static void usbLogsWriteHeader()
 {
-  serialPrintf("Date,Time,");
+  usbLogPuts("Date,Time,");
 
   char label[TELEM_LABEL_LEN + 6];
   for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
@@ -33,11 +67,14 @@ static void usbLogsWriteHeader()
       if (sensor.logs) {
         memset(label, 0, sizeof(label));
         zchar2str(label, sensor.label, TELEM_LABEL_LEN);
-        serialPrintf("%s", label);
+        usbLogPuts(label);
         uint8_t unit = sensor.unit;
         if (unit == UNIT_CELLS) unit = UNIT_VOLTS;
         if (UNIT_RAW < unit && unit < UNIT_FIRST_VIRTUAL) {
-           serialPrintf("(%3s)", STR_VTELEMUNIT + 1 + 3 * unit);
+          const char * unitStr = STR_VTELEMUNIT + 1 + 3 * unit;
+          serialPutc('(');
+          usbLogPutsN(unitStr, 3);
+          serialPutc(')');
         }
         serialPutc(',');
       }
@@ -53,11 +90,13 @@ static void usbLogsWriteHeader()
     serialPutc(',');
   }
 
-  serialPrintf("SA,SB,SC,SD,SE,SF,LSW,");
+  usbLogPuts("SA,SB,SC,SD,SE,SF,LSW,");
   for (uint8_t channel = 0; channel < MAX_OUTPUT_CHANNELS; channel++) {
-    serialPrintf("CH%d(us),", channel+1);
+    usbLogPuts("CH");
+    usbLogUnsigned(channel + 1);
+    usbLogPuts("(us),");
   }
-  serialPrintf("TxBat(V)\n");
+  usbLogPuts("TxBat(V)\n");
 }
 
 void usbLogsInit()
@@ -69,8 +108,9 @@ void usbLogsInit()
 static void logGPSCoord(int coord)
 {
   div_t qr = div(coord, 1000000);
-  if (coord < 0) serialPutc('-');
-  serialPrintf("%d.%06d", abs(qr.quot), abs(qr.rem));
+  usbLogSigned(qr.quot);
+  serialPutc('.');
+  usbLogUnsigned((uint32_t)abs(qr.rem), 6);
 }
 
 void usbLogsWrite()
@@ -100,7 +140,15 @@ void usbLogsWrite()
     uint8_t minutes = timeQr.rem;
     uint8_t hours = timeQr.quot;
     uint8_t g_ms100 = (tmr10ms + 500) % 100;
-    serialPrintf("2000-01-01,%02d:%02d:%02d.%02d0,", hours, minutes, seconds, g_ms100);
+    usbLogPuts("2000-01-01,");
+    usbLogUnsigned(hours, 2);
+    serialPutc(':');
+    usbLogUnsigned(minutes, 2);
+    serialPutc(':');
+    usbLogUnsigned(seconds, 2);
+    serialPutc('.');
+    usbLogUnsigned(g_ms100, 2);
+    usbLogPuts("0,");
 
     for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
       if (isTelemetryFieldAvailable(i)) {
@@ -119,42 +167,58 @@ void usbLogsWrite()
             }
             serialPutc(',');
           // } else if (sensor.unit == UNIT_DATETIME) {
-          //   serialPrintf("%4d-%02d-%02d %02d:%02d:%02d,", telemetryItem.datetime.year, telemetryItem.datetime.month, telemetryItem.datetime.day, telemetryItem.datetime.hour, telemetryItem.datetime.min, telemetryItem.datetime.sec);
+          //   datetime logging disabled
           } else if (sensor.unit == UNIT_TEXT) {
-            serialPrintf("\"%s\",", telemetryItem.text);
+            serialPutc('"');
+            usbLogPuts(telemetryItem.text);
+            serialPutc('"');
+            serialPutc(',');
           } else if (sensor.prec == 2) {
             div_t qr = div((int)telemetryItem.value, 100);
-            if (telemetryItem.value < 0) serialPutc('-');
-            serialPrintf("%d.%02d,", abs(qr.quot), abs(qr.rem));
+            usbLogSigned(qr.quot);
+            serialPutc('.');
+            usbLogUnsigned((uint32_t)abs(qr.rem), 2);
+            serialPutc(',');
           } else if (sensor.prec == 1) {
             div_t qr = div((int)telemetryItem.value, 10);
-            if (telemetryItem.value < 0) serialPutc('-');
-            serialPrintf("%d.%d,", abs(qr.quot), abs(qr.rem));
+            usbLogSigned(qr.quot);
+            serialPutc('.');
+            usbLogUnsigned((uint32_t)abs(qr.rem));
+            serialPutc(',');
           } else {
-            serialPrintf("%d,", telemetryItem.value);
+            usbLogSigned(telemetryItem.value);
+            serialPutc(',');
           }
         }
       }
     }
 
     for (uint32_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++) {
-      serialPrintf("%d,", calibratedAnalogs[i]);
+      usbLogSigned(calibratedAnalogs[i]);
+      serialPutc(',');
     }
 
     for (int i = 0; i < NUM_SWITCHES; i++) {
   //    if (SWITCH_EXISTS(i)) {
-        serialPrintf("%d,", getSwitchLogState(i));
+        usbLogSigned(getSwitchLogState(i));
+        serialPutc(',');
   //    }
     }
 
-    serialPrintf("0x%03X,", getLogicalSwitchesStates(0));
+    usbLogPuts("0x");
+    usbLogUnsigned(getLogicalSwitchesStates(0), 3, 16);
+    serialPutc(',');
 
     for (uint8_t channel = 0; channel < MAX_OUTPUT_CHANNELS; channel++) {
-      serialPrintf("%d,", PPM_CENTER+channelOutputs[channel]/2); // in us
+      usbLogSigned(PPM_CENTER+channelOutputs[channel]/2); // in us
+      serialPutc(',');
     }
 
     int quot = g_vbat100mV / 10;
     int rem = g_vbat100mV % 10;
-    serialPrintf("%d.%d\n", abs(quot), abs(rem));
+    usbLogUnsigned(quot);
+    serialPutc('.');
+    usbLogUnsigned(rem);
+    serialPutc('\n');
   }
 }
