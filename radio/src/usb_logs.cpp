@@ -111,14 +111,6 @@ void usbLogsInit()
   usbHeaderSent = false;
 }
 
-static void logGPSCoord(int coord)
-{
-  div_t qr = div(coord, 1000000);
-  usbLogSigned(qr.quot);
-  serialPutc('.');
-  usbLogUnsigned((uint32_t)abs(qr.rem), 6);
-}
-
 static void logValue(int32_t value, uint8_t prec)
 {
   if (prec == 0) {
@@ -190,9 +182,9 @@ void usbLogsWrite()
 
           if (sensor.unit == UNIT_GPS) {
             if (telemetryItem.gps.longitude && telemetryItem.gps.latitude) {
-              logGPSCoord((int)telemetryItem.gps.latitude);
+              logValue((int)telemetryItem.gps.latitude, 6);
               serialPutc(' ');
-              logGPSCoord((int)telemetryItem.gps.longitude);
+              logValue((int)telemetryItem.gps.longitude, 6);
             }
           // } else if (sensor.unit == UNIT_DATETIME) {
           //   datetime logging disabled
