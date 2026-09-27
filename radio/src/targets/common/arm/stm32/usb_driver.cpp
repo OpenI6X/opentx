@@ -97,9 +97,9 @@ void usbInit()
   // USB DP/DM as connection detect
   LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
   GPIO_InitStruct.Pin   = USB_GPIO_PIN_DM;
-  GPIO_InitStruct.Mode  = LL_GPIO_MODE_INPUT;
+  // GPIO_InitStruct.Mode  = LL_GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull  = LL_GPIO_PULL_UP;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  // GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   LL_GPIO_Init(USB_GPIO, &GPIO_InitStruct);
 
   // Initialize hardware
