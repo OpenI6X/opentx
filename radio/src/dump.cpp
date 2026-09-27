@@ -37,7 +37,7 @@ void dumpStart(unsigned int size)
 void dumpBody(const uint8_t *data, unsigned int size)
 {
   for (unsigned int i=0; i<size; i++) {
-    dumpPrintf("%.2X ", data[i]);
+    dumpPrintf("%2X ", data[i]); // mini_print requires simplified formatting, in std it should be %.2X
     dumpPosition++;
     if ((dumpPosition & (32-1)) == 0) {
       dumpPrintf("\r\n");
