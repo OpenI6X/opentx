@@ -978,7 +978,9 @@ static void runPopupPage(event_t event) {
     }
   } else if (ui.paramPopup->status == STATUS_PROGRESS) {
     result = popupCompat(event);
-    ui.paramPopup->lastStatus = ui.paramPopup->status;
+    if (ui.paramPopup != nullptr) { // guard, otherwise can reboot on popup -> cancel
+      ui.paramPopup->lastStatus = ui.paramPopup->status;
+    }
     if (result == RESULT_CANCEL) {
       crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, ui.paramPopup->id, STATUS_CANCEL);
       paramLoad.timeout = getTime() + ui.paramPopup->timeout;
