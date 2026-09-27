@@ -4,6 +4,8 @@
 #include "serial.h"
 #include "strhelpers.h"
 
+// #define FAKE_RTCLOCK
+
 static void usbLogPuts(const char * s)
 {
   while (*s)
@@ -58,7 +60,11 @@ uint32_t getLogicalSwitchesStates(uint8_t first)
 
 static void usbLogsWriteHeader()
 {
+#if defined(FAKE_RTCLOCK)
   usbLogPuts("Date,Time,");
+#else
+  usbLogPuts("Time,");
+#endif
 
   char label[TELEM_LABEL_LEN + 6];
   for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
@@ -128,6 +134,7 @@ static void logValue(int32_t value, uint8_t prec)
   usbLogUnsigned((uint32_t)abs(qr.rem), prec);
 }
 
+#if defined(FAKE_RTCLOCK)
 static void logTime(uint32_t currentTime)
 {
   div_t qr = div(currentTime, 60);
@@ -139,6 +146,7 @@ static void logTime(uint32_t currentTime)
   serialPutc(':');
   usbLogUnsigned(seconds, 2);
 }
+#endif
 
 void usbLogsWrite()
 {
@@ -160,11 +168,16 @@ void usbLogsWrite()
       return; // skip first log line after header to do not overload buffer
     }
 
+#if defined(FAKE_RTCLOCK)
     usbLogPuts("2000-01-01,");
     logTime(g_eeGeneral.globalTimer + sessionTimer);
     serialPutc('.');
     usbLogUnsigned((tmr10ms + 500) % 100, 2); // ms
     usbLogPuts("0,");
+#else
+    usbLogUnsigned(tmr10ms);
+    serialPutc(',');
+#endif
 
     for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
       if (isTelemetryFieldAvailable(i)) {
