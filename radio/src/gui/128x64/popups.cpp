@@ -20,7 +20,7 @@
 
 #include "opentx.h"
 
-const char * warningText = NULL;
+const char * warningText = nullptr;
 const char * warningInfoText;
 uint8_t         warningInfoLength;
 uint8_t         warningType;
@@ -40,8 +40,8 @@ void showMessageBox(const char * str)
 {
   warningText = str;
   drawMessageBox();
-  warningText = NULL;
-  lcdRefresh();
+  warningText = nullptr;
+  // lcdRefresh();
 }
 
 const unsigned char ASTERISK_BITMAP[]  = {
