@@ -147,81 +147,79 @@ void usbLogsWrite()
     return;
   }
 
-  if (isFunctionActive(FUNCTION_LOGS) && logDelay > 0) {
-    tmr10ms_t tmr10ms = get_tmr10ms();
-    if (lastUsbLogTime != 0 && (tmr10ms_t)(tmr10ms - lastUsbLogTime) < (tmr10ms_t)logDelay * 10) {
-      return;
-    }
-    lastUsbLogTime = tmr10ms;
+  tmr10ms_t tmr10ms = get_tmr10ms();
+  if (lastUsbLogTime != 0 && (tmr10ms_t)(tmr10ms - lastUsbLogTime) < (tmr10ms_t)logDelay * 10) {
+    return;
+  }
+  lastUsbLogTime = tmr10ms;
 
-    if (!usbHeaderSent) {
-      usbLogsWriteHeader();
-      usbHeaderSent = true;
-      return; // skip first log line after header to do not overload buffer
-    }
+  if (!usbHeaderSent) {
+    usbLogsWriteHeader();
+    usbHeaderSent = true;
+    return; // skip first log line after header to do not overload buffer
+  }
 
 #if defined(FAKE_RTCLOCK)
-    usbLogPuts("2000-01-01,");
-    logTime(g_eeGeneral.globalTimer + sessionTimer);
-    serialPutc('.');
-    usbLogUnsigned((tmr10ms + 500) % 100, 2); // ms
-    usbLogPuts("0,");
+  usbLogPuts("2000-01-01,");
+  logTime(g_eeGeneral.globalTimer + sessionTimer);
+  serialPutc('.');
+  usbLogUnsigned((tmr10ms + 500) % 100, 2); // ms
+  usbLogPuts("0,");
 #else
-    usbLogUnsigned(tmr10ms);
-    serialPutc(',');
+  usbLogUnsigned(tmr10ms);
+  serialPutc(',');
 #endif
 
-    for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
-      if (isTelemetryFieldAvailable(i)) {
-        TelemetrySensor & sensor = g_model.telemetrySensors[i];
-        TelemetryItem telemetryItem;
+  for (int i = 0; i < MAX_TELEMETRY_SENSORS; i++) {
+    if (isTelemetryFieldAvailable(i)) {
+      TelemetrySensor & sensor = g_model.telemetrySensors[i];
+      TelemetryItem telemetryItem;
 
-        if (sensor.logs) {
-          if (TELEMETRY_STREAMING() && !telemetryItems[i].isOld())
-            telemetryItem = telemetryItems[i];
+      if (sensor.logs) {
+        if (TELEMETRY_STREAMING() && !telemetryItems[i].isOld())
+          telemetryItem = telemetryItems[i];
 
-          if (sensor.unit == UNIT_GPS) {
-            if (telemetryItem.gps.longitude && telemetryItem.gps.latitude) {
-              logValue((int)telemetryItem.gps.latitude, 6);
-              serialPutc(' ');
-              logValue((int)telemetryItem.gps.longitude, 6);
-            }
-          // } else if (sensor.unit == UNIT_DATETIME) {
-          //   datetime logging disabled
-          } else if (sensor.unit == UNIT_TEXT) {
-            serialPutc('"');
-            usbLogPuts(telemetryItem.text);
-            serialPutc('"');
-          } else { // numeric
-            logValue(telemetryItem.value, sensor.prec);
+        if (sensor.unit == UNIT_GPS) {
+          if (telemetryItem.gps.longitude && telemetryItem.gps.latitude) {
+            logValue((int)telemetryItem.gps.latitude, 6);
+            serialPutc(' ');
+            logValue((int)telemetryItem.gps.longitude, 6);
           }
-          serialPutc(',');
+        // } else if (sensor.unit == UNIT_DATETIME) {
+        //   datetime logging disabled
+        } else if (sensor.unit == UNIT_TEXT) {
+          serialPutc('"');
+          usbLogPuts(telemetryItem.text);
+          serialPutc('"');
+        } else { // numeric
+          logValue(telemetryItem.value, sensor.prec);
         }
+        serialPutc(',');
       }
     }
+  }
 
-    for (uint32_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++) {
-      usbLogSigned(calibratedAnalogs[i]);
-      serialPutc(',');
-    }
+  for (uint32_t i = 0; i < NUM_STICKS + NUM_POTS + NUM_SLIDERS; i++) {
+    usbLogSigned(calibratedAnalogs[i]);
+    serialPutc(',');
+  }
 
-    for (int i = 0; i < NUM_SWITCHES; i++) {
+  for (int i = 0; i < NUM_SWITCHES; i++) {
   //    if (SWITCH_EXISTS(i)) {
         usbLogSigned(getSwitchLogState(i));
         serialPutc(',');
   //    }
-    }
-
-    usbLogPuts("0x");
-    usbLogUnsigned(getLogicalSwitchesStates(0), 3, 16);
-    serialPutc(',');
-
-    for (uint8_t channel = 0; channel < MAX_OUTPUT_CHANNELS; channel++) {
-      usbLogSigned(PPM_CENTER + channelOutputs[channel] / 2); // in us
-      serialPutc(',');
-    }
-
-    logValue(g_vbat100mV, 1);
-    serialPutc('\n');
   }
+
+  usbLogPuts("0x");
+  usbLogUnsigned(getLogicalSwitchesStates(0), 3, 16);
+  serialPutc(',');
+
+  for (uint8_t channel = 0; channel < MAX_OUTPUT_CHANNELS; channel++) {
+    usbLogSigned(PPM_CENTER + channelOutputs[channel] / 2); // in us
+    serialPutc(',');
+  }
+
+  logValue(g_vbat100mV, 1);
+  serialPutc('\n');
 }
