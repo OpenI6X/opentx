@@ -54,23 +54,17 @@ int usbPlugged()
     return 1;
   }
 
-  // debounce
-  static uint8_t debounced_state = 0;
-  static uint8_t last_state = 0;
+  static uint8_t debouncedState = 0;
+  static uint8_t lastState = 0;
 
-  if (!LL_GPIO_IsInputPinSet(USB_GPIO, USB_GPIO_PIN_DM)) {
-    if (last_state) {
-      debounced_state = 1;
-    }
-    last_state = 1;
-  }
-  else {
-    if (!last_state) {
-      debounced_state = 0;
-    }
-    last_state = 0;
-  }
-  return debounced_state;
+  uint8_t state = LL_GPIO_IsInputPinSet(USB_GPIO, USB_GPIO_PIN_DM) ? 0 : 1;
+
+  if (state == lastState)
+    debouncedState = state;
+  else
+    lastState = state;
+
+  return debouncedState;
 }
 
 #if defined(STM32F0)
