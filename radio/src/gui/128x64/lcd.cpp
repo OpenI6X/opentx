@@ -215,72 +215,15 @@ uint8_t getCharWidth(char c, LcdFlags flags)
 
 void lcdDrawChar(coord_t x, coord_t y, const unsigned char c, LcdFlags flags)
 {
-  const unsigned char * q;
-
   lcdNextPos = x-1;
 
 #if !defined(BOOT)
-  uint32_t fontsize = FONTSIZE(flags);
-  unsigned char c_remapped = 0;
-
-  if (fontsize == DBLSIZE || (flags&BOLD)) {
-    // To save space only some DBLSIZE and BOLD chars are available
-    // c has to be remapped. All non existing chars mapped to 0 (space)
-    if (c>=',' && c<=':')
-      c_remapped = c - ',' + 1;
-    else if (c>='A' && c<='Z')
-      c_remapped = c - 'A' + 16;
-    else if (c>='a' && c<='z')
-      c_remapped = c - 'a' + 42;
-    else if (c=='_')
-      c_remapped = 4;
-    else if (c!=' ')
-      flags &= ~BOLD;
-  }
-
-  if (fontsize == DBLSIZE) {
-    if (c >= 0xC0) {
-      q = &font_10x14_extra[((uint16_t)(c-0xC0))*20];
-    }
-    else {
-      if (c >= 128)
-        c_remapped = c - 60;
-      q = &font_10x14[((uint16_t)c_remapped)*20];
-    }
-    lcdPutPattern(x, y, q, 10, 16, flags);
-  }
-//  else if (fontsize == XXLSIZE) { // only lua uses those
-//     q = &font_22x38_num[((uint16_t)c-'0'+5)*110];
-//     lcdPutPattern(x, y, q, 22, 38, flags);
-//  }
-  else if (fontsize == MIDSIZE) {
-    q = &font_8x10[((uint16_t)c-0x20)*16];
-    lcdPutPattern(x, y, q, 8, 12, flags);
-  }
-  else if (fontsize == SMLSIZE) {
-    q = (c < 0xc0 ? &font_4x6[(c-0x20)*5] : &font_4x6_extra[(c-0xc0)*5]);
-    lcdPutPattern(x, y, q, 5, 6, flags);
-  }
-  else if (fontsize == TINSIZE) {
-    q = &font_3x5[((uint16_t)c-0x20)*3];
-    lcdPutPattern(x, y, q, 3, 5, flags);
-  }
-#if defined(BOLD_FONT)
-  else if (flags & BOLD) {
-    q = &font_5x7_B[c_remapped*5];
-    lcdPutPattern(x, y, q, 5, 7, flags);
-  }
-#endif
-  else
-#endif
-  {
-#if !defined(BOOT)
-    q = (c < 0xC0) ? &font_5x7[(c-0x20)*5] : &font_5x7_extra[(c-0xC0)*5];
+  PatternData pattern;
+  getCharPattern(&pattern, c, flags);
+  lcdPutPattern(x, y, pattern.data, pattern.width, pattern.height, flags);
 #else
-    q = &font_5x7[(c-0x20)*5];
+  lcdPutPattern(x, y, &font_5x7[(c-0x20)*5], 5, 7, flags);
 #endif
-    lcdPutPattern(x, y, q, 5, 7, flags);
-  }
 }
 
 void lcdDrawChar(coord_t x, coord_t y, const unsigned char c)
