@@ -31,21 +31,9 @@ else() # STM32F0
   set(STM32USB_DIR ${THIRDPARTY_DIR}/STM32F0x2_USB-FS-Device_Lib_V1.0.0/Libraries)
   add_definitions(-DSTM32 -DVARIO)
   include_directories(${RADIO_SRC_DIRECTORY}/targets/common/arm/stm32)
-  include_directories(${STM32USB_DIR}/STM32_USB_Device_Driver/inc)
-  include_directories(${STM32USB_DIR}/STM32_USB_Device_Library/Core/inc)
-  include_directories(${STM32USB_DIR}/STM32_USB_Device_Library/Class/msc/inc)
-  include_directories(${STM32USB_DIR}/STM32_USB_Device_Library/Class/hid/inc)
-  include_directories(${STM32USB_DIR}/STM32_USB_Device_Library/Class/cdc/inc)
-  include_directories(${STM32USB_DIR}/STM32_USB_Device_Library/Core/inc/)
-
-  set(STM32USB_SRC
-    STM32_USB_Device_Driver/src/usb_core.c
-    STM32_USB_Device_Driver/src/usb_dcd.c
-    STM32_USB_Device_Driver/src/usb_dcd_int.c
-    STM32_USB_Device_Library/Core/src/usbd_core.c
-    STM32_USB_Device_Library/Core/src/usbd_ioreq.c
-    STM32_USB_Device_Library/Core/src/usbd_req.c
-    )
+  include_directories(${RADIO_SRC_DIRECTORY}/targets/common/arm/stm32/f0/usb)
+  # No STM32F0x2_USB-FS-Device_Lib: the F0 USB stack is self contained.
+  set(STM32USB_SRC "")
 endif()
 
 set(TARGET_SRC
@@ -65,44 +53,66 @@ if(NOT CPU_TYPE STREQUAL STM32F0)
 endif()
 
 set(FIRMWARE_TARGET_SRC
- ${FIRMWARE_TARGET_SRC}
- ../common/arm/stm32/usb_bsp.c
- ../common/arm/stm32/usbd_pwr.c
- ../common/arm/stm32/usbd_desc.c
- ../common/arm/stm32/usbd_usr.cpp
- ../common/arm/stm32/usb_driver.cpp
- ../common/arm/stm32/flash_driver.cpp
- ../common/arm/stm32/usbd_storage_msd.cpp
- )
-
-if(DEBUG OR CLI OR USB_SERIAL)
-  set(STM32USB_SRC
-    ${STM32USB_SRC}
-    STM32_USB_Device_Library/Class/cdc/src/usbd_cdc_core.c
+  ${FIRMWARE_TARGET_SRC}
+  ../common/arm/stm32/flash_driver.cpp
+  ../common/arm/stm32/usbd_storage_msd.cpp
   )
+
+if(NOT CPU_TYPE STREQUAL STM32F0)
   set(FIRMWARE_TARGET_SRC
     ${FIRMWARE_TARGET_SRC}
-    ../common/arm/stm32/usbd_cdc.cpp
-  )
-  add_definitions(-DUSB_SERIAL)
-
-# disable USB_SERIAL if it will exceed flash size
-# if ((NOT TRANSLATIONS STREQUAL EN) AND DFPLAYER STREQUAL YES AND USB_MSD STREQUAL YES AND PCBI6X_ELRS STREQUAL YES AND PCBI6X_INAV STREQUAL YES AND USB_SERIAL STREQUAL YES)
-#  message(WARNING "USB_SERIAL will be disabled")
-#  remove_definitions(-DUSB_SERIAL)
-# endif()
+    ../common/arm/stm32/usb_bsp.c
+    ../common/arm/stm32/usbd_pwr.c
+    ../common/arm/stm32/usbd_desc.c
+    ../common/arm/stm32/usbd_usr.cpp
+    ../common/arm/stm32/usb_driver.cpp
+    ../common/arm/stm32/usbd_hid_joystick.c
+    )
+else()
+  # Compact LL based USB stack, replaces the STM32F0x2_USB-FS library
+  set(FIRMWARE_TARGET_SRC
+    ${FIRMWARE_TARGET_SRC}
+    ../common/arm/stm32/f0/usb/usb_ll.c
+    ../common/arm/stm32/f0/usb/usb_driver.cpp
+    ../common/arm/stm32/f0/usb/usb_device.c
+    ../common/arm/stm32/f0/usb/usb_desc.c
+    ../common/arm/stm32/f0/usb/usb_hid.cpp
+    )
 endif()
-set(STM32USB_SRC
-  ${STM32USB_SRC}
-  STM32_USB_Device_Library/Class/msc/src/usbd_msc_data.c
-  STM32_USB_Device_Library/Class/msc/src/usbd_msc_scsi.c
-  STM32_USB_Device_Library/Class/msc/src/usbd_msc_bot.c
-  STM32_USB_Device_Library/Class/msc/src/usbd_msc_core.c
-  )
-set(FIRMWARE_TARGET_SRC
-  ${FIRMWARE_TARGET_SRC}
-  ../common/arm/stm32/usbd_hid_joystick.c
-  )
+
+if(DEBUG OR CLI OR USB_SERIAL)
+  if(NOT CPU_TYPE STREQUAL STM32F0)
+    set(STM32USB_SRC
+      ${STM32USB_SRC}
+      STM32_USB_Device_Library/Class/cdc/src/usbd_cdc_core.c
+      )
+    set(FIRMWARE_TARGET_SRC
+      ${FIRMWARE_TARGET_SRC}
+      ../common/arm/stm32/usbd_cdc.cpp
+      )
+  else()
+    set(FIRMWARE_TARGET_SRC
+      ${FIRMWARE_TARGET_SRC}
+      ../common/arm/stm32/f0/usb/usb_cdc.cpp
+      )
+  endif()
+  add_definitions(-DUSB_SERIAL)
+endif()
+
+if(NOT CPU_TYPE STREQUAL STM32F0)
+  set(STM32USB_SRC
+    ${STM32USB_SRC}
+    STM32_USB_Device_Library/Class/msc/src/usbd_msc_data.c
+    STM32_USB_Device_Library/Class/msc/src/usbd_msc_scsi.c
+    STM32_USB_Device_Library/Class/msc/src/usbd_msc_bot.c
+    STM32_USB_Device_Library/Class/msc/src/usbd_msc_core.c
+    )
+else()
+  set(FIRMWARE_TARGET_SRC
+    ${FIRMWARE_TARGET_SRC}
+    ../common/arm/stm32/f0/usb/usb_msd.cpp
+    )
+endif()
 if(GVARS)
   set(GUI_SRC
     ${GUI_SRC}

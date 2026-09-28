@@ -28,8 +28,16 @@
 extern "C" {
 #endif
 
-#include "usbd_msc_mem.h"
 #include "usb_conf.h"
+
+// The F0 targets drive this back end directly from their own compact mass
+// storage class (f0/usb/usb_msd.c) and declare these in usb_storage.h, so the
+// ST callback vtable below is not built for them.
+#if !defined(STM32F0)
+#include "usbd_msc_mem.h"
+#else
+#define USBD_STD_INQUIRY_LENGTH 36
+#endif
 
 enum MassstorageLuns {
   #if defined(SDCARD)
@@ -40,7 +48,9 @@ enum MassstorageLuns {
 };
 
 /* USB Mass storage Standard Inquiry Data */
-const unsigned char STORAGE_Inquirydata[] = { //36
+// "extern" is needed for external linkage: a const object at namespace scope in
+// C++ would otherwise be internal, and the F0 USB class reads it directly.
+extern const unsigned char STORAGE_Inquirydata[] = { //36
   /* LUN 0 */
   0x00,		
   0x80,		
@@ -99,6 +109,7 @@ int8_t STORAGE_Write (uint8_t lun,
 
 int8_t STORAGE_GetMaxLun (void);
 
+#if !defined(STM32F0)
 const USBD_STORAGE_cb_TypeDef USBD_MICRO_SDIO_fops =    // modified my OpenTX
 {
   STORAGE_Init,
@@ -112,6 +123,7 @@ const USBD_STORAGE_cb_TypeDef USBD_MICRO_SDIO_fops =    // modified my OpenTX
 };
 
 const USBD_STORAGE_cb_TypeDef  * const USBD_STORAGE_fops = &USBD_MICRO_SDIO_fops;    // modified my OpenTX
+#endif // !STM32F0
 
 #if defined(__cplusplus) && !defined(SIMU)
 }

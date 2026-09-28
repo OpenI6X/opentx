@@ -18,43 +18,30 @@
  * GNU General Public License for more details.
  */
 
-#ifndef OPENTX_USB_DRIVER_H
-#define OPENTX_USB_DRIVER_H
+#ifndef OPENTX_STM32F0_USB_DESC_H
+#define OPENTX_STM32F0_USB_DESC_H
 
-#include <stdbool.h>
 #include <stdint.h>
 
-// USB driver
-enum usbMode {
-  USB_UNSELECTED_MODE,
-  USB_JOYSTICK_MODE,
-#if defined(USB_MSD)
-  USB_MASS_STORAGE_MODE,
+#ifdef __cplusplus
+extern "C" {
 #endif
-  USB_SERIAL_MODE,
-#if defined(USB_SERIAL)
-  USB_MAX_MODE=USB_SERIAL_MODE
-#elif defined(USB_MSD)
-  USB_MAX_MODE = USB_MASS_STORAGE_MODE
-#else
-  USB_MAX_MODE = USB_JOYSTICK_MODE
-#endif
+
+// String descriptor indexes
+enum {
+  USB_STR_LANGID = 0,
+  USB_STR_MANUFACTURER,
+  USB_STR_PRODUCT,
+  USB_STR_SERIAL,
+  USB_STR_CONFIG,
+  USB_STR_INTERFACE
 };
 
-int usbPlugged();
-void usbInit();
-void usbStart();
-void usbStop();
-bool usbStarted();
-int getSelectedUsbMode();
-void setSelectedUsbMode(int mode);
+const uint8_t * usbGetDeviceDesc(uint16_t * len);
+const uint8_t * usbGetStringDesc(uint8_t index, uint16_t * len);
 
-void usbSerialPutc(uint8_t c);
-
-// Used in view_statistics.cpp
-#if defined(DEBUG) && !defined(BOOT)
-extern volatile uint32_t APP_Tx_ptr_in;
-extern volatile uint32_t APP_Tx_ptr_out;
+#ifdef __cplusplus
+}
 #endif
 
-#endif
+#endif // OPENTX_STM32F0_USB_DESC_H

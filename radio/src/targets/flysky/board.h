@@ -76,7 +76,7 @@ extern "C" {
 #endif
 
 #include "usb_driver.h"
-#if !defined(SIMU)
+#if !defined(SIMU) && !defined(STM32F0)
   #include "usbd_cdc_core.h"
   #include "usbd_msc_core.h"
   #include "usbd_hid_core.h"

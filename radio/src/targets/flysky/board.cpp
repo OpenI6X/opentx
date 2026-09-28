@@ -21,14 +21,16 @@
 #include "opentx.h"
 #include "board.h"
 
-#if defined(__cplusplus) && !defined(SIMU)
-extern "C"
-{
-#endif
-#include "usb_dcd_int.h"
-#include "usb_bsp.h"
-#if defined(__cplusplus) && !defined(SIMU)
-}
+#if !defined(SIMU) && !defined(STM32F0)
+  #if defined(__cplusplus)
+  extern "C"
+  {
+  #endif
+  #include "usb_dcd_int.h"
+  #include "usb_bsp.h"
+  #if defined(__cplusplus)
+  }
+  #endif
 #endif
 
 #if defined(STM32F0) && defined(BOOT)
