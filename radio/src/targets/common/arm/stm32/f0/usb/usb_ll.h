@@ -133,22 +133,31 @@ static inline void usbSetTxAddr(uint8_t ep, uint16_t addr)   { *usbBT(ep, 0) = (
 static inline void usbSetTxCnt(uint8_t ep, uint16_t len)     { *usbBT(ep, 1) = len; }
 static inline void usbSetRxAddr(uint8_t ep, uint16_t addr)   { *usbBT(ep, 2) = (uint16_t)((addr >> 1) << 1); }
 
-// RX count register.
+// RX count register: a block descriptor on write, a byte count on read.
 //
-// This deliberately uses ST's convention - a raw byte count in COUNT_RX[9:0],
-// with bit 15 left clear (2 byte block mode) - rather than the 32 byte block
-// mode encoding.  ST's device library programs EP0 with a raw byte count and
-// reads it back with a plain mask, and that path is known to enumerate on this
-// part, so matching it exactly is the safe choice.  The 32 byte block mode
-// needs the buffer 32 byte aligned and has an asymmetric encode/decode (the
-// received value is a block count, not a length), which is easy to get wrong
-// and cannot be validated without hardware.
-//
-// The allocator hands out 32 byte aligned buffers, which satisfies the weaker
-// 2 byte alignment this mode needs.
+// This matches ST's _SetEPRxCount/_GetEPRxCount exactly: lengths up to 62 use
+// 2 byte blocks, longer ones use 32 byte blocks.  After reception the hardware
+// reports the received byte count in the low 10 bits, so the read side is a
+// plain mask.  A raw byte count must NOT be written: for 64 it would program
+// a zero length buffer and the endpoint could never receive.
 static inline void usbSetRxCnt(uint8_t ep, uint16_t len)
 {
-  *usbBT(ep, 3) = (uint16_t)(len & 0x3FF);
+  __IO uint16_t * p = usbBT(ep, 3);
+  uint16_t blocks;
+  if (len > 62) {
+    blocks = (uint16_t)(len >> 5);
+    if ((len & 0x1F) == 0) {
+      blocks--;                        // NUM_BLOCK is n-1 in 32 byte mode
+    }
+    *p = (uint16_t)((blocks << 10) | 0x8000);
+  }
+  else {
+    blocks = (uint16_t)(len >> 1);
+    if ((len & 1) != 0) {
+      blocks++;                        // round up to whole 2 byte blocks
+    }
+    *p = (uint16_t)(blocks << 10);
+  }
 }
 
 static inline uint16_t usbRxCntBytes(uint8_t ep)
@@ -162,53 +171,49 @@ static inline uint16_t usbGetTxCnt(uint8_t ep)
 }
 
 // ---------------------------------------------------------------------------
-// EPnR_KEEP is EPREG_MASK plus both STAT fields, so a read-modify-write of
-// EPnR leaves the endpoint's direction status alone.  It excludes the two DTOG
-// bits (write-1-to-toggle, never echo them back) and the two CTR bits
-// (write-1-to-clear, handled explicitly).
-//
-// EPREG_MASK, as ST defines it, does not include the STAT fields.  Unlike the
-// DTOG bits they are ordinary latched state, and writing 0 to them means
-// DISABLE, so a read-modify-write using EPREG_MASK alone switches off whichever
-// direction it was not changing - for instance arming EP0 RX would cancel an
-// EP0 TX that had just been armed.
-#define EPnR_KEEP        (uint16_t)(EPREG_MASK | EPRX_STAT | EPTX_STAT)
-
 // Endpoint status transitions.
 //
-// STAT_RX/STAT_TX can be written directly, provided the corresponding DTOG bit
-// is written as 0 (no toggle).  EPnR_KEEP excludes both DTOG bits, so every
-// write below leaves them clear, which is what makes these helpers idempotent:
-// asking for VALID twice writes VALID twice rather than toggling back to
-// DISABLE as a DTOG based transition would.
+// STAT_RX/STAT_TX and the DTOG bits are all toggle-on-write-1: writing 1 flips
+// the bit, writing 0 leaves it alone.  So a status change must be expressed as
+// the XOR of the bits that differ, exactly as ST's _SetEPTxStatus/_SetEPRxStatus
+// do.  The masks deliberately exclude both STAT fields of the *other* direction
+// and both DTOG bits, so those are written as 0 (no change) and cannot be
+// disturbed.  This also means the helpers are NOT idempotent: asking for VALID
+// twice disables the endpoint, so a direction must only be armed when the
+// hardware has NAKed it (after a transaction of that direction, at open, or at
+// reset) - which is exactly how ST's driver calls them.
 // ---------------------------------------------------------------------------
 
 static inline void usbSetTxStatus(uint8_t ep, uint16_t state)
 {
-  uint16_t v = (uint16_t)(usbGetEP(ep) & EPnR_KEEP & ~EPTX_STAT) | (state & EPTX_STAT);
+  uint16_t v = usbGetEP(ep) & EPTX_DTOGMASK;
+  if (state & EPTX_DTOG1) v ^= EPTX_DTOG1;
+  if (state & EPTX_DTOG2) v ^= EPTX_DTOG2;
   usbSetEP(ep, v | EP_CTR_RX | EP_CTR_TX);
 }
 
 static inline void usbSetRxStatus(uint8_t ep, uint16_t state)
 {
-  uint16_t v = (uint16_t)(usbGetEP(ep) & EPnR_KEEP & ~EPRX_STAT) | (state & EPRX_STAT);
+  uint16_t v = usbGetEP(ep) & EPRX_DTOGMASK;
+  if (state & EPRX_DTOG1) v ^= EPRX_DTOG1;
+  if (state & EPRX_DTOG2) v ^= EPRX_DTOG2;
   usbSetEP(ep, v | EP_CTR_RX | EP_CTR_TX);
 }
 
-static inline void usbClearCtrRx(uint8_t ep) { usbSetEP(ep, (uint16_t)(usbGetEP(ep) & 0x7FFF) & EPnR_KEEP); }
-static inline void usbClearCtrTx(uint8_t ep) { usbSetEP(ep, (uint16_t)(usbGetEP(ep) & 0xFF7F) & EPnR_KEEP); }
+static inline void usbClearCtrRx(uint8_t ep) { usbSetEP(ep, (uint16_t)(usbGetEP(ep) & 0x7FFF) & EPREG_MASK); }
+static inline void usbClearCtrTx(uint8_t ep) { usbSetEP(ep, (uint16_t)(usbGetEP(ep) & 0xFF7F) & EPREG_MASK); }
 
 static inline void usbClearDtoRx(uint8_t ep)
 {
   if (usbGetEP(ep) & EP_DTOG_RX) {
-    usbSetEP(ep, EP_CTR_RX | EP_CTR_TX | EP_DTOG_RX | (usbGetEP(ep) & EPnR_KEEP));
+    usbSetEP(ep, EP_CTR_RX | EP_CTR_TX | EP_DTOG_RX | (usbGetEP(ep) & EPREG_MASK));
   }
 }
 
 static inline void usbClearDtoTx(uint8_t ep)
 {
   if (usbGetEP(ep) & EP_DTOG_TX) {
-    usbSetEP(ep, EP_CTR_RX | EP_CTR_TX | EP_DTOG_TX | (usbGetEP(ep) & EPnR_KEEP));
+    usbSetEP(ep, EP_CTR_RX | EP_CTR_TX | EP_DTOG_TX | (usbGetEP(ep) & EPREG_MASK));
   }
 }
 
@@ -216,17 +221,17 @@ static inline void usbClearDtoTx(uint8_t ep)
 // double buffering, so this is only ever the control-endpoint meaning.
 static inline void usbSetStatusOut(uint8_t ep)
 {
-  usbSetEP(ep, EP_CTR_RX | EP_CTR_TX | ((usbGetEP(ep) | EP_KIND) & EPnR_KEEP));
+  usbSetEP(ep, EP_CTR_RX | EP_CTR_TX | ((usbGetEP(ep) | EP_KIND) & EPREG_MASK));
 }
 
 static inline void usbClearStatusOut(uint8_t ep)
 {
-  usbSetEP(ep, EP_CTR_RX | EP_CTR_TX | (usbGetEP(ep) & EPnR_KEEP & ~(uint16_t)EP_KIND));
+  usbSetEP(ep, EP_CTR_RX | EP_CTR_TX | (usbGetEP(ep) & EPKIND_MASK));
 }
 
 static inline void usbSetEpType(uint8_t ep, uint16_t type)
 {
-  usbSetEP(ep, (uint16_t)((usbGetEP(ep) & EPnR_KEEP & ~EP_T_FIELD) | type) | EP_CTR_RX | EP_CTR_TX);
+  usbSetEP(ep, (uint16_t)((usbGetEP(ep) & EPREG_MASK & ~EP_T_FIELD) | type) | EP_CTR_RX | EP_CTR_TX);
 }
 
 static inline void usbSetEpAddr(uint8_t ep, uint8_t addr)

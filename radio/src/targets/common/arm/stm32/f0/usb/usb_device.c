@@ -190,11 +190,6 @@ static void usbEpTxNextPacket(UsbEp * ep, uint8_t epNum)
     usbPmaWrite(ep->buf, ep->pma, n);
   }
   usbSetTxCnt(epNum, n);
-  // Reset the data toggle before arming.  A SETUP packet makes the hardware
-  // restart both directions from DATA0, and ST's driver clears DTOG_TX
-  // explicitly before every arm for the same reason; without it the toggle can
-  // carry over from the previous transfer and the host sees a PID mismatch.
-  usbClearDtoTx(epNum);
   usbSetTxStatus(epNum, EP_TX_VALID);
 }
 
@@ -222,12 +217,11 @@ void usbEpStartRx(uint8_t epNum, uint8_t * buf, uint16_t len)
   ep0OrEpArmRx(epNum, (uint16_t)((len > ep->maxpkt) ? ep->maxpkt : len));
 }
 
-// Arm an OUT endpoint for the next packet.  EP0 additionally needs the
-// STATUS_OUT flag handled, hence the small wrapper.
+// Arm an OUT endpoint for the next packet.  Like DCD_EP_PrepareRx: program the
+// count and set VALID, without touching the data toggle (cleared once at open).
 void ep0OrEpArmRx(uint8_t epNum, uint16_t count)
 {
   usbSetRxCnt(epNum, count);
-  usbClearDtoRx(epNum);      // see usbEpTxNextPacket: reset the toggle before arming
   usbSetRxStatus(epNum, EP_RX_VALID);
 }
 
@@ -235,42 +229,41 @@ void ep0OrEpArmRx(uint8_t epNum, uint16_t count)
 // Control pipe
 // ---------------------------------------------------------------------------
 
-static void usbEp0ArmRx(uint16_t count, bool statusOut)
+// Re-arm EP0 for the next SETUP or OUT packet.  The STATUS_OUT flag is never
+// set: ST's stack never touches EP_KIND and enumerates without it, and the
+// flag must not be echoed through unrelated writes.
+static void usbEp0ArmRx(uint16_t count)
 {
-  if (statusOut) {
-    usbSetStatusOut(0);
-  }
-  else {
-    usbClearStatusOut(0);
-  }
+  usbClearStatusOut(0);
   ep0OrEpArmRx(0, count);
 }
 
 void usbCtlSendData(const uint8_t * buf, uint16_t len)
 {
+  // Like ST's USBD_CtlSendData: queue the IN data only.  EP0 RX is left alone;
+  // SETUP packets are accepted regardless of STAT_RX, and re-arming RX here
+  // (VALID onto VALID) would toggle it off under the toggle-on-write semantics.
   usbCtlSent = 0;
   usbCtlWanted = 0;      // no terminating ZLP unless a caller asks for one
   usbEp0Stage = USB_EP0_DATA_IN;
   usbEpStartTx(0, buf, len);
-  // The next OUT on EP0 would be a new SETUP, so keep it listening.
-  usbEp0ArmRx(USB_EP0_MPS, false);
 }
 
 void usbCtlSendStatus(void)
 {
+  // Zero length IN status packet for a no-data control transfer, as in ST's
+  // USBD_CtlSendStatus.  No RX re-arm, for the same reason as above.
   usbCtlSent = 0;
   usbEp0Stage = USB_EP0_STATUS_IN;
   usbEpStartTx(0, NULL, 0);
-  usbEp0ArmRx(USB_EP0_MPS, false);
 }
 
 void usbCtlError(void)
 {
-  // STALL IN; the host recovers with CLEAR_FEATURE(ENDPOINT_HALT).
+  // STALL IN; the host recovers with CLEAR_FEATURE(ENDPOINT_HALT).  No RX
+  // re-arm: the next SETUP is accepted regardless of STAT_RX.
   usbEpStall(0, true);
   usbEp0Stage = USB_EP0_IDLE;
-  usbClearStatusOut(0);
-  usbEp0ArmRx(USB_EP0_MPS, false);
 }
 
 // Arm EP0 to receive a control OUT data stage of len bytes.
@@ -438,11 +431,13 @@ static void usbStdEpRequest(const UsbSetupReq * req)
         usbCtlError();
         break;
       }
-      // The mass storage class needs to see this to recover from a bad CBW.
+      // ST's USBD_StdEPReq order: clear the halt first, then let the class
+      // complete the recovery (MSC queues the FAILED CSW here), then the
+      // EP0 status stage.  Queuing before clearing would cancel the CSW.
+      usbEpClearStall(epNum, isIn);
       if (usbClass->setup(req)) {
         return;
       }
-      usbEpClearStall(epNum, isIn);
       usbCtlSendStatus();
       break;
     case 0x03:                                            // SET_FEATURE
@@ -468,8 +463,11 @@ static void usbHandleSetup(void)
   req.wIndex = (uint16_t)(usbSetup[4] | (usbSetup[5] << 8));
   req.wLength = (uint16_t)(usbSetup[6] | (usbSetup[7] << 8));
 
-  if (usbDevState == USB_STATE_DEFAULT && req.bRequest != 0x06) {
-    // Nothing but GET_DESCRIPTOR is legal before SET_ADDRESS.
+  if (usbDevState == USB_STATE_DEFAULT && req.bRequest != 0x06 &&
+      req.bRequest != 0x05) {
+    // Only GET_DESCRIPTOR and SET_ADDRESS are legal before the address is
+    // assigned.  Rejecting SET_ADDRESS here stalls enumeration right after
+    // the first 8 byte probe ("device not responding to setup address").
     usbCtlError();
     return;
   }
@@ -548,9 +546,12 @@ static void usbEp0TxComplete(void)
       usbEpStartTx(0, NULL, 0);
       return;
     }
-    // Data stage done: the status stage is an IN transaction.
-    usbEp0Stage = USB_EP0_STATUS_IN;
-    usbEpStartTx(0, NULL, 0);
+    // Data stage done: the status stage of a control IN transfer is an OUT
+    // zero length packet from the host (ST answers it with CtlReceiveStatus,
+    // i.e. PrepareRx).  The previous code sent an IN packet here, which is
+    // backwards and stalls enumeration with EPROTO.
+    usbEp0Stage = USB_EP0_STATUS_OUT;
+    usbEp0ArmRx(USB_EP0_MPS);
     return;
   }
 
@@ -561,6 +562,10 @@ static void usbEp0TxComplete(void)
       usbPendingAddr = 0;
     }
     usbEp0Stage = USB_EP0_IDLE;
+    // Leave EP0 RX listening like ST does when idle: the next SETUP must
+    // find a VALID buffer.  The transition is toggle-based but idempotent,
+    // so this is a no-op when RX is already VALID and NAK->VALID otherwise.
+    usbEp0ArmRx(USB_EP0_MPS);
   }
 }
 
@@ -580,27 +585,23 @@ static void usbEp0RxComplete(void)
 
   if (usbEp0Stage == USB_EP0_DATA_OUT) {
     if (ep->len == 0 || done < ep->maxpkt) {
-      // Data stage complete.  Let the class consume it, then the status stage
-      // is an OUT transaction from the host.
+      // Data stage complete.  Let the class consume it, then send the IN
+      // status stage (ST answers with CtlSendStatus here).
       if (usbClass) {
         usbClass->dataOut(0, received);
       }
-      usbEp0Stage = USB_EP0_STATUS_OUT;
-      // The status stage of a control OUT transfer is a single byte from the
-      // host (EP_KIND/STATUS_OUT makes the hardware expect exactly that).  A
-      // buffer programmed for 0 bytes can never be filled, so the hardware
-      // NAKs forever and the host reports the device as not responding.
-      usbEp0ArmRx(1, true);
+      usbEp0Stage = USB_EP0_STATUS_IN;
+      usbEpStartTx(0, NULL, 0);
     }
     else {
-      usbEp0ArmRx((uint16_t)((ep->len > ep->maxpkt) ? ep->maxpkt : ep->len), false);
+      usbEp0ArmRx((uint16_t)((ep->len > ep->maxpkt) ? ep->maxpkt : ep->len));
     }
     return;
   }
 
-  // A SETUP, or the status stage of a control IN transfer: back to idle.
+  // The status stage of a control IN transfer: back to idle and listening.
   usbEp0Stage = USB_EP0_IDLE;
-  usbEp0ArmRx(USB_EP0_MPS, false);
+  usbEp0ArmRx(USB_EP0_MPS);
 }
 
 // The interrupt must never be able to lock up: if a completion arrives that
@@ -699,11 +700,22 @@ void usbDeviceIsr(void)
     usbPendingAddr = 0;
     usbDevState = USB_STATE_DEFAULT;
     usbEp0Stage = USB_EP0_IDLE;
+    usbCtlSent = 0;
+    usbCtlWanted = 0;
     memset(usbSetup, 0, sizeof(usbSetup));
     if (usbClass) {
       usbClass->deinit();
     }
-    usbEp0ArmRx(USB_EP0_MPS, false);
+    // Re-open EP0 like ST's USBD_Reset does (DCD_EP_Open both directions).
+    // The allocator must be reset first: without it every bus reset leaks
+    // the EP0 buffers and repeated host retries walk the PMA off the end.
+    // usbEpOpen clears the software transfer state, the data toggles and the
+    // stall flags, so a retried enumeration always starts from address 0 /
+    // IDLE with RX listening.
+    usbPmaReset();
+    usbEpOpen(0, false, 0, USB_EP0_MPS);
+    usbEpOpen(0, true, 0, USB_EP0_MPS);
+    usbEp0ArmRx(USB_EP0_MPS);
   }
 
   if (istr & USB_ISTR_CTR) {
@@ -749,7 +761,7 @@ static void usbEp0Open(void)
 {
   usbEpOpen(0, false, 0, USB_EP0_MPS);
   usbEpOpen(0, true, 0, USB_EP0_MPS);
-  usbEp0ArmRx(USB_EP0_MPS, false);
+  usbEp0ArmRx(USB_EP0_MPS);
 }
 
 // USB clock: HSI48 trimmed against the USB SOF, so an accurate 48 MHz without

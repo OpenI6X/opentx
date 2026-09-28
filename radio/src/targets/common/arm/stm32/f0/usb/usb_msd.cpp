@@ -48,7 +48,9 @@
 static_assert(MSC_MEDIA_PKT == BLOCK_SIZE, "MSC media packet must be one block");
 
 #define CBW_LEN         31
-#define CSW_LEN         16
+// Command Status Wrapper is 13 bytes on the wire (BOT 6.2.1, ST's
+// BOT_CSW_LENGTH).  The struct pads to 16, so the length must stay explicit.
+#define CSW_LEN         13
 
 enum {
   BOT_IDLE = 0,
@@ -145,7 +147,9 @@ static uint8_t senseTail;
 
 static uint32_t blkAddr;     // current block, for READ10 / WRITE10 bursts
 static uint32_t blkLen;      // remaining bytes of the current transfer
-static uint8_t  botStatus;   // sticky "bad CBW" state
+static uint8_t  botStatus;   // sticky "bad CBW" state (ST's BOT_STATE_ERROR)
+static uint8_t  botRecovery; // set by BOT_RESET, suppresses the FAILED CSW on
+                             // the following CLEAR_FEATURE (ST's BOT_STATE_RECOVERY)
 
 static int mscProcessWrite(uint8_t lun);
 
@@ -225,10 +229,13 @@ static int mscRequestSense(uint8_t lun, const uint8_t * cb)
   mediaBuf[0] = 0x70;                    // current error, fixed format
   mediaBuf[7] = 12;                      // additional sense length
   if (senseHead != senseTail) {
-    mediaBuf[2] = sense[senseHead].key;
-    mediaBuf[12] = sense[senseHead].ascq;
-    mediaBuf[13] = sense[senseHead].asc;
-    senseHead = (uint8_t)((senseHead + 1) % SENSE_DEPTH);
+    // Fixed format sense data: byte 2 is the sense key, byte 12 the ASC and
+    // byte 13 the ASCQ.  Dequeue from the tail so consecutive failures are
+    // reported in order.
+    mediaBuf[2] = sense[senseTail].key;
+    mediaBuf[12] = sense[senseTail].asc;
+    mediaBuf[13] = sense[senseTail].ascq;
+    senseTail = (uint8_t)((senseTail + 1) % SENSE_DEPTH);
   }
   mediaLen = 18;
   if (cb[4] <= 18) {
@@ -500,11 +507,15 @@ static void mscDecodeCbw(uint8_t lun)
 {
   csw.dTag = cbw.dTag;
   csw.dDataResidue = cbw.dDataLength;
+  botRecovery = 0;
 
   if (cbw.dSignature != 0x43425355 ||     // "USBC"
       cbw.bCBLength < 1 || cbw.bCBLength > 16 ||
       cbw.bLUN > (uint8_t)STORAGE_GetMaxLun())
   {
+    // Bad CBW (ST's BOT_STATE_ERROR): stall both endpoints and wait for
+    // BOT_RESET.  Like ST's MSC_BOT_Abort, the OUT endpoint is re-armed so
+    // the next CBW can still arrive.
     mscSense(lun, SENSE_ILLEGAL_REQUEST, ASC_INVALID_CDB);
     botStatus = 1;
     mscAbort();
@@ -541,6 +552,7 @@ static void mscInit(void)
 {
   botState = BOT_IDLE;
   botStatus = 0;
+  botRecovery = 0;
   senseHead = 0;
   senseTail = 0;
   csw.dDataResidue = 0;
@@ -572,8 +584,13 @@ static bool mscSetup(const UsbSetupReq * req)
       }
       case 0xFF:                                    // BOT_RESET
         if (req->wValue == 0 && req->wLength == 0 && !(req->bmRequestType & 0x80)) {
+          // Like ST's MSC_BOT_Reset: back to IDLE in recovery state and
+          // listening for the next CBW.  The recovery flag suppresses the
+          // FAILED CSW if the host clears a halt straight after the reset.
           botState = BOT_IDLE;
           botStatus = 0;
+          botRecovery = 1;
+          usbEpStartRx(MSC_EP_OUT_NUM, (uint8_t *)&cbw, CBW_LEN);
           usbCtlSendStatus();
           return true;
         }
@@ -583,15 +600,21 @@ static bool mscSetup(const UsbSetupReq * req)
     }
   }
 
-  // CLEAR_FEATURE(ENDPOINT_HALT) recovery.  A malformed CBW stalls both
-  // endpoints, and the host recovers by clearing the halt on the IN endpoint.
+  // CLEAR_FEATURE(ENDPOINT_HALT) recovery, like ST's MSC_BOT_CplClrFeature.
+  // NB: the core clears the stall first and sends the EP0 status after this
+  // returns, so queuing the CSW here lands on a NAKed endpoint as intended.
+  // A failed command (stall, no CSW yet) completes here with CSW FAILED;
+  // without it the host waits for the CSW forever after any SCSI error.
   if (req->bRequest == 0x01 && req->wValue == 0x00) {
-    if (botStatus != 0) {
+    uint8_t clearedNum = (uint8_t)(req->wIndex & 0x7F);
+    bool clearedIn = (req->wIndex & 0x80) != 0;
+    if (clearedNum != 0 && botStatus != 0) {
+      // Bad CBW: stay stalled until BOT_RESET, back to normal state.
       usbEpStall(MSC_EP_IN_NUM, true);
       botStatus = 0;
     }
-    else if ((req->wIndex & 0x80) && botState != BOT_IDLE) {
-      mscSendCsw(CSW_PASSED);
+    else if (clearedNum != 0 && clearedIn && !botRecovery) {
+      mscSendCsw(CSW_FAILED);
     }
   }
   return false;                                     // let the core handle it
@@ -601,7 +624,6 @@ static void mscDataIn(uint8_t ep)
 {
   switch (botState) {
     case BOT_DATA_IN:
-    case BOT_DATA_OUT:
       // next chunk of a read burst
       if (mscProcessCmd(cbw.bLUN, cbw.CB) < 0) {
         mscSendCsw(CSW_FAILED);
