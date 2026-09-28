@@ -52,7 +52,7 @@
 #define USB_IFACE_HID     "HID Interface"
 #define USB_IFACE_CDC     "VSP Interface"
 
-#define USB_MANUFACTURER  "OpenTX"
+#define USB_MFR_STRING     "OpenTX"
 #define USB_SERIALNUMBER  "01"
 
 // The longest string is "FS-i6X Bootloader" (17 chars) -> 17 * 2 + 2 = 36.
@@ -138,7 +138,7 @@ const uint8_t * usbGetStringDesc(uint8_t index, uint16_t * len)
       return descBuf;
 
     case USB_STR_MANUFACTURER:
-      return usbMakeString(USB_MANUFACTURER, len);
+      return usbMakeString(USB_MFR_STRING, len);
 
     case USB_STR_SERIAL:
       return usbMakeString(USB_SERIALNUMBER, len);

@@ -16,7 +16,6 @@ add_library(stm32cube_ll OBJECT EXCLUDE_FROM_ALL
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_exti.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_adc.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_spi.c
-  ${STM32CUBE_DIR}/Src/stm32f0xx_ll_crs.c
   # USB: only the packet memory primitives are used from here, the endpoint
   # programming is done with the compact macros in f0/usb/usb_ll.h.  Single
   # buffered endpoints only, which drops the double buffer code in this file.
@@ -34,10 +33,11 @@ add_library(stm32cube_ll OBJECT EXCLUDE_FROM_ALL
 #  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_flash_ex.c
   )
 
-# stm32f0xx_ll_usb.c needs the USB peripheral gate plus a few endpoint type
-# constants that the HAL headers leave commented out (stm32f0xx_ll_usb.h).
+# stm32f0xx_ll_usb.c only needs a few endpoint type constants that the HAL
+# headers leave commented out (stm32f0xx_ll_usb.h).  Its own `#if defined(USB)`
+# guard is already satisfied by the CMSIS device header, so USB must NOT be
+# defined here: that would collide with the USB peripheral pointer macro.
 target_compile_definitions(stm32cube_ll PRIVATE
-  USB
   HAL_PCD_MODULE_ENABLED
   BTABLE_ADDRESS=0x000
   EP_TYPE_CTRL=0U

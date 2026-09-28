@@ -55,8 +55,8 @@ static uint16_t usbCtlWanted;    // wLength of the current SETUP, for the ZLP ru
 static uint8_t  usbPendingAddr;  // deferred SET_ADDRESS, applied after the status stage
 
 // Packet memory allocator.  The buffer descriptor table occupies the first
-// bytes of the PMA; the rest is handed out 32 byte aligned, which the 32 byte
-// block RX encoding requires for 64 byte packets.
+// bytes of the PMA; the rest is handed out 32 byte aligned, which keeps every
+// buffer address a whole number of 16 bit PMA words.
 #define USB_PMA_BTABLE_RESERVE  32
 static uint16_t usbPmaNext;
 
@@ -190,6 +190,11 @@ static void usbEpTxNextPacket(UsbEp * ep, uint8_t epNum)
     usbPmaWrite(ep->buf, ep->pma, n);
   }
   usbSetTxCnt(epNum, n);
+  // Reset the data toggle before arming.  A SETUP packet makes the hardware
+  // restart both directions from DATA0, and ST's driver clears DTOG_TX
+  // explicitly before every arm for the same reason; without it the toggle can
+  // carry over from the previous transfer and the host sees a PID mismatch.
+  usbClearDtoTx(epNum);
   usbSetTxStatus(epNum, EP_TX_VALID);
 }
 
@@ -222,6 +227,7 @@ void usbEpStartRx(uint8_t epNum, uint8_t * buf, uint16_t len)
 void ep0OrEpArmRx(uint8_t epNum, uint16_t count)
 {
   usbSetRxCnt(epNum, count);
+  usbClearDtoRx(epNum);      // see usbEpTxNextPacket: reset the toggle before arming
   usbSetRxStatus(epNum, EP_RX_VALID);
 }
 
@@ -580,7 +586,11 @@ static void usbEp0RxComplete(void)
         usbClass->dataOut(0, received);
       }
       usbEp0Stage = USB_EP0_STATUS_OUT;
-      usbEp0ArmRx(0, true);
+      // The status stage of a control OUT transfer is a single byte from the
+      // host (EP_KIND/STATUS_OUT makes the hardware expect exactly that).  A
+      // buffer programmed for 0 bytes can never be filled, so the hardware
+      // NAKs forever and the host reports the device as not responding.
+      usbEp0ArmRx(1, true);
     }
     else {
       usbEp0ArmRx((uint16_t)((ep->len > ep->maxpkt) ? ep->maxpkt : ep->len), false);
@@ -593,11 +603,20 @@ static void usbEp0RxComplete(void)
   usbEp0ArmRx(USB_EP0_MPS, false);
 }
 
+// The interrupt must never be able to lock up: if a completion arrives that
+// this code does not (or cannot) clear, an unbounded drain loop spins here
+// forever, the main loop never runs and the watchdog resets the radio.  So the
+// drain is bounded.  Anything left over still has its CTR bit set, so the next
+// interrupt picks it up - and because each pass does bounded work the main
+// loop keeps getting CPU.
+#define USB_CTR_MAX_PASSES  32
+
 static void usbCtr(void)
 {
   uint16_t istr;
+  int guard = USB_CTR_MAX_PASSES;
 
-  while ((istr = USB_ISTR_R) & USB_ISTR_CTR) {
+  while (guard-- > 0 && ((istr = USB_ISTR_R) & USB_ISTR_CTR)) {
     uint8_t epNum = (uint8_t)(istr & USB_ISTR_EP_ID);
     bool isIn = (istr & USB_ISTR_DIR) == 0;
     uint16_t epr;
@@ -612,12 +631,12 @@ static void usbCtr(void)
         // sampled from a snapshot taken before CTR_RX is cleared.
         epr = usbGetEP(0);
         if (epr & EP_SETUP) {
-          uint16_t len = usbRxCntBytes(0);
+          // A SETUP packet is always exactly 8 bytes.  ST reads a fixed 8
+          // rather than trusting the RX count, so do the same: the count field
+          // is in whatever unit the hardware last used, and is not a reliable
+          // length here.
           usbClearCtrRx(0);
-          if (len > 8) {
-            len = 8;
-          }
-          usbPmaRead(usbSetup, usbOutEp[0].pma, len);
+          usbPmaRead(usbSetup, usbOutEp[0].pma, 8);
           usbEp0Stage = USB_EP0_IDLE;
           usbHandleSetup();
         }
@@ -698,10 +717,18 @@ void usbDeviceIsr(void)
     }
   }
 
-  // Suspend, wakeup, error and ESOF carry no state we act on, but they must be
-  // acknowledged or the interrupt would fire forever.
-  if (istr & (USB_ISTR_WKUP | USB_ISTR_SUSP | USB_ISTR_ERR | USB_ISTR_ESOF)) {
-    USB_ISTR_R = (uint16_t)(USB_CLR_WKUP | USB_CLR_SUSP | USB_CLR_ERR | USB_CLR_ESOF);
+  // Suspend, wakeup, error and ESOF carry no state we act on, so they are not
+  // enabled in CNTR (see usbDeviceStart).  Acknowledge anything that is set
+  // anyway, so a stray flag can never latch.
+  //
+  // ISTR is rc_w0: a bit is cleared by writing ZERO to it.  The USB_CLR_xxx
+  // macros are the *complement* of each bit, so several of them must be ANDed,
+  // not ORed - ORing them yields 0xFFFF and clears nothing at all, which would
+  // leave SUSP latched and, with SUSPM enabled, spin the interrupt forever.
+  uint16_t ack = (uint16_t)(USB_ISTR_WKUP | USB_ISTR_SUSP | USB_ISTR_ERR |
+                            USB_ISTR_ESOF | USB_ISTR_PMAOVR);
+  if (istr & ack) {
+    USB_ISTR_R = (uint16_t)~ack;
   }
 }
 
@@ -725,22 +752,39 @@ static void usbEp0Open(void)
   usbEp0ArmRx(USB_EP0_MPS, false);
 }
 
-void usbDeviceInit(void)
+// USB clock: HSI48 trimmed against the USB SOF, so an accurate 48 MHz without
+// a crystal and the rest of the clock tree stays untouched.  This is
+// deliberately identical to what the previous stack did in USB_BSP_Init():
+// selecting HSI48 as the USB source and starting the CRS auto-trim.  HSI48
+// itself is not switched on here - as before, the peripheral is left powered
+// down until usbStart().
+static void usbClockInit(void)
 {
-  // USB DP/DM double as the cable detect.  While the peripheral owns the pins
-  // the pull-up holds D- high, so a 0 on DM means no cable.
-  LL_GPIO_InitTypeDef gpioInit;
-  gpioInit.Pin = USB_GPIO_PIN_DM;
-  gpioInit.Pull = LL_GPIO_PULL_UP;
-  LL_GPIO_Init(USB_GPIO, &gpioInit);
-
-  // HSI48 trimmed against the USB SOF gives an accurate 48 MHz without a
-  // crystal, so the clock tree stays untouched.
   LL_RCC_SetUSBClockSource(LL_RCC_USB_CLKSOURCE_HSI48);
   LL_CRS_SetSyncSignalSource(LL_CRS_SYNC_SOURCE_USB);
   LL_CRS_EnableAutoTrimming();
   LL_CRS_EnableFreqErrorCounter();
+}
 
+void usbDeviceInit(void)
+{
+  // This runs from boardInit(), so it must do no more than the previous stack
+  // did in USB_BSP_Init(): set up the cable detect pin and the 48 MHz clock.
+  // The USB registers and the packet memory must NOT be touched here - the
+  // peripheral (and therefore the PMA window) is not clocked yet, and writing
+  // it before HSI48 is up faults.  All of that is deferred to usbDeviceStart().
+
+  // USB DP/DM double as the cable detect.  While the peripheral owns the pins
+  // the pull-up holds D- high, so a 0 on DM means no cable.
+  LL_GPIO_InitTypeDef gpioInit = { 0 };
+  gpioInit.Pin = USB_GPIO_PIN_DM;
+  gpioInit.Mode = LL_GPIO_MODE_INPUT;
+  gpioInit.Pull = LL_GPIO_PULL_UP;
+  LL_GPIO_Init(USB_GPIO, &gpioInit);
+
+  usbClockInit();
+
+  // Software state only from here on.
   usbPmaReset();
   memset(usbInEp, 0, sizeof(usbInEp));
   memset(usbOutEp, 0, sizeof(usbOutEp));
@@ -750,15 +794,13 @@ void usbDeviceInit(void)
   usbPendingAddr = 0;
   usbCtlSent = 0;
   usbCtlWanted = 0;
-
-  usbPeripheralInit();
-  usbEp0Open();
 }
 
 void usbDeviceStart(const UsbClass * cls)
 {
   usbClass = cls;
 
+  usbClockInit();                 // the clock may have been stopped meanwhile
   usbPmaReset();
   memset(usbInEp, 0, sizeof(usbInEp));
   memset(usbOutEp, 0, sizeof(usbOutEp));
@@ -770,12 +812,11 @@ void usbDeviceStart(const UsbClass * cls)
 
   usbPeripheralInit();
   usbEp0Open();
-
-  // Same set the previous stack used; PMAOVRM is deliberately left off because
-  // nothing acts on an overrun and re-arming it would only add interrupt load.
-  USB_CNTR_R = (uint16_t)(USB_CNTR_CTRM | USB_CNTR_WKUPM | USB_CNTR_SUSPM |
-                          USB_CNTR_ERRM | USB_CNTR_SOFM | USB_CNTR_ESOFM |
-                          USB_CNTR_RESETM);
+  // Only the three events this driver actually services are enabled.  The
+  // previous stack also enabled SUSPM/WKUPM/ESOFM/ERRM to drive a resume state
+  // machine that no longer exists; leaving them on with nothing to act on is
+  // what turns a latched flag into an interrupt storm.
+  USB_CNTR_R = (uint16_t)(USB_CNTR_CTRM | USB_CNTR_SOFM | USB_CNTR_RESETM);
   USB_BCDR_R = (uint16_t)(USB_BCDR_R | USB_BCDR_DPPU);     // attach
 
   NVIC_SetPriority(USB_IRQn, 11);
