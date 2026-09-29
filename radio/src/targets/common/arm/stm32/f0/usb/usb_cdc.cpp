@@ -35,6 +35,7 @@
 #include "usb_cdc.h"
 #include "board.h"
 #include "opentx.h"
+#include "serial_buffer_union.h"
 
 #include <string.h>
 
@@ -80,7 +81,9 @@ static const uint8_t cdcCfgDesc[67] = {
 
 #define CDC_DESC_TYPE   0x24    // CS_INTERFACE
 
-static uint8_t txBuf[APP_TX_DATA_SIZE];
+// TX ring lives in the shared serialBuffer union (serial_buffer_union.h) to
+// save RAM: USB CDC owns it while in serial mode, the AUX serial TX fifo
+// otherwise.  Each side resets its indices on init (cdcInit / auxSerialInit).
 static uint8_t rxBuf[CDC_MPS];
 static uint8_t cmdBuf[CDC_CMD_MPS];
 
@@ -115,7 +118,7 @@ static void cdcTxPump(void)
     n = (uint16_t)(APP_TX_DATA_SIZE - APP_Rx_ptr_out);
   }
 
-  usbEpStartTx(CDC_EP_IN_NUM, &txBuf[APP_Rx_ptr_out], n);
+  usbEpStartTx(CDC_EP_IN_NUM, &serialBuffer.txBuf[APP_Rx_ptr_out], n);
   APP_Rx_ptr_out = (APP_Rx_ptr_out + n) % APP_TX_DATA_SIZE;
 }
 
@@ -247,7 +250,7 @@ void usbSerialPutc(uint8_t c)
   __disable_irq();
 
   if ((APP_Tx_ptr_in + 1) % APP_TX_DATA_SIZE != APP_Rx_ptr_out) {
-    txBuf[APP_Tx_ptr_in] = c;
+    serialBuffer.txBuf[APP_Tx_ptr_in] = c;
     APP_Tx_ptr_in = (APP_Tx_ptr_in + 1) % APP_TX_DATA_SIZE;
   }
 
