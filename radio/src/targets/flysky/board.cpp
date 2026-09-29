@@ -21,15 +21,6 @@
 #include "opentx.h"
 #include "board.h"
 
-#if defined(__cplusplus) && !defined(SIMU)
-extern "C"
-{
-#endif
-#include "usb_dcd_int.h"
-#include "usb_bsp.h"
-#if defined(__cplusplus) && !defined(SIMU)
-}
-#endif
 
 #if defined(STM32F0) && defined(BOOT)
 volatile uint32_t __attribute__((section(".ram_vector,\"aw\",%nobits @"))) ram_vector[VECTOR_TABLE_SIZE];

@@ -16,7 +16,7 @@ add_library(stm32cube_ll OBJECT EXCLUDE_FROM_ALL
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_exti.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_adc.c
   ${STM32CUBE_DIR}/Src/stm32f0xx_ll_spi.c
-#  ${STM32CUBE_DIR}/Src/stm32f0xx_ll_usb.c
+  ${STM32CUBE_DIR}/Src/stm32f0xx_ll_usb.c
   # HAL drivers
 #  ${STM32CUBE_DIR}/Src/stm32f0xx_hal.c
 #  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pwr.c
@@ -28,6 +28,16 @@ add_library(stm32cube_ll OBJECT EXCLUDE_FROM_ALL
 #  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_pcd_ex.c
 #  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_flash.c
 #  ${STM32CUBE_DIR}/Src/stm32f0xx_hal_flash_ex.c
+  )
+
+# stm32f0xx_ll_usb.c only needs a few endpoint type constants that the HAL
+# headers leave commented out (stm32f0xx_ll_usb.h).
+target_compile_definitions(stm32cube_ll PRIVATE
+  BTABLE_ADDRESS=0x000
+  EP_TYPE_CTRL=0U
+  USB_EP_CONTROL=0x0200
+  USB_EP_BULK=0x0000
+  USE_USB_DOUBLE_BUFFER=0
   )
 
 target_compile_options(stm32cube_ll PRIVATE -DUSE_FULL_LL_DRIVER)
