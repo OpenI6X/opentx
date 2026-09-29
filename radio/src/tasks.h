@@ -32,7 +32,11 @@
 #endif
 #define MIXER_STACK_SIZE       400
 #define AUDIO_STACK_SIZE       400
+#if defined(STM32F0)
+#define CLI_STACK_SIZE         128  // only consumed with CLI build option
+#else
 #define CLI_STACK_SIZE         1024  // only consumed with CLI build option
+#endif
 #define MIXER_TASK_PRIO        5
 #define AUDIO_TASK_PRIO        7
 #define MENUS_TASK_PRIO        10

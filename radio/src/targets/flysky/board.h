@@ -473,7 +473,7 @@ void aux4SerialStop(void);
 void aux4SerialSetIdleCb(void (*cb)());
 #endif
 
-#define USART_FLAG_ERRORS (USART_FLAG_ORE | USART_FLAG_PE) // | USART_FLAG_FE, USART_FLAG_NE
+#define USART_FLAG_ERRORS (USART_ISR_ORE | USART_ISR_PE) // | USART_ISR_FE, USART_ISR_NE
 
 // LCD driver
 #define LCD_W                           128

@@ -61,8 +61,12 @@ Defines the lowest priority that be assigned.
 
 /*!< 
 Max number of tasks that can be running.		     
-*/			
+*/
+#if defined(CLI)	
+#define CFG_MAX_USER_TASKS      (3)
+#else
 #define CFG_MAX_USER_TASKS      (2)
+#endif
 
 /*!< 
 Idle task stack size(word).		                         

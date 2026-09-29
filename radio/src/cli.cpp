@@ -21,18 +21,18 @@
 #include "opentx.h"
 #if defined(SDCARD)
 #include "diskio.h"
+#include <malloc.h>
 #endif
 #include <ctype.h>
-#include <malloc.h>
 #include <new>
 
 #define CLI_COMMAND_MAX_ARGS           8
-#define CLI_COMMAND_MAX_LEN            256
+#define CLI_COMMAND_MAX_LEN            64
 
 RTOS_TASK_HANDLE cliTaskId;
 RTOS_DEFINE_STACK(cliStack, CLI_STACK_SIZE);
 
-Fifo<uint8_t, 256> cliRxFifo;
+Fifo<uint8_t, 32> cliRxFifo;
 uint8_t cliTracesEnabled = true;
 char cliLastLine[CLI_COMMAND_MAX_LEN+1];
 
@@ -101,7 +101,6 @@ int cliBeep(const char ** argv)
 #elif defined(BUZZER)
     playTone(freq, duration, 20, PLAY_NOW);
 #endif
-
   }
   return 0;
 }
@@ -315,6 +314,7 @@ int cliTestSD(const char ** argv)
 }
 #endif
 
+#if !defined(STM32F0)
 int cliTestNew()
 {
   char * tmp = 0;
@@ -356,316 +356,9 @@ int cliTestNew()
   serialPrint("Test finished");
   return 0;
 }
+#endif
 
-#if defined(COLORLCD)
-
-extern bool perMainEnabled;
-typedef void (*timedTestFunc_t)(void);
-
-void testDrawSolidFilledRectangle()
-{
-  lcdDrawFilledRect(0, 0, LCD_W, LCD_H, SOLID, TEXT_BGCOLOR);
-}
-
-void testDrawFilledRectangle()
-{
-  lcdDrawFilledRect(0, 0, LCD_W, LCD_H, DOTTED, TEXT_BGCOLOR);
-}
-
-void testDrawSolidFilledRoundedRectangle()
-{
-  lcdDrawFilledRect(0, 0, LCD_W/2, LCD_H/2, SOLID, ROUND|TEXT_BGCOLOR);
-}
-
-void testDrawBlackOverlay()
-{
-  lcdDrawBlackOverlay();
-}
-
-void testDrawSolidHorizontalLine1()
-{
-  lcdDrawSolidHorizontalLine(0, 0, 1, 0);
-}
-
-void testDrawSolidHorizontalLine2()
-{
-  lcdDrawSolidHorizontalLine(0, 0, LCD_W, 0);
-}
-
-void testDrawSolidVerticalLine1()
-{
-  lcdDrawSolidVerticalLine(0, 0, 1, 0);
-}
-
-void testDrawSolidVerticalLine2()
-{
-  lcdDrawSolidVerticalLine(0, 0, LCD_H, 0);
-}
-
-void testDrawDiagonalLine()
-{
-  lcdDrawLine(0,0, LCD_W, LCD_H, SOLID, TEXT_COLOR);
-}
-
-void testEmpty()
-{
-}
-
-void testDrawRect()
-{
-  lcdDrawRect(0, 0, LCD_W, LCD_H, 2, SOLID, TEXT_COLOR);
-}
-
-void testDrawText()
-{
-  lcdDrawText(0, LCD_H/2, "The quick brown fox jumps over the lazy dog", TEXT_COLOR);
-}
-
-void testDrawTextVertical()
-{
-  lcdDrawText(30, LCD_H, "The quick brown fox ", TEXT_COLOR|VERTICAL|NO_FONTCACHE);
-}
-
-void testClear()
-{
-  lcdClear();
-}
-
-#define RUN_GRAPHICS_TEST(name, runtime)   runTimedFunctionTest(name, #name, runtime, 100)
-
-float runTimedFunctionTest(timedTestFunc_t func, const char * name, uint32_t runtime, uint16_t step)
-{
-  const uint32_t start = RTOS_GET_MS();
-  uint32_t noRuns = 0;
-  uint32_t actualRuntime = 0;
-  while ((actualRuntime = RTOS_GET_MS() - start) < runtime ) {
-    for (uint16_t n=0; n < step; n++) {
-      func();
-    }
-    lcdRefresh();
-    noRuns += step;
-  }
-  const float result = (noRuns * 500.0f) / (float)actualRuntime;     // runs/second
-  serialPrint("Test %s speed: %lu.%02u, (%lu runs in %lu ms)", name, uint32_t(result), uint16_t((result - uint32_t(result)) * 100.0f), noRuns, actualRuntime);
-  RTOS_WAIT_MS(200);
-  return result;
-}
-
-int cliTestGraphics()
-{
-  serialPrint("Starting graphics performance test...");
-  RTOS_WAIT_MS(200);
-
-  watchdogSuspend(6000/*60s*/);
-  if (pulsesStarted()) {
-    pausePulses();
-  }
-  pauseMixerCalculations();
-  perMainEnabled = false;
-
-  float result = 0;
-  RUN_GRAPHICS_TEST(testEmpty, 1000);
-  // result += RUN_GRAPHICS_TEST(testDrawSolidHorizontalLine1, 1000);
-  result += RUN_GRAPHICS_TEST(testDrawSolidHorizontalLine2, 1000);
-  // result += RUN_GRAPHICS_TEST(testDrawSolidVerticalLine1, 1000);
-  result += RUN_GRAPHICS_TEST(testDrawSolidVerticalLine2, 1000);
-  result += RUN_GRAPHICS_TEST(testDrawDiagonalLine, 1000);
-  result += RUN_GRAPHICS_TEST(testDrawSolidFilledRectangle, 1000);
-  result += RUN_GRAPHICS_TEST(testDrawSolidFilledRoundedRectangle, 1000);
-  result += RUN_GRAPHICS_TEST(testDrawRect, 1000);
-  result += RUN_GRAPHICS_TEST(testDrawFilledRectangle, 1000);
-  result += RUN_GRAPHICS_TEST(testDrawBlackOverlay, 1000);
-  result += RUN_GRAPHICS_TEST(testDrawText, 1000);
-  result += RUN_GRAPHICS_TEST(testDrawTextVertical, 1000);
-  result += RUN_GRAPHICS_TEST(testClear, 1000);
-
-  serialPrint("Total speed: %lu.%02u", uint32_t(result), uint16_t((result - uint32_t(result)) * 100.0f));
-
-  perMainEnabled = true;
-  if (pulsesStarted()) {
-    resumePulses();
-  }
-  resumeMixerCalculations();
-  watchdogSuspend(0);
-
-  return 0;
-}
-
-void memoryRead(const uint8_t * src, uint32_t size)
-{
-  // uint8_t data;
-  while(size--) {
-    /*data =*/ *(const uint8_t volatile *)src;
-    ++src;
-  }
-
-}
-
-void memoryRead(const uint32_t * src, uint32_t size)
-{
-  while(size--) {
-    *(const uint32_t volatile *)src;
-    ++src;
-  }
-}
-
-uint32_t * testbuff[100];
-
-void memoryCopy(uint8_t * dest, const uint8_t * src, uint32_t size)
-{
-  while(size--) {
-    *dest = *src;
-    ++src;
-    ++dest;
-  }
-}
-
-void memoryCopy(uint32_t * dest, const uint32_t * src, uint32_t size)
-{
-  while(size--) {
-    *dest = *src;
-    ++src;
-    ++dest;
-  }
-}
-
-#define MEMORY_SPEED_BLOCK_SIZE     (4*1024)
-
-void testMemoryReadFrom_RAM_8bit()
-{
-  memoryRead((const uint8_t *)cliLastLine, MEMORY_SPEED_BLOCK_SIZE);
-}
-
-void testMemoryReadFrom_RAM_32bit()
-{
-  memoryRead((const uint32_t *)0x20000000, MEMORY_SPEED_BLOCK_SIZE/4);
-}
-
-void testMemoryReadFrom_SDRAM_8bit()
-{
-  memoryRead((const uint8_t *)0xD0000000, MEMORY_SPEED_BLOCK_SIZE);
-}
-
-void testMemoryReadFrom_SDRAM_32bit()
-{
-  memoryRead((const uint32_t *)0xD0000000, MEMORY_SPEED_BLOCK_SIZE/4);
-}
-
-extern uint8_t * LCD_FIRST_FRAME_BUFFER;
-extern uint8_t  * LCD_SECOND_FRAME_BUFFER;
-
-
-void testMemoryCopyFrom_RAM_to_SDRAM_32bit()
-{
-  memoryCopy((uint32_t *)LCD_FIRST_FRAME_BUFFER, (const uint32_t * )cliLastLine, MEMORY_SPEED_BLOCK_SIZE/4);
-}
-
-void testMemoryCopyFrom_RAM_to_SDRAM_8bit()
-{
-  memoryCopy((uint8_t *)LCD_FIRST_FRAME_BUFFER, (const uint8_t * )cliLastLine, MEMORY_SPEED_BLOCK_SIZE);
-}
-
-void testMemoryCopyFrom_SDRAM_to_SDRAM_32bit()
-{
-  memoryCopy((uint32_t *)LCD_FIRST_FRAME_BUFFER, (const uint32_t * )LCD_SECOND_FRAME_BUFFER, MEMORY_SPEED_BLOCK_SIZE/4);
-}
-
-void testMemoryCopyFrom_SDRAM_to_SDRAM_8bit()
-{
-  memoryCopy((uint8_t *)LCD_FIRST_FRAME_BUFFER, (const uint8_t * )LCD_SECOND_FRAME_BUFFER, MEMORY_SPEED_BLOCK_SIZE);
-}
-
-#define RUN_MEMORY_TEST(name, runtime)   runTimedFunctionTest(name, #name, runtime, 100)
-
-int cliTestMemorySpeed()
-{
-  serialPrint("Starting memory speed test...");
-  RTOS_WAIT_MS(200);
-
-  watchdogSuspend(6000/*60s*/);
-  if (pulsesStarted()) {
-    pausePulses();
-  }
-  pauseMixerCalculations();
-  perMainEnabled = false;
-
-  float result = 0;
-  result += RUN_MEMORY_TEST(testMemoryReadFrom_RAM_8bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryReadFrom_RAM_32bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryReadFrom_SDRAM_8bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryReadFrom_SDRAM_32bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryCopyFrom_RAM_to_SDRAM_8bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryCopyFrom_RAM_to_SDRAM_32bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryCopyFrom_SDRAM_to_SDRAM_8bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryCopyFrom_SDRAM_to_SDRAM_32bit, 200);
-
-  LTDC_Cmd(DISABLE);
-  serialPrint("Disabling LCD...");
-  RTOS_WAIT_MS(200);
-
-  result += RUN_MEMORY_TEST(testMemoryReadFrom_RAM_8bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryReadFrom_RAM_32bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryReadFrom_SDRAM_8bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryReadFrom_SDRAM_32bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryCopyFrom_RAM_to_SDRAM_8bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryCopyFrom_RAM_to_SDRAM_32bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryCopyFrom_SDRAM_to_SDRAM_8bit, 200);
-  result += RUN_MEMORY_TEST(testMemoryCopyFrom_SDRAM_to_SDRAM_32bit, 200);
-
-  serialPrint("Total speed: %lu.%02u", uint32_t(result), uint16_t((result - uint32_t(result)) * 100.0f));
-
-  LTDC_Cmd(ENABLE);
-
-  perMainEnabled = true;
-  if (pulsesStarted()) {
-    resumePulses();
-  }
-  resumeMixerCalculations();
-  watchdogSuspend(0);
-
-  return 0;
-}
-
-#include "storage/modelslist.h"
-using std::list;
-
-int cliTestModelsList()
-{
-  ModelsList modList;
-  modList.load();
-
-  int count=0;
-
-  serialPrint("Starting fetching RF data 100x...");
-  const uint32_t start = RTOS_GET_MS();
-
-  const list<ModelsCategory*>& cats = modList.getCategories();
-  while(1) {
-    for (list<ModelsCategory*>::const_iterator cat_it = cats.begin();
-         cat_it != cats.end(); ++cat_it) {
-
-      for (ModelsCategory::iterator mod_it = (*cat_it)->begin();
-           mod_it != (*cat_it)->end(); mod_it++) {
-
-        if (!(*mod_it)->fetchRfData()) {
-          serialPrint("Error while fetching RF data...");
-          return 0;
-        }
-
-        if (++count >= 100)
-          goto done;
-      }
-    }
-  }
-
- done:
-  serialPrint("Done fetching %ix RF data: %lu ms", count, (RTOS_GET_MS() - start));
-
-  return 0;
-}
-
-#endif   // #if defined(COLORLCD)
-
+#if !defined(STM32F0)
 int cliTest(const char ** argv)
 {
   if (!strcmp(argv[1], "new")) {
@@ -674,22 +367,12 @@ int cliTest(const char ** argv)
   else if (!strcmp(argv[1], "std::exception")) {
     serialPrint("Not implemented");
   }
-#if defined(COLORLCD)
-  else if (!strcmp(argv[1], "graphics")) {
-    return cliTestGraphics();
-  }
-  else if (!strcmp(argv[1], "memspd")) {
-    return cliTestMemorySpeed();
-  }
-  else if (!strcmp(argv[1], "modelslist")) {
-    return cliTestModelsList();
-  }
-#endif
   else {
     serialPrint("%s: Invalid argument \"%s\"", argv[0], argv[1]);
   }
   return 0;
 }
+#endif
 
 #if defined(DEBUG)
 int cliTrace(const char ** argv)
@@ -709,7 +392,9 @@ int cliTrace(const char ** argv)
 
 int cliStackInfo(const char ** argv)
 {
+#if !defined(STM32F0)
   serialPrint("[MAIN] %d available / %d", stackAvailable(), stackSize() * 4);  // stackSize() returns size in 32bit chunks
+#endif
   serialPrint("[MENUS] %d available / %d", menusStack.available(), menusStack.size());
   serialPrint("[MIXER] %d available / %d", mixerStack.available(), mixerStack.size());
   #if defined(AUDIO)
@@ -723,6 +408,7 @@ extern int _end;
 extern int _heap_end;
 extern unsigned char *heap;
 
+#if !defined(STM32F0)
 int cliMemoryInfo(const char ** argv)
 {
   // struct mallinfo {
@@ -756,17 +442,10 @@ int cliMemoryInfo(const char ** argv)
   serialPrint("\nLua:");
   uint32_t s = luaGetMemUsed(lsScripts);
   serialPrint("\tScripts %u", s);
-#if defined(COLORLCD)
-  uint32_t w = luaGetMemUsed(lsWidgets);
-  uint32_t e = luaExtraMemoryUsage;
-  serialPrint("\tWidgets %u", w);
-  serialPrint("\tExtra   %u", e);
-  serialPrint("------------");
-  serialPrint("\tTotal   %u", s + w + e);
-#endif
 #endif
   return 0;
 }
+#endif
 
 int cliReboot(const char ** argv)
 {
@@ -790,15 +469,17 @@ const MemArea memAreas[] = {
   { "GPIOD", GPIOD, sizeof(GPIO_TypeDef) },
   { "GPIOE", GPIOE, sizeof(GPIO_TypeDef) },
   { "GPIOF", GPIOF, sizeof(GPIO_TypeDef) },
-  #if !defined(PCBI6X)
+  #if !defined(STM32F0)
   { "GPIOG", GPIOG, sizeof(GPIO_TypeDef) },
   #endif
   { "USART1", USART1, sizeof(USART_TypeDef) },
   { "USART2", USART2, sizeof(USART_TypeDef) },
   { "USART3", USART3, sizeof(USART_TypeDef) },
+  { "USART4", USART4, sizeof(USART_TypeDef) },
   { nullptr, nullptr, 0 },
 };
 
+#if !defined(STM32F0)
 int cliSet(const char ** argv)
 {
   if (!strcmp(argv[1], "rtc")) {
@@ -832,6 +513,7 @@ int cliSet(const char ** argv)
 #endif
   return 0;
 }
+#endif
 
 
 #if defined(DEBUG_INTERRUPTS)
@@ -931,10 +613,10 @@ void printDebugTimers()
 }
 #endif
 
+#if defined(AUDIO)
 #include "OsMutex.h"
 extern RTOS_MUTEX_HANDLE audioMutex;
 
-#if defined(AUDIO)
 void printAudioVars()
 {
   for(int n = 0; n < AUDIO_BUFFER_COUNT; n++) {
@@ -1002,26 +684,27 @@ int cliDisplay(const char ** argv)
   }
   else if (!strcmp(argv[1], "outputs")) {
     for (int i=0; i<MAX_OUTPUT_CHANNELS; i++) {
-      serialPrint("outputs[%d] = %04d", i, (int)channelOutputs[i]);
+      serialPrint("CH[%d] = %04d", i, (int)channelOutputs[i]);
     }
   }
+#if defined(RTCLOCK)
   else if (!strcmp(argv[1], "rtc")) {
     struct gtm utm;
     gettime(&utm);
     serialPrint("rtc = %4d-%02d-%02d %02d:%02d:%02d.%02d0", utm.tm_year+TM_YEAR_BASE, utm.tm_mon+1, utm.tm_mday, utm.tm_hour, utm.tm_min, utm.tm_sec, g_ms100);
   }
+#endif
+#if !defined(STM32F0)
 #if !defined(SOFTWARE_VOLUME)
   else if (!strcmp(argv[1], "volume")) {
     serialPrint("volume = %d", getVolume());
   }
 #endif
-#if defined(STM32)
   else if (!strcmp(argv[1], "uid")) {
     char str[LEN_CPU_UID+1];
     getCPUUniqueID(str);
     serialPrint("uid = %s", str);
   }
-#endif
   else if (!strcmp(argv[1], "tim")) {
     int timerNumber;
     if (toInt(argv, 2, &timerNumber) > 0) {
@@ -1033,11 +716,11 @@ int cliDisplay(const char ** argv)
         case 2:
           tim = TIM2;
           break;
-#if !defined(PCBI6X)
+
         case 13:
           tim = TIM13;
           break;
-#endif
+
         default:
           return 0;
       }
@@ -1061,7 +744,6 @@ int cliDisplay(const char ** argv)
       serialPrint(" CCR4   0x%x", tim->CCR4);
     }
   }
-#if !defined(PCBI6X)  
   else if (!strcmp(argv[1], "dma")) {
     serialPrint("DMA1_Stream7");
     serialPrint(" CR    0x%x", DMA1_Stream7->CR);
@@ -1222,18 +904,26 @@ const CliCommand cliCommands[] = {
   #if defined(AUDIO)
   { "play", cliPlay, "<filename>" },
   #endif
+#if defined(DEBUG)
+#if !defined(STM32F0)
   { "print", cliDisplay, "<address> [<size>] | <what>" },
+#endif
   { "p", cliDisplay, "<address> [<size>] | <what>" },
   { "reboot", cliReboot, "[wdt]" },
+#if !defined(STM32F0)
   { "set", cliSet, "<what> <value>" },
+#endif
   { "stackinfo", cliStackInfo, "" },
+#if !defined(STM32F0)
   { "meminfo", cliMemoryInfo, "" },
   { "test", cliTest, "new | std::exception | graphics | memspd" },
-#if defined(DEBUG)
+  #endif
   { "trace", cliTrace, "on | off" },
-#endif
+#endif // DEBUG
   { "help", cliHelp, "[<command>]" },
+#if !defined(STM32F0)
   { "debugvars", cliDebugVars, "" },
+#endif
   { "repeat", cliRepeat, "<interval> <command>" },
 #if defined(JITTER_MEASURE)
   { "jitter", cliShowJitter, "" },
@@ -1258,7 +948,7 @@ int cliHelp(const char ** argv)
     }
   }
   if (argv[1][0] != '\0') {
-    serialPrint("Invalid command \"%s\"", argv[0]);
+    serialPrint("Invalid cmd \"%s\"", argv[0]);
   }
   return -1;
 }
@@ -1273,7 +963,7 @@ int cliExecCommand(const char ** argv)
       return command->func(argv);
     }
   }
-  serialPrint("Invalid command \"%s\"", argv[0]);
+  serialPrint("Invalid cmd \"%s\"", argv[0]);
   return -1;
 }
 
