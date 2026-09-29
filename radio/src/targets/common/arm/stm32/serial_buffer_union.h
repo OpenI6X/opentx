@@ -28,7 +28,7 @@
 #define AUX_SERIAL_TX_FIFO_SIZE 128
 
 union SerialBufferUnion {
-  uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
+  uint8_t txBuf[APP_TX_DATA_SIZE];
   Fifo<uint8_t, AUX_SERIAL_TX_FIFO_SIZE> auxSerialTxFifo;
   // Fifo has a user-provided constructor, so without this the
   // union's implicit default constructor would be deleted.
@@ -37,8 +37,6 @@ union SerialBufferUnion {
 
 #ifdef __cplusplus
 
-// C linkage: usbd_cdc_core.c (compiled as C) references this as
-// `extern uint8_t serialBuffer[]`.
 extern "C" SerialBufferUnion serialBuffer;
 
 void serialTxBufferClear();
