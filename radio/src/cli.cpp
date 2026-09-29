@@ -27,7 +27,7 @@
 #include <new>
 
 #define CLI_COMMAND_MAX_ARGS           8
-#define CLI_COMMAND_MAX_LEN            64
+#define CLI_COMMAND_MAX_LEN            32
 
 RTOS_TASK_HANDLE cliTaskId;
 RTOS_DEFINE_STACK(cliStack, CLI_STACK_SIZE);
