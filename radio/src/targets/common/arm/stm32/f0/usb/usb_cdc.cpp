@@ -240,21 +240,21 @@ void usbSerialPutc(uint8_t c)
    * opened on the host side, so cdcConnected only reports that the physical
    * USB connection is up.  Bytes written before then are simply dropped.
    */
+  if (!cdcConnected) return;
 
-  if (!cdcConnected) {
-    return;
-  }
+  /*
+    txBuf and associated variables must be modified
+    atomically, because they are used from the interrupt
+  */
 
-  // The ring is shared with the USB interrupt, so the update has to be atomic
+  /* Read PRIMASK register, check interrupt status before you disable them */
+  /* Returns 0 if they are enabled, or non-zero if disabled */
+
   uint32_t prim = __get_PRIMASK();
   __disable_irq();
 
-  if ((APP_Tx_ptr_in + 1) % APP_TX_DATA_SIZE != APP_Rx_ptr_out) {
-    serialBuffer.txBuf[APP_Tx_ptr_in] = c;
-    APP_Tx_ptr_in = (APP_Tx_ptr_in + 1) % APP_TX_DATA_SIZE;
-  }
+  serialBuffer.txBuf[APP_Tx_ptr_in] = c;
+  APP_Tx_ptr_in = (APP_Tx_ptr_in + 1) % APP_TX_DATA_SIZE;
 
-  if (!prim) {
-    __enable_irq();
-  }
+  if (!prim) __enable_irq();
 }
