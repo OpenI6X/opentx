@@ -212,8 +212,10 @@ void usbEpStartRx(uint8_t epNum, uint8_t * buf, uint16_t len)
     return;
   }
   ep->buf = buf;
+  // len counts down the bytes still expected, total counts up the bytes
+  // actually received so far (reported to dataOut when the transfer completes)
   ep->len = len;
-  ep->total = len;
+  ep->total = 0;
   ep0OrEpArmRx(epNum, (uint16_t)((len > ep->maxpkt) ? ep->maxpkt : len));
 }
 
@@ -580,7 +582,7 @@ static void usbEp0RxComplete(void)
     ep->buf += done;
   }
   ep->len = (uint16_t)((ep->len > done) ? ep->len - done : 0);
-  ep->total = (uint16_t)((ep->total > done) ? ep->total - done : 0);
+  ep->total = (uint16_t)(ep->total + done);
   received = ep->total;
 
   if (usbEp0Stage == USB_EP0_DATA_OUT) {
@@ -660,9 +662,9 @@ static void usbCtr(void)
         ep->buf += done;
       }
       ep->len = (uint16_t)((ep->len > done) ? ep->len - done : 0);
-      ep->total = (uint16_t)((ep->total > done) ? ep->total - done : 0);
+      ep->total = (uint16_t)(ep->total + done);
       if (ep->len == 0 || done < ep->maxpkt) {
-        // A short packet terminates an OUT transfer.
+        // A short packet terminates an OUT transfer; report bytes received.
         if (usbClass) {
           usbClass->dataOut(epNum, ep->total);
         }
