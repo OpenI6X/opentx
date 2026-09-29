@@ -28,12 +28,10 @@ if(NOT CPU_TYPE STREQUAL STM32F0)
     STM32_USB_Device_Library/Core/src/usbd_req.c
     )
 else() # STM32F0
-  set(STM32USB_DIR ${THIRDPARTY_DIR}/STM32F0x2_USB-FS-Device_Lib_V1.0.0/Libraries)
+  set(STM32USB_SRC "") # the F0 USB stack is self contained.
   add_definitions(-DSTM32 -DVARIO)
   include_directories(${RADIO_SRC_DIRECTORY}/targets/common/arm/stm32)
   include_directories(${RADIO_SRC_DIRECTORY}/targets/common/arm/stm32/f0/usb)
-  # No STM32F0x2_USB-FS-Device_Lib: the F0 USB stack is self contained.
-  set(STM32USB_SRC "")
 endif()
 
 set(TARGET_SRC
