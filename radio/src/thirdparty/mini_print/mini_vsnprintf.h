@@ -37,6 +37,21 @@ int mini_vsnprintf(char *buf, size_t size, const char *fmt, va_list ap);
 int mini_snprintf(char *buf, size_t size, const char *fmt, ...)
     MINI_PRINTF_FMT(3, 4);
 
+/**
+ * Tiny strtoll subset for parsing console/config numbers without dragging
+ * in newlib's stdio/reentrancy machinery (__sf + _impure_*).
+ *
+ * - base 0: optional sign, then 0x/0X prefix selects hex, else decimal.
+ * - base 16: optional sign, optional 0x/0X prefix, then hex digits.
+ * - other base: optional sign, then digits below base (e.g. 10).
+ * - *endptr (unless NULL) points at the first unconsumed character, or at
+ *   `str` when no digits were consumed - mirroring strtoll.
+ *
+ * Deliberate differences vs strtoll: no whitespace skipping, no octal, and
+ * wraparound instead of saturation on >64 bit overflow.
+ */
+long long mini_strtoll(const char *str, char **endptr, int base);
+
 #ifdef __cplusplus
 }
 #endif

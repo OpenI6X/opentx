@@ -29,10 +29,11 @@ extern uint8_t cliTracesEnabled;
 #include "fifo.h"
 extern Fifo<uint8_t, 32> cliRxFifo;
 #include "tasks.h"
-extern RTOS_TASK_HANDLE cliTaskId;
-extern RTOS_DEFINE_STACK(cliStack, CLI_STACK_SIZE);
+// extern RTOS_TASK_HANDLE cliTaskId;
+// extern RTOS_DEFINE_STACK(cliStack, CLI_STACK_SIZE);
 #endif
 
 void cliStart();
+void handleCli();
 
 #endif // _CLI_H_
