@@ -141,3 +141,56 @@ int mini_snprintf(char *buf, size_t size, const char *fmt, ...)
     va_end(ap);
     return n;
 }
+
+long long mini_strtoll(const char *str, char **endptr, int base)
+{
+    const char *s = str;
+    unsigned long long v = 0;
+    int neg = 0;
+    int any = 0;
+
+    if (*s == '-' || *s == '+') {
+        neg = (*s == '-');
+        ++s;
+    }
+
+    if (base == 0) {
+        if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) {
+            base = 16;
+            s += 2;
+        }
+        else {
+            base = 10;
+        }
+    }
+    else if (base == 16) {
+        if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) {
+            s += 2;
+        }
+    }
+
+    for (; *s != '\0'; ++s) {
+        int d;
+        if (*s >= '0' && *s <= '9')
+            d = *s - '0';
+        else if (*s >= 'a' && *s <= 'f')
+            d = *s - 'a' + 10;
+        else if (*s >= 'A' && *s <= 'F')
+            d = *s - 'A' + 10;
+        else
+            break;
+        if (d >= base)
+            break;
+        v = v * (unsigned)base + (unsigned)d;
+        any = 1;
+    }
+
+    if (endptr != NULL)
+        *endptr = (char *)(any ? s : str);
+
+    if (!any)
+        return 0;
+    if (neg)
+        return -(long long)v;
+    return (long long)v;
+}

@@ -19,22 +19,29 @@
  */
 
 #include "opentx.h"
+#include "thirdparty/mini_print/mini_vsnprintf.h"
 #if defined(SDCARD)
 #include "diskio.h"
 #include <malloc.h>
 #endif
 #include <ctype.h>
-#include <new>
+// #include <new>
 
 #define CLI_COMMAND_MAX_ARGS           8
 #define CLI_COMMAND_MAX_LEN            32
 
-RTOS_TASK_HANDLE cliTaskId;
-RTOS_DEFINE_STACK(cliStack, CLI_STACK_SIZE);
+// RTOS_TASK_HANDLE cliTaskId;
+// RTOS_DEFINE_STACK(cliStack, CLI_STACK_SIZE);
 
 Fifo<uint8_t, 32> cliRxFifo;
 uint8_t cliTracesEnabled = true;
 char cliLastLine[CLI_COMMAND_MAX_LEN+1];
+
+// Non-blocking "repeat" state, serviced by handleCli() from perMain context.
+static bool repeatActive = false;
+static tmr10ms_t repeatNext = 0;
+static uint32_t repeatPeriod = 0;   // in 10ms ticks
+static char repeatBuf[CLI_COMMAND_MAX_LEN+1];
 
 typedef int (* CliFunction) (const char ** args);
 int cliExecLine(char * line);
@@ -65,22 +72,12 @@ int toLongLongInt(const char ** argv, int index, long long int * val)
   if (*argv[index] == '\0') {
     return 0;
   }
-  else {
-    int base = 10;
-    const char * s = argv[index];
-    if (strlen(s) > 2 && s[0] == '0' && s[1] == 'x') {
-      base = 16;
-      s = &argv[index][2];
-    }
-    char * endptr = nullptr;
-    *val = strtoll(s, &endptr, base);
-    if (*endptr == '\0')
-      return 1;
-    else {
-      serialPrint("%s: Invalid argument \"%s\"", argv[0], argv[index]);
-      return -1;
-    }
-  }
+  char * endptr = nullptr;
+  *val = mini_strtoll(argv[index], &endptr, 0);
+  if (*endptr == '\0')
+    return 1;
+  serialPrint("%s: Invalid argument \"%s\"", argv[0], argv[index]);
+  return -1;
 }
 
 int toInt(const char ** argv, int index, int * val)
@@ -96,11 +93,7 @@ int cliBeep(const char ** argv)
   int freq = BEEP_DEFAULT_FREQ;
   int duration = 100;
   if (toInt(argv, 1, &freq) >= 0 && toInt(argv, 2, &duration) >= 0) {
-#if defined(AUDIO)
-    audioQueue.playTone(freq, duration, 20, PLAY_NOW);
-#elif defined(BUZZER)
     playTone(freq, duration, 20, PLAY_NOW);
-#endif
   }
   return 0;
 }
@@ -393,14 +386,14 @@ int cliTrace(const char ** argv)
 int cliStackInfo(const char ** argv)
 {
 #if !defined(STM32F0)
-  serialPrint("[MAIN] %d available / %d", stackAvailable(), stackSize() * 4);  // stackSize() returns size in 32bit chunks
+  serialPrint("[MAIN] %d available / %d b", stackAvailable() * 4, stackSize() * 4);  // stackSize() returns size in 32bit chunks
 #endif
-  serialPrint("[MENUS] %d available / %d", menusStack.available(), menusStack.size());
-  serialPrint("[MIXER] %d available / %d", mixerStack.available(), mixerStack.size());
-  #if defined(AUDIO)
-  serialPrint("[AUDIO] %d available / %d", audioStack.available(), audioStack.size());
-  #endif
-  serialPrint("[CLI] %d available / %d", cliStack.available(), cliStack.size());
+  serialPrint("[MENUS] %d / %d bytes", menusStack.available() * 4, menusStack.size());
+  serialPrint("[MIXER] %d / %d bytes", mixerStack.available() * 4, mixerStack.size());
+#if defined(AUDIO)
+  serialPrint("[AUDIO] %d / %d bytes", audioStack.available() * 4, audioStack.size());
+#endif
+  // serialPrint("[CLI] %d / %d bytes", cliStack.available() * 4, cliStack.size());
   return 0;
 }
 
@@ -469,9 +462,6 @@ const MemArea memAreas[] = {
   { "GPIOD", GPIOD, sizeof(GPIO_TypeDef) },
   { "GPIOE", GPIOE, sizeof(GPIO_TypeDef) },
   { "GPIOF", GPIOF, sizeof(GPIO_TypeDef) },
-  #if !defined(STM32F0)
-  { "GPIOG", GPIOG, sizeof(GPIO_TypeDef) },
-  #endif
   { "USART1", USART1, sizeof(USART_TypeDef) },
   { "USART2", USART2, sizeof(USART_TypeDef) },
   { "USART3", USART3, sizeof(USART_TypeDef) },
@@ -694,7 +684,6 @@ int cliDisplay(const char ** argv)
     serialPrint("rtc = %4d-%02d-%02d %02d:%02d:%02d.%02d0", utm.tm_year+TM_YEAR_BASE, utm.tm_mon+1, utm.tm_mday, utm.tm_hour, utm.tm_min, utm.tm_sec, g_ms100);
   }
 #endif
-#if !defined(STM32F0)
 #if !defined(SOFTWARE_VOLUME)
   else if (!strcmp(argv[1], "volume")) {
     serialPrint("volume = %d", getVolume());
@@ -716,9 +705,8 @@ int cliDisplay(const char ** argv)
         case 2:
           tim = TIM2;
           break;
-
-        case 13:
-          tim = TIM13;
+        case 17:
+          tim = TIM17;
           break;
 
         default:
@@ -744,11 +732,13 @@ int cliDisplay(const char ** argv)
       serialPrint(" CCR4   0x%x", tim->CCR4);
     }
   }
+#if !defined(STM32F0)
   else if (!strcmp(argv[1], "dma")) {
     serialPrint("DMA1_Stream7");
     serialPrint(" CR    0x%x", DMA1_Stream7->CR);
   }
 #endif
+
 #if defined(DEBUG_INTERRUPTS)
   else if (!strcmp(argv[1], "int")) {
     printInterrupts();
@@ -803,18 +793,30 @@ int cliDebugVars(const char ** argv)
 int cliRepeat(const char ** argv)
 {
   int interval = 0;
-  int counter = 0;
   if (toInt(argv, 1, &interval) > 0 && argv[2]) {
-    interval *= 50;
-    counter = interval;
-    uint8_t c;
-    while (!cliRxFifo.pop(c) || !(c == '\r' || c == '\n' || c == ' ')) {
-      RTOS_WAIT_MS(20); // 20ms
-      if (++counter >= interval) {
-        cliExecCommand(&argv[2]);
-        counter = 0;
+    // Non-blocking: stash "command args..." and return.  handleCli()
+    // re-executes it every <interval> seconds from perMain context - the old
+    // blocking loop would hold menusTask (LCD, USB, eeprom, logs) hostage.
+    // cliExecLine() splits its input in place, so keep a pristine copy and
+    // re-split it on every firing.  Re-issuing "repeat" just re-arms.
+    char * p = repeatBuf;
+    size_t left = sizeof(repeatBuf);
+    for (int i = 2; argv[i] && argv[i][0] != '\0'; ++i) {
+      if (i > 2) {
+        if (left < 2) break;
+        *p++ = ' ';
+        --left;
       }
+      size_t n = strlen(argv[i]);
+      if (n >= left) n = left - 1;
+      memcpy(p, argv[i], n);
+      p += n;
+      left -= n;
     }
+    *p = '\0';
+    repeatPeriod = (uint32_t)interval * 100;  // seconds -> 10ms ticks
+    repeatNext = get_tmr10ms();               // fire on the next handleCli pass
+    repeatActive = true;
   }
   else {
     serialPrint("%s: Invalid arguments", argv[0]);
@@ -904,12 +906,12 @@ const CliCommand cliCommands[] = {
   #if defined(AUDIO)
   { "play", cliPlay, "<filename>" },
   #endif
+  { "reboot", cliReboot, "[wdt]" },
 #if defined(DEBUG)
 #if !defined(STM32F0)
   { "print", cliDisplay, "<address> [<size>] | <what>" },
 #endif
   { "p", cliDisplay, "<address> [<size>] | <what>" },
-  { "reboot", cliReboot, "[wdt]" },
 #if !defined(STM32F0)
   { "set", cliSet, "<what> <value>" },
 #endif
@@ -985,6 +987,68 @@ int cliExecLine(char * line)
   return cliExecCommand(argv);
 }
 
+void handleCli()
+{
+  static char line[CLI_COMMAND_MAX_LEN+1];
+  static int pos = 0;
+  uint8_t c;
+
+  while (cliRxFifo.pop(c)) {
+    if (repeatActive) {
+      // A repeat session owns the console: swallow everything except the
+      // stop key, exactly like the old blocking loop discarded input.
+      if (c == '\r' || c == '\n' || c == ' ') {
+        repeatActive = false;
+        cliPrompt();
+      }
+      continue;
+    }
+    if (c == 12) {
+      // clear screen
+      serialPrint("\033[2J\033[1;1H");
+      cliPrompt();
+    }
+    else if (c == 127) {
+      // backspace
+      if (pos) {
+        line[--pos] = '\0';
+        serialPutc(c);
+      }
+    }
+    else if (c == '\r' || c == '\n') {
+      // enter
+      serialCrlf();
+      line[pos] = '\0';
+      if (pos == 0 && cliLastLine[0]) {
+        // execute (repeat) last command
+        strcpy(line, cliLastLine);
+      }
+      else {
+        // save new command
+        strcpy(cliLastLine, line);
+      }
+      cliExecLine(line);
+      pos = 0;
+      cliPrompt();
+    }
+    else if (isascii(c) && pos < CLI_COMMAND_MAX_LEN) {
+      line[pos++] = c;
+      serialPutc(c);
+    }
+  }
+
+  // Periodic firing for "repeat": cadence counted from the end of the last
+  // execution, like the old counter reset (set after exec, so a slow command
+  // can't cause back-to-back refires).  The int32_t cast keeps the
+  // comparison wrap-safe.
+  if (repeatActive && (int32_t)(get_tmr10ms() - repeatNext) >= 0) {
+    char tmp[CLI_COMMAND_MAX_LEN+1];
+    strcpy(tmp, repeatBuf);
+    cliExecLine(tmp);
+    repeatNext = get_tmr10ms() + repeatPeriod;
+  }
+}
+
 void cliTask(void * pdata)
 {
   char line[CLI_COMMAND_MAX_LEN+1];
@@ -1036,5 +1100,5 @@ void cliTask(void * pdata)
 
 void cliStart()
 {
-  RTOS_CREATE_TASK(cliTaskId, cliTask, "CLI", cliStack, CLI_STACK_SIZE, CLI_TASK_PRIO);
+  // RTOS_CREATE_TASK(cliTaskId, cliTask, "CLI", cliStack, CLI_STACK_SIZE, CLI_TASK_PRIO);
 }

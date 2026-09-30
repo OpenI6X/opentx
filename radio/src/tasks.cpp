@@ -43,7 +43,7 @@ void stackPaint()
   audioStack.paint();
 #endif
 #if defined(CLI)
-  cliStack.paint();
+  // cliStack.paint(); // now do not use separate task
 #endif
 }
 
@@ -270,7 +270,7 @@ void tasksStart() {
   RTOS_INIT();
 
 #if defined(CLI)
-  cliStart();
+  // cliStart(); // now handled by handleCli()
 #endif
 
   RTOS_CREATE_TASK(mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE, MIXER_TASK_PRIO);

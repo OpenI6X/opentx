@@ -425,6 +425,10 @@ void perMain()
     #endif
   }
 
+#if defined(CLI)
+  handleCli();
+#endif
+
   handleUsbConnection();
 
   checkTrainerSettings();
