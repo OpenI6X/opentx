@@ -397,11 +397,11 @@ int cliStackInfo(const char ** argv)
   return 0;
 }
 
+#if !defined(STM32F0)
 extern int _end;
 extern int _heap_end;
 extern unsigned char *heap;
 
-#if !defined(STM32F0)
 int cliMemoryInfo(const char ** argv)
 {
   // struct mallinfo {
@@ -795,27 +795,10 @@ int cliRepeat(const char ** argv)
   int interval = 0;
   if (toInt(argv, 1, &interval) > 0 && argv[2]) {
     // Non-blocking: stash "command args..." and return.  handleCli()
-    // re-executes it every <interval> seconds from perMain context - the old
-    // blocking loop would hold menusTask (LCD, USB, eeprom, logs) hostage.
-    // cliExecLine() splits its input in place, so keep a pristine copy and
-    // re-split it on every firing.  Re-issuing "repeat" just re-arms.
-    char * p = repeatBuf;
-    size_t left = sizeof(repeatBuf);
-    for (int i = 2; argv[i] && argv[i][0] != '\0'; ++i) {
-      if (i > 2) {
-        if (left < 2) break;
-        *p++ = ' ';
-        --left;
-      }
-      size_t n = strlen(argv[i]);
-      if (n >= left) n = left - 1;
-      memcpy(p, argv[i], n);
-      p += n;
-      left -= n;
-    }
-    *p = '\0';
-    repeatPeriod = (uint32_t)interval * 100;  // seconds -> 10ms ticks
-    repeatNext = get_tmr10ms();               // fire on the next handleCli pass
+    // re-executes it every <interval> ms from perMain context
+    strcpy(repeatBuf, argv[2]);
+    repeatPeriod = (uint32_t)interval / 10;
+    repeatNext = get_tmr10ms();
     repeatActive = true;
   }
   else {
@@ -926,7 +909,7 @@ const CliCommand cliCommands[] = {
 #if !defined(STM32F0)
   { "debugvars", cliDebugVars, "" },
 #endif
-  { "repeat", cliRepeat, "<interval> <command>" },
+  { "repeat", cliRepeat, "<interval in ms> <command>" },
 #if defined(JITTER_MEASURE)
   { "jitter", cliShowJitter, "" },
 #endif
