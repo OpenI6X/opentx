@@ -43,35 +43,32 @@ const uint8_t AFHDS2A_A7105_regs[] = {
       0x01, 0x0f // 30 - 31
 };
 
+static inline uint8_t SPI_Transfer(uint8_t data)
+{
+	while (!(SPI1->SR & SPI_SR_TXE));
+	*(__IO uint8_t *)&SPI1->DR = data;
+	while (!(SPI1->SR & SPI_SR_RXNE));
+	return (uint8_t)SPI1->DR;
+}
+
 void SPI_Write(uint8_t command)
 {
-	while((SPI1->SR & SPI_SR_BSY));
-	*(__IO uint8_t *)&SPI1->DR = command;					// Write the first data item to be transmitted into the SPI_DR register (this clears the TXE flag).
+	(void)SPI_Transfer(command);
 	#ifdef DEBUG_SPI
 		debug("%02X ",command);
 	#endif
-	while (!(SPI1->SR & SPI_SR_RXNE));
-	command = (uint8_t)SPI1->DR;					// ... and read the last received data.
 }
 
-uint8_t SPI_SDI_Read() 
+uint8_t SPI_SDI_Read()
 {
-	uint8_t rx=0;
-	// uint8_t dummy;
-    // while ((SPI1->SR & SPI_SR_FRLVL) != 0) { // not present in multi
-    //   dummy = (uint8_t)(READ_REG(SPI1->DR));
-    // }
-    // (void)dummy;
-	while(!(SPI1->SR & SPI_SR_TXE));
-	while((SPI1->SR & SPI_SR_BSY));
-
-    *(__IO uint8_t *)&SPI1->DR = 0x00; // not present in multi
-    while(!(SPI1->SR & SPI_SR_RXNE));
-    rx=(uint8_t)SPI1->DR;
-	return rx;
+	return SPI_Transfer(0x00);
 }
+
 /*---------------------------------------------------------------------------*/
-inline void a7105_csn_on(void) {RF_SCN_GPIO_PORT->BSRR = RF_SCN_SET_PIN;}
+inline void a7105_csn_on(void) {
+  while ((SPI1->SR & SPI_SR_BSY));
+  RF_SCN_GPIO_PORT->BSRR = RF_SCN_SET_PIN;
+}
 inline void a7105_csn_off(void) {RF_SCN_GPIO_PORT->BSRR = RF_SCN_RESET_PIN;}
 inline void RF0_SetVal(void) {RF_RF0_GPIO_PORT->BSRR = RF_RF0_SET_PIN;}
 inline void RF0_ClrVal(void) {RF_RF0_GPIO_PORT->BSRR = RF_RF0_RESET_PIN;}
