@@ -79,13 +79,15 @@ void handleUsbConnection()
   }
 
   if (usbStarted() && !usbPlugged()) {
+#if !defined(PCBI6X) // not used codepath since we cannot detect disconnect
     usbStop();
-    #if !defined(PCBI6X) || defined(USB_MSD)
+    #if defined(USB_MSD)
     if (getSelectedUsbMode() == USB_MASS_STORAGE_MODE) {
       opentxResume();
     }
     #endif
     setSelectedUsbMode(USB_UNSELECTED_MODE);
+#endif
   }
 #endif // defined(STM32) && !defined(SIMU)
 }
