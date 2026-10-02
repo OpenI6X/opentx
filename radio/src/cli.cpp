@@ -38,10 +38,9 @@ uint8_t cliTracesEnabled = true;
 char cliLastLine[CLI_COMMAND_MAX_LEN+1];
 
 // Non-blocking "repeat" state, serviced by handleCli() from perMain context.
-static bool repeatActive = false;
 static tmr10ms_t repeatNext = 0;
-static uint32_t repeatPeriod = 0;   // in 10ms ticks
-static char repeatBuf[CLI_COMMAND_MAX_LEN+1];
+static uint32_t repeatInterval = 0;   // in 10ms ticks
+static char repeatCmd[16];
 
 typedef int (* CliFunction) (const char ** args);
 int cliExecLine(char * line);
@@ -796,10 +795,9 @@ int cliRepeat(const char ** argv)
   if (toInt(argv, 1, &interval) > 0 && argv[2]) {
     // Non-blocking: stash "command args..." and return.  handleCli()
     // re-executes it every <interval> ms from perMain context
-    strcpy(repeatBuf, argv[2]);
-    repeatPeriod = (uint32_t)interval / 10;
+    strcpy(repeatCmd, argv[2]);
+    repeatInterval = (uint32_t)interval / 10;
     repeatNext = get_tmr10ms();
-    repeatActive = true;
   }
   else {
     serialPrint("%s: Invalid arguments", argv[0]);
@@ -977,11 +975,11 @@ void handleCli()
   uint8_t c;
 
   while (cliRxFifo.pop(c)) {
-    if (repeatActive) {
+    if (repeatInterval > 0) {
       // A repeat session owns the console: swallow everything except the
       // stop key, exactly like the old blocking loop discarded input.
       if (c == '\r' || c == '\n' || c == ' ') {
-        repeatActive = false;
+        repeatInterval = 0;
         cliPrompt();
       }
       continue;
@@ -1024,11 +1022,11 @@ void handleCli()
   // execution, like the old counter reset (set after exec, so a slow command
   // can't cause back-to-back refires).  The int32_t cast keeps the
   // comparison wrap-safe.
-  if (repeatActive && (int32_t)(get_tmr10ms() - repeatNext) >= 0) {
+  if (repeatInterval > 0 && (int32_t)(get_tmr10ms() - repeatNext) >= 0) {
     char tmp[CLI_COMMAND_MAX_LEN+1];
-    strcpy(tmp, repeatBuf);
+    strcpy(tmp, repeatCmd);
     cliExecLine(tmp);
-    repeatNext = get_tmr10ms() + repeatPeriod;
+    repeatNext = get_tmr10ms() + repeatInterval;
   }
 }
 
