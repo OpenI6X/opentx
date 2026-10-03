@@ -74,8 +74,8 @@
 
 #define CDC_IN_FRAME_INTERVAL        4    /* Number of frames between IN transfers */
 #if defined(STM32F0)
-#if defined(DEBUG)
-#define APP_TX_DATA_SIZE             256
+#if defined(DEBUG) || defined(USB_LOGS)
+#define APP_TX_DATA_SIZE             512
 #else
 #define APP_TX_DATA_SIZE             128
 #endif
