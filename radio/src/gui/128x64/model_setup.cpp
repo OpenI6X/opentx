@@ -19,6 +19,7 @@
  */
 
 #include "opentx.h"
+#include "mixer_scheduler.h"
 
 uint8_t g_moduleIdx;
 void menuModelFailsafe(event_t event);
@@ -90,6 +91,7 @@ enum MenuModelSetupItems {
   ITEM_MODEL_EXTERNAL_MODULE_LABEL,
   ITEM_MODEL_EXTERNAL_MODULE_MODE,
   #if defined(CROSSFIRE)
+  ITEM_MODEL_SETUP_EXTERNAL_MODULE_SERIALSTATUS,
   ITEM_MODEL_SETUP_EXTERNAL_MODULE_ARMING_MODE,
   ITEM_MODEL_SETUP_EXTERNAL_MODULE_ARMING_TRIGGER,
   #endif
@@ -135,6 +137,7 @@ enum MenuModelSetupItems {
 #endif
 
 #if defined(CROSSFIRE)
+#define IF_MODULE_SYNCED(module, xxx)    ((isModuleCrossfire(module)) ? (uint8_t)(xxx) : HIDDEN_ROW)
 #define IF_MODULE_ARMED(module, xxx) (isModuleCrossfire(EXTERNAL_MODULE) && CRSF_ELRS_MIN_VER(4, 0) ? (uint8_t)(xxx) : HIDDEN_ROW)
 #define IF_MODULE_ARMED_TRIGGER(module, xxx) (isModuleCrossfire(EXTERNAL_MODULE) && (CRSF_ELRS_MIN_VER(4, 0) && g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingMode) ? (uint8_t)(xxx) : HIDDEN_ROW)
 #else
@@ -348,6 +351,7 @@ void menuModelSetup(event_t event)
     IF_INTERNAL_MODULE_ON(FAILSAFE_ROWS(INTERNAL_MODULE)),
     LABEL(ExternalModule),
     EXTERNAL_MODULE_MODE_ROWS,
+    IF_MODULE_SYNCED(EXTERNAL_MODULE, 0),          /* Sync rate + errors */
     IF_MODULE_ARMED(EXTERNAL_MODULE, 0),           /* Arming Mode */
     IF_MODULE_ARMED_TRIGGER(EXTERNAL_MODULE, 0),   /* Arming TRIGGER */
     MULTIMODULE_SUBTYPE_ROWS(EXTERNAL_MODULE)
@@ -954,6 +958,12 @@ void menuModelSetup(event_t event)
 #endif
 
 #if defined(CROSSFIRE)
+      case ITEM_MODEL_SETUP_EXTERNAL_MODULE_SERIALSTATUS:
+        lcdDrawTextIndented(y, "Status"); // STR_STATUS
+        lcdDrawNumber(MODEL_SETUP_2ND_COLUMN, y, 1000000 / getMixerSchedulerPeriod(), LEFT | attr);
+        lcdDrawText(lcdNextPos, y, "Hz", attr);
+        break;
+
       case ITEM_MODEL_SETUP_EXTERNAL_MODULE_ARMING_MODE:
         g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingMode =
           editChoice(MODEL_SETUP_2ND_COLUMN, y, STR_CRSF_ARMING_MODE, STR_CRSF_ARMING_MODES,
