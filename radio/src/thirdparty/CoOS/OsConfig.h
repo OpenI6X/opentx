@@ -57,7 +57,7 @@ Defines chip type,cortex-m3(1),cortex-m0(2), cortex-m4 without FPU(1), cortex-m4
 /*!< 
 Defines the lowest priority that be assigned.       
 */
-#define CFG_LOWEST_PRIO         (64)
+#define CFG_LOWEST_PRIO         (16)
 
 /*!< 
 Max number of tasks that can be running.		     
@@ -98,7 +98,7 @@ systick frequency (Hz).
 /*!< 
 max systerm api call num in ISR.	                         
 */
-#define CFG_MAX_SERVICE_REQUEST (5)
+#define CFG_MAX_SERVICE_REQUEST (2)
 
 /*!< 
 Enable(1) or disable(0) order list schedule.
@@ -114,7 +114,7 @@ If disable(0),CoOS use Binary-Scheduling Algorithm.
 /*!< 
 Enable(1) or disable(0) Round-Robin Task switching. 
 */
-#define CFG_ROBIN_EN            (1)         
+#define CFG_ROBIN_EN            (0)
 
 /*!< 
 Default slice of task.   	                          
@@ -215,7 +215,7 @@ Enable(1) or disable(0) TimeDelay() API.
 /*!< 
 Enable(1) or disable(0) timer management.		      
 */
-#define CFG_TMR_EN              (1)		
+#define CFG_TMR_EN              (0)
 
 /*!< 
 Specify max number timer.(must be less than 32)      
@@ -238,13 +238,13 @@ events including semaphore,mailbox,queue.
 /*!< 
 Event sort type.(1)FIFO (2)PRI (3)FIFO+PRI           
 */
-#define CFG_EVENT_SORT          (3)		
+#define CFG_EVENT_SORT          (1)		
 
 /*!< 
 Max number of event.(must be less than 255) 	      
 Event = semaphore + mailbox + queue;			      
 */
-#define CFG_MAX_EVENT           (10)
+#define CFG_MAX_EVENT           (2)
 
 /*!< 
 Enable(1) or disable(0) semaphore management.	      
@@ -297,7 +297,7 @@ Enable(1) or disable(0) mutex management.
 Max number of mutex.(must be less than 255).      
 */ 
 #if CFG_MUTEX_EN >0
-#define CFG_MAX_MUTEX           (10)			
+#define CFG_MAX_MUTEX           (1)
 #endif
 
 /*---------------------- Utility Management Config --------------------------*/
