@@ -25,7 +25,7 @@
 #include "fifo.h"
 #include "usbd_conf.h"
 
-#define AUX_SERIAL_TX_FIFO_SIZE 128
+#define AUX_SERIAL_TX_FIFO_SIZE 256
 
 union SerialBufferUnion {
   uint8_t txBuf[APP_TX_DATA_SIZE];
