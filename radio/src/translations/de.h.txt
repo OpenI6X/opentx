@@ -274,11 +274,11 @@
 #define TR_SF_BG_MUSIC        "StartMusik""Stop Musik"
 
 #if defined(USB_LOGS)
-  #define TR_SDCLOGS           "USB Logs\0 "
+  #define TR_SDCLOGS           "USB-Aufz.\0"
 #elif defined(SDCARD)
   #define TR_SDCLOGS           "SD-Aufz.\0 "
 #else
-  #define TR_SDCLOGS           "[USB Logs]"
+  #define TR_SDCLOGS           "[USB-Aufz]"
 #endif
 
 #if defined(GVARS)
