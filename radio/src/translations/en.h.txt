@@ -76,7 +76,7 @@
 
 #if defined(PCBI6X)
 #define LEN_AUX_SERIAL_MODES           "\014"
-#define TR_AUX_SERIAL_MODES            SERIAL_MODE_OFF "Telem Mirror""SBUS Trainer""USB Logs\0   "
+#define TR_AUX_SERIAL_MODES            SERIAL_MODE_OFF "Telem Mirror""SBUS Trainer"
 #else
 #define LEN_AUX_SERIAL_MODES           "\015"
 #if defined(CLI) || defined(DEBUG)
