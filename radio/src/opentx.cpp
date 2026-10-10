@@ -1653,6 +1653,9 @@ void opentxInit()
     logsInit();
   }
 #endif
+#if defined(USB_LOGS)
+  usbLogsInit();
+#endif
 
 #if defined(EEPROM)
   storageReadCurrentModel();

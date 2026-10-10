@@ -393,7 +393,7 @@ void evalFunctions(const CustomFunctionData * functions, CustomFunctionsContext 
 #endif
 
 
-#if defined(SDCARD)
+#if defined(SDCARD) || defined(USB_LOGS)
           case FUNC_LOGS:
             if (CFN_PARAM(cfn)) {
               newActiveFunctions |= (1u << FUNCTION_LOGS);
