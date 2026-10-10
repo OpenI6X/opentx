@@ -4,7 +4,7 @@
 #include "serial.h"
 #include "strhelpers.h"
 
-// #define FAKE_RTCLOCK
+#define FAKE_RTCLOCK // some tools expect a date and time in the logs, so we fake it here
 
 static void usbLogPuts(const char * s)
 {
