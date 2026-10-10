@@ -70,13 +70,15 @@
 #define LEN_TRNCHN             "\003"
 #define TR_TRNCHN              "CH1CH2CH3CH4"
 
-#if defined(PCBI6X)
-#define LEN_AUX_SERIAL_MODES                 "\014"
 #if defined(CLI) || defined(DEBUG)
-#define TR_AUX_SERIAL_MODES                  "Debug\0      ""Telem Mirror""SBUS Eingang"
+  #define SERIAL_MODE_OFF              "Debug\0      "
 #else
-#define TR_AUX_SERIAL_MODES                  "OFF\0        ""Telem Mirror""SBUS Eingang"
+  #define SERIAL_MODE_OFF              "OFF\0        "
 #endif
+
+#if defined(PCBI6X)
+#define LEN_AUX_SERIAL_MODES           "\014"
+#define TR_AUX_SERIAL_MODES            SERIAL_MODE_OFF "Telem Mirror""SBUS Eingang"
 #else
 #define LEN_AUX_SERIAL_MODES                 "\015"
 #if defined(CLI) || defined(DEBUG)
@@ -86,12 +88,8 @@
 #endif
 #endif
 
-#define LEN_USB_SERIAL_MODES                 "\014"
-#if defined(DEBUG)
-#define TR_USB_SERIAL_MODES                  "Debug\0      ""Telem Mirror""Logs\0       "
-#else
-#define TR_USB_SERIAL_MODES                  "OFF\0        ""Telem Mirror""Logs\0       "
-#endif
+#define LEN_USB_SERIAL_MODES           "\014"
+#define TR_USB_SERIAL_MODES            SERIAL_MODE_OFF "Telem Mirror""Logs\0       "
 
 #define LEN_SWTYPES            "\006"
 #define TR_SWTYPES             "Kein\0 ""Taster""2POS\0 ""3POS\0"
