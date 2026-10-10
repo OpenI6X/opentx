@@ -25,12 +25,14 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#define PRINTF_BUFFER_SIZE    48
+#define PRINTF_BUFFER_SIZE    128
 
 void serialPutc(char c) {
 #if !defined(BOOT) && defined(USB_SERIAL)
-  if (getSelectedUsbMode() == USB_SERIAL_MODE)
+  if (getSelectedUsbMode() == USB_SERIAL_MODE) {
     usbSerialPutc(c);
+    return;
+  }
 #endif
 #if defined(AUX_SERIAL)
   if (auxSerialTracesEnabled())
@@ -41,7 +43,7 @@ void serialPutc(char c) {
 void serialPrintf(const char * format, ...)
 {
   va_list arglist;
-  char tmp[PRINTF_BUFFER_SIZE+1];
+  char tmp[PRINTF_BUFFER_SIZE];
 
   va_start(arglist, format);
   mini_vsnprintf(tmp, PRINTF_BUFFER_SIZE, format, arglist);
@@ -59,3 +61,18 @@ void serialCrlf()
   serialPutc('\r');
   serialPutc('\n');
 }
+
+// TODO: replace serialSetupCallBacks & serialSetupPort
+//       with usage based handlers.
+//
+// static void serialSetCallBacks(int mode, void* ctx, const etx_serial_port_t* port)
+// {
+  
+// }
+
+void serialInit(uint8_t port_nr, int mode)
+{
+
+}
+
+

@@ -666,10 +666,11 @@ PACK(struct TrainerData {
 #else
 #define BLUETOOTH_FIELDS
 #endif
+// no sliders on i6x, so reuse the 4 bits for usbSerialMode
 #define EXTRA_GENERAL_FIELDS                                        \
   EXTRA_GENERAL_FIELDS_ARM                                          \
   uint8_t auxSerialMode : 4;                                        \
-  uint8_t slidersConfig : 4;                                        \
+  uint8_t usbSerialMode : 4;                                        \
   uint8_t potsConfig; /* two bits per pot */                        \
   swarnstate_t switchUnlockStates;                                  \
   swconfig_t switchConfig;                                          \

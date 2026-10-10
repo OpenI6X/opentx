@@ -68,13 +68,15 @@
 #define LEN_TRNCHN             "\003"
 #define TR_TRNCHN              "CH1CH2CH3CH4"
 
-#if defined(PCBI6X)
-#define LEN_AUX_SERIAL_MODES                 "\014"
 #if defined(CLI) || defined(DEBUG)
-#define TR_AUX_SERIAL_MODES                  "Debug\0      ""Telem Mirror""SBUS Trenér\0"
+  #define SERIAL_MODE_OFF              "Debug\0      "
 #else
-#define TR_AUX_SERIAL_MODES                  "OFF\0        ""Telem Mirror""SBUS Trenér\0"
+  #define SERIAL_MODE_OFF              "OFF\0        "
 #endif
+
+#if defined(PCBI6X)
+#define LEN_AUX_SERIAL_MODES           "\014"
+#define TR_AUX_SERIAL_MODES            SERIAL_MODE_OFF "Telem Mirror""SBUS Trenér\0"
 #else
 #define LEN_AUX_SERIAL_MODES         "\015"
 #if defined(CLI) || defined(DEBUG)
@@ -83,6 +85,9 @@
 #define TR_AUX_SERIAL_MODES          "VYP\0         ""Telem Mirror\0""Telemetrie\0  ""SBUS Trenér\0 ""LUA\0         "
 #endif
 #endif
+
+#define LEN_USB_SERIAL_MODES           "\014"
+#define TR_USB_SERIAL_MODES            SERIAL_MODE_OFF "Telem Mirror""Logs\0       "
 
 #define LEN_SWTYPES            "\013"
 #define TR_SWTYPES             "Žádný\0     ""Bez aretace""2-polohový\0""3-polohový\0"

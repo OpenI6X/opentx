@@ -70,13 +70,15 @@
 #define LEN_TRNCHN             "\003"
 #define TR_TRNCHN              "ch1ch2ch3ch4"
 
-#if defined(PCBI6X)
-#define LEN_AUX_SERIAL_MODES                 "\015"
 #if defined(CLI) || defined(DEBUG)
-#define TR_AUX_SERIAL_MODES                  "Debug\0       ""Replica Telem""SBUS Trainer\0"
+  #define SERIAL_MODE_OFF              "Debug\0       "
 #else
-#define TR_AUX_SERIAL_MODES                  "OFF\0         ""Replica Telem""SBUS Trainer\0"
+  #define SERIAL_MODE_OFF              "OFF\0         "
 #endif
+
+#if defined(PCBI6X)
+#define LEN_AUX_SERIAL_MODES           "\015"
+#define TR_AUX_SERIAL_MODES            SERIAL_MODE_OFF "Replica Telem""SBUS Trainer\0"
 #else
 #define LEN_AUX_SERIAL_MODES   "\015"
 #if defined(CLI) || defined(DEBUG)
@@ -85,6 +87,9 @@
 #define TR_AUX_SERIAL_MODES    "OFF\0          ""Replica Telem""Telemetria\0  ""SBUS Trainer\0""LUA\0         "
 #endif
 #endif
+
+#define LEN_USB_SERIAL_MODES           "\015"
+#define TR_USB_SERIAL_MODES            SERIAL_MODE_OFF "Replica Telem""Logs\0        "
 
 #define LEN_SWTYPES            "\006"
 #define TR_SWTYPES             "None\0 ""Toggle""2POS\0 ""3POS\0"
