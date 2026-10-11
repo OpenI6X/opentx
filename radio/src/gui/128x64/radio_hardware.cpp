@@ -57,6 +57,7 @@ enum {
   CASE_BATTGRAPH(ITEM_RADIO_HARDWARE_BATT_RANGE)
   ITEM_RADIO_HARDWARE_BATTERY_CALIB,
   ITEM_RADIO_HARDWARE_SERIAL_BAUDRATE,
+  ITEM_RADIO_HARDWARE_CRSF_FULLDUPLEX,
 #if defined(BLUETOOTH)
   ITEM_RADIO_HARDWARE_BLUETOOTH_MODE,
   ITEM_RADIO_HARDWARE_BLUETOOTH_PAIRING_CODE,
@@ -75,7 +76,6 @@ enum {
 #if defined(MENU_DIAG_ANAS_KEYS)
   ITEM_RADIO_HARDWARE_DEBUG,
 #endif
-  ITEM_RADIO_HARDWARE_CRSF_FULLDUPLEX,
 #if defined(EEPROM_RLC)
 #if defined(SDCARD)
   ITEM_RADIO_BACKUP_EEPROM,
@@ -146,6 +146,7 @@ void menuRadioHardware(event_t event)
     0 /* battery calib */,
 #if defined(CROSSFIRE)
     0 /* max bauds */,
+    0 /* CRSF full duplex */,
 #endif
     LABEL(Serial ports),
 #if defined(AUX_SERIAL)
@@ -154,7 +155,6 @@ void menuRadioHardware(event_t event)
 #if defined(USB_SERIAL)
       0 /* USB serial mode */,
 #endif
-    0 /* CRSF full duplex */,
     BLUETOOTH_ROWS
     0 /*jitter filter*/,
 #if defined(MENU_DIAG_ANAS_KEYS)
