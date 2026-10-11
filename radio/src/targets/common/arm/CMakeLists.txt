@@ -160,6 +160,9 @@ set(TARGET_SRC
   keys_driver.cpp
   telemetry_driver.cpp
   )
+if(RTOS STREQUAL TINYK)
+set(FIRMWARE_SRC ${FIRMWARE_SRC} rtos/tinyk.c)
+else()
 set(FIRMWARE_SRC
   ${FIRMWARE_SRC}
   ${COOS_DIR}/kernel/core.c
@@ -174,6 +177,7 @@ set(FIRMWARE_SRC
   ${COOS_DIR}/portable/GCC/port.c
   ${COOS_DIR}/portable/arch.c
   )
+endif()
 
 set(PULSES_SRC
   ${PULSES_SRC}
