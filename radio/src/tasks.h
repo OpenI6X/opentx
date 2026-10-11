@@ -26,11 +26,11 @@
 // stack sizes should be in multiples of 8 for better alignment
 // expressed in integers resulting size is 4 times bigger
 #if defined(STM32F0)
-#define MENUS_STACK_SIZE       560
+#define MENUS_STACK_SIZE       256 // 172 analyzed max
 #else
 #define MENUS_STACK_SIZE       2048
 #endif
-#define MIXER_STACK_SIZE       400
+#define MIXER_STACK_SIZE       200 // 132 analyzed max
 #define AUDIO_STACK_SIZE       400
 #if defined(STM32F0)
 #define CLI_STACK_SIZE         128  // only consumed with CLI build option
