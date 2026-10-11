@@ -489,6 +489,7 @@ int cliSet(const char ** argv)
       serialPrint("%s: Invalid arguments \"%s\" \"%s\"", argv[0], argv[1], argv[2]);
     }
   }
+#if !defined(STM32F0)
 #if !defined(SOFTWARE_VOLUME)
   else if (!strcmp(argv[1], "volume")) {
     int level = 0;
@@ -501,6 +502,7 @@ int cliSet(const char ** argv)
     return 0;
   }
 #endif
+#endif // STM32F0
   return 0;
 }
 #endif
@@ -689,11 +691,13 @@ int cliDisplay(const char ** argv)
     serialPrint("volume = %d", getVolume());
   }
 #endif
+#if !defined(STM32F0)
   else if (!strcmp(argv[1], "uid")) {
     char str[LEN_CPU_UID+1];
     getCPUUniqueID(str);
     serialPrint("uid = %s", str);
   }
+#endif
   else if (!strcmp(argv[1], "tim")) {
     int timerNumber;
     if (toInt(argv, 2, &timerNumber) > 0) {
@@ -901,8 +905,8 @@ const CliCommand cliCommands[] = {
 #if !defined(STM32F0)
   { "meminfo", cliMemoryInfo, "" },
   { "test", cliTest, "new | std::exception | graphics | memspd" },
-  #endif
   { "trace", cliTrace, "on | off" },
+#endif // STM32F0
 #endif // DEBUG
   { "help", cliHelp, "[<command>]" },
 #if !defined(STM32F0)
