@@ -300,6 +300,151 @@ template<int SIZE>
   #define TASK_FUNCTION(task)           void task(void * pdata)
   #define TASK_RETURN()                 return
 
+#elif defined(RTOS_TINYK)
+  // TinyK: minimal preemptive kernel for Cortex-M0, see rtos/tinyk.h
+  #include "rtos/tinyk.h"
+
+  #define RTOS_MS_PER_TICK              1
+
+  typedef uint8_t RTOS_TASK_HANDLE;
+  typedef tk_mutex_t RTOS_MUTEX_HANDLE;
+  typedef tk_flag_t RTOS_FLAG_HANDLE;
+
+  static inline void RTOS_INIT()
+  {
+  }
+
+  static inline void RTOS_START()
+  {
+    tk_start();
+  }
+
+  static inline void RTOS_WAIT_MS(uint32_t x)
+  {
+    tk_delay(x);
+  }
+
+  static inline void RTOS_WAIT_TICKS(uint32_t x)
+  {
+    tk_delay(x);
+  }
+
+  // TinyK priority = creation order (first created = highest priority).
+  // tasksStart() creates mixer (prio 5) before menus (prio 10), which matches.
+  #define RTOS_CREATE_TASK(taskId, task, name, stackStruct, stackSize, priority) \
+                                        taskId = tk_create(task, stackStruct.stack, stackSize)
+
+#ifdef __cplusplus
+  static inline void RTOS_CREATE_MUTEX(tk_mutex_t & mutex)
+  {
+    tk_mutex_init(&mutex);
+  }
+
+  static inline void RTOS_LOCK_MUTEX(tk_mutex_t & mutex)
+  {
+    tk_mutex_lock(&mutex);
+  }
+
+  static inline void RTOS_UNLOCK_MUTEX(tk_mutex_t & mutex)
+  {
+    tk_mutex_unlock(&mutex);
+  }
+
+  static inline void RTOS_CREATE_FLAG(tk_flag_t & flag)
+  {
+    flag.set = 0;
+    flag.waiters = 0;
+  }
+
+  static inline void RTOS_SET_FLAG(tk_flag_t & flag)
+  {
+    tk_flag_set(&flag);
+  }
+
+  static inline void RTOS_ISR_SET_FLAG(tk_flag_t & flag)
+  {
+    tk_flag_set(&flag);
+  }
+
+  static inline void RTOS_CLEAR_FLAG(tk_flag_t & flag)
+  {
+    flag.set = 0;
+  }
+
+  // returns true on timeout (same contract as the CoOS backend)
+  static inline bool RTOS_WAIT_FLAG(tk_flag_t & flag, uint32_t timeout)
+  {
+    return !tk_flag_wait(&flag, timeout);
+  }
+#endif  // __cplusplus
+
+  static inline uint32_t getStackAvailable(void * address, uint32_t size)
+  {
+    uint32_t * array = (uint32_t *)address;
+    uint32_t i = 0;
+    while (i < size && array[i] == TK_STACK_PAINT) {
+      i++;
+    }
+    return i * 4;
+  }
+
+  extern int _estack;
+  extern int _main_stack_start;
+  static inline uint32_t stackSize()
+  {
+    return ((unsigned char *)&_estack - (unsigned char *)&_main_stack_start) / 4;
+  }
+
+  static inline uint32_t stackAvailable()
+  {
+    return getStackAvailable(&_main_stack_start, stackSize());
+  }
+
+#ifdef __cplusplus
+  template<int SIZE>
+  class TaskStack
+  {
+    public:
+      TaskStack()
+      {
+      }
+
+      void paint()
+      {
+        for (uint32_t i=0; i<SIZE; i++) {
+          stack[i] = TK_STACK_PAINT;
+        }
+      }
+
+      uint32_t size()
+      {
+        return SIZE * 4;
+      }
+
+      uint32_t available()
+      {
+        return getStackAvailable(stack, SIZE);
+      }
+
+      uint32_t stack[SIZE];
+  };
+#endif // __cplusplus
+
+  static inline uint32_t RTOS_GET_TIME(void)
+  {
+    return tk_ticks;
+  }
+
+  static inline uint32_t RTOS_GET_MS(void)
+  {
+    return tk_ticks;
+  }
+
+  #define RTOS_DEFINE_STACK(name, size) TaskStack<size> __ALIGNED(8) name // stack must be aligned to 8 bytes otherwise printf for %f does not work!
+
+  #define TASK_FUNCTION(task)           void task(void * pdata)
+  #define TASK_RETURN()                 return
+
 #else // no RTOS
   static inline void RTOS_START()
   {
