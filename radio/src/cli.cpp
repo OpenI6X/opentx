@@ -385,13 +385,14 @@ int cliTrace(const char ** argv)
 int cliStackInfo(const char ** argv)
 {
 #if !defined(STM32F0)
-  serialPrint("[MAIN] %d available / %d b", stackAvailable() * 4, stackSize() * 4);  // stackSize() returns size in 32bit chunks
+  serialPrint("[MAIN] %d available / %d b", stackAvailable(), stackSize());  // stackSize() returns size in 32bit chunks
 #endif
-  serialPrint("[MENUS] %d / %d bytes", menusStack.available() * 4, menusStack.size());
-  serialPrint("[MIXER] %d / %d bytes", mixerStack.available() * 4, mixerStack.size());
+  serialPrint("[MENUS] %d / %d bytes", menusStack.available(), menusStack.size());
+  serialPrint("[MIXER] %d / %d bytes", mixerStack.available(), mixerStack.size());
 #if defined(AUDIO)
-  serialPrint("[AUDIO] %d / %d bytes", audioStack.available() * 4, audioStack.size());
+  serialPrint("[AUDIO] %d / %d bytes", audioStack.available(), audioStack.size());
 #endif
+  // CLI is moved to menu stack, so no separate task is used anymore
   // serialPrint("[CLI] %d / %d bytes", cliStack.available() * 4, cliStack.size());
   return 0;
 }

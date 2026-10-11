@@ -226,7 +226,7 @@ template<int SIZE>
     while (i < size && array[i] == 0x55555555) {
       i++;
     }
-    return i;
+    return i * 4;
   }
 
   extern int _estack;
