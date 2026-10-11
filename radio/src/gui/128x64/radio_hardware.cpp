@@ -57,6 +57,7 @@ enum {
   CASE_BATTGRAPH(ITEM_RADIO_HARDWARE_BATT_RANGE)
   ITEM_RADIO_HARDWARE_BATTERY_CALIB,
   ITEM_RADIO_HARDWARE_SERIAL_BAUDRATE,
+  ITEM_RADIO_HARDWARE_CRSF_FULLDUPLEX,
 #if defined(BLUETOOTH)
   ITEM_RADIO_HARDWARE_BLUETOOTH_MODE,
   ITEM_RADIO_HARDWARE_BLUETOOTH_PAIRING_CODE,
@@ -145,6 +146,7 @@ void menuRadioHardware(event_t event)
     0 /* battery calib */,
 #if defined(CROSSFIRE)
     0 /* max bauds */,
+    0 /* CRSF full duplex */,
 #endif
     LABEL(Serial ports),
 #if defined(AUX_SERIAL)
@@ -266,7 +268,7 @@ void menuRadioHardware(event_t event)
 
 #if defined(CROSSFIRE)
       case ITEM_RADIO_HARDWARE_SERIAL_BAUDRATE:
-        g_eeGeneral.telemetryBaudrate = editChoice(HW_SETTINGS_COLUMN2, y, STR_MAXBAUDRATE, "\005400k 115k 921k 1.87M3.75M5.25M", g_eeGeneral.telemetryBaudrate, 0, DIM(CROSSFIRE_BAUDRATES) - 1, attr, event);
+        g_eeGeneral.telemetryBaudrate = editChoice(HW_SETTINGS_COLUMN3, y, STR_MAXBAUDRATE, "\005400k 115k 921k 1.87M3.75M5.25M", g_eeGeneral.telemetryBaudrate, 0, DIM(CROSSFIRE_BAUDRATES) - 1, attr, event);
         if (attr) {
           storageDirty(EE_GENERAL);
           if (checkIncDec_Ret && IS_EXTERNAL_MODULE_ON()) {
@@ -303,8 +305,17 @@ void menuRadioHardware(event_t event)
         break;
 #endif
 
+#if defined(CROSSFIRE)
+      case ITEM_RADIO_HARDWARE_CRSF_FULLDUPLEX:
+        g_eeGeneral.crsfFullDuplex = editCheckBox(g_eeGeneral.crsfFullDuplex, HW_SETTINGS_COLUMN3, y, "CRSF Duplex", attr, event);
+        if (attr && checkIncDec_Ret) {
+          storageDirty(EE_GENERAL);
+        }
+        break;
+#endif
+
       case ITEM_RADIO_HARDWARE_JITTER_FILTER:
-        g_eeGeneral.jitterFilter = 1 - editCheckBox(1 - g_eeGeneral.jitterFilter, HW_SETTINGS_COLUMN2, y, STR_JITTER_FILTER, attr, event);
+        g_eeGeneral.jitterFilter = 1 - editCheckBox(1 - g_eeGeneral.jitterFilter, HW_SETTINGS_COLUMN3, y, STR_JITTER_FILTER, attr, event);
         if (attr && checkIncDec_Ret) {
           storageDirty(EE_GENERAL);
         }
