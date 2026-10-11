@@ -58,6 +58,8 @@ set(FIRMWARE_CXX_FLAGS_DEBUG "-g" CACHE STRING "Additional flags for firmware ta
 set(THIRDPARTY_DIR thirdparty)
 set(LUA_DIR ${THIRDPARTY_DIR}/Lua/src)
 set(COOS_DIR ${THIRDPARTY_DIR}/CoOS)
+set(RTOS "TINYK" CACHE STRING "RTOS backend: COOS / TINYK")
+option(TINYK_STACK_CHECK "TinyK: check task stack canaries every tick" OFF)
 set(FATFS_DIR ${THIRDPARTY_DIR}/FatFs)
 set(RADIO_BIN_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -495,7 +497,10 @@ if(NOT MSVC)
       endif()
     endif()
 
-    add_definitions(-DRTOS_COOS)
+    add_definitions(-DRTOS_${RTOS})
+    if(RTOS STREQUAL TINYK AND TINYK_STACK_CHECK)
+      add_definitions(-DTK_STACK_CHECK)
+    endif()
 
     add_executable(firmware ${SRC} ${FIRMWARE_HEADERS})
     link_libraries(firmware -lstdc++)
