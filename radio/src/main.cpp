@@ -404,7 +404,9 @@ void guiMain(event_t evt)
     }
   }
 
+  DEBUG_TIMER_START(debugTimerLcdRefresh);
   lcdRefresh();
+  DEBUG_TIMER_STOP(debugTimerLcdRefresh);
 }
 #endif
 
