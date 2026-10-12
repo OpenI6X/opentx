@@ -304,12 +304,13 @@ template<int SIZE>
   } // extern "C"
 #endif
 #ifdef __cplusplus
-  static inline uint32_t RTOS_GET_IDLE_TICKS(void)
+  static inline uint32_t RTOS_GET_IDLE_TIME(void)
   {
-    return coos_idle_ticks;
+    return coos_idle_ticks;  // sampled at each tick: coarse, see arch.c
   }
 #endif
   #define RTOS_HAS_IDLE_STATS 1
+  #define RTOS_IDLE_UNITS_PER_TICK 1u
   #endif
 
   #define RTOS_DEFINE_STACK(name, size) TaskStack<size> __ALIGNED(8) name // stack must be aligned to 8 bytes otherwise printf for %f does not work!
@@ -459,9 +460,10 @@ template<int SIZE>
 
   #if defined(TK_IDLE_STATS)
   #define RTOS_HAS_IDLE_STATS 1
-  static inline uint32_t RTOS_GET_IDLE_TICKS(void)
+  #define RTOS_IDLE_UNITS_PER_TICK (TK_IDLE_CLOCK_HZ / 1000u * RTOS_MS_PER_TICK)
+  static inline uint32_t RTOS_GET_IDLE_TIME(void)
   {
-    return tk_idle_ticks;
+    return tk_idle_time;
   }
   #endif
 

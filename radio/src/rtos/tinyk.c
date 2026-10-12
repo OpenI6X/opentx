@@ -30,7 +30,8 @@ static tk_tcb_t   tk_boot_tcb;
 volatile uint32_t tk_ticks;
 volatile uint8_t  tk_overflow;
 #if defined(TK_IDLE_STATS)
-volatile uint32_t tk_idle_ticks;
+volatile uint32_t tk_idle_time;       // time spent in idle, TK_IDLE_CLOCK units
+static uint16_t   tk_idle_t0;         // TK_IDLE_CLOCK when idle was selected
 #endif
 static volatile uint8_t tk_ready;     // bit i -> task i runnable
 static volatile uint8_t tk_sleeping;  // bit i -> task i has a timeout armed
@@ -96,6 +97,16 @@ static void tk_schedule(void)
   }
   // i == tk_count -> idle slot
   if (i != tk_cur_idx) {
+#if defined(TK_IDLE_STATS)
+    // exact accounting at every idle enter/leave decision (IRQs are off here)
+    uint16_t now = TK_IDLE_CLOCK();
+    if (tk_cur_idx == tk_count) {
+      tk_idle_time += (uint16_t)(now - tk_idle_t0);
+    }
+    else if (i == tk_count) {
+      tk_idle_t0 = now;
+    }
+#endif
     tk_cur_idx = i;
     tk_next = &tk_tcb[i];
     SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
@@ -152,11 +163,6 @@ void SysTick_Handler(void)
       tk_ready |= (1u << i);
     }
   }
-#if defined(TK_IDLE_STATS)
-  if (tk_cur_idx == tk_count) {
-    ++tk_idle_ticks;
-  }
-#endif
 #if defined(TK_STACK_CHECK)
   for (uint8_t i = 0; i < tk_count; i++) {
     if (*tk_tcb[i].base != TK_STACK_PAINT && !(tk_overflow & (1u << i))) {

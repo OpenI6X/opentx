@@ -194,15 +194,12 @@ void menuStatisticsDebug(event_t event)
 #if defined(RTOS_HAS_IDLE_STATS)
   y += FH;
   {
-    // 1 s snapshot + rolling 10 s average over the RTOS tick counters
+    // 1 s snapshot over the RTOS idle counter
     const uint32_t winTicks = 1000u / RTOS_MS_PER_TICK;  // ticks per second
     static uint32_t lastTotal = 0, lastIdle = 0;
     static uint16_t cpuPc = 0, idleMs = 0;
-    static uint16_t idleHist[10] = {0}, totalHist[10] = {0};
-    static uint8_t histPos = 0, histCnt = 0;
-    static uint16_t cpuAvg10 = 0, idleAvg10 = 0;
     uint32_t total = RTOS_GET_TIME();
-    uint32_t idle = RTOS_GET_IDLE_TICKS();
+    uint32_t idle = RTOS_GET_IDLE_TIME();
     uint32_t dTotal = total - lastTotal;
     if (dTotal >= winTicks) {
       if (dTotal > 10u * winTicks) {
@@ -211,37 +208,19 @@ void menuStatisticsDebug(event_t event)
         lastIdle = idle;
       }
       else {
-        uint32_t dIdle = idle - lastIdle;
+        uint32_t dIdle = (idle - lastIdle) / RTOS_IDLE_UNITS_PER_TICK;
         if (dIdle > dTotal)
           dIdle = dTotal;                      // tick raced the two reads
         idleMs = (uint16_t)(dIdle * RTOS_MS_PER_TICK);
         cpuPc = (uint16_t)(100u - (100u * dIdle) / dTotal);
         lastTotal = total;
         lastIdle = idle;
-        idleHist[histPos] = (uint16_t)dIdle;
-        totalHist[histPos] = (uint16_t)dTotal;
-        histPos = (histPos + 1) % 10;
-        if (histCnt < 10)
-          ++histCnt;
-        uint32_t sIdle = 0, sTotal = 0;
-        for (uint8_t i = 0; i < histCnt; ++i) {
-          sIdle += idleHist[i];
-          sTotal += totalHist[i];
-        }
-        idleAvg10 = (uint16_t)((sIdle * RTOS_MS_PER_TICK) / histCnt);
-        cpuAvg10 = (uint16_t)(100u - (100u * sIdle) / sTotal);
       }
     }
     lcdDrawTextAlignedLeft(y, "CPU");
     lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, cpuPc, LEFT);
     lcdDrawText(lcdLastRightPos, y, "% ");
     lcdDrawNumber(lcdLastRightPos, y, idleMs, LEFT);
-    lcdDrawText(lcdLastRightPos, y, "ms");
-    y += FH;
-    lcdDrawTextAlignedLeft(y, "AVG10s");
-    lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, cpuAvg10, LEFT);
-    lcdDrawText(lcdLastRightPos, y, "% ");
-    lcdDrawNumber(lcdLastRightPos, y, idleAvg10, LEFT);
     lcdDrawText(lcdLastRightPos, y, "ms");
   }
 #endif
