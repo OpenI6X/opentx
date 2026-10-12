@@ -47,6 +47,9 @@ typedef struct {
 
 extern volatile uint32_t tk_ticks;      // ms since tk_start(), wraps after 49.7 days
 extern volatile uint8_t  tk_overflow;   // bitmask of tasks whose stack canary died
+#if defined(TK_IDLE_STATS)
+extern volatile uint32_t tk_idle_ticks; // ticks spent in the idle task
+#endif
 
 uint8_t tk_create(void (*fn)(void *), uint32_t * stack, uint32_t words);  // 0xFF on error
 void    tk_start(void) __attribute__((noreturn));
