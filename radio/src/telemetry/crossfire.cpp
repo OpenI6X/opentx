@@ -440,6 +440,7 @@ void processCrossfireTelemetryData(uint8_t data) {
   // telemetryRxBuffer[1] holds the packet length-2, check if the whole packet was received
   while (telemetryRxBufferCount >= (MIN_PAYLOAD_LEN + 2) && (telemetryRxBuffer[1] + 2) == telemetryRxBufferCount) {
     if (_checkFrameCRC(telemetryRxBuffer)) {
+      TELEMETRY_STATS_INC(telemetryStatsFrames);
       processCrossfireTelemetryFrame();
       telemetryRxBufferCount = 0;
     }
