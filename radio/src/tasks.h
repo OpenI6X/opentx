@@ -29,11 +29,16 @@
 #define MIXER_STACK_SIZE       200 // 132 analyzed max
 #define AUDIO_STACK_SIZE       400
 #define CLI_STACK_SIZE         1024  // only consumed with CLI build option
+#define TELEM_STACK_SIZE       108 // parse path depth validated by paint + TK_STACK_CHECK soak
 
 #define MIXER_TASK_PRIO        5
 #define AUDIO_TASK_PRIO        7
 #define MENUS_TASK_PRIO        10
 #define CLI_TASK_PRIO          10
+#define TELEM_TASK_PRIO        12
+
+extern RTOS_TASK_HANDLE telemTaskId;
+extern RTOS_DEFINE_STACK(telemStack, TELEM_STACK_SIZE);
 
 extern RTOS_TASK_HANDLE menusTaskId;
 extern RTOS_DEFINE_STACK(menusStack, MENUS_STACK_SIZE);

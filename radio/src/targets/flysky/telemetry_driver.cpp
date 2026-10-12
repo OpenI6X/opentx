@@ -174,7 +174,7 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
   // TODO IDLE disabled, it is always triggering, spamming ISR
 //  if ((TELEMETRY_USART->CR1 & USART_CR1_IDLEIE) && (status & USART_ISR_IDLE)) {
 //    TRACE_NOCRLF("x");
-//     pendingTelemetryPollFrame = true;
+//    telemTrigger();
 //    TELEMETRY_USART->ICR = USART_ICR_IDLECF;
 //  }
 }
@@ -182,4 +182,8 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
 // TODO we should have telemetry in an higher layer, functions above should move to a sport_driver.cpp
 uint8_t telemetryGetByte(uint8_t* byte) {
   return telemetryDMAFifo.pop(*byte);
+}
+
+uint8_t telemetryAvailable() {
+  return !telemetryDMAFifo.isEmpty();
 }

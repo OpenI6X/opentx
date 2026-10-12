@@ -21,6 +21,7 @@
 #ifndef _TELEMETRY_H_
 #define _TELEMETRY_H_
 
+#include "../rtos.h"
 #include "telemetry_holders.h"
 #include "telemetry_sensors.h"
 
@@ -61,6 +62,13 @@ void telemetryWakeup();
 void telemetryReset();
 void telemetryInterrupt10ms();
 int setTelemetryValue(TelemetryProtocol protocol, uint16_t id, uint8_t subId, uint8_t instance, int32_t value, uint32_t unit, uint32_t prec);
+
+// Wake flag and helpers for the telemetry task (telemTask in tasks.cpp)
+extern RTOS_FLAG_HANDLE telemFlag;
+void telemTrigger();   // task or ISR context: tk_flag_set is safe in both
+void telemWait();      // blocks indefinitely
+void telemClear();
+
 int setTelemetryText(TelemetryProtocol protocol, uint16_t id, uint8_t subId, uint8_t instance, const char * text);
 
 void delTelemetryIndex(uint8_t index);

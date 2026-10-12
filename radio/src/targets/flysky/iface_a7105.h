@@ -83,8 +83,6 @@ extern uint8_t prev_power; // unused power value
 // #define RX_Temp 4
 // #define RX_RPM  5
 
-extern volatile bool pendingTelemetryPollFrame;
-
 //#define NUM_CHN 16
 //// Servo data
 //extern uint16_t Channel_data[NUM_CHN];

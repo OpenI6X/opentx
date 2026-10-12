@@ -27,6 +27,9 @@ RTOS_DEFINE_STACK(menusStack, MENUS_STACK_SIZE);
 RTOS_TASK_HANDLE mixerTaskId;
 RTOS_DEFINE_STACK(mixerStack, MIXER_STACK_SIZE);
 
+RTOS_TASK_HANDLE telemTaskId;
+RTOS_DEFINE_STACK(telemStack, TELEM_STACK_SIZE);
+
 #if defined(VOICE)
 RTOS_TASK_HANDLE audioTaskId;
 RTOS_DEFINE_STACK(audioStack, AUDIO_STACK_SIZE);
@@ -39,6 +42,7 @@ void stackPaint()
 {
   menusStack.paint();
   mixerStack.paint();
+  telemStack.paint();
 #if defined(VOICE)
   audioStack.paint();
 #endif
@@ -266,6 +270,31 @@ TASK_FUNCTION(menusTask)
 #endif
 }
 
+// Telemetry drain task, lowest priority by creation order (see tasksStart).
+// Woken on demand by the telemetryAvailable() peek in telemetryWakeup;
+// blocks indefinitely otherwise. See telemetry_task.md for the rationale.
+TASK_FUNCTION(telemTask)
+{
+  while (true) {
+    telemWait();
+    telemClear();
+#if defined(CROSSFIRE)
+    if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
+      uint8_t data;
+      while (telemetryGetByte(&data)) {
+        processCrossfireTelemetryData(data);
+        LOG_TELEMETRY_WRITE_BYTE(data);
+      }
+    }
+#endif
+#if defined(AFHDS2A)
+    if (telemetryProtocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS) {
+      processFlySkyTelemetryFrame(telemetryRxBuffer);
+    }
+#endif
+  }
+}
+
 void tasksStart() {
   RTOS_INIT();
 
@@ -279,6 +308,13 @@ void tasksStart() {
 
 #if !defined(SIMU) && defined(VOICE)
   RTOS_CREATE_TASK(audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE, AUDIO_TASK_PRIO);
+#endif
+
+#if !defined(SIMU)
+  // Last = lowest priority on TinyK. No thread in SIMU (same reason as the
+  // audio task above): SIMU keeps draining telemetry in the mixer task.
+  RTOS_CREATE_FLAG(telemFlag);
+  RTOS_CREATE_TASK(telemTaskId, telemTask, "Telem", telemStack, TELEM_STACK_SIZE, TELEM_TASK_PRIO);
 #endif
 
 #if defined(VOICE)
