@@ -36,14 +36,17 @@ static uint8_t    tk_cur_idx;         // task selected to run (idle = tk_count)
 tk_tcb_t * volatile tk_cur;           // used by PendSV_Handler
 tk_tcb_t * volatile tk_next;
 
+// select the highest-priority ready task; IRQs must be disabled
+static void tk_schedule(void);
+
 static void tk_task_exit(void)
 {
   // a task function returned: park it forever
   __disable_irq();
   tk_ready &= ~(1u << tk_cur_idx);
   tk_sleeping &= ~(1u << tk_cur_idx);
+  tk_schedule();
   __enable_irq();
-  SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
   for (;;);
 }
 
