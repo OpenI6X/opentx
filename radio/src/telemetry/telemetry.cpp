@@ -52,6 +52,27 @@ void telemClear()
   RTOS_CLEAR_FLAG(telemFlag);
 }
 
+void telemetryProcessPending()
+{
+#if defined(CROSSFIRE)
+  if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
+    uint8_t data;
+    while (telemetryGetByte(&data)) {
+      processCrossfireTelemetryData(data);  // TODO handle full frame as in EdgeTX
+      LOG_TELEMETRY_WRITE_BYTE(data);
+    }
+  }
+#endif
+#if defined(AFHDS2A) && !defined(SIMU)
+  // Only the A7105 ISR wakes the task in FlySky mode (after it has validated
+  // the packet in telemetryRxBuffer). No ownership guard: the parse completes
+  // long before the next radio packet (see TELEM_TASK priority in tasks.cpp).
+  if (telemetryProtocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS) {
+    processFlySkyTelemetryFrame(telemetryRxBuffer);
+  }
+#endif
+}
+
 void processTelemetryData(uint8_t data)
 {
 #if defined(CROSSFIRE)
@@ -88,10 +109,11 @@ void telemetryWakeup()
     telemetryInit(requiredTelemetryProtocol);
   }
 
-#if defined(CROSSFIRE)
+#if defined(SIMU)
+  telemetryProcessPending();  // no telemetry task in SIMU
+#elif defined(CROSSFIRE)
   if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
-    // drained by telemTask (full drain at lowest priority):
-    // wake it only when bytes are waiting
+    // drained by telemTask: wake it only when bytes are waiting
     if (telemetryAvailable())
       telemTrigger();  // TODO handle full frame as in EdgeTX - IDLE
   }
