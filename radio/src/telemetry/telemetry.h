@@ -70,6 +70,15 @@ void telemWait();      // blocks indefinitely
 void telemClear();
 void telemetryProcessPending();  // drain CRSF FIFO / parse the AFHDS2A frame in telemetryRxBuffer
 
+#if defined(TELEMETRY_STATS)
+// Debug counters (Statistics -> Debug, short ENTER resets them)
+extern volatile uint32_t telemetryStatsRto;     // USART receiver timeouts (end of an RX burst)
+extern volatile uint32_t telemetryStatsFrames;  // frames parsed OK (CRSF CRC good / AFHDS2A AA|AC)
+#define TELEMETRY_STATS_INC(x)  ((x) = (x) + 1)
+#else
+#define TELEMETRY_STATS_INC(x)
+#endif
+
 
 int setTelemetryText(TelemetryProtocol protocol, uint16_t id, uint8_t subId, uint8_t instance, const char * text);
 

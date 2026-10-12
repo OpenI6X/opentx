@@ -271,8 +271,8 @@ TASK_FUNCTION(menusTask)
 }
 
 // Telemetry task: priority between mixer and menus (see tasksStart).
-// Woken by the A7105 ISR (validated AFHDS2A frame) or by the mixer's
-// telemetryAvailable() poll (CRSF bytes waiting); blocks otherwise.
+// Woken by the A7105 ISR (validated AFHDS2A frame) or the USART receiver
+// timeout (end of a CRSF frame); blocks otherwise.
 TASK_FUNCTION(telemTask)
 {
   while (true) {
