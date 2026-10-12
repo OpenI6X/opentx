@@ -29,6 +29,9 @@ static tk_tcb_t   tk_boot_tcb;
 
 volatile uint32_t tk_ticks;
 volatile uint8_t  tk_overflow;
+#if defined(TK_IDLE_STATS)
+volatile uint32_t tk_idle_ticks;
+#endif
 static volatile uint8_t tk_ready;     // bit i -> task i runnable
 static volatile uint8_t tk_sleeping;  // bit i -> task i has a timeout armed
 static uint8_t    tk_cur_idx;         // task selected to run (idle = tk_count)
@@ -149,6 +152,11 @@ void SysTick_Handler(void)
       tk_ready |= (1u << i);
     }
   }
+#if defined(TK_IDLE_STATS)
+  if (tk_cur_idx == tk_count) {
+    ++tk_idle_ticks;
+  }
+#endif
 #if defined(TK_STACK_CHECK)
   for (uint8_t i = 0; i < tk_count; i++) {
     if (*tk_tcb[i].base != TK_STACK_PAINT && !(tk_overflow & (1u << i))) {
