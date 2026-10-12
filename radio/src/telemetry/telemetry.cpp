@@ -52,6 +52,11 @@ void telemClear()
   RTOS_CLEAR_FLAG(telemFlag);
 }
 
+#if defined(TELEMETRY_STATS)
+volatile uint32_t telemetryStatsRto;
+volatile uint32_t telemetryStatsFrames;
+#endif
+
 void telemetryProcessPending()
 {
 #if defined(CROSSFIRE)
@@ -111,13 +116,9 @@ void telemetryWakeup()
 
 #if defined(SIMU)
   telemetryProcessPending();  // no telemetry task in SIMU
-#elif defined(CROSSFIRE)
-  if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
-    // drained by telemTask: wake it only when bytes are waiting
-    if (telemetryAvailable())
-      telemTrigger();  // TODO handle full frame as in EdgeTX - IDLE
-  }
 #endif
+  // Otherwise CRSF / AFHDS2A frames are handled by telemTask, woken from the
+  // USART receiver timeout / A7105 ISR: nothing to poll here.
 
   for (int i=0; i<MAX_TELEMETRY_SENSORS; i++) {
     const TelemetrySensor & sensor = g_model.telemetrySensors[i];

@@ -118,6 +118,10 @@ void menuStatisticsDebug(event_t event)
     case EVT_KEY_FIRST(KEY_ENTER):
     //   telemetryErrors = 0;
       maxMixerDuration = 0;
+#if defined(TELEMETRY_STATS)
+      telemetryStatsRto = 0;
+      telemetryStatsFrames = 0;
+#endif
       break;
 
 
@@ -223,6 +227,17 @@ void menuStatisticsDebug(event_t event)
     lcdDrawNumber(lcdLastRightPos, y, idleMs, LEFT);
     lcdDrawText(lcdLastRightPos, y, "ms");
   }
+#endif
+
+#if defined(TELEMETRY_STATS)
+  // USART receiver timeouts, then frames parsed OK.
+  // Expected with RTO working (CRSF): RTO ~= Frm (+ junk bursts).
+  y += FH;
+  lcdDrawTextAlignedLeft(y, "Tlm RTO");
+  lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, telemetryStatsRto, LEFT);
+  y += FH;
+  lcdDrawTextAlignedLeft(y, "Tlm Frm");
+  lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, telemetryStatsFrames, LEFT);
 #endif
 
   lcdDrawText(5*FW, 7*FH+1, STR_MENUTORESET);
