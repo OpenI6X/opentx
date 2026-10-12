@@ -60,9 +60,9 @@ Defines the lowest priority that be assigned.
 #define CFG_LOWEST_PRIO         (16)
 
 /*!< 
-Max number of tasks that can be running.		     
+Max number of tasks that can be running.
 */
-#define CFG_MAX_USER_TASKS      (2)
+#define CFG_MAX_USER_TASKS      (3)
 
 /*!< 
 Idle task stack size(word).		                         

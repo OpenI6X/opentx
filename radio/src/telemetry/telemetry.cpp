@@ -31,7 +31,26 @@ TelemetryData telemetryData;
 
 uint8_t telemetryProtocol = 255;
 
-volatile bool pendingTelemetryPollFrame = false;
+// Wake flag for the telemetry task (telemTask in tasks.cpp)
+RTOS_FLAG_HANDLE telemFlag;
+
+void telemTrigger()
+{
+  RTOS_ISR_SET_FLAG(telemFlag);
+}
+
+void telemWait()
+{
+  // No real timeout: 0x7FFFFFFF ticks (~24.8 days) is the longest timeout
+  // tk_flag_wait can express without wrapping; for all practical purposes
+  // forever. (A spurious wake after 24.8 days just redrains an empty FIFO.)
+  (void)RTOS_WAIT_FLAG(telemFlag, 0x7FFFFFFF);
+}
+
+void telemClear()
+{
+  RTOS_CLEAR_FLAG(telemFlag);
+}
 
 void processTelemetryData(uint8_t data)
 {
@@ -71,43 +90,12 @@ void telemetryWakeup()
 
 #if defined(CROSSFIRE)
   if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
-    uint8_t data;
-    while (telemetryGetByte(&data)) {
-      processCrossfireTelemetryData(data); // TODO handle full frame as in EdgeTX
-      LOG_TELEMETRY_WRITE_BYTE(data);
-    }
+    // drained by telemTask (full drain at lowest priority):
+    // wake it only when bytes are waiting
+    if (telemetryAvailable())
+      telemTrigger();  // TODO handle full frame as in EdgeTX - IDLE
   }
 #endif
-
-  // Handle complete telemetry frame
-  if (pendingTelemetryPollFrame) {
-    pendingTelemetryPollFrame = false;
-   switch (telemetryProtocol) {
-#if defined(AFHDS2A)
-     case PROTOCOL_TELEMETRY_FLYSKY_IBUS:
-       processFlySkyTelemetryFrame(telemetryRxBuffer);
-     break;
-#endif
-#if defined(CROSSFIRE)
-    //  case PROTOCOL_TELEMETRY_CROSSFIRE:
-    //  {
-    //    uint8_t data;
-    //    uint8_t count = 0;
-    //    while (telemetryGetByte(&data)) {
-    //      processCrossfireTelemetryData(data); // TODO handle full frame as in EdgeTX
-    //      LOG_TELEMETRY_WRITE_BYTE(data);
-    //      count++;
-    //    }
-    //    TRACE("c%d", count);
-    //  }
-    //  break;
-#endif
-     default:
-//       TRACE("Unhandled telemetry %d", telemetryProtocol);
-     break;
-   }
-  }
-
 
   for (int i=0; i<MAX_TELEMETRY_SENSORS; i++) {
     const TelemetrySensor & sensor = g_model.telemetrySensors[i];
