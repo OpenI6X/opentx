@@ -153,7 +153,8 @@ __attribute__((weak)) void tk_stack_overflow(uint8_t task)
 
 void SysTick_Handler(void)
 {
-  uint32_t primask = __get_PRIMASK();
+  // PRIMASK is always 0 here (SysTick cannot be taken while it is set),
+  // so a plain enable at the end is equivalent to save/restore.
   __disable_irq();
   uint32_t now = ++tk_ticks;
   uint8_t s = tk_sleeping;
@@ -171,7 +172,7 @@ void SysTick_Handler(void)
   }
 #endif
   tk_schedule();
-  __set_PRIMASK(primask);
+  __enable_irq();
 }
 
 void tk_flag_set(tk_flag_t * f)
