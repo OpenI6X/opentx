@@ -270,28 +270,15 @@ TASK_FUNCTION(menusTask)
 #endif
 }
 
-// Telemetry drain task, lowest priority by creation order (see tasksStart).
-// Woken on demand by the telemetryAvailable() peek in telemetryWakeup;
-// blocks indefinitely otherwise.
+// Telemetry task: priority between mixer and menus (see tasksStart).
+// Woken by the A7105 ISR (validated AFHDS2A frame) or by the mixer's
+// telemetryAvailable() poll (CRSF bytes waiting); blocks otherwise.
 TASK_FUNCTION(telemTask)
 {
   while (true) {
     telemWait();
-    telemClear();
-#if defined(CROSSFIRE)
-    if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
-      uint8_t data;
-      while (telemetryGetByte(&data)) {
-        processCrossfireTelemetryData(data);
-        LOG_TELEMETRY_WRITE_BYTE(data);
-      }
-    }
-#endif
-#if defined(AFHDS2A)
-    if (telemetryProtocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS) {
-      processFlySkyTelemetryFrame(telemetryRxBuffer);
-    }
-#endif
+    telemClear();               // clear before draining: a new trigger re-arms
+    telemetryProcessPending();
   }
 }
 
@@ -304,18 +291,21 @@ void tasksStart() {
 
   // For TinyK order of creation determines priority (higher first), *_TASK_PRIO is ignored.
   RTOS_CREATE_TASK(mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE, MIXER_TASK_PRIO);
+#if !defined(SIMU)
+  // Below the mixer, above menus: the parser is never delayed by a long menus
+  // pass (LCD refresh, model load, EEPROM write), so the 128 B CRSF DMA FIFO
+  // cannot overrun, and it preempts menus exactly as it did inside the mixer
+  // task (same concurrency with the ELRS tool callback as before).
+  // No thread in SIMU: telemetryWakeup() drains inline there.
+  RTOS_CREATE_FLAG(telemFlag);
+  RTOS_CREATE_TASK(telemTaskId, telemTask, "Telem", telemStack, TELEM_STACK_SIZE, TELEM_TASK_PRIO);
+#endif
   RTOS_CREATE_TASK(menusTaskId, menusTask, "Menus", menusStack, MENUS_STACK_SIZE, MENUS_TASK_PRIO);
 
 #if !defined(SIMU) && defined(VOICE)
   RTOS_CREATE_TASK(audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE, AUDIO_TASK_PRIO);
 #endif
 
-#if !defined(SIMU)
-  // Last = lowest priority on TinyK. No thread in SIMU (same reason as the
-  // audio task above): SIMU keeps draining telemetry in the mixer task.
-  RTOS_CREATE_FLAG(telemFlag);
-  RTOS_CREATE_TASK(telemTaskId, telemTask, "Telem", telemStack, TELEM_STACK_SIZE, TELEM_TASK_PRIO);
-#endif
 
 #if defined(VOICE)
   RTOS_CREATE_MUTEX(audioMutex);
