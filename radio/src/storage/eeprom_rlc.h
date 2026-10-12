@@ -143,6 +143,9 @@ class RlcFile: public EFile
     void nextRlcWriteStep();
     void writeRlc(uint8_t i_fileId, uint8_t typ, uint8_t *buf, uint16_t i_len, uint8_t sync_write);
 
+    // finish a raw write started with create() / write()
+    void finishWrite();
+
     // flush the current write operation if any
     void flush();
 
