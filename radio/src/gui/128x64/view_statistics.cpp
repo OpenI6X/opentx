@@ -188,6 +188,8 @@ void menuStatisticsDebug(event_t event)
   lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, menusStack.available(), LEFT);
   lcdDrawText(lcdLastRightPos, y, "/");
   lcdDrawNumber(lcdLastRightPos, y, mixerStack.available(), LEFT);
+  lcdDrawText(lcdLastRightPos, y, "/");
+  lcdDrawNumber(lcdLastRightPos, y, telemStack.available(), LEFT);
 
 #if defined(RTOS_HAS_IDLE_STATS)
   y += FH;
