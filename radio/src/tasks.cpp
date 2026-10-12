@@ -272,7 +272,7 @@ TASK_FUNCTION(menusTask)
 
 // Telemetry drain task, lowest priority by creation order (see tasksStart).
 // Woken on demand by the telemetryAvailable() peek in telemetryWakeup;
-// blocks indefinitely otherwise. See telemetry_task.md for the rationale.
+// blocks indefinitely otherwise.
 TASK_FUNCTION(telemTask)
 {
   while (true) {
