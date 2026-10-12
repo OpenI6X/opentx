@@ -273,6 +273,7 @@ void tasksStart() {
   // cliStart(); // now handled by handleCli()
 #endif
 
+  // For TinyK order of creation determines priority (higher first), *_TASK_PRIO is ignored.
   RTOS_CREATE_TASK(mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE, MIXER_TASK_PRIO);
   RTOS_CREATE_TASK(menusTaskId, menusTask, "Menus", menusStack, MENUS_STACK_SIZE, MENUS_TASK_PRIO);
 
