@@ -195,7 +195,7 @@ uint16_t taskSwitchLogPos;
 void CoTaskSwitchHook(uint8_t taskID)
 {
   /* Log task switch here */
-  taskSwitchLog[taskSwitchLogPos] = (taskID << 24) + ((uint32_t)CoGetOSTime() & 0xFFFFFF);
+  taskSwitchLog[taskSwitchLogPos] = (taskID << 24) + (RTOS_GET_TIME() & 0xFFFFFF);
   if(++taskSwitchLogPos >= DEBUG_TASKS_LOG_SIZE) {
     taskSwitchLogPos = 0;
   }
