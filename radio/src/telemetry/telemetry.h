@@ -68,6 +68,8 @@ extern RTOS_FLAG_HANDLE telemFlag;
 void telemTrigger();   // task or ISR context: tk_flag_set is safe in both
 void telemWait();      // blocks indefinitely
 void telemClear();
+void telemetryProcessPending();  // drain CRSF FIFO / parse the AFHDS2A frame in telemetryRxBuffer
+
 
 int setTelemetryText(TelemetryProtocol protocol, uint16_t id, uint8_t subId, uint8_t instance, const char * text);
 
