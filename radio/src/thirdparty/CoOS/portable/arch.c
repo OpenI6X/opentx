@@ -40,6 +40,9 @@
 #include "debug.h"
 
 U64     OSTickCnt = 0;                  /*!< Current system tick counter      */ 																			 
+#if defined(COOS_IDLE_STATS)
+volatile U32 coos_idle_ticks = 0;       /*!< Ticks spent in the idle task.      */
+#endif
 
 /**
  ******************************************************************************
@@ -95,6 +98,11 @@ void SysTick_Handler(void)
     DEBUG_INTERRUPT(INT_TICK);
     OSSchedLock++;                  /* Lock scheduler.                        */
     OSTickCnt++;                    /* Increment systerm time.                */
+#if defined(COOS_IDLE_STATS)
+    if ((TCBRunning != Co_NULL) && (TCBRunning->taskID == 0)) {
+        coos_idle_ticks++;          /* Idle task was running at this tick.  */
+    }
+#endif
 #if CFG_TASK_WAITTING_EN >0    
     if(DlyList != Co_NULL)             /* Have task in delay list?               */
     {
