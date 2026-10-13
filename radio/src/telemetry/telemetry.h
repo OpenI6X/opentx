@@ -63,12 +63,9 @@ void telemetryReset();
 void telemetryInterrupt10ms();
 int setTelemetryValue(TelemetryProtocol protocol, uint16_t id, uint8_t subId, uint8_t instance, int32_t value, uint32_t unit, uint32_t prec);
 
-// Wake flag and helpers for the telemetry task (telemTask in tasks.cpp)
-extern RTOS_FLAG_HANDLE telemFlag;
-void telemTrigger();   // task or ISR context: tk_flag_set is safe in both
-void telemWait();      // blocks indefinitely
-void telemClear();
-void telemetryProcessPending();  // drain CRSF FIFO / parse the AFHDS2A frame in telemetryRxBuffer
+// Deferred telemetry processing (runs in timerTask): RTOS_START_TIMER from ISRs
+extern RTOS_TIMER_HANDLE telemetryTimer;
+void telemetryProcessPending();  // telemetryTimer callback: drain CRSF FIFO / parse the AFHDS2A frame in telemetryRxBuffer
 
 #if defined(TELEMETRY_STATS)
 // Debug counters (Statistics -> Debug, short ENTER resets them)

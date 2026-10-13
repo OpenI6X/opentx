@@ -369,6 +369,7 @@ void StopSimu()
 
   pthread_join(mixerTaskId, nullptr);
   pthread_join(menusTaskId, nullptr);
+  pthread_join(timerTaskId, nullptr);
 
   simu_running = false;
 }

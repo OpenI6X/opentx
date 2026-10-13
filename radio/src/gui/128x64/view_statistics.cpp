@@ -193,7 +193,7 @@ void menuStatisticsDebug(event_t event)
   lcdDrawText(lcdLastRightPos, y, "/");
   lcdDrawNumber(lcdLastRightPos, y, mixerStack.available(), LEFT);
   lcdDrawText(lcdLastRightPos, y, "/");
-  lcdDrawNumber(lcdLastRightPos, y, telemStack.available(), LEFT);
+  lcdDrawNumber(lcdLastRightPos, y, timerStack.available(), LEFT);
 
 #if defined(RTOS_HAS_IDLE_STATS)
   y += FH;
@@ -203,8 +203,8 @@ void menuStatisticsDebug(event_t event)
     static uint32_t lastTotal = 0, lastIdle = 0;
     static uint16_t cpuPc = 0, idleMs = 0;
 #if defined(RTOS_HAS_TASK_STATS)
-    // same order as the stack line: menus / mixer / telem
-    const RTOS_TASK_HANDLE taskIds[3] = {menusTaskId, mixerTaskId, telemTaskId};
+    // same order as the stack line: menus / mixer / timer
+    const RTOS_TASK_HANDLE taskIds[3] = {menusTaskId, mixerTaskId, timerTaskId};
     static uint32_t lastTask[3];
     static uint16_t taskPm[3];         // per mille of the window
 #endif
