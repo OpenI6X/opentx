@@ -131,6 +131,7 @@ set(SRC
   ${SRC}
   main.cpp
   tasks.cpp
+  rtos/timer.cpp
   telemetry/telemetry.cpp
   telemetry/telemetry_holders.cpp
   telemetry/telemetry_sensors.cpp
