@@ -187,8 +187,7 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
     }
   }
 
-  // RX data is moved by DMA. IDLE is not used: on STM32F0 it is also raised
-  // when RE is re-enabled at every half-duplex turnaround (see RTO above).
+  // RX data is moved by DMA.
 }
 
 // TODO we should have telemetry in an higher layer, functions above should move to a sport_driver.cpp
