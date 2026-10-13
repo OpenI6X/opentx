@@ -491,6 +491,29 @@ template<int SIZE>
   }
 #endif  // RTOS type
 
+#if defined(__cplusplus) && (defined(SIMU) || defined(RTOS_COOS) || defined(RTOS_TINYK))
+  // Software timers: one shared implementation for all backends (callbacks
+  // run in timerTask, see rtos/timer.h)
+  #include "rtos/timer.h"
+
+  typedef rtos_timer_t RTOS_TIMER_HANDLE;
+
+  static inline void RTOS_CREATE_TIMER(RTOS_TIMER_HANDLE & timer, timer_callback_t callback, uint32_t periodMs, bool autoReload)
+  {
+    timer_create(&timer, callback, periodMs, autoReload);
+  }
+
+  static inline void RTOS_START_TIMER(RTOS_TIMER_HANDLE & timer)
+  {
+    timer_start(&timer);
+  }
+
+  static inline void RTOS_STOP_TIMER(RTOS_TIMER_HANDLE & timer)
+  {
+    timer_stop(&timer);
+  }
+#endif
+
 #ifdef __cplusplus
 }
 #endif

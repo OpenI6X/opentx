@@ -31,26 +31,11 @@ TelemetryData telemetryData;
 
 uint8_t telemetryProtocol = 255;
 
-// Wake flag for the telemetry task (telemTask in tasks.cpp)
-RTOS_FLAG_HANDLE telemFlag;
-
-void telemTrigger()
-{
-  RTOS_ISR_SET_FLAG(telemFlag);
-}
-
-void telemWait()
-{
-  // No real timeout: 0x7FFFFFFF ticks (~24.8 days) is the longest timeout
-  // tk_flag_wait can express without wrapping; for all practical purposes
-  // forever. (A spurious wake after 24.8 days just redrains an empty FIFO.)
-  (void)RTOS_WAIT_FLAG(telemFlag, 0x7FFFFFFF);
-}
-
-void telemClear()
-{
-  RTOS_CLEAR_FLAG(telemFlag);
-}
+// Deferred telemetry processing: one-shot timer with period 0, i.e. run as
+// soon as possible in timerTask. Started by the A7105 ISR (validated AFHDS2A
+// frame) and the USART receiver timeout (end of a CRSF frame).
+// Callback: telemetryProcessPending(); created in tasksStart().
+RTOS_TIMER_HANDLE telemetryTimer;
 
 #if defined(TELEMETRY_STATS)
 volatile uint32_t telemetryStatsRto;
@@ -71,7 +56,7 @@ void telemetryProcessPending()
 #if defined(AFHDS2A) && !defined(SIMU)
   // Only the A7105 ISR wakes the task in FlySky mode (after it has validated
   // the packet in telemetryRxBuffer). No ownership guard: the parse completes
-  // long before the next radio packet (see TELEM_TASK priority in tasks.cpp).
+  // long before the next radio packet (see TIMER_TASK_PRIO in tasks.h).
   if (telemetryProtocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS) {
     processFlySkyTelemetryFrame(telemetryRxBuffer);
   }
@@ -115,9 +100,9 @@ void telemetryWakeup()
   }
 
 #if defined(SIMU)
-  telemetryProcessPending();  // no telemetry task in SIMU
+  telemetryProcessPending();  // no ISRs in SIMU: telemetryTimer is never started
 #endif
-  // Otherwise CRSF / AFHDS2A frames are handled by telemTask, woken from the
+  // Otherwise CRSF / AFHDS2A frames are handled by telemetryTimer, started from the
   // USART receiver timeout / A7105 ISR: nothing to poll here.
 
   for (int i=0; i<MAX_TELEMETRY_SENSORS; i++) {
