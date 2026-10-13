@@ -48,14 +48,16 @@ typedef struct {
 extern volatile uint32_t tk_ticks;      // ms since tk_start(), wraps after 49.7 days
 extern volatile uint8_t  tk_overflow;   // bitmask of tasks whose stack canary died
 #if defined(TK_IDLE_STATS)
-// Idle time is measured with a free-running 16-bit up-counter sampled at every
-// switch to/from idle. It must not wrap during one idle period (the mixer wakes
-// at least every 5 ms). Default: the OpenTX 2 MHz timer (TIM7 on PCBI6X).
+// Run time of idle and of each task is measured with a free-running 16-bit
+// up-counter sampled at every scheduler call (at least once per 1 ms tick, so
+// it cannot wrap in between). ISR time is charged to the interrupted task or
+// idle. Default: the OpenTX 2 MHz timer (TIM7 on PCBI6X).
 #if !defined(TK_IDLE_CLOCK)
 #define TK_IDLE_CLOCK()     ((uint16_t)TIM7->CNT)
 #define TK_IDLE_CLOCK_HZ    2000000u
 #endif
 extern volatile uint32_t tk_idle_time;  // idle time in TK_IDLE_CLOCK units
+extern volatile uint32_t tk_task_time[TK_MAX_TASKS];  // per task (tk_create id), same units
 #endif
 
 uint8_t tk_create(void (*fn)(void *), uint32_t * stack, uint32_t words);  // 0xFF on error

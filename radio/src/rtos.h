@@ -465,6 +465,11 @@ template<int SIZE>
   {
     return tk_idle_time;
   }
+  #define RTOS_HAS_TASK_STATS 1
+  static inline uint32_t RTOS_GET_TASK_TIME(RTOS_TASK_HANDLE id)
+  {
+    return tk_task_time[id];     // same units as RTOS_GET_IDLE_TIME
+  }
   #endif
 
   #define RTOS_DEFINE_STACK(name, size) TaskStack<size> __ALIGNED(8) name // stack must be aligned to 8 bytes otherwise printf for %f does not work!

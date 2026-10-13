@@ -31,7 +31,8 @@ volatile uint32_t tk_ticks;
 volatile uint8_t  tk_overflow;
 #if defined(TK_IDLE_STATS)
 volatile uint32_t tk_idle_time;       // time spent in idle, TK_IDLE_CLOCK units
-static uint16_t   tk_idle_t0;         // TK_IDLE_CLOCK when idle was selected
+volatile uint32_t tk_task_time[TK_MAX_TASKS];  // time spent in each task
+static uint16_t   tk_stat_t0;         // TK_IDLE_CLOCK at the last scheduler call
 #endif
 static volatile uint8_t tk_ready;     // bit i -> task i runnable
 static volatile uint8_t tk_sleeping;  // bit i -> task i has a timeout armed
@@ -96,17 +97,20 @@ static void tk_schedule(void)
     i++;                             // lowest index = highest priority
   }
   // i == tk_count -> idle slot
-  if (i != tk_cur_idx) {
 #if defined(TK_IDLE_STATS)
-    // exact accounting at every idle enter/leave decision (IRQs are off here)
-    uint16_t now = TK_IDLE_CLOCK();
-    if (tk_cur_idx == tk_count) {
-      tk_idle_time += (uint16_t)(now - tk_idle_t0);
-    }
-    else if (i == tk_count) {
-      tk_idle_t0 = now;
-    }
+  // exact accounting (IRQs are off here): charge the time since the last call
+  // to the slot that ran. Called at least every tick, so the clock cannot wrap.
+  uint16_t now = TK_IDLE_CLOCK();
+  uint16_t dt = (uint16_t)(now - tk_stat_t0);
+  tk_stat_t0 = now;
+  if (tk_cur_idx < tk_count) {
+    tk_task_time[tk_cur_idx] += dt;
+  }
+  else if (tk_cur_idx == tk_count) {
+    tk_idle_time += dt;
+  }                                  // TK_NONE (before the first switch): skip
 #endif
+  if (i != tk_cur_idx) {
     tk_cur_idx = i;
     tk_next = &tk_tcb[i];
     SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
