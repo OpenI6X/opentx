@@ -1,5 +1,5 @@
 /*
- * Software timers - shared by the TinyK, CoOS and SIMU backends
+ * Software timers - shared by the TinyK and SIMU backends
  *
  * Copyright (C) OpenI6X / OpenTX
  * License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html

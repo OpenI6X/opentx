@@ -31,11 +31,7 @@
 #define CLI_STACK_SIZE         1024  // only consumed with CLI build option
 #define TIMER_STACK_SIZE       128 // 112 analyzed max: telemetry callback AFHDS2A GPS path 336 B (1 recursion) + timerTask 32 B + 16 B libgcc + 64 B exception/context frames
 
-#define MIXER_TASK_PRIO        5
-#define AUDIO_TASK_PRIO        7
-#define MENUS_TASK_PRIO        10
-#define CLI_TASK_PRIO          10
-#define TIMER_TASK_PRIO        8   // CoOS: between mixer and menus (TinyK: creation order)
+// Task priority = creation order in tasksStart() (first = highest)
 
 extern RTOS_TASK_HANDLE timerTaskId;
 extern RTOS_DEFINE_STACK(timerStack, TIMER_STACK_SIZE);
@@ -52,7 +48,6 @@ extern RTOS_DEFINE_STACK(audioStack, AUDIO_STACK_SIZE);
 extern RTOS_MUTEX_HANDLE mixerMutex;
 extern RTOS_FLAG_HANDLE openTxInitCompleteFlag;
 
-void stackPaint();
 void tasksStart();
 
 extern volatile uint16_t timeForcePowerOffPressed;

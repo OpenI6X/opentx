@@ -1,5 +1,5 @@
 /*
- * Software timers - shared by the TinyK, CoOS and SIMU backends
+ * Software timers - shared by the TinyK and SIMU backends
  *
  * Copyright (C) OpenI6X / OpenTX
  * License GPLv2: http://www.gnu.org/licenses/gpl-2.0.html
@@ -15,7 +15,7 @@
  * Callbacks run one after another in one task:
  *   - keep each well below 1 ms (they delay each other and telemetry),
  *   - never block, never take mixerMutex (menus may hold it for a model load).
- * Times are in ms, resolution is one RTOS tick (TinyK 1 ms, CoOS 2 ms).
+ * Times are in ms, resolution is one RTOS tick (TinyK 1 ms).
  * Use through the RTOS_*_TIMER wrappers in rtos.h.
  */
 
