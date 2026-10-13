@@ -27,8 +27,8 @@ RTOS_DEFINE_STACK(menusStack, MENUS_STACK_SIZE);
 RTOS_TASK_HANDLE mixerTaskId;
 RTOS_DEFINE_STACK(mixerStack, MIXER_STACK_SIZE);
 
-RTOS_TASK_HANDLE telemTaskId;
-RTOS_DEFINE_STACK(telemStack, TELEM_STACK_SIZE);
+RTOS_TASK_HANDLE timerTaskId;
+RTOS_DEFINE_STACK(timerStack, TIMER_STACK_SIZE);
 
 #if defined(VOICE)
 RTOS_TASK_HANDLE audioTaskId;
@@ -42,7 +42,7 @@ void stackPaint()
 {
   menusStack.paint();
   mixerStack.paint();
-  telemStack.paint();
+  timerStack.paint();
 #if defined(VOICE)
   audioStack.paint();
 #endif
@@ -270,20 +270,14 @@ TASK_FUNCTION(menusTask)
 #endif
 }
 
-// Telemetry task: priority between mixer and menus (see tasksStart).
-// Woken by the A7105 ISR (validated AFHDS2A frame) or the USART receiver
-// timeout (end of a CRSF frame); blocks otherwise.
-TASK_FUNCTION(telemTask)
-{
-  while (true) {
-    telemWait();
-    telemClear();               // clear before draining: a new trigger re-arms
-    telemetryProcessPending();
-  }
-}
-
 void tasksStart() {
   RTOS_INIT();
+
+  // Software timers: after RTOS_INIT (CoOS creates the flag), before any task
+  // is created (SIMU threads start at once) and before anything can start a
+  // timer (telemetry ISRs are enabled later, from tasks).
+  timer_init();
+  RTOS_CREATE_TIMER(telemetryTimer, telemetryProcessPending, 0, false);  // one-shot, asap
 
 #if defined(CLI)
   // cliStart(); // now handled by handleCli()
@@ -291,15 +285,13 @@ void tasksStart() {
 
   // For TinyK order of creation determines priority (higher first), *_TASK_PRIO is ignored.
   RTOS_CREATE_TASK(mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE, MIXER_TASK_PRIO);
-#if !defined(SIMU)
-  // Below the mixer, above menus: the parser is never delayed by a long menus
-  // pass (LCD refresh, model load, EEPROM write), so the 128 B CRSF DMA FIFO
-  // cannot overrun, and it preempts menus exactly as it did inside the mixer
-  // task (same concurrency with the ELRS tool callback as before).
-  // No thread in SIMU: telemetryWakeup() drains inline there.
-  RTOS_CREATE_FLAG(telemFlag);
-  RTOS_CREATE_TASK(telemTaskId, telemTask, "Telem", telemStack, TELEM_STACK_SIZE, TELEM_TASK_PRIO);
-#endif
+  // Timer task (software timer callbacks, rtos/timer.h): below the mixer,
+  // above menus. The telemetry parser runs here (telemetryTimer), so it is
+  // never delayed by a long menus pass (LCD refresh, model load, EEPROM
+  // write) and the 128 B CRSF DMA FIFO cannot overrun; it preempts menus
+  // exactly as it did inside the mixer task (same concurrency with the ELRS
+  // tool callback as before). Also runs in SIMU, where it polls.
+  RTOS_CREATE_TASK(timerTaskId, timerTask, "Timer", timerStack, TIMER_STACK_SIZE, TIMER_TASK_PRIO);
   RTOS_CREATE_TASK(menusTaskId, menusTask, "Menus", menusStack, MENUS_STACK_SIZE, MENUS_TASK_PRIO);
 
 #if !defined(SIMU) && defined(VOICE)

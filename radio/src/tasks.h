@@ -29,16 +29,16 @@
 #define MIXER_STACK_SIZE       200 // 132 analyzed max
 #define AUDIO_STACK_SIZE       400
 #define CLI_STACK_SIZE         1024  // only consumed with CLI build option
-#define TELEM_STACK_SIZE       120 // 104 analyzed max: AFHDS2A GPS path 336 B (1 recursion) + 16 B libgcc + 64 B exception/context frames
+#define TIMER_STACK_SIZE       128 // 112 analyzed max: telemetry callback AFHDS2A GPS path 336 B (1 recursion) + timerTask 32 B + 16 B libgcc + 64 B exception/context frames
 
 #define MIXER_TASK_PRIO        5
 #define AUDIO_TASK_PRIO        7
 #define MENUS_TASK_PRIO        10
 #define CLI_TASK_PRIO          10
-#define TELEM_TASK_PRIO        8   // CoOS: between mixer and menus (TinyK: creation order)
+#define TIMER_TASK_PRIO        8   // CoOS: between mixer and menus (TinyK: creation order)
 
-extern RTOS_TASK_HANDLE telemTaskId;
-extern RTOS_DEFINE_STACK(telemStack, TELEM_STACK_SIZE);
+extern RTOS_TASK_HANDLE timerTaskId;
+extern RTOS_DEFINE_STACK(timerStack, TIMER_STACK_SIZE);
 
 extern RTOS_TASK_HANDLE menusTaskId;
 extern RTOS_DEFINE_STACK(menusStack, MENUS_STACK_SIZE);
