@@ -81,6 +81,9 @@ uint8_t tk_create(void (*fn)(void *), uint32_t * stack, uint32_t words)
     return TK_NONE;
   }
   uint8_t id = tk_count++;
+  for (uint32_t i = 0; i < words; i++) {
+    stack[i] = TK_STACK_PAINT;       // paint first: the frame goes on top
+  }
   tk_tcb[id].sp = tk_frame(fn, stack, words);
 #if defined(TK_STACK_CHECK)
   tk_tcb[id].base = stack;

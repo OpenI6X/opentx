@@ -33,7 +33,7 @@ extern "C" {
 #ifndef TK_IDLE_STACK_WORDS
 #define TK_IDLE_STACK_WORDS 24    // 16 words context + margin; idle calls nothing
 #endif
-#define TK_STACK_PAINT      0x55555555u   // same pattern as OpenTX stackPaint()
+#define TK_STACK_PAINT      0x55555555u   // tk_create() paints;
 
 typedef struct {
   volatile uint8_t set;           // manual reset: cleared by the user
@@ -60,7 +60,7 @@ extern volatile uint32_t tk_idle_time;  // idle time in TK_IDLE_CLOCK units
 extern volatile uint32_t tk_task_time[TK_MAX_TASKS];  // per task (tk_create id), same units
 #endif
 
-uint8_t tk_create(void (*fn)(void *), uint32_t * stack, uint32_t words);  // 0xFF on error
+uint8_t tk_create(void (*fn)(void *), uint32_t * stack, uint32_t words);  // 0xFF on error; paints the stack
 void    tk_start(void) __attribute__((noreturn));
 void    tk_delay(uint32_t ticks);
 
