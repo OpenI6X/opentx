@@ -427,12 +427,7 @@ template<int SIZE>
       {
       }
 
-      void paint()
-      {
-        for (uint32_t i=0; i<SIZE; i++) {
-          stack[i] = TK_STACK_PAINT;
-        }
-      }
+      // no paint(): tk_create() paints the stack
 
       uint32_t size()
       {

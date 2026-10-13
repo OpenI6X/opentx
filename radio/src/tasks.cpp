@@ -40,6 +40,7 @@ RTOS_MUTEX_HANDLE mixerMutex;
 
 void stackPaint() 
 {
+#if !defined(RTOS_TINYK)  // TinyK paints each stack in tk_create()
   menusStack.paint();
   mixerStack.paint();
   timerStack.paint();
@@ -48,6 +49,7 @@ void stackPaint()
 #endif
 #if defined(CLI)
   // cliStack.paint(); // now do not use separate task
+#endif
 #endif
 }
 
