@@ -133,10 +133,9 @@ extern "C++" {
   }
 
 template<int SIZE>
-  inline void RTOS_CREATE_TASK(pthread_t &taskId, void * task(void *), const char * name, FakeTaskStack<SIZE> &, unsigned size = 0, unsigned priority = 0)
+  inline void RTOS_CREATE_TASK(pthread_t &taskId, void * task(void *), const char * name, FakeTaskStack<SIZE> &, unsigned size = 0)
   {
     UNUSED(size);
-    UNUSED(priority);
     RTOS_CREATE_TASK(taskId, task, name);
   }
 
@@ -148,7 +147,7 @@ template<int SIZE>
   }
 #endif  // __cplusplus
 
-  // return 2ms resolution to match CoOS settings
+  // 2 ms resolution (historic, kept for SIMU timing compatibility)
   static inline uint32_t RTOS_GET_TIME(void)
   {
     return (uint32_t)(simuTimerMicros() / 2000);
@@ -159,165 +158,6 @@ template<int SIZE>
     return (uint32_t)(simuTimerMicros() / 1000);
   }
   
-#elif defined(RTOS_COOS)
-#ifdef __cplusplus
-  extern "C" {
-#endif
-    #include <CoOS.h>
-#ifdef __cplusplus
-  }
-#endif
-
-  #define RTOS_MS_PER_TICK              (1000 / CFG_SYSTICK_FREQ)  // RTOS timer tick length in ms (currently 1 for STM32, 2 for others)
-
-  typedef OS_TID RTOS_TASK_HANDLE;
-  typedef OS_MutexID RTOS_MUTEX_HANDLE;
-  typedef OS_FlagID RTOS_FLAG_HANDLE;
-  typedef OS_EventID RTOS_EVENT_HANDLE;
-
-  static inline void RTOS_INIT()
-  {
-    CoInitOS();
-  }
-
-  static inline void RTOS_START()
-  {
-    CoStartOS();
-  }
-
-  static inline void RTOS_WAIT_MS(uint32_t x)
-  {
-    if (!x)
-      return;
-    if ((x = x / RTOS_MS_PER_TICK) < 1)
-      x = 1;
-    CoTickDelay(x);
-  }
-
-  static inline void RTOS_WAIT_TICKS(uint32_t x)
-  {
-    CoTickDelay(x);
-  }
-
-  #define RTOS_CREATE_TASK(taskId, task, name, stackStruct, stackSize, priority)   \
-                                        taskId = CoCreateTask(task, NULL, priority, &stackStruct.stack[stackSize-1], stackSize)
-
-#ifdef __cplusplus
-  static inline void RTOS_CREATE_MUTEX(OS_MutexID &mutex)
-  {
-    mutex = CoCreateMutex();
-  }
-
-  static inline void RTOS_LOCK_MUTEX(OS_MutexID &mutex)
-  {
-    CoEnterMutexSection(mutex);
-  }
-
-  static inline void RTOS_UNLOCK_MUTEX(OS_MutexID &mutex)
-  {
-    CoLeaveMutexSection(mutex);
-  }
-#endif  // __cplusplus
-
-  static inline uint32_t getStackAvailable(void * address, uint32_t size)
-  {
-    uint32_t * array = (uint32_t *)address;
-    uint32_t i = 0;
-    while (i < size && array[i] == 0x55555555) {
-      i++;
-    }
-    return i * 4;
-  }
-
-  extern int _estack;
-  extern int _main_stack_start;
-  static inline uint32_t stackSize()
-  {
-    return ((unsigned char *)&_estack - (unsigned char *)&_main_stack_start) / 4;
-  }
-
-  static inline uint32_t stackAvailable()
-  {
-    return getStackAvailable(&_main_stack_start, stackSize());
-  }
-
-  #define RTOS_CREATE_FLAG(flag)        flag = CoCreateFlag(false, false)
-  #define RTOS_SET_FLAG(flag)           (void)CoSetFlag(flag)
-  #define RTOS_CLEAR_FLAG(flag)         (void)CoClearFlag(flag)
-  #define RTOS_WAIT_FLAG(flag,timeout)  (CoWaitForSingleFlag(flag,timeout) == E_TIMEOUT)
-
-  static inline void RTOS_ISR_SET_FLAG(RTOS_FLAG_HANDLE flag)
-  {
-    CoEnterISR();
-    CoSchedLock();
-    isr_SetFlag(flag);
-    CoSchedUnlock();
-    CoExitISR();
-  }
-  
-#ifdef __cplusplus
-  template<int SIZE>
-  class TaskStack
-  {
-    public:
-      TaskStack()
-      {
-      }
-
-      void paint()
-      {
-        for (uint32_t i=0; i<SIZE; i++) {
-          stack[i] = 0x55555555;
-        }
-      }
-
-      uint32_t size()
-      {
-        return SIZE * 4;
-      }
-
-      uint32_t available()
-      {
-        return getStackAvailable(stack, SIZE);
-      }
-
-      OS_STK stack[SIZE];
-  };
-#endif // __cplusplus
-
-  static inline uint32_t RTOS_GET_TIME(void)
-  {
-    return (uint32_t)CoGetOSTime();
-  }
-
-  static inline uint32_t RTOS_GET_MS(void)
-  {
-    return (RTOS_GET_TIME() * RTOS_MS_PER_TICK);
-  }
-
-  #if defined(COOS_IDLE_STATS)
-#ifdef __cplusplus
-  extern "C" {
-#endif
-  extern volatile uint32_t coos_idle_ticks;
-#ifdef __cplusplus
-  } // extern "C"
-#endif
-#ifdef __cplusplus
-  static inline uint32_t RTOS_GET_IDLE_TIME(void)
-  {
-    return coos_idle_ticks;  // sampled at each tick: coarse, see arch.c
-  }
-#endif
-  #define RTOS_HAS_IDLE_STATS 1
-  #define RTOS_IDLE_UNITS_PER_TICK 1u
-  #endif
-
-  #define RTOS_DEFINE_STACK(name, size) TaskStack<size> __ALIGNED(8) name // stack must be aligned to 8 bytes otherwise printf for %f does not work!
-
-  #define TASK_FUNCTION(task)           void task(void * pdata)
-  #define TASK_RETURN()                 return
-
 #elif defined(RTOS_TINYK)
   // TinyK: minimal preemptive kernel for Cortex-M0, see rtos/tinyk.h
   #include "rtos/tinyk.h"
@@ -347,9 +187,8 @@ template<int SIZE>
     tk_delay(x);
   }
 
-  // TinyK priority = creation order (first created = highest priority).
-  // tasksStart() creates mixer (prio 5) before menus (prio 10), which matches.
-  #define RTOS_CREATE_TASK(taskId, task, name, stackStruct, stackSize, priority) \
+  // Priority = creation order (first created = highest priority).
+  #define RTOS_CREATE_TASK(taskId, task, name, stackStruct, stackSize) \
                                         taskId = tk_create(task, stackStruct.stack, stackSize)
 
 #ifdef __cplusplus
@@ -389,7 +228,7 @@ template<int SIZE>
     flag.set = 0;
   }
 
-  // returns true on timeout (same contract as the CoOS backend)
+  // returns true on timeout
   static inline bool RTOS_WAIT_FLAG(tk_flag_t & flag, uint32_t timeout)
   {
     return !tk_flag_wait(&flag, timeout);
@@ -486,9 +325,9 @@ template<int SIZE>
   }
 #endif  // RTOS type
 
-#if defined(__cplusplus) && (defined(SIMU) || defined(RTOS_COOS) || defined(RTOS_TINYK))
-  // Software timers: one shared implementation for all backends (callbacks
-  // run in timerTask, see rtos/timer.h)
+#if defined(__cplusplus) && (defined(SIMU) || defined(RTOS_TINYK))
+  // Software timers: one implementation for TinyK and SIMU (callbacks run in
+  // timerTask, see rtos/timer.h)
   #include "rtos/timer.h"
 
   typedef rtos_timer_t RTOS_TIMER_HANDLE;

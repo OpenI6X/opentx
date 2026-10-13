@@ -38,21 +38,6 @@ RTOS_DEFINE_STACK(audioStack, AUDIO_STACK_SIZE);
 RTOS_MUTEX_HANDLE audioMutex;
 RTOS_MUTEX_HANDLE mixerMutex;
 
-void stackPaint() 
-{
-#if !defined(RTOS_TINYK)  // TinyK paints each stack in tk_create()
-  menusStack.paint();
-  mixerStack.paint();
-  timerStack.paint();
-#if defined(VOICE)
-  audioStack.paint();
-#endif
-#if defined(CLI)
-  // cliStack.paint(); // now do not use separate task
-#endif
-#endif
-}
-
 volatile uint16_t timeForcePowerOffPressed = 0;
 
 bool isForcePowerOffRequested() 
@@ -275,9 +260,9 @@ TASK_FUNCTION(menusTask)
 void tasksStart() {
   RTOS_INIT();
 
-  // Software timers: after RTOS_INIT (CoOS creates the flag), before any task
-  // is created (SIMU threads start at once) and before anything can start a
-  // timer (telemetry ISRs are enabled later, from tasks).
+  // Software timers: after RTOS_INIT, before any task is created (SIMU
+  // threads start at once) and before anything can start a timer (telemetry
+  // ISRs are enabled later, from tasks).
   timer_init();
   RTOS_CREATE_TIMER(telemetryTimer, telemetryProcessPending, 0, false);  // one-shot, asap
 
@@ -285,19 +270,19 @@ void tasksStart() {
   // cliStart(); // now handled by handleCli()
 #endif
 
-  // For TinyK order of creation determines priority (higher first), *_TASK_PRIO is ignored.
-  RTOS_CREATE_TASK(mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE, MIXER_TASK_PRIO);
+  // Order of creation determines priority (first = highest).
+  RTOS_CREATE_TASK(mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE);
   // Timer task (software timer callbacks, rtos/timer.h): below the mixer,
   // above menus. The telemetry parser runs here (telemetryTimer), so it is
   // never delayed by a long menus pass (LCD refresh, model load, EEPROM
   // write) and the 128 B CRSF DMA FIFO cannot overrun; it preempts menus
   // exactly as it did inside the mixer task (same concurrency with the ELRS
   // tool callback as before). Also runs in SIMU, where it polls.
-  RTOS_CREATE_TASK(timerTaskId, timerTask, "Timer", timerStack, TIMER_STACK_SIZE, TIMER_TASK_PRIO);
-  RTOS_CREATE_TASK(menusTaskId, menusTask, "Menus", menusStack, MENUS_STACK_SIZE, MENUS_TASK_PRIO);
+  RTOS_CREATE_TASK(timerTaskId, timerTask, "Timer", timerStack, TIMER_STACK_SIZE);
+  RTOS_CREATE_TASK(menusTaskId, menusTask, "Menus", menusStack, MENUS_STACK_SIZE);
 
 #if !defined(SIMU) && defined(VOICE)
-  RTOS_CREATE_TASK(audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE, AUDIO_TASK_PRIO);
+  RTOS_CREATE_TASK(audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE);
 #endif
 
 

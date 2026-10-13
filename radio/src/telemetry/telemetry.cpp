@@ -56,7 +56,7 @@ void telemetryProcessPending()
 #if defined(AFHDS2A) && !defined(SIMU)
   // Only the A7105 ISR wakes the task in FlySky mode (after it has validated
   // the packet in telemetryRxBuffer). No ownership guard: the parse completes
-  // long before the next radio packet (see TIMER_TASK_PRIO in tasks.h).
+  // long before the next radio packet (timerTask priority, see tasksStart()).
   if (telemetryProtocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS) {
     processFlySkyTelemetryFrame(telemetryRxBuffer);
   }

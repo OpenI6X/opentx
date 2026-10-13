@@ -606,7 +606,6 @@ void printDebugTimers()
 #endif
 
 #if defined(AUDIO)
-#include "OsMutex.h"
 extern RTOS_MUTEX_HANDLE audioMutex;
 
 void printAudioVars()
@@ -630,7 +629,9 @@ void printAudioVars()
 
   serialPrint("normalContext: %u", (uint32_t)audioQueue.normalContext.fragment.type);
 
-  serialPrint("audioMutex[%u] = %u", (uint32_t)audioMutex, (uint32_t)MutexTbl[audioMutex].mutexFlag);
+#if defined(RTOS_TINYK)
+  serialPrint("audioMutex: owner %u, waiters 0x%02x", (uint32_t)audioMutex.owner, (uint32_t)audioMutex.waiters);
+#endif
 }
 #endif
 
@@ -1086,5 +1087,5 @@ void cliTask(void * pdata)
 
 void cliStart()
 {
-  // RTOS_CREATE_TASK(cliTaskId, cliTask, "CLI", cliStack, CLI_STACK_SIZE, CLI_TASK_PRIO);
+  // RTOS_CREATE_TASK(cliTaskId, cliTask, "CLI", cliStack, CLI_STACK_SIZE);
 }
