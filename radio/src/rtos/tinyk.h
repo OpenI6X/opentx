@@ -33,7 +33,7 @@ extern "C" {
 #ifndef TK_IDLE_STACK_WORDS
 #define TK_IDLE_STACK_WORDS 24    // 16 words context + margin; idle calls nothing
 #endif
-#define TK_STACK_PAINT      0x55555555u   // tk_create() paints;
+#define TK_STACK_PAINT      0x55555555u   // tk_create() paints; read by getStackAvailable()
 
 typedef struct {
   volatile uint8_t set;           // manual reset: cleared by the user

@@ -1774,10 +1774,6 @@ int main()
   loadFonts();
 #endif
 
-#if !defined(SIMU)
-  stackPaint();
-#endif
-
 #if defined(SPLASH) && (defined(PCBTARANIS) || defined(PCBHORUS))
   drawSplash();
 #endif
