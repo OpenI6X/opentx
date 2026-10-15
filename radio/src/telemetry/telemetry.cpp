@@ -125,10 +125,7 @@ void telemetryWakeup()
     telemetryInit(requiredTelemetryProtocol);
   }
 
-#if defined(SIMU)
-  telemetryProcessFrame();  // no ISRs in SIMU: telemetryProcessFrameTimer is never started
-#endif
-  // Otherwise CRSF / AFHDS2A frames are handled by telemetryProcessFrameTimer,
+  // CRSF / AFHDS2A frames are handled by telemetryProcessFrameTimer,
   // started from the USART receiver timeout / A7105 ISR: nothing to poll here.
 
   for (int i=0; i<MAX_TELEMETRY_SENSORS; i++) {

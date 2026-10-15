@@ -241,6 +241,23 @@ void menusTask()
 #endif
 }
 
+static timer_handle_t _timer10ms;
+
+static void _timer_10ms_cb()
+{
+  BUZZER_HEARTBEAT();
+  per10ms();
+}
+
+static void timer10msStart()
+{
+  if (!timer_is_created(&_timer10ms)) {
+    timer_create(&_timer10ms, _timer_10ms_cb, 10, true);
+  }
+
+  timer_start(&_timer10ms);
+}
+
 void tasksStart() {
   // Before anything can start it (telemetry ISRs are enabled later, from tasks)
   timer_create(&telemetryProcessFrameTimer, telemetryProcessFrame, 0, false);  // one-shot, asap
@@ -251,6 +268,7 @@ void tasksStart() {
 
   // Order of creation determines priority (first = highest).
   task_create(&mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE);
+
   // Timer task (software timer callbacks, os/timer.h): below the mixer,
   // above menus. The telemetry parser runs here (telemetryProcessFrameTimer), so
   // it is never delayed by a long menus pass (LCD refresh, model load, EEPROM
@@ -258,12 +276,14 @@ void tasksStart() {
   // exactly as it did inside the mixer task (same concurrency with the ELRS
   // tool callback as before). Also runs in SIMU, where it polls.
   timer_init();
+
+  timer10msStart();
+
   task_create(&menusTaskId, menusTask, "Menus", menusStack, MENUS_STACK_SIZE);
 
 #if !defined(SIMU) && defined(VOICE)
   task_create(&audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE);
 #endif
-
 
 #if defined(VOICE)
   mutex_create(&audioMutex);
