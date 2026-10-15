@@ -419,7 +419,7 @@ void playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t flags, int8_t
   buzzerOn(freq, (flags & PLAY_BACKGROUND) ? g_eeGeneral.varioVolume : g_eeGeneral.beepVolume);
 }
 
-void buzzerHeartbeat()
+void buzzerWakeup()
 {
   if (buzzerState.duration) {
 

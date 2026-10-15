@@ -174,7 +174,6 @@ uint32_t sdMounted(void);
 //buzzer
 #if !defined(BOOT)
 #include "buzzer_driver.h"
-#define BUZZER_HEARTBEAT buzzerHeartbeat
 #endif
 
 #if defined(DFPLAYER)
