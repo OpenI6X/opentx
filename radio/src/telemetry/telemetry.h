@@ -57,6 +57,7 @@ enum TelemetryProtocol
   PROTOCOL_TELEMETRY_LUA,
 };
 
+void telemetryStart();
 void telemetryInit(uint8_t protocol);
 void telemetryWakeup();
 void telemetryReset();

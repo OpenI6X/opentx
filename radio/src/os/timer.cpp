@@ -72,6 +72,11 @@ void timer_start(timer_handle_t * timer)
   task_notify_isr(&timerTaskId);            // timer task recomputes its wait
 }
 
+bool timer_is_created(timer_handle_t * timer)
+{
+  return timer->_func != nullptr;  
+}
+
 void timer_stop(timer_handle_t * timer)
 {
   timer->_active = 0;  // byte store; unlinked by the timer task
