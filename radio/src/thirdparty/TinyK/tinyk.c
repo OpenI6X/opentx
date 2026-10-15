@@ -36,6 +36,8 @@ static uint16_t   tk_stat_t0;         // TK_IDLE_CLOCK at the last scheduler cal
 #endif
 static volatile uint8_t tk_ready;     // bit i -> task i runnable
 static volatile uint8_t tk_sleeping;  // bit i -> task i has a timeout armed
+static volatile uint8_t tk_notified;  // bit i -> notification pending for task i
+static volatile uint8_t tk_nwaiting;  // bit i -> task i blocked in tk_notify_wait()
 static uint8_t    tk_cur_idx;         // task selected to run (idle = tk_count)
 
 tk_tcb_t * volatile tk_cur;           // used by PendSV_Handler
@@ -55,27 +57,26 @@ static void tk_task_exit(void)
   for (;;);
 }
 
-static uint32_t * tk_frame(void (*fn)(void *), uint32_t * stack, uint32_t words)
+static uint32_t * tk_frame(void (*fn)(void), uint32_t * stack, uint32_t words)
 {
   uint32_t * sp = (uint32_t *)((uint32_t)(stack + words) & ~7u);   // AAPCS: 8-byte aligned
   *--sp = 0x01000000u;               // xPSR (Thumb bit)
   *--sp = (uint32_t)fn & ~1u;        // PC (bit0 must be clear in the frame)
   *--sp = (uint32_t)tk_task_exit;    // LR
-  sp -= 5;                           // R12, R3, R2, R1, R0 (= arg = NULL)
+  sp -= 5;                           // R12, R3, R2, R1, R0
   for (int i = 0; i < 5; i++) sp[i] = 0;
   sp -= 8;                           // R4..R11 (software-saved part)
   return sp;
 }
 
-static void tk_idle(void * arg)
+static void tk_idle(void)
 {
-  (void)arg;
   for (;;) {
     __WFI();
   }
 }
 
-uint8_t tk_create(void (*fn)(void *), uint32_t * stack, uint32_t words)
+uint8_t tk_create(void (*fn)(void), uint32_t * stack, uint32_t words)
 {
   if (tk_started || tk_count >= TK_MAX_TASKS) {
     return TK_NONE;
@@ -182,16 +183,24 @@ void SysTick_Handler(void)
   __enable_irq();
 }
 
-void tk_flag_set(tk_flag_t * f)
+uint8_t tk_started_get(void)
 {
+  return tk_started;
+}
+
+void tk_notify(uint8_t task)
+{
+  if (task >= tk_count) {
+    return;
+  }
   uint32_t primask = __get_PRIMASK();
   __disable_irq();
-  f->set = 1;
-  uint8_t w = f->waiters;
-  if (w) {
-    f->waiters = 0;
-    tk_sleeping &= ~w;
-    tk_ready |= w;
+  uint8_t bit = 1u << task;
+  tk_notified |= bit;
+  if (tk_nwaiting & bit) {
+    tk_nwaiting &= ~bit;
+    tk_sleeping &= ~bit;
+    tk_ready |= bit;
     if (tk_started) {
       tk_schedule();
     }
@@ -199,26 +208,36 @@ void tk_flag_set(tk_flag_t * f)
   __set_PRIMASK(primask);
 }
 
-uint8_t tk_flag_wait(tk_flag_t * f, uint32_t ticks)
+uint8_t tk_notify_wait(uint32_t ticks)
 {
   if (!tk_started) {
-    return f->set;
+    return 0;                        // no current task before start
   }
   __disable_irq();
-  if (!f->set && ticks) {
-    uint8_t bit = 1u << tk_cur_idx;
-    f->waiters |= bit;
+  uint8_t bit = 1u << tk_cur_idx;
+  if (!(tk_notified & bit) && ticks) {
+    tk_nwaiting |= bit;
     tk_tcb[tk_cur_idx].wake = tk_ticks + ticks;
     tk_sleeping |= bit;
     tk_ready &= ~bit;
     tk_schedule();
     __enable_irq();                  // switch happens here
     __disable_irq();
-    f->waiters &= ~bit;              // timeout path
+    tk_nwaiting &= ~bit;             // timeout path
   }
-  uint8_t r = f->set;
+  uint8_t r = (tk_notified & bit) ? 1 : 0;
+  tk_notified &= ~bit;
   __enable_irq();
   return r;
+}
+
+uint32_t tk_stack_free(const uint32_t * stack, uint32_t words)
+{
+  uint32_t i = 0;
+  while (i < words && stack[i] == TK_STACK_PAINT) {
+    i++;
+  }
+  return i * 4;
 }
 
 void tk_mutex_init(tk_mutex_t * m)

@@ -132,7 +132,7 @@ void setScaledVolume(uint8_t volume) {
   //   volume = VOLUME_LEVEL_MAX;
   // }
 
-  //RTOS_WAIT_MS(200);
+  //sleep_ms(200);
   dfplayerCommand(DFP_SET_VOLUME, volume);
 }
 

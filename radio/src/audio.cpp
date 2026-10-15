@@ -21,7 +21,7 @@
 #include "opentx.h"
 #include <math.h>
 
-extern RTOS_MUTEX_HANDLE audioMutex;
+extern mutex_handle_t audioMutex;
 
 const int16_t sineValues[] =
 {
@@ -504,14 +504,14 @@ AudioQueue::AudioQueue()
 void audioTask(void * pdata)
 {
   while (!audioQueue.started()) {
-    RTOS_WAIT_TICKS(1);
+    sleep_ms(1);
   }
 
   setSampleRate(AUDIO_SAMPLE_RATE);
 
 #if defined(PCBX12S)
   // The audio amp needs ~2s to start
-  RTOS_WAIT_MS(1000); // 1s
+  sleep_ms(1000); // 1s
 #endif
 
   if (!globalData.unexpectedShutdown) {
@@ -523,7 +523,7 @@ void audioTask(void * pdata)
     DEBUG_TIMER_START(debugTimerAudioDuration);
     audioQueue.wakeup();
     DEBUG_TIMER_STOP(debugTimerAudioDuration);
-    RTOS_WAIT_MS(4);
+    sleep_ms(4);
   }
 }
 #endif
@@ -759,9 +759,9 @@ void AudioQueue::wakeup()
 
     // mix the normal context (tones and wavs)
     if (normalContext.isEmpty() && !fragmentsFifo.empty()) {
-      RTOS_LOCK_MUTEX(audioMutex);
+      mutex_lock(&audioMutex);
       normalContext.setFragment(fragmentsFifo.get());
-      RTOS_UNLOCK_MUTEX(audioMutex);
+      mutex_unlock(&audioMutex);
     }
     result = normalContext.mixBuffer(buffer, g_eeGeneral.beepVolume, g_eeGeneral.wavVolume, fade);
     if (result > 0) {
@@ -844,7 +844,7 @@ void AudioQueue::playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t f
   return;
 #endif
 
-  RTOS_LOCK_MUTEX(audioMutex);
+  mutex_lock(&audioMutex);
 
   freq = limit<uint16_t>(BEEP_MIN_FREQ, freq, BEEP_MAX_FREQ);
 
@@ -867,7 +867,7 @@ void AudioQueue::playTone(uint16_t freq, uint16_t len, uint16_t pause, uint8_t f
     }
   }
 
-  RTOS_UNLOCK_MUTEX(audioMutex);
+  mutex_unlock(&audioMutex);
 }
 
 #if defined(SDCARD)
@@ -895,7 +895,7 @@ void AudioQueue::playFile(const char * filename, uint8_t flags, uint8_t id)
     return;
   }
 
-  RTOS_LOCK_MUTEX(audioMutex);
+  mutex_lock(&audioMutex);
 
   if (flags & PLAY_BACKGROUND) {
     backgroundContext.clear();
@@ -905,7 +905,7 @@ void AudioQueue::playFile(const char * filename, uint8_t flags, uint8_t id)
     fragmentsFifo.push(AudioFragment(filename, flags & 0x0f, id));
   }
 
-  RTOS_UNLOCK_MUTEX(audioMutex);
+  mutex_unlock(&audioMutex);
 }
 
 void AudioQueue::stopPlay(uint8_t id)
@@ -918,12 +918,12 @@ void AudioQueue::stopPlay(uint8_t id)
   return;
 #endif
 
-  RTOS_LOCK_MUTEX(audioMutex);
+  mutex_lock(&audioMutex);
 
   fragmentsFifo.removePromptById(id);
   backgroundContext.stop(id);
 
-  RTOS_UNLOCK_MUTEX(audioMutex);
+  mutex_unlock(&audioMutex);
 }
 
 void AudioQueue::stopSD()
@@ -938,19 +938,19 @@ void AudioQueue::stopSD()
 void AudioQueue::stopAll()
 {
   flush();
-  RTOS_LOCK_MUTEX(audioMutex);
+  mutex_lock(&audioMutex);
   priorityContext.clear();
   normalContext.clear();
-  RTOS_UNLOCK_MUTEX(audioMutex);
+  mutex_unlock(&audioMutex);
 }
 
 void AudioQueue::flush()
 {
-  RTOS_LOCK_MUTEX(audioMutex);
+  mutex_lock(&audioMutex);
   fragmentsFifo.clear();
   varioContext.clear();
   backgroundContext.clear();
-  RTOS_UNLOCK_MUTEX(audioMutex);
+  mutex_unlock(&audioMutex);
 }
 
 void audioPlay(unsigned int index, uint8_t id)

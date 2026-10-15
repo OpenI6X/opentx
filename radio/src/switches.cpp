@@ -734,7 +734,7 @@ void checkSwitches()
 
     WDG_RESET();
 
-    RTOS_WAIT_MS(10);
+    sleep_ms(10);
   }
 
   LED_ERROR_END();

@@ -21,22 +21,19 @@
 #include "mixer_scheduler.h"
 #include "opentx.h"
 
-RTOS_TASK_HANDLE menusTaskId;
-RTOS_DEFINE_STACK(menusStack, MENUS_STACK_SIZE);
+task_handle_t menusTaskId;
+TASK_DEFINE_STACK(menusStack, MENUS_STACK_SIZE);
 
-RTOS_TASK_HANDLE mixerTaskId;
-RTOS_DEFINE_STACK(mixerStack, MIXER_STACK_SIZE);
-
-RTOS_TASK_HANDLE timerTaskId;
-RTOS_DEFINE_STACK(timerStack, TIMER_STACK_SIZE);
+task_handle_t mixerTaskId;
+TASK_DEFINE_STACK(mixerStack, MIXER_STACK_SIZE);
 
 #if defined(VOICE)
-RTOS_TASK_HANDLE audioTaskId;
-RTOS_DEFINE_STACK(audioStack, AUDIO_STACK_SIZE);
+task_handle_t audioTaskId;
+TASK_DEFINE_STACK(audioStack, AUDIO_STACK_SIZE);
 #endif
 
-RTOS_MUTEX_HANDLE audioMutex;
-RTOS_MUTEX_HANDLE mixerMutex;
+mutex_handle_t audioMutex;
+mutex_handle_t mixerMutex;
 
 volatile uint16_t timeForcePowerOffPressed = 0;
 
@@ -116,7 +113,7 @@ void execMixerFrequentActions()
 #endif
 }
 
-TASK_FUNCTION(mixerTask) 
+void mixerTask()
 {
   s_pulses_paused = true;
 
@@ -132,19 +129,18 @@ TASK_FUNCTION(mixerTask)
       // to keep the delay short
       execMixerFrequentActions();
 
-      // mixer flag triggered?
+      // mixer triggered (task notification)?
       if (!mixerSchedulerWaitForTrigger(MIXER_FREQUENT_ACTIONS_PERIOD)) {
         break;
       }
     }
    
     // re-enable trigger
-    mixerSchedulerClearTrigger();
     mixerSchedulerEnableTrigger();
 
 #if defined(SIMU)
     if (pwrCheck() == e_power_off) {
-      TASK_RETURN();
+      return;
     }
 #elif !defined(PCBI6X)
     if (isForcePowerOffRequested()) {
@@ -156,7 +152,7 @@ TASK_FUNCTION(mixerTask)
       uint16_t t0 = getTmr2MHz();
 
       DEBUG_TIMER_START(debugTimerMixer);
-      RTOS_LOCK_MUTEX(mixerMutex);
+      mutex_lock(&mixerMutex);
 
       doMixerCalculations();
 
@@ -172,7 +168,7 @@ TASK_FUNCTION(mixerTask)
 
       DEBUG_TIMER_START(debugTimerMixerCalcToUsage);
       DEBUG_TIMER_SAMPLE(debugTimerMixerIterval);
-      RTOS_UNLOCK_MUTEX(mixerMutex);
+      mutex_unlock(&mixerMutex);
       DEBUG_TIMER_STOP(debugTimerMixer);
 
 #if defined(STM32) && !defined(SIMU)
@@ -199,13 +195,13 @@ TASK_FUNCTION(mixerTask)
   }
 }
 
-#define MENU_TASK_PERIOD_TICKS (50 / RTOS_MS_PER_TICK)   // 50ms
+#define MENU_TASK_PERIOD (50)  // 50ms
 
 #if defined(COLORLCD) && defined(CLI)
 bool perMainEnabled = true;
 #endif
 
-TASK_FUNCTION(menusTask)
+void menusTask()
 {
   opentxInit();
 
@@ -215,24 +211,24 @@ TASK_FUNCTION(menusTask)
     if (pwr_check == e_power_off) {
       break;
     } else if (pwr_check == e_power_press) {
-      RTOS_WAIT_TICKS(MENU_TASK_PERIOD_TICKS);
+      sleep_ms(MENU_TASK_PERIOD);
       continue;
     }
 #else
   while (pwrCheck() != e_power_off) {
 #endif
-    uint32_t start = (uint32_t)RTOS_GET_TIME();
+    uint32_t start = time_get_ms();
     DEBUG_TIMER_START(debugTimerPerMain);
 
     perMain();
 
     DEBUG_TIMER_STOP(debugTimerPerMain);
     // TODO remove completely massstorage from sky9x firmware
-    uint32_t runtime = ((uint32_t)RTOS_GET_TIME() - start);
+    uint32_t runtime = (time_get_ms() - start);
     // deduct the thread run-time from the wait, if run-time was more than
     // desired period, then skip the wait all together
-    if (runtime < MENU_TASK_PERIOD_TICKS) {
-      RTOS_WAIT_TICKS(MENU_TASK_PERIOD_TICKS - runtime);
+    if (runtime < MENU_TASK_PERIOD) {
+      sleep_ms(MENU_TASK_PERIOD - runtime);
     }
 
 #if !defined(PCBI6X) // no software controlled power on i6X
@@ -253,43 +249,38 @@ TASK_FUNCTION(menusTask)
   opentxClose();
   boardOff();
 
-  TASK_RETURN();
+  return;
 #endif
 }
 
 void tasksStart() {
-  RTOS_INIT();
-
-  // Software timers: after RTOS_INIT, before any task is created (SIMU
-  // threads start at once) and before anything can start a timer (telemetry
-  // ISRs are enabled later, from tasks).
-  timer_init();
-  RTOS_CREATE_TIMER(telemetryTimer, telemetryProcessPending, 0, false);  // one-shot, asap
+  // Before anything can start it (telemetry ISRs are enabled later, from tasks)
+  timer_create(&telemetryTimer, telemetryProcessPending, 0, false);  // one-shot, asap
 
 #if defined(CLI)
   // cliStart(); // now handled by handleCli()
 #endif
 
   // Order of creation determines priority (first = highest).
-  RTOS_CREATE_TASK(mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE);
-  // Timer task (software timer callbacks, rtos/timer.h): below the mixer,
+  task_create(&mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE);
+  // Timer task (software timer callbacks, os/timer.h): below the mixer,
   // above menus. The telemetry parser runs here (telemetryTimer), so it is
   // never delayed by a long menus pass (LCD refresh, model load, EEPROM
   // write) and the 128 B CRSF DMA FIFO cannot overrun; it preempts menus
   // exactly as it did inside the mixer task (same concurrency with the ELRS
   // tool callback as before). Also runs in SIMU, where it polls.
-  RTOS_CREATE_TASK(timerTaskId, timerTask, "Timer", timerStack, TIMER_STACK_SIZE);
-  RTOS_CREATE_TASK(menusTaskId, menusTask, "Menus", menusStack, MENUS_STACK_SIZE);
+  timer_init();
+  task_create(&menusTaskId, menusTask, "Menus", menusStack, MENUS_STACK_SIZE);
 
 #if !defined(SIMU) && defined(VOICE)
-  RTOS_CREATE_TASK(audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE);
+  task_create(&audioTaskId, audioTask, "Audio", audioStack, AUDIO_STACK_SIZE);
 #endif
 
 
 #if defined(VOICE)
-  RTOS_CREATE_MUTEX(audioMutex);
+  mutex_create(&audioMutex);
 #endif
-  RTOS_CREATE_MUTEX(mixerMutex);
+  mutex_create(&mixerMutex);
 
   RTOS_START();
 }
