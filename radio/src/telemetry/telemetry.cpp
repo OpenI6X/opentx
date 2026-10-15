@@ -32,10 +32,10 @@ TelemetryData telemetryData;
 uint8_t telemetryProtocol = 255;
 
 // Deferred telemetry processing: one-shot timer with period 0, i.e. run as
-// soon as possible in timerTask. Started by the A7105 ISR (validated AFHDS2A
+// soon as possible in the timer task. Started by the A7105 ISR (validated AFHDS2A
 // frame) and the USART receiver timeout (end of a CRSF frame).
 // Callback: telemetryProcessPending(); created in tasksStart().
-RTOS_TIMER_HANDLE telemetryTimer;
+timer_handle_t telemetryTimer;
 
 #if defined(TELEMETRY_STATS)
 volatile uint32_t telemetryStatsRto;
@@ -56,7 +56,7 @@ void telemetryProcessPending()
 #if defined(AFHDS2A) && !defined(SIMU)
   // Only the A7105 ISR wakes the task in FlySky mode (after it has validated
   // the packet in telemetryRxBuffer). No ownership guard: the parse completes
-  // long before the next radio packet (timerTask priority, see tasksStart()).
+  // long before the next radio packet (timer task priority, see tasksStart()).
   if (telemetryProtocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS) {
     processFlySkyTelemetryFrame(telemetryRxBuffer);
   }

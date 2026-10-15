@@ -172,7 +172,7 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
   if (status & USART_ISR_RTOF) {
     TELEMETRY_USART->ICR = USART_ICR_RTOCF;
     TELEMETRY_STATS_INC(telemetryStatsRto);
-    RTOS_START_TIMER(telemetryTimer);
+    timer_start(&telemetryTimer);
   }
 
   // TX, transfer complete

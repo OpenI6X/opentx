@@ -130,7 +130,7 @@ set(SRC
   ${SRC}
   main.cpp
   tasks.cpp
-  rtos/timer.cpp
+  os/timer.cpp
   telemetry/telemetry.cpp
   telemetry/telemetry_holders.cpp
   telemetry/telemetry_sensors.cpp
@@ -160,7 +160,14 @@ set(TARGET_SRC
   keys_driver.cpp
   telemetry_driver.cpp
   )
-set(FIRMWARE_SRC ${FIRMWARE_SRC} rtos/tinyk.c)
+include_directories(${RTOS_DIR})
+set(FIRMWARE_SRC
+  ${FIRMWARE_SRC}
+  ${RTOS_DIR}/tinyk.c
+  os/task_tinyk.cpp
+  os/time_tinyk.cpp
+  os/sleep_tinyk.cpp
+  )
 
 set(PULSES_SRC
   ${PULSES_SRC}

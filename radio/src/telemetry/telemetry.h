@@ -21,7 +21,7 @@
 #ifndef _TELEMETRY_H_
 #define _TELEMETRY_H_
 
-#include "../rtos.h"
+#include "../os/timer.h"
 #include "telemetry_holders.h"
 #include "telemetry_sensors.h"
 
@@ -63,8 +63,8 @@ void telemetryReset();
 void telemetryInterrupt10ms();
 int setTelemetryValue(TelemetryProtocol protocol, uint16_t id, uint8_t subId, uint8_t instance, int32_t value, uint32_t unit, uint32_t prec);
 
-// Deferred telemetry processing (runs in timerTask): RTOS_START_TIMER from ISRs
-extern RTOS_TIMER_HANDLE telemetryTimer;
+// Deferred telemetry processing (runs in the timer task): timer_start() from ISRs
+extern timer_handle_t telemetryTimer;
 void telemetryProcessPending();  // telemetryTimer callback: drain CRSF FIFO / parse the AFHDS2A frame in telemetryRxBuffer
 
 #if defined(TELEMETRY_STATS)
