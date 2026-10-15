@@ -63,7 +63,7 @@
 
   #define IS_SBUS_PROTOCOL(protocol)         (protocol == PROTOCOL_CHANNELS_SBUS)
 
-extern uint8_t s_pulses_paused;
+extern volatile uint8_t s_pulses_paused;
 
 PACK(struct ModuleState {
   uint8_t protocol; // :4
@@ -202,33 +202,13 @@ enum ChannelsProtocols {
 #endif
 };
 
-inline void startPulses()
-{
-  s_pulses_paused = false;
+void startPulses();
 
-#if defined(HARDWARE_INTERNAL_MODULE)
-  setupPulsesInternalModule();
-#endif
+bool pulsesStarted();
 
-#if defined(HARDWARE_EXTERNAL_MODULE)
-  setupPulsesExternalModule();
-#endif
-}
+void pausePulses();
 
-inline bool pulsesStarted() 
-{ 
-  return moduleState[0].protocol != PROTOCOL_CHANNELS_UNINITIALIZED; 
-}
-
-inline void pausePulses() 
-{ 
-  s_pulses_paused = true; 
-}
-
-inline void resumePulses() 
-{ 
-  s_pulses_paused = false; 
-}
+void resumePulses();
 
 inline void SEND_FAILSAFE_NOW(uint8_t idx)
 {

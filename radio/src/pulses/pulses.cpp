@@ -26,7 +26,7 @@
 #endif
 #include "mixer_scheduler.h"
 
-uint8_t s_pulses_paused = 0;
+volatile uint8_t s_pulses_paused = 0;
 ModuleState moduleState[NUM_MODULES];
 InternalModulePulsesData intmodulePulsesData __DMA;
 ExternalModulePulsesData extmodulePulsesData __DMA;
@@ -35,6 +35,37 @@ TrainerPulsesData trainerPulsesData __DMA;
 #if defined(CROSSFIRE)
 uint8_t createCrossfireChannelsFrame(uint8_t* frame, int16_t* pulses);
 #endif
+
+void startPulses()
+{
+  telemetryStart();
+
+  s_pulses_paused = false;
+
+#if defined(HARDWARE_INTERNAL_MODULE)
+  setupPulsesInternalModule();
+#endif
+
+#if defined(HARDWARE_EXTERNAL_MODULE)
+  setupPulsesExternalModule();
+#endif
+}
+
+bool pulsesStarted() 
+{ 
+  return moduleState[0].protocol != PROTOCOL_CHANNELS_UNINITIALIZED; 
+}
+
+void pausePulses() 
+{ 
+  s_pulses_paused = true; 
+}
+
+void resumePulses() 
+{ 
+  s_pulses_paused = false; 
+}
+
 
 uint8_t getRequiredProtocol(uint8_t module) 
 {

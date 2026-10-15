@@ -37,6 +37,34 @@ uint8_t telemetryProtocol = 255;
 // Callback: telemetryProcessFrame(); created in tasksStart().
 timer_handle_t telemetryProcessFrameTimer;
 
+static timer_handle_t telemetryTimer;
+
+static void telemetryTimerCb()
+{
+ if (!s_pulses_paused) {
+    DEBUG_TIMER_START(debugTimerTelemetryWakeup);
+    telemetryWakeup();
+    DEBUG_TIMER_STOP(debugTimerTelemetryWakeup);
+ }
+
+#if defined(SBUS_TRAINER)
+  if (g_eeGeneral.auxSerialMode == UART_MODE_SBUS_TRAINER) {
+    processSbusInput();
+  }
+#endif
+}
+
+void telemetryStart()
+{
+  if (!timer_is_created(&telemetryTimer)) {
+    timer_create(&telemetryTimer, telemetryTimerCb, 2, true);
+  }
+
+  // clearTelemetryRxBuffers();
+  timer_start(&telemetryTimer);
+}
+
+
 #if defined(TELEMETRY_STATS)
 volatile uint32_t telemetryStatsRto;
 volatile uint32_t telemetryStatsFrames;
@@ -85,10 +113,8 @@ void processTelemetryData(uint8_t data)
     return;
   }
 #endif
-#if defined(TELEMETRY_FRSKY)
-#if !defined(PCBI6X)
+#if defined(TELEMETRY_FRSKY) && !defined(PCBI6X)
   processFrskyTelemetryData(data);
-#endif
 #endif
 }
 

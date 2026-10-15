@@ -50,6 +50,9 @@ struct timer_handle_t {
 // initialized before the first use, never freed: it is linked into a list).
 void timer_create(timer_handle_t* h, timer_func_t func, unsigned period,
                   bool repeat);
+
+bool timer_is_created(timer_handle_t * h);
+
 // (Re)start: expires period ms from now (restarts if already active).
 // Task or ISR context.
 void timer_start(timer_handle_t* h);
