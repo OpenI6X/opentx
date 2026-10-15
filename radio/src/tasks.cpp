@@ -255,7 +255,7 @@ void menusTask()
 
 void tasksStart() {
   // Before anything can start it (telemetry ISRs are enabled later, from tasks)
-  timer_create(&telemetryTimer, telemetryProcessPending, 0, false);  // one-shot, asap
+  timer_create(&telemetryProcessFrameTimer, telemetryProcessFrame, 0, false);  // one-shot, asap
 
 #if defined(CLI)
   // cliStart(); // now handled by handleCli()
@@ -264,8 +264,8 @@ void tasksStart() {
   // Order of creation determines priority (first = highest).
   task_create(&mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE);
   // Timer task (software timer callbacks, os/timer.h): below the mixer,
-  // above menus. The telemetry parser runs here (telemetryTimer), so it is
-  // never delayed by a long menus pass (LCD refresh, model load, EEPROM
+  // above menus. The telemetry parser runs here (telemetryProcessFrameTimer), so
+  // it is never delayed by a long menus pass (LCD refresh, model load, EEPROM
   // write) and the 128 B CRSF DMA FIFO cannot overrun; it preempts menus
   // exactly as it did inside the mixer task (same concurrency with the ELRS
   // tool callback as before). Also runs in SIMU, where it polls.
