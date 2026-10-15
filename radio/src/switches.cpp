@@ -611,9 +611,6 @@ void checkSwitches()
     resetBacklightTimeout();
     // first - display warning
 #if defined(PCBTARANIS) || defined(PCBHORUS)|| defined(PCBI6X)
-#if defined(DFPLAYER)
-      dfplayerWakeup(); // allow to play the switch warning on startup
-#endif
       if ((last_bad_switches != switches_states) /*|| (last_bad_pots != bad_pots)*/) {
       drawAlertBox(STR_SWITCHWARN, NULL, STR_PRESSANYKEYTOSKIP);
       if (last_bad_switches == 0xff /*|| last_bad_pots == 0xff*/) {

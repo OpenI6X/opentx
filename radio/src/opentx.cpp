@@ -814,10 +814,6 @@ void checkThrottleStick()
       return;
     }
 
-#if defined(DFPLAYER)
-    dfplayerWakeup(); // allow to play the throttle warning on startup
-#endif
-
 #if defined(PWR_BUTTON_PRESS) || defined(PWR_BUTTON_EMULATED)
     uint32_t power = pwrCheck();
     if (power == e_power_off) {
