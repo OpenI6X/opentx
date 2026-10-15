@@ -100,7 +100,6 @@ void boardInit()
 //   delaysInit();
   lcdInit(); // delaysInit() must be called before
   init2MhzTimer();
-  init5msTimer();
   __enable_irq();
 #if defined(FLYSKY_GIMBAL)
   flysky_gimbal_init();
