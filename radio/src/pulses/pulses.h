@@ -189,7 +189,6 @@ void getModuleSyncStatusString(uint8_t moduleIdx, char * statusText);
 #if defined(AFHDS3)
 uint8_t actualAfhdsRunPower(int moduleIndex);
 #endif
-void extramodulePpmStart();
 
 enum ChannelsProtocols {
   PROTOCOL_CHANNELS_UNINITIALIZED,
@@ -213,10 +212,6 @@ inline void startPulses()
 
 #if defined(HARDWARE_EXTERNAL_MODULE)
   setupPulsesExternalModule();
-#endif
-
-#if defined(HARDWARE_EXTRA_MODULE)
-  extramodulePpmStart();
 #endif
 }
 

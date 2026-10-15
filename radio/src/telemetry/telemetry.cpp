@@ -34,15 +34,15 @@ uint8_t telemetryProtocol = 255;
 // Deferred telemetry processing: one-shot timer with period 0, i.e. run as
 // soon as possible in the timer task. Started by the A7105 ISR (validated AFHDS2A
 // frame) and the USART receiver timeout (end of a CRSF frame).
-// Callback: telemetryProcessPending(); created in tasksStart().
-timer_handle_t telemetryTimer;
+// Callback: telemetryProcessFrame(); created in tasksStart().
+timer_handle_t telemetryProcessFrameTimer;
 
 #if defined(TELEMETRY_STATS)
 volatile uint32_t telemetryStatsRto;
 volatile uint32_t telemetryStatsFrames;
 #endif
 
-void telemetryProcessPending()
+void telemetryProcessFrame()
 {
 #if defined(CROSSFIRE)
   if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
@@ -100,10 +100,10 @@ void telemetryWakeup()
   }
 
 #if defined(SIMU)
-  telemetryProcessPending();  // no ISRs in SIMU: telemetryTimer is never started
+  telemetryProcessFrame();  // no ISRs in SIMU: telemetryProcessFrameTimer is never started
 #endif
-  // Otherwise CRSF / AFHDS2A frames are handled by telemetryTimer, started from the
-  // USART receiver timeout / A7105 ISR: nothing to poll here.
+  // Otherwise CRSF / AFHDS2A frames are handled by telemetryProcessFrameTimer,
+  // started from the USART receiver timeout / A7105 ISR: nothing to poll here.
 
   for (int i=0; i<MAX_TELEMETRY_SENSORS; i++) {
     const TelemetrySensor & sensor = g_model.telemetrySensors[i];
