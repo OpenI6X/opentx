@@ -139,7 +139,7 @@ bool sportWaitState(SportUpdateState state, int timeout)
     else if (sportUpdateState == SPORT_FAIL) {
       return false;
     }
-    RTOS_WAIT_TICKS(1);
+    sleep_ms(1);
   }
   return false;
 #endif
@@ -314,7 +314,7 @@ void sportFlashDevice(ModuleIndex module, const char * filename)
 
   /* wait 2s off */
   watchdogSuspend(2000);
-  RTOS_WAIT_MS(2000);
+  sleep_ms(2000);
 #endif
 
   const char * result = sportUpdatePowerOn(module);

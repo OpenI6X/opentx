@@ -189,51 +189,47 @@ void menuStatisticsDebug(event_t event)
   y += FH;
 
   lcdDrawTextAlignedLeft(y, STR_FREESTACKMINB);
-  lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, menusStack.available(), LEFT);
+  lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, task_get_stack_usage(&menusTaskId), LEFT);
   lcdDrawText(lcdLastRightPos, y, "/");
-  lcdDrawNumber(lcdLastRightPos, y, mixerStack.available(), LEFT);
+  lcdDrawNumber(lcdLastRightPos, y, task_get_stack_usage(&mixerTaskId), LEFT);
   lcdDrawText(lcdLastRightPos, y, "/");
-  lcdDrawNumber(lcdLastRightPos, y, timerStack.available(), LEFT);
+  lcdDrawNumber(lcdLastRightPos, y, task_get_stack_usage(&timerTaskId), LEFT);
 
-#if defined(RTOS_HAS_IDLE_STATS)
+#if defined(TASK_CPU_STATS)
   y += FH;
   {
-    // 1 s snapshot over the RTOS idle counter
-    const uint32_t winTicks = 1000u / RTOS_MS_PER_TICK;  // ticks per second
+    // 1 s snapshot over the idle / task CPU time counters
+    const uint32_t winMs = 1000u;
     static uint32_t lastTotal = 0, lastIdle = 0;
     static uint16_t cpuPc = 0, idleMs = 0;
-#if defined(RTOS_HAS_TASK_STATS)
     // same order as the stack line: menus / mixer / timer
-    const RTOS_TASK_HANDLE taskIds[3] = {menusTaskId, mixerTaskId, timerTaskId};
+    task_handle_t * const tasks[3] = {&menusTaskId, &mixerTaskId, &timerTaskId};
     static uint32_t lastTask[3];
     static uint16_t taskPm[3];         // per mille of the window
-#endif
-    uint32_t total = RTOS_GET_TIME();
-    uint32_t idle = RTOS_GET_IDLE_TIME();
+    uint32_t total = time_get_ms();
+    uint32_t idle = task_get_idle_time();
     uint32_t dTotal = total - lastTotal;
-    if (dTotal >= winTicks) {
-#if defined(RTOS_HAS_TASK_STATS)
-      bool stale = dTotal > 10u * winTicks;
-      uint32_t unitsPerMille = dTotal * RTOS_IDLE_UNITS_PER_TICK / 1000u;
+    if (dTotal >= winMs) {
+      bool stale = dTotal > 10u * winMs;
+      uint32_t unitsPerMille = dTotal * TASK_CPU_UNITS_PER_MS / 1000u;
       for (uint8_t i = 0; i < 3; i++) {
-        uint32_t t = RTOS_GET_TASK_TIME(taskIds[i]);
+        uint32_t t = task_get_cpu_time(tasks[i]);
         if (!stale) {
           uint32_t pm = (t - lastTask[i]) / unitsPerMille;
           taskPm[i] = (uint16_t)(pm > 1000 ? 1000 : pm);
         }
         lastTask[i] = t;
       }
-#endif
-      if (dTotal > 10u * winTicks) {
+      if (stale) {
         // stale baseline (screen just opened): reseed, skip this round
         lastTotal = total;
         lastIdle = idle;
       }
       else {
-        uint32_t dIdle = (idle - lastIdle) / RTOS_IDLE_UNITS_PER_TICK;
+        uint32_t dIdle = (idle - lastIdle) / TASK_CPU_UNITS_PER_MS;
         if (dIdle > dTotal)
           dIdle = dTotal;                      // tick raced the two reads
-        idleMs = (uint16_t)(dIdle * RTOS_MS_PER_TICK);
+        idleMs = (uint16_t)dIdle;
         cpuPc = (uint16_t)(100u - (100u * dIdle) / dTotal);
         lastTotal = total;
         lastIdle = idle;
@@ -244,7 +240,6 @@ void menuStatisticsDebug(event_t event)
     lcdDrawText(lcdLastRightPos, y, "% ");
     lcdDrawNumber(lcdLastRightPos, y, idleMs, LEFT);
     lcdDrawText(lcdLastRightPos, y, "ms");
-#if defined(RTOS_HAS_TASK_STATS)
     // CPU % per task, 0.1 % resolution (ISR time goes to the interrupted task)
     y += FH;
     lcdDrawTextAlignedLeft(y, "Task%");
@@ -253,7 +248,6 @@ void menuStatisticsDebug(event_t event)
       lcdDrawText(lcdLastRightPos, y, "/");
       lcdDrawNumber(lcdLastRightPos, y, taskPm[i], LEADING0|PREC1|LEFT);
     }
-#endif
   }
 #endif
 

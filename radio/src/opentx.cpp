@@ -628,7 +628,7 @@ void doSplash() {
     tmr10ms_t tgtime = get_tmr10ms() + SPLASH_TIMEOUT;
 
     while (tgtime > get_tmr10ms()) {
-      RTOS_WAIT_TICKS(1);
+      sleep_ms(1);
 
       getADC();
 
@@ -733,7 +733,7 @@ void checkAll() {
   // we don't check the throttle stick if the radio is not calibrated
   if (g_eeGeneral.chkSum == evalChkSum()) {
 #if defined(FLYSKY_GIMBAL) // delay necessary for the throttle check to successfully detect when serial flysky gimbal throttle is not at zero
-    RTOS_WAIT_MS(25);
+    sleep_ms(25);
 #endif    
     checkThrottleStick();
   }
@@ -755,7 +755,7 @@ void checkAll() {
     showMessageBox(STR_KEYSTUCK);
     tmr10ms_t tgtime = get_tmr10ms() + 500;
     while (tgtime != get_tmr10ms()) {
-      RTOS_WAIT_MS(1);
+      sleep_ms(1);
       WDG_RESET();
     }
   }
@@ -838,7 +838,7 @@ void checkThrottleStick()
 
     WDG_RESET();
 
-    RTOS_WAIT_MS(10);
+    sleep_ms(10);
   }
 
   LED_ERROR_END();
@@ -867,7 +867,7 @@ void alert(const char *title, const char *msg, uint8_t sound) {
 #endif
 
   while (1) {
-    RTOS_WAIT_MS(10);
+    sleep_ms(10);
 
     if (keyDown())  // wait for key release
       break;
@@ -1414,11 +1414,11 @@ void opentxClose(uint8_t shutdown) {
 
 #if !defined(PCBI6X)
   while (IS_PLAYING(ID_PLAY_PROMPT_BASE + AU_BYE)) {
-    RTOS_WAIT_MS(10);
+    sleep_ms(10);
   }
 #endif
 
-  RTOS_WAIT_MS(100);
+  sleep_ms(100);
 
 #if defined(SDCARD)
   sdDone();
@@ -1908,7 +1908,7 @@ uint32_t pwrCheck() {
       RAISE_ALERT(STR_MODEL, STR_MODEL_STILL_POWERED, STR_PRESS_ENTER_TO_CONFIRM, AU_MODEL_STILL_POWERED);
       while (TELEMETRY_STREAMING()) {
         resetForcePowerOffRequest();
-        RTOS_WAIT_MS(20);
+        sleep_ms(20);
         if (pwrPressed()) {
           return e_power_on;
         } else if (readKeys() == (1 << KEY_ENTER)) {

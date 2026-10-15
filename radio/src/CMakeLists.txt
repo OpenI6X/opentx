@@ -57,6 +57,7 @@ set(FIRMWARE_CXX_FLAGS_DEBUG "-g" CACHE STRING "Additional flags for firmware ta
 
 set(THIRDPARTY_DIR thirdparty)
 set(LUA_DIR ${THIRDPARTY_DIR}/Lua/src)
+set(RTOS_DIR ${THIRDPARTY_DIR}/TinyK)
 option(TINYK_STACK_CHECK "TinyK: check task stack canaries every tick" OFF)
 option(TINYK_IDLE_STATS "TinyK: count idle ticks for CPU load display" OFF)
 option(TELEMETRY_STATS "Debug screen: telemetry RX timeout / wake / frame counters" OFF)
@@ -497,7 +498,7 @@ if(NOT MSVC)
       endif()
     endif()
 
-    add_definitions(-DRTOS_TINYK)  # the only RTOS (rtos/tinyk.c)
+    add_definitions(-DRTOS_TINYK)  # the only RTOS (${RTOS_DIR}, os/*_tinyk.cpp)
     if(TINYK_STACK_CHECK)
       add_definitions(-DTK_STACK_CHECK)
     endif()

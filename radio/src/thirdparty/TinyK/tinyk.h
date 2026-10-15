@@ -8,13 +8,14 @@
  *   - up to TK_MAX_TASKS static tasks + 1 idle task
  *     priority = creation order (first created = highest priority)
  *   - 1 ms tick (SysTick), tk_delay()
- *   - manual-reset event flag, settable from ISR, wait with timeout
+ *   - per-task notification (binary): tk_notify() from task or ISR,
+ *     tk_notify_wait() with timeout, clears it on return
  *   - blocking, non-recursive mutex (no priority inheritance: with the two
  *     OpenTX tasks there is no medium-priority task that could cause inversion)
  *   - optional stack-overflow canary check (TK_STACK_CHECK)
  *
  * Context switch: PendSV at the lowest NVIC level, tasks on PSP, ISRs on MSP.
- * All kernel calls are ISR safe except tk_delay/tk_flag_wait/tk_mutex_*
+ * All kernel calls are ISR safe except tk_delay/tk_notify_wait/tk_mutex_*
  * (task context only). Before tk_start() the blocking calls are no-ops.
  */
 
@@ -28,17 +29,12 @@ extern "C" {
 #endif
 
 #ifndef TK_MAX_TASKS
-#define TK_MAX_TASKS        3     // user tasks: mixer, menus (+1 spare)
+#define TK_MAX_TASKS        3     // user tasks: mixer, timer, menus
 #endif
 #ifndef TK_IDLE_STACK_WORDS
 #define TK_IDLE_STACK_WORDS 24    // 16 words context + margin; idle calls nothing
 #endif
-#define TK_STACK_PAINT      0x55555555u   // tk_create() paints; read by getStackAvailable()
-
-typedef struct {
-  volatile uint8_t set;           // manual reset: cleared by the user
-  volatile uint8_t waiters;       // bitmask of waiting tasks
-} tk_flag_t;
+#define TK_STACK_PAINT      0x55555555u   // tk_create() paints; read by tk_stack_free()
 
 typedef struct {
   volatile uint8_t owner;         // 0xFF = free
@@ -60,12 +56,15 @@ extern volatile uint32_t tk_idle_time;  // idle time in TK_IDLE_CLOCK units
 extern volatile uint32_t tk_task_time[TK_MAX_TASKS];  // per task (tk_create id), same units
 #endif
 
-uint8_t tk_create(void (*fn)(void *), uint32_t * stack, uint32_t words);  // 0xFF on error; paints the stack
+uint8_t tk_create(void (*fn)(void), uint32_t * stack, uint32_t words);  // 0xFF on error; paints the stack
 void    tk_start(void) __attribute__((noreturn));
+uint8_t tk_started_get(void);                       // 1 once tk_start() ran
 void    tk_delay(uint32_t ticks);
 
-void    tk_flag_set(tk_flag_t * f);                   // task or ISR context
-uint8_t tk_flag_wait(tk_flag_t * f, uint32_t ticks);  // 1 = flag set, 0 = timeout
+void    tk_notify(uint8_t task);                    // task or ISR context
+uint8_t tk_notify_wait(uint32_t ticks);             // 1 = notified (cleared), 0 = timeout
+
+uint32_t tk_stack_free(const uint32_t * stack, uint32_t words);  // bytes never used (paint intact)
 
 void    tk_mutex_init(tk_mutex_t * m);
 void    tk_mutex_lock(tk_mutex_t * m);
