@@ -240,14 +240,16 @@ void menuStatisticsDebug(event_t event)
     lcdDrawText(lcdLastRightPos, y, "% ");
     lcdDrawNumber(lcdLastRightPos, y, idleMs, LEFT);
     lcdDrawText(lcdLastRightPos, y, "ms");
+//#if defined(RTOS_HAS_TASK_STATS)
     // CPU % per task, 0.1 % resolution (ISR time goes to the interrupted task)
     y += FH;
     lcdDrawTextAlignedLeft(y, "Task%");
-    lcdDrawNumber(5*FW, y, taskPm[0], LEADING0|PREC1|LEFT);
+    lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, taskPm[0], PREC1|LEFT);
     for (uint8_t i = 1; i < 3; i++) {
       lcdDrawText(lcdLastRightPos, y, "/");
-      lcdDrawNumber(lcdLastRightPos, y, taskPm[i], LEADING0|PREC1|LEFT);
+      lcdDrawNumber(lcdLastRightPos, y, taskPm[i], PREC1|LEFT);
     }
+//#endif
   }
 #endif
 

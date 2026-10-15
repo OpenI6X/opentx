@@ -63,7 +63,7 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_8;
   LL_USART_Init(TELEMETRY_USART, &USART_InitStruct);
 
-  // Receiver timeout (RTO) starts telemetryTimer at the end of every RX
+  // Receiver timeout (RTO) starts telemetryProcessFrameTimer at the end of every RX
   // burst. Unlike IDLE, the RTO counter only starts after a received stop bit,
   // so re-enabling the receiver at the half-duplex turnaround (which sets IDLE
   // on STM32F0) does not raise it: works the same in half and full duplex.
@@ -172,7 +172,7 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
   if (status & USART_ISR_RTOF) {
     TELEMETRY_USART->ICR = USART_ICR_RTOCF;
     TELEMETRY_STATS_INC(telemetryStatsRto);
-    timer_start(&telemetryTimer);
+    timer_start(&telemetryProcessFrameTimer);
   }
 
   // TX, transfer complete
