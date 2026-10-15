@@ -351,12 +351,6 @@ void AFHDS2A_callback();
 #define DFPLAYER_BAUDRATE               9600
 #endif
 
-// Xms Interrupt
-#define INTERRUPT_xMS_RCC_APB1Periph    LL_APB1_GRP1_PERIPH_TIM14
-#define INTERRUPT_xMS_TIMER             TIM14
-#define INTERRUPT_xMS_IRQn              TIM14_IRQn
-#define INTERRUPT_xMS_IRQHandler        TIM14_IRQHandler
-
 // 2MHz Timer
 #define TIMER_2MHz_RCC_APB1Periph       LL_APB1_GRP1_PERIPH_TIM7
 #define TIMER_2MHz_TIMER                TIM7
@@ -372,7 +366,7 @@ void AFHDS2A_callback();
 #define RCC_AHB1_GRP1_LIST              (I2C_RCC_AHB1Periph | BACKLIGHT_STD_RCC_AHB1Periph | BACKLIGHT_RCC_AHB1Periph | LCD_RCC_AHB1Periph | KEYS_RCC_AHB1Periph | BUZZER_RCC_AHBPeriph \
                                          | PWR_RCC_AHB1Periph | EXTMODULE_RCC_AHBPeriph | CRC_RCC_AHB1Periph | TELEMETRY_RCC_AHB1Periph | AUX_SERIAL_RCC_AHB1Periph \
                                          | AUX3_SERIAL_RCC_AHB1Periph | AUX4_SERIAL_RCC_AHB1Periph | ADC_RCC_AHB1Periph | USB_RCC_AHBPeriph_GPIO)
-#define RCC_APB1_GRP1_LIST              (I2C_RCC_APB1Periph | LL_APB1_GRP1_PERIPH_TIM6 /*delays*/ | INTERRUPT_xMS_RCC_APB1Periph | TIMER_2MHz_RCC_APB1Periph | BUZZER_RCC_APB1Periph \
+#define RCC_APB1_GRP1_LIST              (I2C_RCC_APB1Periph | LL_APB1_GRP1_PERIPH_TIM6 /*delays*/ | TIMER_2MHz_RCC_APB1Periph | BUZZER_RCC_APB1Periph \
                                          | TELEMETRY_RCC_APB1Periph | BACKLIGHT_STD_RCC_APB1Periph | BACKLIGHT_RCC_APB1Periph | LL_APB1_GRP1_PERIPH_USB \
                                          | AUX3_SERIAL_RCC_APB1Periph | AUX4_SERIAL_RCC_APB1Periph | USB_RCC_APB1Periph_CRS)
 #define RCC_APB1_GRP2_LIST              (MIXER_SCHEDULER_TIMER_RCC_APB2Periph | BUZZER_RCC_APB2Periph | INTMODULE_RCC_APB2Periph | EXTMODULE_RCC_APB2Periph \
