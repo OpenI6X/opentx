@@ -245,7 +245,10 @@ static timer_handle_t _timer10ms;
 
 static void _timer_10ms_cb()
 {
-  BUZZER_HEARTBEAT();
+  buzzerWakeup();
+#if defined(DFPLAYER)
+  dfplayerWakeup();
+#endif
   per10ms();
 }
 

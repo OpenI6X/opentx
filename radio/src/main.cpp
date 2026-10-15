@@ -414,13 +414,6 @@ void perMain()
 {
   DEBUG_TIMER_START(debugTimerPerMain1);
 
-#if defined(DFPLAYER)
-  // here instead of audioTask
-  // before checkSpeakerVolume because it is more important to play file
-  // than to set volume
-  dfplayerWakeup();
-#endif
-
 #if defined(AUDIO) || defined(DFPLAYER)
   checkSpeakerVolume();
 #endif
