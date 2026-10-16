@@ -263,7 +263,10 @@ static void timer10msStart()
 
 void tasksStart() {
   // Before anything can start it (telemetry ISRs are enabled later, from tasks)
-  timer_create(&telemetryProcessFrameTimer, telemetryProcessFrame, 0, false);  // one-shot, asap
+  timer_create(&telemetryProcessFrameTimer, telemetryProcessFrameCb, 0, false);  // one-shot, asap
+#if defined(SBUS_TRAINER)
+  timer_create(&trainerSbusFrameTimer, sbusFrameReceivedCb, 0, false);  // one-shot, asap
+#endif
 
 #if defined(CLI)
   // cliStart(); // now handled by handleCli()
