@@ -189,7 +189,7 @@ void menuStatisticsDebug(event_t event)
   lcdDrawText(lcdLastRightPos, y, "/");
   lcdDrawNumber(lcdLastRightPos, y, mixerStack.available(), LEFT);
 
-  lcdDrawText(4*FW, 7*FH+1, STR_MENUTORESET);
+  lcdDrawText(5*FW, 7*FH+1, STR_MENUTORESET);
   lcdInvertLastLine();
 }
 
