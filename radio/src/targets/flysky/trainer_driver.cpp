@@ -98,15 +98,18 @@ void stop_trainer_capture()
 }
 
 #if defined(SBUS_TRAINER)
-int sbusGetByte(uint8_t * byte)
+
+int sbusGetBufferedBytes()
 {
-  switch (currentTrainerMode) {
-#if defined(AUX_SERIAL_USART)
-    case TRAINER_MODE_MASTER_BATTERY_COMPARTMENT:
-      return auxSerialRxFifo.pop(*byte);
-#endif
-    default:
-      return false;
+  return auxSerialRxFifo.used();
+}
+
+int sbusCopyRxBuffer(uint8_t * buffer, uint32_t size)
+{
+  uint8_t rxchar, i = 0;
+  while (i < size && auxSerialRxFifo.pop(rxchar)) {
+    buffer[i++] = rxchar;
   }
+  return i;
 }
 #endif

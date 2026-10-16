@@ -43,6 +43,11 @@ class DMAFifo
       return N;
     }
 
+    uint32_t used() const
+    {
+      return (N - channel->CNDTR - ridx) & (N-1);
+    }
+
     uint8_t last(int index)
     {
       return fifo[(2*N - channel->CNDTR - index) & (N-1)];

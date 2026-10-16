@@ -34,61 +34,48 @@
 
 #define SBUS_CH_CENTER         0x3E0
 
+timer_handle_t trainerSbusFrameTimer;
+
+static void sbusProcessFrame(int16_t* pulses, uint8_t* sbus, uint32_t size);
+
+void sbusFrameReceivedCb()
+{
+  if (sbusGetBufferedBytes() != SBUS_FRAME_SIZE) {
+    return;
+  }
+
+  uint8_t frame[SBUS_FRAME_SIZE];
+  int received = sbusCopyRxBuffer(frame, SBUS_FRAME_SIZE);
+  if (received < 0) return;
+
+  sbusProcessFrame(trainerInput, frame, received);
+}
 
 // Range for pulses (ppm input) is [-512:+512]
-void processSbusFrame(uint8_t * sbus, int16_t * pulses, uint32_t size)
+static void sbusProcessFrame(int16_t* pulses, uint8_t* sbus, uint32_t size)
 {
-  if (size != SBUS_FRAME_SIZE || sbus[0] != SBUS_START_BYTE || sbus[SBUS_FRAME_SIZE-1] != SBUS_END_BYTE) {
-    return; // not a valid SBUS frame
+  if (size != SBUS_FRAME_SIZE || sbus[0] != SBUS_START_BYTE ||
+      sbus[SBUS_FRAME_SIZE - 1] != SBUS_END_BYTE) {
+    return;  // not a valid SBUS frame
   }
-  if ((sbus[SBUS_FLAGS_IDX] & (1<<SBUS_FAILSAFE_BIT)) || (sbus[SBUS_FLAGS_IDX] & (1<<SBUS_FRAMELOST_BIT))) {
-    return; // SBUS invalid frame or failsafe mode
+  if ((sbus[SBUS_FLAGS_IDX] & (1 << SBUS_FAILSAFE_BIT)) ||
+      (sbus[SBUS_FLAGS_IDX] & (1 << SBUS_FRAMELOST_BIT))) {
+    return;  // SBUS invalid frame or failsafe mode
   }
 
-  sbus++; // skip start byte
+  sbus++;  // skip start byte
 
   uint32_t inputbitsavailable = 0;
   uint32_t inputbits = 0;
-  for (uint32_t i=0; i<MAX_TRAINER_CHANNELS; i++) {
+  for (uint32_t i = 0; i < MAX_TRAINER_CHANNELS; i++) {
     while (inputbitsavailable < SBUS_CH_BITS) {
       inputbits |= *sbus++ << inputbitsavailable;
       inputbitsavailable += 8;
     }
-    *pulses++ = ((int32_t) (inputbits & SBUS_CH_MASK) - SBUS_CH_CENTER) * 5 / 8;
+    *pulses++ = ((int32_t)(inputbits & SBUS_CH_MASK) - SBUS_CH_CENTER) * 5 / 8;
     inputbitsavailable -= SBUS_CH_BITS;
     inputbits >>= SBUS_CH_BITS;
   }
 
   trainerInputValidityTimer = TRAINER_IN_VALID_TIMEOUT;
-}
-
-void processSbusInput()
-{
-#if !defined(SIMU)
-  uint8_t rxchar;
-  uint32_t active = 0;
-  static uint8_t SbusIndex = 0;
-  static uint16_t SbusTimer;
-  static uint8_t SbusFrame[SBUS_FRAME_SIZE];
-
-  while (sbusGetByte(&rxchar)) {
-    active = 1;
-    if (SbusIndex > SBUS_FRAME_SIZE-1) {
-      SbusIndex = SBUS_FRAME_SIZE-1;
-    }
-    SbusFrame[SbusIndex++] = rxchar;
-  }
-  if (active) {
-    SbusTimer = getTmr2MHz();
-    return;
-  }
-  else {
-    if (SbusIndex) {
-      if ((uint16_t) (getTmr2MHz() - SbusTimer) > SBUS_FRAME_GAP_DELAY) {
-        processSbusFrame(SbusFrame, trainerInput, SbusIndex);
-        SbusIndex = 0;
-      }
-    }
-  }
-#endif
 }

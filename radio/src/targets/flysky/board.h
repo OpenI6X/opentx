@@ -227,7 +227,8 @@ void extmoduleSendNextFrame();
 #endif
 
 // SBUS
-int sbusGetByte(uint8_t * byte);
+int sbusGetBufferedBytes();
+int sbusCopyRxBuffer(uint8_t * buffer, uint32_t size);
 
 // Keys driver
 enum EnumKeys
