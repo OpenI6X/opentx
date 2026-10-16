@@ -66,7 +66,7 @@ int setTelemetryValue(TelemetryProtocol protocol, uint16_t id, uint8_t subId, ui
 
 // Deferred telemetry processing (runs in the timer task): timer_start() from ISRs
 extern timer_handle_t telemetryProcessFrameTimer;
-void telemetryProcessFrame();  // telemetryProcessFrameTimer callback: drain CRSF FIFO / parse the AFHDS2A frame in telemetryRxBuffer
+void telemetryProcessFrameCb();  // telemetryProcessFrameTimer callback: drain CRSF FIFO / parse the AFHDS2A frame in telemetryRxBuffer
 
 #if defined(TELEMETRY_STATS)
 // Debug counters (Statistics -> Debug, short ENTER resets them)

@@ -67,6 +67,11 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_
                                 | LL_DMA_PDATAALIGN_BYTE
                                 | LL_DMA_MDATAALIGN_BYTE;
 
+    LL_USART_SetRxTimeout(AUX_SERIAL_USART, 10);
+    LL_USART_EnableRxTimeout(AUX_SERIAL_USART);
+    LL_USART_ClearFlag_RTO(AUX_SERIAL_USART);
+    LL_USART_EnableIT_RTO(AUX_SERIAL_USART);
+
     LL_USART_SetRXPinLevel(AUX_SERIAL_USART, LL_USART_RXPIN_LEVEL_INVERTED); // Only for SBUS
     LL_USART_EnableDMAReq_RX(AUX_SERIAL_USART);
     LL_USART_Enable(AUX_SERIAL_USART);
@@ -76,13 +81,13 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_
   else {
     serialTxBufferClear(); // clear for all TX modes
     LL_USART_Enable(AUX_SERIAL_USART);
-#if !defined(PCBI6X)
+#if !defined(PCBI6X) // defined(LUA) || defined(CLI)
     LL_USART_EnableIT_RXNE(AUX_SERIAL_USART);
 #endif
     LL_USART_DisableIT_TXE(AUX_SERIAL_USART);
-    NVIC_SetPriority(AUX_SERIAL_USART_IRQn, 7);
-    NVIC_EnableIRQ(AUX_SERIAL_USART_IRQn);
   }
+  NVIC_SetPriority(AUX_SERIAL_USART_IRQn, 7);
+  NVIC_EnableIRQ(AUX_SERIAL_USART_IRQn);
 }
 
 void auxSerialInit(unsigned int mode, unsigned int protocol)
@@ -191,8 +196,17 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
     }
   }
 #endif
-  // Receive
-#if defined(LUA) // PCBI6X: works but not needed
+
+#if defined(SBUS_TRAINER)
+  // RX, end of burst (receiver timeout); handled before the TX turnaround
+  if (AUX_SERIAL_USART->ISR & USART_ISR_RTOF) {
+    AUX_SERIAL_USART->ICR = USART_ICR_RTOCF;
+    timer_start(&trainerSbusFrameTimer);
+  }
+#endif
+
+  // Receive (LUA) - PCBI6X: works but not needed
+#if defined(LUA)
   uint32_t status = AUX_SERIAL_USART->ISR;
   while (status & (USART_ISR_RXNE | USART_FLAG_ERRORS)) {
     uint8_t data = AUX_SERIAL_USART->RDR;

@@ -34,7 +34,7 @@ uint8_t telemetryProtocol = 255;
 // Deferred telemetry processing: one-shot timer with period 0, i.e. run as
 // soon as possible in the timer task. Started by the A7105 ISR (validated AFHDS2A
 // frame) and the USART receiver timeout (end of a CRSF frame).
-// Callback: telemetryProcessFrame(); created in tasksStart().
+// Callback: telemetryProcessFrameCb(); created in tasksStart().
 timer_handle_t telemetryProcessFrameTimer;
 
 static timer_handle_t telemetryTimer;
@@ -46,12 +46,6 @@ static void telemetryTimerCb()
     telemetryWakeup();
     DEBUG_TIMER_STOP(debugTimerTelemetryWakeup);
  }
-
-#if defined(SBUS_TRAINER)
-  if (g_eeGeneral.auxSerialMode == UART_MODE_SBUS_TRAINER) {
-    processSbusInput();
-  }
-#endif
 }
 
 void telemetryStart()
@@ -70,7 +64,7 @@ volatile uint32_t telemetryStatsRto;
 volatile uint32_t telemetryStatsFrames;
 #endif
 
-void telemetryProcessFrame()
+void telemetryProcessFrameCb()
 {
 #if defined(CROSSFIRE)
   if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
