@@ -26,8 +26,8 @@ DMAFifo<TELEMETRY_FIFO_SIZE> telemetryDMAFifo __DMA (TELEMETRY_DMA_Channel_RX);
 #define TELEMETRY_USART_IRQ_PRIORITY 0
 
 // Receiver timeout in bit times after the stop bit of the last received byte
-// (~2 characters at 8N1, baud-rate independent). Used as "frame received".
-#define TELEMETRY_RX_TIMEOUT_BITS    20
+// (~1 characters at 8N1, baud-rate independent). Used as "frame received".
+#define TELEMETRY_RX_TIMEOUT_BITS    10
 
 void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   TRACE("telemetryPortInit %d", baudrate);
