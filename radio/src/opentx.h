@@ -658,8 +658,45 @@ uint8_t findNextUnusedModelId(uint8_t index, uint8_t module);
 #endif
 
 uint32_t hash(const void * ptr, uint32_t size);
+
+#if defined(STM32F0)
+int fast_div10(uint32_t num);
+int fast_div100(uint32_t num);
+int fast_div1000(uint32_t num);
+int div_and_round10(int num);
+int div_and_round100(int num);
+int div_and_round1000(int num);
+#else
+inline int div_and_round(int num, int den);
+static inline int div_and_round10(int num)
+{
+  return div_and_round(num, 10);
+}
+
+static inline int div_and_round100(int num)
+{
+  return div_and_round(num, 100);
+}
+
+static inline int div_and_round1000(int num)
+{
+  return div_and_round(num, 1000);
+}
+#endif
+
 inline int divRoundClosest(const int n, const int d)
 {
+#if defined(STM32F0)
+  if (d == 100) {
+    return div_and_round100(n);
+  }
+  else if (d == 1000) {
+    return div_and_round1000(n);
+  }
+  else if (d == 10) {
+    return div_and_round10(n);
+  }
+#endif
   if (d == 0)
     return 0;
   else
@@ -671,17 +708,38 @@ inline int divRoundClosest(const int n, const int d)
 
 inline int calc100to256(int x)
 {
+#if defined(STM32F0)
+  if (x >= 0)
+    return (x * 41943 + 8064) >> 14;
+  else
+    return -((-x * 41943 + 8064) >> 14);
+#else
   return divRoundClosest(x*256, 100);
+#endif
 }
 
 inline int calc100toRESX(int x)
 {
+#if defined(STM32F0)
+  if (x >= 0)
+    return (x * 167772 + 8024) >> 14;
+  else
+    return -((-x * 167772 + 8024) >> 14);
+#else
   return divRoundClosest(x*RESX, 100);
+#endif
 }
 
 inline int calc1000toRESX(int x)
 {
+#if defined(STM32F0)
+  if (x >= 0)
+    return (x * 67109 + 32503) >> 16;
+  else
+    return -((-x * 67109 + 32503) >> 16);
+#else
   return divRoundClosest(x*RESX, 1000);
+#endif
 }
 
 inline int calcRESXto1000(int x)
@@ -1163,6 +1221,9 @@ inline getvalue_t convertTelemValue(source_t channel, ls_telemetry_value_t value
   return convert16bitsTelemValue(channel, value);
 }
 
+#if defined(STM32F0)
+int div_and_round(int num, int den);
+#else
 inline int div_and_round(int num, int den)
 {
   if (den == 0) {
@@ -1176,6 +1237,7 @@ inline int div_and_round(int num, int den)
   }
   return num / den;
 }
+#endif
 
 #if defined(TELEMETRY_FRSKY)
 enum TelemetryViews {
