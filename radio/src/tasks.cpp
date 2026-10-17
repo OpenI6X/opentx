@@ -105,10 +105,6 @@ void mixerTask()
 {
   s_pulses_paused = true;
 
-  mixerSchedulerInit();
-
-  mixerSchedulerStart();
-
   while (true) {
     int timeout = 0;
     for (; timeout < MIXER_MAX_PERIOD; timeout += MIXER_FREQUENT_ACTIONS_PERIOD) {
@@ -261,6 +257,14 @@ static void timer10msStart()
   timer_start(&_timer10ms);
 }
 
+void mixerTaskInit()
+{
+  mixerSchedulerInit();
+  mutex_create(&mixerMutex);
+  task_create(&mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE);
+  mixerSchedulerStart();
+}
+
 void tasksStart() {
   // Before anything can start it (telemetry ISRs are enabled later, from tasks)
   timer_create(&telemetryProcessFrameTimer, telemetryProcessFrameCb, 0, false);  // one-shot, asap
@@ -273,7 +277,7 @@ void tasksStart() {
 #endif
 
   // Order of creation determines priority (first = highest).
-  task_create(&mixerTaskId, mixerTask, "Mixer", mixerStack, MIXER_STACK_SIZE);
+  mixerTaskInit();
 
   // Timer task (software timer callbacks, os/timer.h): below the mixer,
   // above menus. The telemetry parser runs here (telemetryProcessFrameTimer), so
@@ -294,7 +298,7 @@ void tasksStart() {
 #if defined(VOICE)
   mutex_create(&audioMutex);
 #endif
-  mutex_create(&mixerMutex);
+  // mutex_create(&mixerMutex);
 
   RTOS_START();
 }

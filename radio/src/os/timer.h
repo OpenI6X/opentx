@@ -53,6 +53,8 @@ void timer_create(timer_handle_t* h, timer_func_t func, unsigned period,
 
 bool timer_is_created(timer_handle_t * h);
 
+bool timer_is_active(timer_handle_t * h);
+
 // (Re)start: expires period ms from now (restarts if already active).
 // Task or ISR context.
 void timer_start(timer_handle_t* h);
