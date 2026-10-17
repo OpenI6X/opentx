@@ -115,7 +115,6 @@ void boardOff(void);
 
 // Timers driver
 void init2MhzTimer();
-void init5msTimer();
 
 // Delays driver
 #ifdef __cplusplus
@@ -174,7 +173,6 @@ uint32_t sdMounted(void);
 //buzzer
 #if !defined(BOOT)
 #include "buzzer_driver.h"
-#define BUZZER_HEARTBEAT buzzerHeartbeat
 #endif
 
 #if defined(DFPLAYER)
@@ -229,7 +227,8 @@ void extmoduleSendNextFrame();
 #endif
 
 // SBUS
-int sbusGetByte(uint8_t * byte);
+int sbusGetBufferedBytes();
+int sbusCopyRxBuffer(uint8_t * buffer, uint32_t size);
 
 // Keys driver
 enum EnumKeys
@@ -426,8 +425,6 @@ void telemetryPortSetDirectionOutput(void);
 void sportSendBuffer(const uint8_t* buffer, uint32_t count);
 uint8_t telemetryGetByte(uint8_t * byte);
 // extern uint32_t telemetryErrors;
-
-extern volatile bool pendingTelemetryPollFrame;
 
 // Audio driver
 

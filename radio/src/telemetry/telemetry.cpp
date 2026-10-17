@@ -31,7 +31,59 @@ TelemetryData telemetryData;
 
 uint8_t telemetryProtocol = 255;
 
-volatile bool pendingTelemetryPollFrame = false;
+// Deferred telemetry processing: one-shot timer with period 0, i.e. run as
+// soon as possible in the timer task. Started by the A7105 ISR (validated AFHDS2A
+// frame) and the USART receiver timeout (end of a CRSF frame).
+// Callback: telemetryProcessFrameCb(); created in tasksStart().
+timer_handle_t telemetryProcessFrameTimer;
+
+static timer_handle_t telemetryTimer;
+
+static void telemetryTimerCb()
+{
+ if (!s_pulses_paused) {
+    DEBUG_TIMER_START(debugTimerTelemetryWakeup);
+    telemetryWakeup();
+    DEBUG_TIMER_STOP(debugTimerTelemetryWakeup);
+ }
+}
+
+void telemetryStart()
+{
+  if (!timer_is_created(&telemetryTimer)) {
+    timer_create(&telemetryTimer, telemetryTimerCb, 2, true);
+  }
+
+  // clearTelemetryRxBuffers();
+  timer_start(&telemetryTimer);
+}
+
+
+#if defined(TELEMETRY_STATS)
+volatile uint32_t telemetryStatsRto;
+volatile uint32_t telemetryStatsFrames;
+#endif
+
+void telemetryProcessFrameCb()
+{
+#if defined(CROSSFIRE)
+  if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
+    uint8_t data;
+    while (telemetryGetByte(&data)) {
+      processCrossfireTelemetryData(data);  // TODO handle full frame as in EdgeTX
+      LOG_TELEMETRY_WRITE_BYTE(data);
+    }
+  }
+#endif
+#if defined(AFHDS2A) && !defined(SIMU)
+  // Only the A7105 ISR wakes the task in FlySky mode (after it has validated
+  // the packet in telemetryRxBuffer). No ownership guard: the parse completes
+  // long before the next radio packet (timer task priority, see tasksStart()).
+  if (telemetryProtocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS) {
+    processFlySkyTelemetryFrame(telemetryRxBuffer);
+  }
+#endif
+}
 
 void processTelemetryData(uint8_t data)
 {
@@ -55,10 +107,8 @@ void processTelemetryData(uint8_t data)
     return;
   }
 #endif
-#if defined(TELEMETRY_FRSKY)
-#if !defined(PCBI6X)
+#if defined(TELEMETRY_FRSKY) && !defined(PCBI6X)
   processFrskyTelemetryData(data);
-#endif
 #endif
 }
 
@@ -69,45 +119,8 @@ void telemetryWakeup()
     telemetryInit(requiredTelemetryProtocol);
   }
 
-#if defined(CROSSFIRE)
-  if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
-    uint8_t data;
-    while (telemetryGetByte(&data)) {
-      processCrossfireTelemetryData(data); // TODO handle full frame as in EdgeTX
-      LOG_TELEMETRY_WRITE_BYTE(data);
-    }
-  }
-#endif
-
-  // Handle complete telemetry frame
-  if (pendingTelemetryPollFrame) {
-    pendingTelemetryPollFrame = false;
-   switch (telemetryProtocol) {
-#if defined(AFHDS2A)
-     case PROTOCOL_TELEMETRY_FLYSKY_IBUS:
-       processFlySkyTelemetryFrame(telemetryRxBuffer);
-     break;
-#endif
-#if defined(CROSSFIRE)
-    //  case PROTOCOL_TELEMETRY_CROSSFIRE:
-    //  {
-    //    uint8_t data;
-    //    uint8_t count = 0;
-    //    while (telemetryGetByte(&data)) {
-    //      processCrossfireTelemetryData(data); // TODO handle full frame as in EdgeTX
-    //      LOG_TELEMETRY_WRITE_BYTE(data);
-    //      count++;
-    //    }
-    //    TRACE("c%d", count);
-    //  }
-    //  break;
-#endif
-     default:
-//       TRACE("Unhandled telemetry %d", telemetryProtocol);
-     break;
-   }
-  }
-
+  // CRSF / AFHDS2A frames are handled by telemetryProcessFrameTimer,
+  // started from the USART receiver timeout / A7105 ISR: nothing to poll here.
 
   for (int i=0; i<MAX_TELEMETRY_SENSORS; i++) {
     const TelemetrySensor & sensor = g_model.telemetrySensors[i];

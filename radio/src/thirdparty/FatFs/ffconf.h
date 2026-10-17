@@ -2,19 +2,10 @@
 /  FatFs - FAT file system module configuration file
 /---------------------------------------------------------------------------*/
 
-#include "rtos.h"
+#include "os/task.h"
 
 #define _FFCONF 68020	/* Revision ID */
 
-#if !defined(SIMU)
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include "../CoOS/kernel/CoOS.h"
-#ifdef __cplusplus
-}
-#endif
-#endif
 
 /*---------------------------------------------------------------------------/
 / Function Configurations
@@ -265,7 +256,7 @@ extern "C" {
 
 #if !defined(BOOT)
   #define _FS_REENTRANT		1	   /* 0:Disable or 1:Enable */
-  #define _SYNC_t               RTOS_MUTEX_HANDLE /* O/S dependent type of sync object. e.g. HANDLE, OS_EVENT*, ID and etc.. */
+  #define _SYNC_t               mutex_handle_t    /* O/S dependent type of sync object. e.g. HANDLE, OS_EVENT*, ID and etc.. */
 #else
   #define _FS_REENTRANT		0	   /* 0:Disable or 1:Enable */
 #endif

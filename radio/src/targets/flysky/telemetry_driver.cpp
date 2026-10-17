@@ -25,6 +25,10 @@ DMAFifo<TELEMETRY_FIFO_SIZE> telemetryDMAFifo __DMA (TELEMETRY_DMA_Channel_RX);
 
 #define TELEMETRY_USART_IRQ_PRIORITY 0
 
+// Receiver timeout in bit times after the stop bit of the last received byte
+// (~1 characters at 8N1, baud-rate independent). Used as "frame received".
+#define TELEMETRY_RX_TIMEOUT_BITS    10
+
 void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   TRACE("telemetryPortInit %d", baudrate);
 
@@ -49,9 +53,6 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
 
   LL_USART_DeInit(TELEMETRY_USART);
 
-  // IDLE
-//  LL_USART_EnableIT_IDLE(TELEMETRY_USART);
-
   LL_USART_InitTypeDef USART_InitStruct; // = {0};
   USART_InitStruct.BaudRate = baudrate;
   USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
@@ -61,6 +62,16 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
   USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_8;
   LL_USART_Init(TELEMETRY_USART, &USART_InitStruct);
+
+  // Receiver timeout (RTO) starts telemetryProcessFrameTimer at the end of every RX
+  // burst. Unlike IDLE, the RTO counter only starts after a received stop bit,
+  // so re-enabling the receiver at the half-duplex turnaround (which sets IDLE
+  // on STM32F0) does not raise it: works the same in half and full duplex.
+  // Configured while UE=0 (LL_USART_Init above leaves the USART disabled).
+  LL_USART_SetRxTimeout(TELEMETRY_USART, TELEMETRY_RX_TIMEOUT_BITS);
+  LL_USART_EnableRxTimeout(TELEMETRY_USART);
+  LL_USART_ClearFlag_RTO(TELEMETRY_USART);
+  LL_USART_EnableIT_RTO(TELEMETRY_USART);
 
   LL_USART_SetTXPinLevel(TELEMETRY_USART, ((g_eeGeneral.crsfFullDuplex) ? LL_USART_TXPIN_LEVEL_STANDARD : LL_USART_TXPIN_LEVEL_INVERTED));
   LL_USART_SetRXPinLevel(TELEMETRY_USART, ((g_eeGeneral.crsfFullDuplex) ? LL_USART_TXPIN_LEVEL_STANDARD : LL_USART_RXPIN_LEVEL_INVERTED));
@@ -102,7 +113,7 @@ void telemetryPortSetDirectionOutput() {
   // Disable RX
   if (!g_eeGeneral.crsfFullDuplex) {
     TELEMETRY_DMA_Channel_RX->CCR &= ~DMA_CCR_EN;
-    TELEMETRY_USART->CR1 &= ~(USART_CR1_RE /* | USART_CR1_IDLEIE*/);
+    TELEMETRY_USART->CR1 &= ~USART_CR1_RE;
   }
 
   // Enable TX
@@ -117,7 +128,7 @@ void telemetryPortSetDirectionInput() {
   }
 
   // Enable RX
-  TELEMETRY_USART->CR1 |= (USART_CR1_RE/* | USART_CR1_IDLEIE*/);
+  TELEMETRY_USART->CR1 |= USART_CR1_RE;
   TELEMETRY_DMA_Channel_RX->CCR |= DMA_CCR_EN;
 }
 
@@ -157,6 +168,13 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
   DEBUG_INTERRUPT(INT_TELEM_USART);
   uint32_t status = TELEMETRY_USART->ISR;
 
+  // RX, end of burst (receiver timeout); handled before the TX turnaround
+  if (status & USART_ISR_RTOF) {
+    TELEMETRY_USART->ICR = USART_ICR_RTOCF;
+    TELEMETRY_STATS_INC(telemetryStatsRto);
+    timer_start(&telemetryProcessFrameTimer);
+  }
+
   // TX, transfer complete
   if ((status & USART_ISR_TC) && (TELEMETRY_USART->CR1 & USART_CR1_TCIE)) {
     // disable TC IRQ
@@ -169,14 +187,7 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
     }
   }
 
-  // RX, handled by DMA
-
-  // TODO IDLE disabled, it is always triggering, spamming ISR
-//  if ((TELEMETRY_USART->CR1 & USART_CR1_IDLEIE) && (status & USART_ISR_IDLE)) {
-//    TRACE_NOCRLF("x");
-//     pendingTelemetryPollFrame = true;
-//    TELEMETRY_USART->ICR = USART_ICR_IDLECF;
-//  }
+  // RX data is moved by DMA.
 }
 
 // TODO we should have telemetry in an higher layer, functions above should move to a sport_driver.cpp

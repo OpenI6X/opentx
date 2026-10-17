@@ -122,12 +122,6 @@ uint16_t getTmr2MHz()
   return simuTimerMicros() * 2;
 }
 
-// return 2ms resolution to match CoOS settings
-uint64_t CoGetOSTime(void)
-{
-  return simuTimerMicros() / 2000;
-}
-
 void simuInit()
 {
 #if defined(STM32)
@@ -367,8 +361,9 @@ void StopSimu()
 
   simu_shutdown = true;
 
-  pthread_join(mixerTaskId, nullptr);
-  pthread_join(menusTaskId, nullptr);
+  pthread_join(mixerTaskId._thread, nullptr);
+  pthread_join(menusTaskId._thread, nullptr);
+  pthread_join(timerTaskId._thread, nullptr);
 
   simu_running = false;
 }

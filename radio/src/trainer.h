@@ -23,6 +23,11 @@
 
 #include "opentx.h"
 
+#if defined(SBUS_TRAINER)
+extern timer_handle_t trainerSbusFrameTimer;
+void sbusFrameReceivedCb();
+#endif
+
 // Trainer input channels
 extern int16_t trainerInput[MAX_TRAINER_CHANNELS];
 

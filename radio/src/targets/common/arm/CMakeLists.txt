@@ -122,7 +122,6 @@ add_definitions(-DTELEMETRY_FRSKY -DTELEMETRY_FRSKY_SPORT -DGPS -DDSM2 -DPXX)
 endif()
 add_definitions(-DBOLD_FONT -DBATTGRAPH -DTHRTRACE)
 add_definitions(-DREQUIRED_SDCARD_VERSION="${SDCARD_VERSION}")
-include_directories(${COOS_DIR} ${COOS_DIR}/kernel ${COOS_DIR}/portable)
 foreach(LANGUAGE ${TTS_LANGUAGES})
   string(TOLOWER ${LANGUAGE} lang_lower)
   set(SRC ${SRC} translations/tts_${lang_lower}.cpp)
@@ -131,6 +130,7 @@ set(SRC
   ${SRC}
   main.cpp
   tasks.cpp
+  os/timer.cpp
   telemetry/telemetry.cpp
   telemetry/telemetry_holders.cpp
   telemetry/telemetry_sensors.cpp
@@ -160,19 +160,13 @@ set(TARGET_SRC
   keys_driver.cpp
   telemetry_driver.cpp
   )
+include_directories(${RTOS_DIR})
 set(FIRMWARE_SRC
   ${FIRMWARE_SRC}
-  ${COOS_DIR}/kernel/core.c
-  ${COOS_DIR}/kernel/hook.c
-  ${COOS_DIR}/kernel/task.c
-  ${COOS_DIR}/kernel/event.c
-  ${COOS_DIR}/kernel/time.c
-  ${COOS_DIR}/kernel/timer.c
-  ${COOS_DIR}/kernel/flag.c
-  ${COOS_DIR}/kernel/mutex.c
-  ${COOS_DIR}/kernel/serviceReq.c
-  ${COOS_DIR}/portable/GCC/port.c
-  ${COOS_DIR}/portable/arch.c
+  ${RTOS_DIR}/tinyk.c
+  os/task_tinyk.cpp
+  os/time_tinyk.cpp
+  os/sleep_tinyk.cpp
   )
 
 set(PULSES_SRC

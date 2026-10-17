@@ -21,6 +21,7 @@
 #ifndef _TELEMETRY_H_
 #define _TELEMETRY_H_
 
+#include "../os/timer.h"
 #include "telemetry_holders.h"
 #include "telemetry_sensors.h"
 
@@ -56,11 +57,27 @@ enum TelemetryProtocol
   PROTOCOL_TELEMETRY_LUA,
 };
 
+void telemetryStart();
 void telemetryInit(uint8_t protocol);
 void telemetryWakeup();
 void telemetryReset();
 void telemetryInterrupt10ms();
 int setTelemetryValue(TelemetryProtocol protocol, uint16_t id, uint8_t subId, uint8_t instance, int32_t value, uint32_t unit, uint32_t prec);
+
+// Deferred telemetry processing (runs in the timer task): timer_start() from ISRs
+extern timer_handle_t telemetryProcessFrameTimer;
+void telemetryProcessFrameCb();  // telemetryProcessFrameTimer callback: drain CRSF FIFO / parse the AFHDS2A frame in telemetryRxBuffer
+
+#if defined(TELEMETRY_STATS)
+// Debug counters (Statistics -> Debug, short ENTER resets them)
+extern volatile uint32_t telemetryStatsRto;     // USART receiver timeouts (end of an RX burst)
+extern volatile uint32_t telemetryStatsFrames;  // frames parsed OK (CRSF CRC good / AFHDS2A AA|AC)
+#define TELEMETRY_STATS_INC(x)  ((x) = (x) + 1)
+#else
+#define TELEMETRY_STATS_INC(x)
+#endif
+
+
 int setTelemetryText(TelemetryProtocol protocol, uint16_t id, uint8_t subId, uint8_t instance, const char * text);
 
 void delTelemetryIndex(uint8_t index);

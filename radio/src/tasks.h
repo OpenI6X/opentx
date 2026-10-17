@@ -22,6 +22,10 @@
 #define _TASKS_H_
 
 #include "rtos.h"
+#include "os/task.h"
+#include "os/time.h"
+#include "os/sleep.h"
+#include "os/timer.h"
 
 // stack sizes should be in multiples of 8 for better alignment
 // expressed in integers resulting size is 4 times bigger
@@ -30,24 +34,15 @@
 #define AUDIO_STACK_SIZE       400
 #define CLI_STACK_SIZE         1024  // only consumed with CLI build option
 
-#define MIXER_TASK_PRIO        5
-#define AUDIO_TASK_PRIO        7
-#define MENUS_TASK_PRIO        10
-#define CLI_TASK_PRIO          10
+// Task priority = creation order in tasksStart() (first = highest).
+// The timer task (timerTaskId, TIMER_STACK_SIZE) is in os/timer.
 
-extern RTOS_TASK_HANDLE menusTaskId;
-extern RTOS_DEFINE_STACK(menusStack, MENUS_STACK_SIZE);
+extern task_handle_t menusTaskId;
+extern task_handle_t mixerTaskId;
+extern task_handle_t audioTaskId;
 
-extern RTOS_TASK_HANDLE mixerTaskId;
-extern RTOS_DEFINE_STACK(mixerStack, MIXER_STACK_SIZE);
+extern mutex_handle_t mixerMutex;
 
-extern RTOS_TASK_HANDLE audioTaskId;
-extern RTOS_DEFINE_STACK(audioStack, AUDIO_STACK_SIZE);
-
-extern RTOS_MUTEX_HANDLE mixerMutex;
-extern RTOS_FLAG_HANDLE openTxInitCompleteFlag;
-
-void stackPaint();
 void tasksStart();
 
 extern volatile uint16_t timeForcePowerOffPressed;

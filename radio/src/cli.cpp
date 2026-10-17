@@ -30,8 +30,8 @@
 #define CLI_COMMAND_MAX_ARGS           8
 #define CLI_COMMAND_MAX_LEN            32
 
-// RTOS_TASK_HANDLE cliTaskId;
-// RTOS_DEFINE_STACK(cliStack, CLI_STACK_SIZE);
+// task_handle_t cliTaskId;
+// TASK_DEFINE_STACK(cliStack, CLI_STACK_SIZE);
 
 Fifo<uint8_t, 32> cliRxFifo;
 uint8_t cliTracesEnabled = true;
@@ -311,7 +311,7 @@ int cliTestNew()
 {
   char * tmp = 0;
   serialPrint("Allocating 1kB with new()");
-  RTOS_WAIT_MS(200);
+  sleep_ms(200);
   tmp = new char[1024];
   if (tmp) {
     serialPrint("\tsuccess");
@@ -323,7 +323,7 @@ int cliTestNew()
   }
 
   serialPrint("Allocating 10MB with (std::nothrow) new()");
-  RTOS_WAIT_MS(200);
+  sleep_ms(200);
   tmp = new (std::nothrow) char[1024*1024*10];
   if (tmp) {
     serialPrint("\tFAILURE, tmp = %p", tmp);
@@ -335,7 +335,7 @@ int cliTestNew()
   }
 
   serialPrint("Allocating 10MB with new()");
-  RTOS_WAIT_MS(200);
+  sleep_ms(200);
   tmp = new char[1024*1024*10];
   if (tmp) {
     serialPrint("\tFAILURE, tmp = %p", tmp);
@@ -387,13 +387,14 @@ int cliStackInfo(const char ** argv)
 #if !defined(STM32F0)
   serialPrint("[MAIN] %d available / %d b", stackAvailable(), stackSize());  // stackSize() returns size in 32bit chunks
 #endif
-  serialPrint("[MENUS] %d / %d bytes", menusStack.available(), menusStack.size());
-  serialPrint("[MIXER] %d / %d bytes", mixerStack.available(), mixerStack.size());
+  serialPrint("[MENUS] %d / %d bytes", task_get_stack_usage(&menusTaskId), task_get_stack_size(&menusTaskId));
+  serialPrint("[MIXER] %d / %d bytes", task_get_stack_usage(&mixerTaskId), task_get_stack_size(&mixerTaskId));
+  serialPrint("[TIMER] %d / %d bytes", task_get_stack_usage(&timerTaskId), task_get_stack_size(&timerTaskId));
 #if defined(AUDIO)
-  serialPrint("[AUDIO] %d / %d bytes", audioStack.available(), audioStack.size());
+  serialPrint("[AUDIO] %d / %d bytes", task_get_stack_usage(&audioTaskId), task_get_stack_size(&audioTaskId));
 #endif
   // CLI is moved to menu stack, so no separate task is used anymore
-  // serialPrint("[CLI] %d / %d bytes", cliStack.available() * 4, cliStack.size());
+  // serialPrint("[CLI] %d / %d bytes", task_get_stack_usage(&cliTaskId), task_get_stack_size(&cliTaskId));
   return 0;
 }
 
@@ -606,8 +607,7 @@ void printDebugTimers()
 #endif
 
 #if defined(AUDIO)
-#include "OsMutex.h"
-extern RTOS_MUTEX_HANDLE audioMutex;
+extern mutex_handle_t audioMutex;
 
 void printAudioVars()
 {
@@ -630,7 +630,9 @@ void printAudioVars()
 
   serialPrint("normalContext: %u", (uint32_t)audioQueue.normalContext.fragment.type);
 
-  serialPrint("audioMutex[%u] = %u", (uint32_t)audioMutex, (uint32_t)MutexTbl[audioMutex].mutexFlag);
+#if defined(RTOS_TINYK)
+  serialPrint("audioMutex: owner %u, waiters 0x%02x", (uint32_t)audioMutex.owner, (uint32_t)audioMutex.waiters);
+#endif
 }
 #endif
 
@@ -1046,7 +1048,7 @@ void cliTask(void * pdata)
     uint8_t c;
 
     while (!cliRxFifo.pop(c)) {
-      RTOS_WAIT_MS(20); // 20ms
+      sleep_ms(20); // 20ms
     }
 
     if (c == 12) {
@@ -1086,5 +1088,5 @@ void cliTask(void * pdata)
 
 void cliStart()
 {
-  // RTOS_CREATE_TASK(cliTaskId, cliTask, "CLI", cliStack, CLI_STACK_SIZE, CLI_TASK_PRIO);
+  // task_create(&cliTaskId, cliTask, "CLI", cliStack, CLI_STACK_SIZE);
 }
