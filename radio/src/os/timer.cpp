@@ -77,6 +77,11 @@ bool timer_is_created(timer_handle_t * timer)
   return timer->_func != nullptr;  
 }
 
+bool timer_is_active(timer_handle_t * timer)
+{
+  return timer->_active != 0;
+}
+
 void timer_stop(timer_handle_t * timer)
 {
   timer->_active = 0;  // byte store; unlinked by the timer task
