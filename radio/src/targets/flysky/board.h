@@ -424,6 +424,7 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode);
 void telemetryPortSetDirectionOutput(void);
 void sportSendBuffer(const uint8_t* buffer, uint32_t count);
 uint8_t telemetryGetByte(uint8_t * byte);
+uint8_t telemetryCopyRxBuffer(uint8_t * buf, uint8_t len);
 // extern uint32_t telemetryErrors;
 
 // Audio driver

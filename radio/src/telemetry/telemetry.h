@@ -64,9 +64,9 @@ void telemetryReset();
 void telemetryInterrupt10ms();
 int setTelemetryValue(TelemetryProtocol protocol, uint16_t id, uint8_t subId, uint8_t instance, int32_t value, uint32_t unit, uint32_t prec);
 
-// Deferred telemetry processing (runs in the timer task): timer_start() from ISRs
-extern timer_handle_t telemetryProcessFrameTimer;
-void telemetryProcessFrameCb();  // telemetryProcessFrameTimer callback: drain CRSF FIFO / parse the AFHDS2A frame in telemetryRxBuffer
+// Frame received (USART receiver timeout / validated A7105 packet): runs
+// _poll_frame() in the timer task. Callable from any ISR.
+void telemetryFrameTrigger_ISR();
 
 #if defined(TELEMETRY_STATS)
 // Debug counters (Statistics -> Debug, short ENTER resets them)

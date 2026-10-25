@@ -266,8 +266,7 @@ void mixerTaskInit()
 }
 
 void tasksStart() {
-  // Before anything can start it (telemetry ISRs are enabled later, from tasks)
-  timer_create(&telemetryProcessFrameTimer, telemetryProcessFrameCb, 0, false);  // one-shot, asap
+  // Before anything can start it (ISRs are enabled later, from tasks)
 #if defined(SBUS_TRAINER)
   timer_create(&trainerSbusFrameTimer, sbusFrameReceivedCb, 0, false);  // one-shot, asap
 #endif
@@ -280,7 +279,7 @@ void tasksStart() {
   mixerTaskInit();
 
   // Timer task (software timer callbacks, os/timer.h): below the mixer,
-  // above menus. The telemetry parser runs here (telemetryProcessFrameTimer), so
+  // above menus. The telemetry parser runs here (_poll_frame()), so
   // it is never delayed by a long menus pass (LCD refresh, model load, EEPROM
   // write) and the 128 B CRSF DMA FIFO cannot overrun; it preempts menus
   // exactly as it did inside the mixer task (same concurrency with the ELRS

@@ -283,7 +283,7 @@ packet[1-4] - rx_tx_addr
 packet[5-8] - rx_id
 0xff - AFHDS2A_ID_END
 */
-void processFlySkyTelemetryFrame(uint8_t * frame) {
+void flyskyProcessFrame(uint8_t * frame) {
   if (frame[0] == 0xAA) {
     processFlySkyPacket(frame + 8);
   } else if (frame[0] == 0xAC) {

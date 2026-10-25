@@ -63,7 +63,7 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_8;
   LL_USART_Init(TELEMETRY_USART, &USART_InitStruct);
 
-  // Receiver timeout (RTO) starts telemetryProcessFrameTimer at the end of every RX
+  // Receiver timeout (RTO) calls telemetryFrameTrigger_ISR() at the end of every RX
   // burst. Unlike IDLE, the RTO counter only starts after a received stop bit,
   // so re-enabling the receiver at the half-duplex turnaround (which sets IDLE
   // on STM32F0) does not raise it: works the same in half and full duplex.
@@ -172,7 +172,7 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
   if (status & USART_ISR_RTOF) {
     TELEMETRY_USART->ICR = USART_ICR_RTOCF;
     TELEMETRY_STATS_INC(telemetryStatsRto);
-    timer_start(&telemetryProcessFrameTimer);
+    telemetryFrameTrigger_ISR();
   }
 
   // TX, transfer complete
@@ -193,4 +193,13 @@ extern "C" void TELEMETRY_USART_IRQHandler(void) {
 // TODO we should have telemetry in an higher layer, functions above should move to a sport_driver.cpp
 uint8_t telemetryGetByte(uint8_t* byte) {
   return telemetryDMAFifo.pop(*byte);
+}
+
+// EdgeTX copyRxBuffer(): move up to len received bytes to buf, returns the count
+uint8_t telemetryCopyRxBuffer(uint8_t* buf, uint8_t len) {
+  uint8_t n = 0;
+  while (n < len && telemetryDMAFifo.pop(buf[n])) {
+    n++;
+  }
+  return n;
 }
