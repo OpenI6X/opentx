@@ -331,7 +331,7 @@ ResData_:  //-----------------------------------------------------------
           tx_rssi = limit<int16_t>(0, tx_rssi, 255);
           rxPacket[8] = tx_rssi;
         }
-        timer_start(&telemetryProcessFrameTimer);
+        telemetryFrameTrigger_ISR();
       }
     }
     SETBIT(RadioState, SEND_RES, SEND);
