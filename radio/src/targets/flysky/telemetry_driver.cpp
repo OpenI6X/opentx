@@ -196,10 +196,6 @@ uint8_t telemetryGetByte(uint8_t* byte) {
 }
 
 // EdgeTX copyRxBuffer(): move up to len received bytes to buf, returns the count
-uint8_t telemetryCopyRxBuffer(uint8_t* buf, uint8_t len) {
-  uint8_t n = 0;
-  while (n < len && telemetryDMAFifo.pop(buf[n])) {
-    n++;
-  }
-  return n;
+int telemetryCopyRxBuffer(uint8_t* buf, uint32_t len) {
+  return telemetryDMAFifo.copy(buf, len);
 }

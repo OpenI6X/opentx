@@ -104,12 +104,8 @@ int sbusGetBufferedBytes()
   return auxSerialRxFifo.used();
 }
 
-int sbusCopyRxBuffer(uint8_t * buffer, uint32_t size)
+int sbusCopyRxBuffer(uint8_t * buf, uint32_t len)
 {
-  uint8_t rxchar, i = 0;
-  while (i < size && auxSerialRxFifo.pop(rxchar)) {
-    buffer[i++] = rxchar;
-  }
-  return i;
+  return auxSerialRxFifo.copy(buf, len);
 }
 #endif

@@ -73,6 +73,24 @@ class DMAFifo
       }
     }
 
+    // Move up to len received bytes to buf, returns the count
+    // (EdgeTX serial driver copyRxBuffer()). Single reader, like pop().
+    uint32_t copy(uint8_t * buf, uint32_t len)
+    {
+#if defined(SIMU)
+      return 0;
+#endif
+      uint32_t n = used();  // one CNDTR read for the whole copy
+      if (n > len) {
+        n = len;
+      }
+      for (uint32_t i = 0; i < n; i++) {
+        buf[i] = fifo[(ridx + i) & (N-1)];
+      }
+      ridx = (ridx + n) & (N-1);
+      return n;
+    }
+
     uint8_t * buffer()
     {
       return fifo;
