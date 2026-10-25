@@ -31,13 +31,12 @@ TelemetryData telemetryData;
 
 uint8_t telemetryProtocol = 255;
 
-// Deferred telemetry processing: one-shot timer with period 0, i.e. run as
-// soon as possible in the timer task. Started by the A7105 ISR (validated AFHDS2A
-// frame) and the USART receiver timeout (end of a CRSF frame).
-// Callback: telemetryProcessFrameCb(); created in tasksStart().
-timer_handle_t telemetryProcessFrameTimer;
-
 static timer_handle_t telemetryTimer;
+
+// Deferred frame processing (EdgeTX: async_call_isr(_poll_frame)): one-shot
+// timer with period 0, i.e. run as soon as possible in the timer task.
+static timer_handle_t _poll_frame_timer;
+static void _poll_frame();
 
 static void telemetryTimerCb()
 {
@@ -50,6 +49,11 @@ static void telemetryTimerCb()
 
 void telemetryStart()
 {
+  // before telemetryInit() / the A7105 start can enable a frame trigger
+  if (!timer_is_created(&_poll_frame_timer)) {
+    timer_create(&_poll_frame_timer, _poll_frame, 0, false);
+  }
+
   if (!timer_is_created(&telemetryTimer)) {
     timer_create(&telemetryTimer, telemetryTimerCb, 2, true);
   }
@@ -64,14 +68,50 @@ volatile uint32_t telemetryStatsRto;
 volatile uint32_t telemetryStatsFrames;
 #endif
 
-void telemetryProcessFrameCb()
+#if defined(CROSSFIRE)
+static void telemetryMirrorSend(uint8_t data)
+{
+#if !defined(DEBUG) && defined(USB_SERIAL)
+  if (usbTelemMirrorActive()) {
+    usbSerialPutc(data);
+  } else
+#endif
+
+#if defined(AUX_SERIAL)
+  if (g_eeGeneral.auxSerialMode == UART_MODE_TELEMETRY_MIRROR) {
+    auxSerialPutc(data);
+  }
+#endif
+  {}
+}
+#endif
+
+// Deliberate difference to EdgeTX: no _telemetryIsPolling flag. In EdgeTX it
+// stops pulsesStopModule() / a protocol change in pulsesSendNextFrame() from
+// tearing down the module driver and serial port context (_deinit_module)
+// while _poll_frame() is using them. Here nothing a module stop / protocol
+// change does (intmoduleStop(), extmoduleStop(): module power and timers;
+// moduleState; mixer period) is used by _poll_frame(), and the telemetry
+// USART is only reconfigured by telemetryInit(), which runs in this same
+// timer task and so cannot interleave with it. The flag would only delay
+// protocol switches and cost ~100 B of flash.
+static void _poll_frame()
 {
 #if defined(CROSSFIRE)
   if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
-    uint8_t data;
-    while (telemetryGetByte(&data)) {
-      processCrossfireTelemetryData(data);  // TODO handle full frame as in EdgeTX
-      LOG_TELEMETRY_WRITE_BYTE(data);
+    // EdgeTX copyRxBuffer() + processFrame(), with the bytes copied straight
+    // behind the incomplete frame kept in telemetryRxBuffer (< 64 bytes, so
+    // there is always room). Repeat if the FIFO held more than fitted.
+    uint8_t frame_len;
+    while ((frame_len = telemetryCopyRxBuffer(telemetryRxBuffer + telemetryRxBufferCount,
+                                              TELEMETRY_RX_PACKET_SIZE - telemetryRxBufferCount)) > 0) {
+      const uint8_t* frame = telemetryRxBuffer + telemetryRxBufferCount;
+      LOG_TELEMETRY_WRITE_START();
+      for (int i = 0; i < frame_len; i++) {
+        telemetryMirrorSend(frame[i]);
+        LOG_TELEMETRY_WRITE_BYTE(frame[i]);
+      }
+      crossfireProcessFrame(telemetryRxBuffer, &telemetryRxBufferCount, frame_len);
     }
   }
 #endif
@@ -80,19 +120,19 @@ void telemetryProcessFrameCb()
   // the packet in telemetryRxBuffer). No ownership guard: the parse completes
   // long before the next radio packet (timer task priority, see tasksStart()).
   if (telemetryProtocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS) {
-    processFlySkyTelemetryFrame(telemetryRxBuffer);
+   // TODO move mirror here to unify with crossfire later
+    flyskyProcessFrame(telemetryRxBuffer);
   }
 #endif
 }
 
+void telemetryFrameTrigger_ISR()
+{
+  timer_start(&_poll_frame_timer);
+}
+
 void processTelemetryData(uint8_t data)
 {
-#if defined(CROSSFIRE)
-  if (telemetryProtocol == PROTOCOL_TELEMETRY_CROSSFIRE) {
-    processCrossfireTelemetryData(data);
-    return;
-  }
-#endif
 #if defined(MULTIMODULE)
   if (telemetryProtocol == PROTOCOL_TELEMETRY_SPEKTRUM) {
     processSpektrumTelemetryData(data);
@@ -119,8 +159,8 @@ void telemetryWakeup()
     telemetryInit(requiredTelemetryProtocol);
   }
 
-  // CRSF / AFHDS2A frames are handled by telemetryProcessFrameTimer,
-  // started from the USART receiver timeout / A7105 ISR: nothing to poll here.
+  // CRSF / AFHDS2A frames are handled by _poll_frame(), triggered by the
+  // USART receiver timeout / A7105 ISR: nothing to poll here.
 
   for (int i=0; i<MAX_TELEMETRY_SENSORS; i++) {
     const TelemetrySensor & sensor = g_model.telemetrySensors[i];
