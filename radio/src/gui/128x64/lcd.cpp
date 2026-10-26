@@ -20,7 +20,7 @@
 
 #include "opentx.h"
 
-display_t displayBuf[DISPLAY_BUFFER_SIZE];
+__ALIGNED(4) display_t displayBuf[DISPLAY_BUFFER_SIZE];
 
 void lcdClear()
 {
@@ -37,18 +37,18 @@ void lcdPutPattern(coord_t x, coord_t y, const uint8_t * pattern, uint8_t width,
   bool inv = (flags & INVERS) != 0;
   if (flags & BLINK) {
     if (BLINK_ON_PHASE) {
-      if (inv) {
-        inv = true;
-      } else {
+      if (!inv)
         blink = true;
-      }
     } else {
       inv = false;
     }
   }
 
-  uint8_t lines = (height + 7) / 8;
+  uint8_t lines = (height + 7) >> 3;
   assert(lines <= 5);
+
+  const bool vertical = (flags & VERTICAL) != 0;
+  const bool sml = (FONTSIZE(flags) == SMLSIZE);
 
   for (int8_t i = 0; i < width + 2; i++) {
     if (x >= LCD_W) {
@@ -90,25 +90,31 @@ void lcdPutPattern(coord_t x, coord_t y, const uint8_t * pattern, uint8_t width,
       }
     }
 
-    for (int8_t j=-1; j<=height; j++) {
-      bool plot;
-      if (j < 0 || ((j == height) && !(FONTSIZE(flags) == SMLSIZE))) {
-        plot = false;
-        if (height >= 12) continue;
-        if (j<0 && !inv) continue;
-        if (y+j < 0) continue;
-      }
-      else {
-        uint8_t line = (j / 8);
-        uint8_t pixel = (j % 8);
-        plot = b[line] & (1 << pixel);
-      }
-      if (inv) plot = !plot;
-      if (!blink) {
-        if (flags & VERTICAL)
-          lcdDrawPoint(y+j, LCD_H-x, plot ? FORCE : ERASE);
-        else
-          lcdDrawPoint(x, y+j, plot ? FORCE : ERASE);
+    if (!blink) {
+      for (int8_t j = -1; j <= (int8_t)height; j++) {
+        bool plot;
+        if (j < 0 || (j == (int8_t)height && !sml)) {
+          plot = false;
+          if (height >= 12) continue;
+          if (j < 0 && !inv) continue;
+          if (y + j < 0) continue;
+        }
+        else {
+          plot = b[(uint8_t)j >> 3] & (1 << (j & 7));
+        }
+        if (inv) plot = !plot;
+
+        if (vertical) {
+          lcdDrawPoint(y + j, LCD_H - x, plot ? FORCE : ERASE);
+        } else {
+          /* inlined lcdDrawPoint — common path */
+          coord_t yy = y + j;
+          if ((unsigned)yy < LCD_H) {
+            uint8_t * p = &displayBuf[((unsigned)yy >> 3) * LCD_W + x];
+            uint8_t mask = 1 << (yy & 7);
+            if (plot) *p |= mask; else *p &= ~mask;
+          }
+        }
       }
     }
     x++;
@@ -127,7 +133,7 @@ struct PatternData
 uint8_t getPatternWidth(const PatternData * pattern)
 {
   uint8_t result = 0;
-  uint8_t lines = (pattern->height+7)/8;
+  uint8_t lines = (pattern->height+7) >> 3;
   const uint8_t * data = pattern->data;
   for (int8_t i=0; i<pattern->width; i++) {
     for (uint32_t j=0; j<lines; j++) {
@@ -484,7 +490,7 @@ void lcdDrawVerticalLine(coord_t x, coord_t y, coord_t h, uint8_t pat, LcdFlags 
   if (pat==DOTTED && !(y%2))
     pat = ~pat;
 
-  uint8_t * p  = &displayBuf[ y / 8 * LCD_W + x ];
+  uint8_t * p  = &displayBuf[ (y >> 3) * LCD_W + x ];
   y = (y & 0x07);
   if (y) {
     ASSERT_IN_DISPLAY(p);
@@ -937,11 +943,11 @@ void lcdDraw1bitBitmap(coord_t x, coord_t y, const uint8_t * img, uint8_t idx, L
 {
   const uint8_t * q = img;
   uint8_t w = *q++;
-  uint8_t hb = ((*q++) + 7) / 8;
+  uint8_t hb = ((*q++) + 7) >> 3;
   bool inv = (att & INVERS) ? true : (att & BLINK ? BLINK_ON_PHASE : false);
   q += idx*w*hb;
   for (uint32_t yb = 0; yb < hb; yb++) {
-    uint8_t *p = &displayBuf[(y / 8 + yb) * LCD_W + x];
+    uint8_t *p = &displayBuf[((y >> 3) + yb) * LCD_W + x];
     for (coord_t i=0; i<w; i++){
       uint8_t b = *q++;
       if (p < DISPLAY_END) {
@@ -956,32 +962,29 @@ void lcdDraw1bitBitmap(coord_t x, coord_t y, const uint8_t * img, uint8_t idx, L
 void lcdMaskPoint(uint8_t * p, uint8_t mask, LcdFlags att)
 {
   ASSERT_IN_DISPLAY(p);
-
-  if (att & FORCE)
-    *p |= mask;
-  else if (att & ERASE)
-    *p &= ~mask;
-  else
-    *p ^= mask;
+  uint8_t v = *p;               // single load/store, the compiler can't merge them through the pointer otherwise
+  if (att & FORCE)      v |= mask;
+  else if (att & ERASE) v &= ~mask;
+  else                  v ^= mask;
+  *p = v;
 }
 
 void lcdDrawPoint(coord_t x, coord_t y, LcdFlags att)
 {
-  uint8_t * p = &displayBuf[ y / 8 * LCD_W + x ];
-  if (p < DISPLAY_END) {
-    lcdMaskPoint(p, BITMASK(y % 8), att);
-  }
+  // one unsigned compare per axis also rejects negative values
+  if ((unsigned)x >= LCD_W || (unsigned)y >= LCD_H)
+    return;
+  lcdMaskPoint(&displayBuf[((unsigned)y >> 3) * LCD_W + x], 1 << (y & 7), att);
 }
 
 void lcdInvertLine(int8_t line)
 {
-  if (line < 0) return;
-  if (line >= LCD_LINES) return;
+  if ((uint8_t)line >= LCD_LINES) return; // rejects negatives and out-of-range lines
 
-  uint8_t *p  = &displayBuf[line * LCD_W];
-  for (coord_t x=0; x<LCD_W; x++) {
+  uint32_t *p  = (uint32_t *) &displayBuf[line * LCD_W];
+  for (coord_t x = 0; x < LCD_W / 4; x ++) {
     ASSERT_IN_DISPLAY(p);
-    *p++ ^= 0xff;
+    *p++ ^= 0xffffffff;
   }
 }
 
@@ -990,7 +993,7 @@ void lcdDrawHorizontalLine(coord_t x, coord_t y, coord_t w, uint8_t pat, LcdFlag
   if (y >= LCD_H) return;
   if (x+w > LCD_W) { w = LCD_W - x; }
 
-  uint8_t *p  = &displayBuf[ y / 8 * LCD_W + x ];
+  uint8_t *p  = &displayBuf[ (y >> 3) * LCD_W + x ];
   uint8_t msk = BITMASK(y%8);
   while (w--) {
     if(pat&1) {

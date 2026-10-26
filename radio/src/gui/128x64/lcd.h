@@ -198,7 +198,7 @@ inline display_t getPixel(uint8_t x, uint8_t y)
     return 0;
   }
 
-  display_t pixel = displayBuf[(y / 8) * LCD_W + x];
+  display_t pixel = displayBuf[(y >> 3) * LCD_W + x];
   display_t mask = 1 << (y & 7);
   return ((pixel & mask) ? 0xf : 0);
 }
