@@ -108,4 +108,9 @@ int sbusCopyRxBuffer(uint8_t * buf, uint32_t len)
 {
   return auxSerialRxFifo.copy(buf, len);
 }
+
+void sbusClearRxBuffer()
+{
+  auxSerialRxFifo.discard();
+}
 #endif

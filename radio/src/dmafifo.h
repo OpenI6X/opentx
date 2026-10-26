@@ -91,6 +91,13 @@ class DMAFifo
       return n;
     }
 
+    // Drop all received bytes: move ridx to the DMA write position
+    // (EdgeTX serial driver clearRxBuffer() / _dma_clear()). Single reader.
+    void discard()
+    {
+      ridx = (N - channel->CNDTR) & (N-1);
+    }
+
     uint8_t * buffer()
     {
       return fifo;
