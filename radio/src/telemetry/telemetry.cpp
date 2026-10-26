@@ -68,7 +68,6 @@ volatile uint32_t telemetryStatsRto;
 volatile uint32_t telemetryStatsFrames;
 #endif
 
-#if defined(CROSSFIRE)
 static void telemetryMirrorSend(uint8_t data)
 {
 #if !defined(DEBUG) && defined(USB_SERIAL)
@@ -83,6 +82,15 @@ static void telemetryMirrorSend(uint8_t data)
   }
 #endif
   {}
+}
+
+#if defined(AFHDS2A) && !defined(SIMU)
+static void telemetryMirrorMPHeader(uint8_t type)
+{
+  telemetryMirrorSend('M');
+  telemetryMirrorSend('P');
+  telemetryMirrorSend(type);
+  telemetryMirrorSend(AFHDS2A_RXPACKET_SIZE - 8);
 }
 #endif
 
@@ -120,7 +128,10 @@ static void _poll_frame()
   // the packet in telemetryRxBuffer). No ownership guard: the parse completes
   // long before the next radio packet (timer task priority, see tasksStart()).
   if (telemetryProtocol == PROTOCOL_TELEMETRY_FLYSKY_IBUS) {
-   // TODO move mirror here to unify with crossfire later
+    telemetryMirrorMPHeader(telemetryRxBuffer[0] == 0xAA ? 0x06 : 0x0C); // MPM telemetry types for AFHDS2A
+    for (int i = 8; i < AFHDS2A_RXPACKET_SIZE; i++) {
+      telemetryMirrorSend(telemetryRxBuffer[i]);
+    }
     flyskyProcessFrame(telemetryRxBuffer);
   }
 #endif
