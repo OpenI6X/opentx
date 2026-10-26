@@ -41,6 +41,7 @@ static void sbusProcessFrame(int16_t* pulses, uint8_t* sbus, uint32_t size);
 void sbusFrameReceivedCb()
 {
   if (sbusGetBufferedBytes() != SBUS_FRAME_SIZE) {
+    sbusClearRxBuffer();
     return;
   }
 
