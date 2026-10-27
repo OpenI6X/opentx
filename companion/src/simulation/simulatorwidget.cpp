@@ -219,8 +219,8 @@ bool SimulatorWidget::setStartupData(const QByteArray & dataSource, bool fromFil
   // Supposedly we're being given a file name to use, try that out.
   else if (fromFile && !fileName.isEmpty()) {
     Storage store = Storage(fileName);
-    ret = store.load(simuData);
-    if (!ret && QFile(fileName).exists()) {
+    ret = companionReadsData ? store.load(simuData) : 0;
+    if (!ret && QFile(fileName).exists() && companionReadsData) {
       error = store.error();
     }
     else {
@@ -293,6 +293,11 @@ bool SimulatorWidget::setRadioData(RadioData * radioData)
 bool SimulatorWidget::setOptions(SimulatorOptions & options, bool withSave)
 {
   bool ret = false;
+
+  // Companion can only parse radio data in the format of its profile firmware. When the
+  // simulated radio differs (e.g. opentx-i6x, which Companion does not define), the
+  // radio firmware has to read and write its own data file.
+  companionReadsData = options.firmwareId.isEmpty() || firmware->getFirmwareBase()->getId() == options.firmwareId;
 
   setSdPath(options.sdPath);
 

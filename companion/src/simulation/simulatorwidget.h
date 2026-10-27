@@ -142,6 +142,7 @@ class SimulatorWidget : public QWidget
     quint8 flags;
     int radioProfileId;
     bool startupFromFile;
+    bool companionReadsData = true;  // false when the simulated radio has no Companion firmware definition
     bool deleteTempRadioData;
     bool saveTempRadioData;
 
