@@ -61,6 +61,7 @@ TEST(FrSky, TelemetryValueWithMinAveraging)
   }
 }
 
+#if !defined(PCBI6X)  // the FrSky D hub parser (telemetry/frsky_d_arm.cpp) is not built for I6X
 TEST(FrSky, Vfas_0x39_HiPrecision)
 {
   MODEL_RESET();
@@ -149,6 +150,7 @@ TEST(FrSky, Gps)
   EXPECT_EQ(telemetryItems[0].gps.latitude, 15508333);
   EXPECT_EQ(telemetryItems[0].gps.longitude, 45341666);
 }
+#endif // !defined(PCBI6X)
 
 #endif // defined(TELEMETRY_FRSKY)
 
