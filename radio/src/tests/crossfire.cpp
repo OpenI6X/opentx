@@ -43,7 +43,7 @@ TEST(Crossfire, createCrossfireChannelsFrame)
 
   createCrossfireChannelsFrame(crossfire, pulsesStart);
 
-  ASSERT_EQ(crossfire[0], MODULE_ADDRESS);
+  ASSERT_EQ(crossfire[0], CSRF_ADDRESS_TX);
   ASSERT_EQ(crossfire[2], CHANNELS_ID);
 
   const uint8_t expectedChannelData[22] = {
@@ -71,10 +71,10 @@ TEST(Crossfire, ExpressLRSArmingExtension_CH5Mode)
 
   g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingMode = ARMING_MODE_CH5;
 
-  uint8_t len = createCrossfireChannelsFrame(EXTERNAL_MODULE, crossfire, pulsesStart);
+  uint8_t len = createCrossfireChannelsFrame(crossfire, pulsesStart);
 
   ASSERT_EQ(len, 27);
-  ASSERT_EQ(crossfire[0], MODULE_ADDRESS);
+  ASSERT_EQ(crossfire[0], CSRF_ADDRESS_TX);
   ASSERT_EQ(crossfire[1], 25);
   ASSERT_EQ(crossfire[2], CHANNELS_ID);
   ASSERT_EQ(crossfire[25], 0x02); // bit 1: arming mode CH5
@@ -98,10 +98,10 @@ TEST(Crossfire, ExpressLRSArmingExtension_SwitchMode)
   g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingMode = ARMING_MODE_SWITCH;
   g_model.moduleData[EXTERNAL_MODULE].crsf.crsfArmingTrigger = SWSRC_NONE;
 
-  uint8_t len = createCrossfireChannelsFrame(EXTERNAL_MODULE, crossfire, pulsesStart);
+  uint8_t len = createCrossfireChannelsFrame(crossfire, pulsesStart);
 
   ASSERT_EQ(len, 27);
-  ASSERT_EQ(crossfire[0], MODULE_ADDRESS);
+  ASSERT_EQ(crossfire[0], CSRF_ADDRESS_TX);
   ASSERT_EQ(crossfire[1], 25);
   ASSERT_EQ(crossfire[2], CHANNELS_ID);
   ASSERT_EQ(crossfire[25], 0); // SWSRC_NONE -> not armed, bit 1 clear (Switch mode)

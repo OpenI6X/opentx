@@ -806,7 +806,7 @@ extern const char STR_BLCOLOR[];
   extern const LanguagePack seLanguagePack;
   extern const LanguagePack skLanguagePack;
   extern const LanguagePack * const languagePacks[];
-  #if defined(LANGUAGE_PACKS_DEFINITION)
+  #if defined(LANGUAGE_PACKS_DEFINITION) && defined(VOICE)  // only VOICE code selects packs
   const LanguagePack * const languagePacks[] = {
     // alphabetical order
     &czLanguagePack,
