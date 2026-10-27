@@ -18,6 +18,10 @@ set(SIMU_SRC
 
   )
 
+if(CPU_TYPE STREQUAL STM32F0)
+  set(SIMU_SRC ${SIMU_SRC} simu_f0_memory.cpp)
+endif()
+
 if(SIMU_DISKIO)
   set(SIMU_SRC ${SIMU_SRC} ../../${FATFS_DIR}/ff.c ../../${FATFS_DIR}/option/ccsbcs.c)
 endif()
