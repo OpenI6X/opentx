@@ -31,6 +31,7 @@
 #define EESIZE_TARANIS                 (32*1024)
 #define EESIZE_SKY9X                   (128*4096)
 #define EESIZE_9XRPRO                  (128*4096)
+#define EESIZE_I6X                     (16*1024)  // radio/src/targets/flysky/board.h EEPROM_SIZE
 #define EESIZE_MAX                     EESIZE_9XRPRO
 
 // getFlashSize() (and these macros) is only used by radiointerface::getDfuArgs (perhaps can find a better way?)
@@ -41,6 +42,7 @@
 #define FSIZE_SKY9X                    (256*1024)
 #define FSIZE_9XRPRO                   (512*1024)
 #define FSIZE_HORUS                    (2048*1024)
+#define FSIZE_I6X                      (128*1024)  // STM32F072xB
 #define FSIZE_MAX                      FSIZE_HORUS
 
 using namespace Board;
@@ -76,6 +78,8 @@ uint32_t Boards::getFourCC(Type board)
     case BOARD_MEGA2560:
     case BOARD_GRUVIN9X:
       return 0x3178746F;
+    case BOARD_I6X:
+      return 0x4478746F;  // as in the machcnz OpenTX 2.3 Companion for OpenI6X; the radio has no SD card
     default:
       return 0;
   }
@@ -102,6 +106,8 @@ const int Boards::getEEpromSize(Board::Type board)
     case BOARD_TARANIS_X9DP:
     case BOARD_TARANIS_X9E:
       return EESIZE_TARANIS;
+    case BOARD_I6X:
+      return EESIZE_I6X;
     case BOARD_UNKNOWN:
       return EESIZE_MAX;
     default:
@@ -133,6 +139,8 @@ const int Boards::getFlashSize(Type board)
     case BOARD_X12S:
     case BOARD_X10:
       return FSIZE_HORUS;
+    case BOARD_I6X:
+      return FSIZE_I6X;
     case BOARD_UNKNOWN:
       return FSIZE_MAX;
     default:
@@ -144,6 +152,23 @@ const SwitchInfo Boards::getSwitchInfo(Board::Type board, int index)
 {
   if (index < 0)
     return {SWITCH_NOT_AVAILABLE, CPN_STR_UNKNOWN_ITEM};
+
+  if (IS_I6X(board)) {
+    // Factory i6X switches, as the firmware's default switchConfig (radio/src/opentx.cpp).
+    // SA-SD are read through the ADC and can be reconfigured as 3POS on the radio; SE/SF are
+    // GPIO inputs for the 2-position switch mod, disabled (SWITCH_NONE) until enabled there.
+    const Board::SwitchInfo switches[] = {
+      {SWITCH_2POS,   "SA"},
+      {SWITCH_2POS,   "SB"},
+      {SWITCH_3POS,   "SC"},
+      {SWITCH_2POS,   "SD"},
+      {SWITCH_2POS,   "SE"},
+      {SWITCH_2POS,   "SF"}
+    };
+    if (index < DIM(switches))
+      return switches[index];
+    return {SWITCH_NOT_AVAILABLE, CPN_STR_UNKNOWN_ITEM};
+  }
 
   if (IS_TARANIS_XLITE(board)) {
     const Board::SwitchInfo switches[] = {
@@ -210,6 +235,27 @@ const SwitchInfo Boards::getSwitchInfo(Board::Type board, int index)
 
 const int Boards::getCapability(Board::Type board, Board::Capability capability)
 {
+  if (IS_I6X(board)) {
+    // radio/src/targets/flysky/board.h: 4 sticks, POT1/POT2, no sliders, 6 switches, 4 trims
+    switch (capability) {
+      case Pots:
+      case FactoryInstalledPots:
+        return 2;
+      case Sliders:
+      case MouseAnalogs:
+      case MultiposPots:
+      case MultiposPotsPositions:
+        return 0;
+      case Switches:
+      case FactoryInstalledSwitches:
+        return 6;
+      case SwitchPositions:
+        return 6 * 3;
+      default:
+        break;  // Sticks, MaxAnalogs, NumTrims, NumTrimSwitches: as below
+    }
+  }
+
   switch (capability) {
     case Sticks:
       return 4;
@@ -321,7 +367,15 @@ const QString Boards::getAnalogInputName(Board::Type board, int index)
 
   index -= getCapability(board, Board::Sticks);
 
-  if (IS_9X(board) || IS_2560(board) || IS_SKY9X(board)) {
+  if (IS_I6X(board)) {
+    const QString pots[] = {
+      "P1",
+      "P2"
+    };
+    if (index < DIM(pots))
+      return pots[index];
+  }
+  else if (IS_9X(board) || IS_2560(board) || IS_SKY9X(board)) {
     const QString pots[] = {
       "P1",
       "P2",
@@ -421,6 +475,8 @@ const QString Boards::getBoardName(Board::Type board)
       return "Horus X12S";
     case BOARD_X10:
       return "Horus X10/X10S";
+    case BOARD_I6X:
+      return "FlySky i6X";
     default:
       return tr("Unknown");
   }

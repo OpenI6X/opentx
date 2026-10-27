@@ -409,6 +409,22 @@ Firmware * OpenTxFirmware::getFirmwareVariant(const QString &id)
 
 int OpenTxFirmware::getCapability(::Capability capability)
 {
+  if (IS_I6X(board)) {
+    // radio/src/dataconstants.h (PCBI6X) where it differs from the non-ARM defaults below
+    switch (capability) {
+      case Models:
+        return 20;
+      case Timers:
+        return 3;
+      case CustomFunctions:
+        return 18;
+      case Gvars:
+        return 9;
+      default:
+        break;
+    }
+  }
+
   switch (capability) {
     case Models:
       if (IS_HORUS(board))
@@ -1197,6 +1213,10 @@ void registerOpenTxFirmwares()
   /* Sky9x board */
   firmware = new OpenTxFirmware("opentx-sky9x", Firmware::tr("9X with Sky9x board"), BOARD_SKY9X);
   addOpenTxArm9xOptions(firmware);
+  registerOpenTxFirmware(firmware);
+
+  /* FlySky i6X board (OpenI6X). Simulator only: Companion cannot read or write its radio data. */
+  firmware = new OpenTxFirmware("opentx-i6x", Firmware::tr("FlySky i6X (OpenI6X)"), BOARD_I6X);
   registerOpenTxFirmware(firmware);
 
   // These are kept only for import purposes, marked as deprecated to hide from UI.

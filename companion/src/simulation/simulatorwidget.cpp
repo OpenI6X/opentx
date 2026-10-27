@@ -294,10 +294,11 @@ bool SimulatorWidget::setOptions(SimulatorOptions & options, bool withSave)
 {
   bool ret = false;
 
-  // Companion can only parse radio data in the format of its profile firmware. When the
-  // simulated radio differs (e.g. opentx-i6x, which Companion does not define), the
-  // radio firmware has to read and write its own data file.
-  companionReadsData = options.firmwareId.isEmpty() || firmware->getFirmwareBase()->getId() == options.firmwareId;
+  // Companion can only parse radio data in the format of its profile firmware, and only for
+  // radios it has a data layout for. Otherwise the radio firmware reads and writes its own
+  // data file.
+  companionReadsData = (options.firmwareId.isEmpty() || firmware->getFirmwareBase()->getId() == options.firmwareId)
+                       && !IS_I6X(m_board);  // no I6X radio data layout in Companion
 
   setSdPath(options.sdPath);
 
