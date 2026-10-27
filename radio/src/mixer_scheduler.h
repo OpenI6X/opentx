@@ -74,6 +74,8 @@ void mixerSchedulerISRTrigger();
 #define mixerSchedulerSetPeriod(m,p)
 #define mixerSchedulerClearTrigger()
 
+uint8_t simuSleep(uint32_t ms);  // targets/simu/simpgmspace.h, not yet included on every target
+
 static inline bool mixerSchedulerWaitForTrigger(uint8_t timeout)
 {
   simuSleep(timeout);

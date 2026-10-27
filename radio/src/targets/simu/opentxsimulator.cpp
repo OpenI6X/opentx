@@ -221,10 +221,10 @@ void OpenTxSimulator::setTrim(unsigned int idx, int value)
 
 void OpenTxSimulator::setTrainerInput(unsigned int inputNumber, int16_t value)
 {
-  static unsigned dim = DIM(ppmInput);
+  static unsigned dim = DIM(trainerInput);
   //setTrainerTimeout(100);
   if (inputNumber < dim)
-    ppmInput[inputNumber] = qMin(qMax((int16_t)-512, value), (int16_t)512);
+    trainerInput[inputNumber] = qMin(qMax((int16_t)-512, value), (int16_t)512);
 }
 
 void OpenTxSimulator::setInputValue(int type, uint8_t index, int16_t value)
@@ -304,7 +304,7 @@ void OpenTxSimulator::rotaryEncoderEvent(int steps)
 
 void OpenTxSimulator::setTrainerTimeout(uint16_t ms)
 {
-  ppmInputValidityTimer = ms;
+  trainerInputValidityTimer = ms;
 }
 
 void OpenTxSimulator::sendTelemetry(const QByteArray data)

@@ -114,6 +114,14 @@ include_directories(
 )
 
 ############# Do macro replacements on input files #############
+# OpenI6X revisions are letters ("2.4.a"); VERSION_NUMBER needs a number: a=1, b=2, ...
+if(VERSION_REVISION MATCHES "^[0-9]+$")
+  set(VERSION_REVISION_NUMBER ${VERSION_REVISION})
+else()
+  string(TOLOWER "${VERSION_REVISION}" revision_letter)
+  string(FIND "abcdefghijklmnopqrstuvwxyz" "${revision_letter}" VERSION_REVISION_NUMBER)
+  math(EXPR VERSION_REVISION_NUMBER "${VERSION_REVISION_NUMBER} + 1")
+endif()
 configure_file(${COMPANION_SRC_DIRECTORY}/version.h.in ${CMAKE_BINARY_DIR}/version.h @ONLY)
 configure_file(${COMPANION_SRC_DIRECTORY}/companion.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/companion.desktop @ONLY)
 configure_file(${COMPANION_SRC_DIRECTORY}/simulator.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/simulator.desktop @ONLY)
