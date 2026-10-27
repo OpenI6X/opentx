@@ -34,6 +34,10 @@ if(GTEST_INCDIR AND GTEST_SRCDIR AND Qt5Widgets_FOUND)
   endif()
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+  if(CPU_TYPE STREQUAL STM32F0)
+    # Same as targets/simu: STM32F0 LL pointer-to-uint32_t casts only see fake peripherals here.
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+  endif()
 
   use_cxx11()  # ensure gnu++11 in CXX_FLAGS with CMake < 3.1
 

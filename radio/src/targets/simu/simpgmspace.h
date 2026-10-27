@@ -84,8 +84,10 @@ extern GPIO_TypeDef gpioa, gpiob, gpioc, gpiod, gpioe, gpiof, gpiog, gpioh, gpio
 extern TIM_TypeDef tim1, tim2, tim3, tim4, tim5, tim6, tim7, tim8, tim9, tim10;
 extern USART_TypeDef Usart0, Usart1, Usart2, Usart3, Usart4;
 extern RCC_TypeDef rcc;
+#if !defined(STM32F0)
 extern DMA_Stream_TypeDef dma1_stream0, dma1_stream1, dma1_stream2, dma1_stream3, dma1_stream4, dma1_stream5, dma1_stream6, dma1_stream7, dma2_stream1, dma2_stream2, dma2_stream5, dma2_stream6, dma2_stream7;
 extern DMA_TypeDef dma2;
+#endif
 extern SysTick_Type systick;
 #undef SysTick
 #define SysTick (&systick)
@@ -139,6 +141,7 @@ extern SysTick_Type systick;
 #define USART3 (&Usart3)
 #undef RCC
 #define RCC (&rcc)
+#if !defined(STM32F0)
 #undef DMA1_Stream0
 #undef DMA1_Stream1
 #undef DMA1_Stream2
@@ -165,6 +168,7 @@ extern SysTick_Type systick;
 #define DMA2_Stream7 (&dma2_stream7)
 #undef DMA2
 #define DMA2 (&dma2)
+#endif // !defined(STM32F0)
 #endif
 
 #if defined(EEPROM_SIZE)
@@ -228,7 +232,7 @@ void simuMain();
 #define USART_GetITStatus(...)         0
 #define USART_ClearFlag(...)
 
-#if defined(STM32)
+#if defined(STM32) && !defined(STM32F0)  // F2/F4 Standard Peripheral Library stubs
 inline void LL_GPIO_Init(GPIO_TypeDef* GPIOx, GPIO_InitTypeDef* GPIO_InitStruct) { }
 #define TIM_DeInit(...)
 #define TIM_SetCompare2(...)
