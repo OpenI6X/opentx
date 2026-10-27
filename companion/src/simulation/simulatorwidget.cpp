@@ -88,6 +88,9 @@ SimulatorWidget::SimulatorWidget(QWidget * parent, SimulatorInterface * simulato
     case Board::BOARD_X10:
       radioUiWidget = new SimulatedUIWidgetX10(simulator, this);
       break;
+    case Board::BOARD_I6X:
+      radioUiWidget = new SimulatedUIWidgetI6X(simulator, this);
+      break;
     default:
       radioUiWidget = new SimulatedUIWidget9X(simulator, this);
       break;
