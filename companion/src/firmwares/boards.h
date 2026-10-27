@@ -46,6 +46,7 @@ namespace Board {
     BOARD_X12S,
     BOARD_X10,
     BOARD_TARANIS_XLITE,
+    BOARD_I6X,
     BOARD_ENUM_COUNT
   };
 
@@ -202,5 +203,8 @@ class Boards
 #define IS_STM32(board)                (IS_TARANIS(board) || IS_HORUS(board))
 #define IS_ARM(board)                  (IS_STM32(board) || IS_SKY9X(board))
 #define HAS_LARGE_LCD(board)           (IS_HORUS(board) || IS_TARANIS_X9(board))
+// FlySky FS-i6X (OpenI6X). Deliberately not in IS_STM32/IS_ARM: its limits are close to the 9X
+// class, and Companion has no I6X radio data layout (the simulator firmware owns its data file).
+#define IS_I6X(board)                  (board==Board::BOARD_I6X)
 
 #endif // _BOARDS_H_
