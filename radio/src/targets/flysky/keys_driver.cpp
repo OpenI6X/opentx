@@ -46,6 +46,54 @@ const uint8_t keysMap[] = {
     TRM_LV_UP, TRM_LV_DWN, TRM_LH_UP, TRM_LH_DWN,
     KEY_DOWN, KEY_UP, KEY_ENTER, KEY_EXIT};
 
+#if defined(SIMU)
+// Simulator: keys, trims and switches come from simuSetKey/Trim/Switch instead of the
+// key matrix scan and the ADC/GPIO switch reads. Bits use the matrix scan numbering:
+// EnumKeys for keys, TRM_BASE + n for trims.
+static uint32_t simuKeys = 0;
+static uint8_t simuSwitchPos[NUM_SWITCHES];  // 0, 1, 2
+
+void simuSetKey(uint8_t key, bool state)
+{
+  if (key >= TRM_BASE)
+    return;
+  if (state)
+    simuKeys |= (1 << key);
+  else
+    simuKeys &= ~(1 << key);
+}
+
+void simuSetTrim(uint8_t trim, bool state)
+{
+  uint8_t bit = TRM_BASE + trim;
+  if (bit > TRM_LAST)
+    return;
+  if (state)
+    simuKeys |= (1 << bit);
+  else
+    simuKeys &= ~(1 << bit);
+}
+
+void simuSetSwitch(uint8_t swtch, int8_t state)
+{
+  if (swtch >= NUM_SWITCHES)
+    return;
+  if (swtch >= SW_SE0 / 3)  // SE, SF are 2-position: only SE0/SE2, SF0/SF2
+    simuSwitchPos[swtch] = (state > 0) ? 2 : 0;
+  else
+    simuSwitchPos[swtch] = state + 1;
+}
+
+uint32_t readKeys()
+{
+  return simuKeys & ((1 << TRM_BASE) - 1);
+}
+
+uint32_t readTrims()
+{
+  return simuKeys & ~((1 << TRM_BASE) - 1);
+}
+#else
 uint32_t scanMatrix(uint32_t columnStart, uint32_t columnEnd)
 {
   uint32_t result = 0;
@@ -103,6 +151,7 @@ uint32_t readTrims()
 {
   return scanMatrix(0, 1);
 }
+#endif // defined(SIMU)
 
 uint8_t trimDown(uint8_t idx)
 {
@@ -152,7 +201,12 @@ uint8_t keyState(uint8_t index)
     xxx = ~SWITCHES_GPIO_REG_ ## x  & SWITCHES_GPIO_PIN_ ## x ; \
     break
 
-#if !defined(BOOT)
+#if defined(SIMU)
+uint32_t switchState(uint8_t index)
+{
+  return (simuSwitchPos[index / 3] == index % 3) ? (1 << index) : 0;
+}
+#elif !defined(BOOT)
 uint32_t switchState(uint8_t index)
 {
   uint32_t xxx = 0;

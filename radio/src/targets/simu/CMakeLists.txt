@@ -86,6 +86,11 @@ else()
   endif()
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+  if(CPU_TYPE STREQUAL STM32F0)
+    # STM32F0 LL headers cast peripheral pointers to uint32_t, an error on 64-bit hosts.
+    # The simulator only hands them its own fake peripherals, so downgrade it to a warning.
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+  endif()
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS}")

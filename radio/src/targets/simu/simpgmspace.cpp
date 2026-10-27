@@ -51,10 +51,15 @@ uint32_t Peri1_frequency, Peri2_frequency;
 GPIO_TypeDef gpioa, gpiob, gpioc, gpiod, gpioe, gpiof, gpiog, gpioh, gpioi, gpioj;
 TIM_TypeDef tim1, tim2, tim3, tim4, tim5, tim6, tim7, tim8, tim9, tim10;
 RCC_TypeDef rcc;
+#if !defined(STM32F0)
 DMA_Stream_TypeDef dma1_stream1, dma1_stream2, dma1_stream3, dma1_stream4, dma1_stream5, dma1_stream6, dma1_stream7, dma2_stream1, dma2_stream2, dma2_stream5, dma2_stream6, dma2_stream7;
 DMA_TypeDef dma2;
+#endif
 USART_TypeDef Usart0, Usart1, Usart2, Usart3, Usart4;
-SysTick_Type systick;
+SysTick_Type systick = {};  // value-init: Cortex-M0 CMSIS declares CALIB const
+#if defined(STM32F0)
+extern "C" uint32_t simuPrimask = 0;  // see cmsis_simu.h
+#endif
 #else
 Pio Pioa, Piob, Pioc;
 Pmc pmc;
@@ -179,6 +184,9 @@ void simuInit()
 
 #define TRIM_CASE          KEY_CASE
 
+// PCBI6X scans a key matrix and reads SA-SD through the ADC: its simuSetKey/Trim/Switch
+// live in targets/flysky/keys_driver.cpp next to the hardware reads they replace.
+#if !defined(PCBI6X)
 void simuSetKey(uint8_t key, bool state)
 {
   // if (state) TRACE_SIMPGMSPACE("simuSetKey(%d, %d)", key, state);
@@ -310,13 +318,14 @@ void simuSetSwitch(uint8_t swtch, int8_t state)
       break;
   }
 }
+#endif // !defined(PCBI6X)
 
 void StartSimu(bool tests, const char * sdPath, const char * settingsPath)
 {
   if (simu_running)
     return;
 
-  s_current_protocol[0] = 255;
+  moduleState[0].protocol = PROTOCOL_CHANNELS_UNINITIALIZED;
   menuLevel = 0;
 
   simu_start_mode = (tests ? 0 : 0x02 /* OPENTX_START_NO_CHECKS */);
@@ -373,6 +382,7 @@ void StopSimu()
   simu_running = false;
 }
 
+#if defined(AUDIO)  // buzzer-only targets (PCBI6X) have no audio buffer or volume control
 struct SimulatorAudio {
   int volumeGain;
   int currentVolume;
@@ -381,6 +391,7 @@ struct SimulatorAudio {
   bool threadRunning;
   pthread_t threadPid;
 } simuAudio;
+#endif
 
 bool simuIsRunning()
 {
@@ -397,6 +408,7 @@ uint8_t simuSleep(uint32_t ms)
   return 0;
 }
 
+#if defined(AUDIO)
 void audioConsumeCurrentBuffer()
 {
 }
@@ -415,6 +427,7 @@ int32_t getVolume()
 {
   return 0;
 }
+#endif // defined(AUDIO)
 
 #if defined(SIMU_AUDIO)
 void copyBuffer(uint8_t * dest, const uint16_t * buff, unsigned int samples)
@@ -616,6 +629,7 @@ void pwrInit() { }
 int usbPlugged() { return false; }
 int getSelectedUsbMode() { return USB_JOYSTICK_MODE; }
 void setSelectedUsbMode(int mode) {}
+#if !defined(STM32F0)  // F2/F4 Standard Peripheral Library stubs; STM32F0 targets use LL drivers
 void USART_DeInit(USART_TypeDef* ) { }
 ErrorStatus RTC_SetTime(uint32_t RTC_Format, RTC_TimeTypeDef* RTC_TimeStruct) { return SUCCESS; }
 ErrorStatus RTC_SetDate(uint32_t RTC_Format, RTC_DateTypeDef* RTC_DateStruct) { return SUCCESS; }
@@ -672,11 +686,32 @@ void RCC_LSEConfig(uint8_t RCC_LSE) { }
 void RCC_GetClocksFreq(RCC_ClocksTypeDef* RCC_Clocks) { };
 FlagStatus RCC_GetFlagStatus(uint8_t RCC_FLAG) { return SET; }
 ErrorStatus RTC_WaitForSynchro(void) { return SUCCESS; }
+#endif // !defined(STM32F0)
 void unlockFlash() { }
 void lockFlash() { }
 void flashWrite(uint32_t *address, uint32_t *buffer) { simuSleep(100); }
 uint32_t isBootloaderStart(const uint8_t * block) { return 1; }
 #endif // defined(STM32)
+
+#if defined(STM32F0)
+// Firmware-only symbols still referenced by F0 drivers and shared code. The firmware drops
+// the unused ones with --gc-sections; a simulator library has to resolve every one.
+ErrorStatus LL_GPIO_Init(GPIO_TypeDef *, LL_GPIO_InitTypeDef *) { return SUCCESS; }
+uint32_t LL_DMA_DeInit(DMA_TypeDef *, uint32_t) { return SUCCESS; }
+ErrorStatus LL_USART_Init(USART_TypeDef *, const LL_USART_InitTypeDef *) { return SUCCESS; }
+ErrorStatus LL_USART_DeInit(const USART_TypeDef *) { return SUCCESS; }
+ErrorStatus LL_RCC_DeInit(void) { return SUCCESS; }
+ErrorStatus LL_I2C_Init(I2C_TypeDef *, const LL_I2C_InitTypeDef *) { return SUCCESS; }
+ErrorStatus LL_ADC_Init(ADC_TypeDef *, LL_ADC_InitTypeDef *) { return SUCCESS; }
+ErrorStatus LL_ADC_REG_Init(ADC_TypeDef *, LL_ADC_REG_InitTypeDef *) { return SUCCESS; }
+void delay_ms(uint32_t ms) { }
+void usbSerialPutc(uint8_t c) { }
+void rtcSetTime(const struct gtm * t) { }
+#endif
+
+#if defined(BUZZER) && !defined(DFPLAYER)
+void pushPrompt(uint16_t prompt) { }  // voice prompts need the DFPlayer mod
+#endif
 
 #if defined(PCBHORUS)
 void LCD_ControlLight(uint16_t dutyCycle) { }

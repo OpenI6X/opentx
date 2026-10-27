@@ -132,6 +132,7 @@ bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRea
   return true;
 }
 
+#if !defined(SIMU)  // the simulator's emulated EEPROM (targets/simu/simueeprom.cpp) provides these
 void eepromReadBlock(uint8_t* buffer, size_t address, size_t size)
 {
   while (!I2C_EE_ReadBlock(buffer, (uint16_t)address, (uint16_t)size)) {
@@ -171,6 +172,7 @@ uint8_t eepromIsTransferComplete()
 {
   return 1;
 }
+#endif // !defined(SIMU)
 
 /**
   * @brief  Writes more than one byte to the EEPROM with a single WRITE cycle.

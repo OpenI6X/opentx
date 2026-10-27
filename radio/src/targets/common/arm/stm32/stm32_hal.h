@@ -25,6 +25,11 @@
 extern "C" {
 #endif
 
+#if defined(SIMU)
+  // Host build: replace ARM inline-assembly intrinsics before CMSIS selects cmsis_gcc.h
+  #include "../../../simu/cmsis_simu.h"
+#endif
+
 #include "CMSIS/Device/ST/STM32F0xx/Include/stm32f0xx.h"
 #include "stm32f0xx_hal.h"
 
