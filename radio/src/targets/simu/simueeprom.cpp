@@ -64,6 +64,7 @@ void eepromSimuWriteBlock(uint8_t * buffer, size_t address, size_t size)
       perror("error in fseek");
     if (fwrite(buffer, size, 1, fp) <= 0)
       perror("error in fwrite");
+    fflush(fp);  // keep the data file current if the simulator is killed instead of closed
   }
   else {
     memcpy(&eeprom[address], buffer, size);
