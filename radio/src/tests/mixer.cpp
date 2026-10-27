@@ -80,12 +80,12 @@ TEST_F(TrimsTest, throttleTrim)
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, TRIM_MAX);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], -1024+500);
+  EXPECT_EQ(channelOutputs[2], -1024+4*TRIM_MAX);
   // stick min + trim mid
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, 0);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], -1024+250);
+  EXPECT_EQ(channelOutputs[2], -1024+2*TRIM_MAX);
   // stick min + trim min
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, TRIM_MIN);
@@ -108,12 +108,12 @@ TEST_F(TrimsTest, throttleTrim)
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, TRIM_EXTENDED_MAX);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], -1024+2000);
+  EXPECT_EQ(channelOutputs[2], -1024+4*TRIM_EXTENDED_MAX);
   // stick min + trim mid
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, 0);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], -1024+1000);
+  EXPECT_EQ(channelOutputs[2], -1024+2*TRIM_EXTENDED_MAX);
   // stick min + trim min
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, TRIM_EXTENDED_MIN);
@@ -135,12 +135,12 @@ TEST_F(TrimsTest, invertedThrottlePlusThrottleTrim)
   anaInValues[THR_STICK] = +1024;
   setTrimValue(0, THR_STICK, 0);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], -1024+250);
+  EXPECT_EQ(channelOutputs[2], -1024+2*TRIM_MAX);
   // stick max + trim min
   anaInValues[THR_STICK] = +1024;
   setTrimValue(0, THR_STICK, TRIM_MIN);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], -1024+500);
+  EXPECT_EQ(channelOutputs[2], -1024+4*TRIM_MAX);
   // stick min + trim max
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, TRIM_MAX);
@@ -163,12 +163,12 @@ TEST_F(TrimsTest, invertedThrottlePlusThrottleTrim)
   anaInValues[THR_STICK] = +1024;
   setTrimValue(0, THR_STICK, 0);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], -1024+1000);
+  EXPECT_EQ(channelOutputs[2], -1024+2*TRIM_EXTENDED_MAX);
   // stick max + trim min
   anaInValues[THR_STICK] = +1024;
   setTrimValue(0, THR_STICK, TRIM_EXTENDED_MIN);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], -1024+2000);
+  EXPECT_EQ(channelOutputs[2], -1024+4*TRIM_EXTENDED_MAX);
   // stick min + trim max
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, TRIM_EXTENDED_MAX);
@@ -191,12 +191,12 @@ TEST_F(TrimsTest, throttleTrimWithZeroWeightOnThrottle)
   anaInValues[THR_STICK] = +1024;
   setTrimValue(0, THR_STICK, TRIM_MAX);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 250);
+  EXPECT_EQ(channelOutputs[2], 2*TRIM_MAX);
   // stick max + trim mid
   anaInValues[THR_STICK] = +1024;
   setTrimValue(0, THR_STICK, 0);
   evalMixes(1);
-  EXPECT_LE(abs(channelOutputs[2] - 125), 1);  //can't use precise comparison here because of lower precision math on 9X
+  EXPECT_LE(abs(channelOutputs[2] - TRIM_MAX), 1);  //can't use precise comparison here because of lower precision math on 9X
   // stick max + trim min
   anaInValues[THR_STICK] = +1024;
   setTrimValue(0, THR_STICK, TRIM_MIN);
@@ -206,12 +206,12 @@ TEST_F(TrimsTest, throttleTrimWithZeroWeightOnThrottle)
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, TRIM_MAX);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 250);
+  EXPECT_EQ(channelOutputs[2], 2*TRIM_MAX);
   // stick min + trim mid
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, 0);
   evalMixes(1);
-  EXPECT_LE(abs(channelOutputs[2] - 125), 1);
+  EXPECT_LE(abs(channelOutputs[2] - TRIM_MAX), 1);
   // stick min + trim min
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, TRIM_MIN);
@@ -239,16 +239,16 @@ TEST_F(TrimsTest, throttleTrimWithZeroWeightOnThrottle)
   setTrimValue(0, THR_STICK, TRIM_EXTENDED_MAX);
   anaInValues[THR_STICK] = -1024;
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 1000);
+  EXPECT_EQ(channelOutputs[2], 2*TRIM_EXTENDED_MAX);
   anaInValues[THR_STICK] = -300;
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 1000);
+  EXPECT_EQ(channelOutputs[2], 2*TRIM_EXTENDED_MAX);
   anaInValues[THR_STICK] = +300;
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 1000);
+  EXPECT_EQ(channelOutputs[2], 2*TRIM_EXTENDED_MAX);
   anaInValues[THR_STICK] = +1024;
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 1000);
+  EXPECT_EQ(channelOutputs[2], 2*TRIM_EXTENDED_MAX);
 }
 
 TEST_F(TrimsTest, invertedThrottlePlusthrottleTrimWithZeroWeightOnThrottle)
@@ -267,12 +267,12 @@ TEST_F(TrimsTest, invertedThrottlePlusthrottleTrimWithZeroWeightOnThrottle)
   anaInValues[THR_STICK] = +1024;
   setTrimValue(0, THR_STICK, 0);
   evalMixes(1);
-  EXPECT_LE(abs(channelOutputs[2] - 125), 1);
+  EXPECT_LE(abs(channelOutputs[2] - TRIM_MAX), 1);
   // stick max + trim min
   anaInValues[THR_STICK] = +1024;
   setTrimValue(0, THR_STICK, TRIM_MIN);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 250);
+  EXPECT_EQ(channelOutputs[2], 2*TRIM_MAX);
   // stick min + trim max
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, TRIM_MAX);
@@ -282,12 +282,12 @@ TEST_F(TrimsTest, invertedThrottlePlusthrottleTrimWithZeroWeightOnThrottle)
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, 0);
   evalMixes(1);
-  EXPECT_LE(abs(channelOutputs[2] - 125), 1);
+  EXPECT_LE(abs(channelOutputs[2] - TRIM_MAX), 1);
   // stick min + trim min
   anaInValues[THR_STICK] = -1024;
   setTrimValue(0, THR_STICK, TRIM_MIN);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 250);
+  EXPECT_EQ(channelOutputs[2], 2*TRIM_MAX);
 
   // now some tests with extended Trims
   g_model.extendedTrims = 1;
@@ -295,16 +295,16 @@ TEST_F(TrimsTest, invertedThrottlePlusthrottleTrimWithZeroWeightOnThrottle)
   setTrimValue(0, THR_STICK, TRIM_EXTENDED_MIN);
   anaInValues[THR_STICK] = -1024;
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 1000);
+  EXPECT_EQ(channelOutputs[2], 2*TRIM_EXTENDED_MAX);
   anaInValues[THR_STICK] = -300;
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 1000);
+  EXPECT_EQ(channelOutputs[2], 2*TRIM_EXTENDED_MAX);
   anaInValues[THR_STICK] = +300;
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 1000);
+  EXPECT_EQ(channelOutputs[2], 2*TRIM_EXTENDED_MAX);
   anaInValues[THR_STICK] = +1024;
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 1000);
+  EXPECT_EQ(channelOutputs[2], 2*TRIM_EXTENDED_MAX);
 
   // trim max + various stick positions = should always be same value
   setTrimValue(0, THR_STICK, TRIM_EXTENDED_MAX);
@@ -424,7 +424,7 @@ TEST_F(MixerTest, RecursiveAddChannel)
 
 TEST_F(MixerTest, RecursiveAddChannelAfterInactivePhase)
 {
-  g_model.flightModeData[1].swtch = SWSRC_ID1;
+  g_model.flightModeData[1].swtch = TR_SW(SWSRC_ID1, SWSRC_SA1);
   g_model.mixData[0].destCh = 0;
   g_model.mixData[0].mltpx = MLTPX_ADD;
   g_model.mixData[0].srcRaw = MIXSRC_CH2;
@@ -451,7 +451,7 @@ TEST_F(MixerTest, RecursiveAddChannelAfterInactivePhase)
 
 TEST_F(MixerTest, SlowOnPhase)
 {
-  g_model.flightModeData[1].swtch = TR(SWSRC_THR, SWSRC_SA0);
+  g_model.flightModeData[1].swtch = TR_SW(SWSRC_THR, SWSRC_SA0);
   g_model.mixData[0].destCh = 0;
   g_model.mixData[0].mltpx = MLTPX_ADD;
   g_model.mixData[0].srcRaw = MIXSRC_MAX;
@@ -476,7 +476,7 @@ TEST_F(MixerTest, SlowOnSwitchSource)
 {
   g_model.mixData[0].destCh = 0;
   g_model.mixData[0].mltpx = MLTPX_ADD;
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
   g_eeGeneral.switchConfig = 0x03;
   g_model.mixData[0].srcRaw = MIXSRC_SA;
   int switch_index = 0;
@@ -517,7 +517,7 @@ TEST_F(MixerTest, DelayOnSwitch)
   g_model.mixData[0].mltpx = MLTPX_ADD;
   g_model.mixData[0].srcRaw = MIXSRC_MAX;
   g_model.mixData[0].weight = 100;
-#if defined(PCBTARANIS) || defined(PCBHORUS)
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
   g_model.mixData[0].swtch = SWSRC_SA2;
   int switch_index = 0;
 #else
@@ -553,7 +553,7 @@ TEST_F(MixerTest, SlowOnMultiply)
   g_model.mixData[1].mltpx = MLTPX_MUL;
   g_model.mixData[1].srcRaw = MIXSRC_MAX;
   g_model.mixData[1].weight = 100;
-  g_model.mixData[1].swtch = TR(SWSRC_THR, SWSRC_SA0);
+  g_model.mixData[1].swtch = TR_SW(SWSRC_THR, SWSRC_SA0);
   g_model.mixData[1].speedUp = 50;
   g_model.mixData[1].speedDown = 50;
 
@@ -582,7 +582,7 @@ TEST_F(TrimsTest, throttleTrimEle) {
   anaInValues[ELE_STICK] = +1024;
   setTrimValue(0, ELE_STICK, TRIM_MIN);
   evalMixes(1);
-  EXPECT_EQ(channelOutputs[2], 1024 - 250);
+  EXPECT_EQ(channelOutputs[2], 1024 - 2*TRIM_MAX);
   SYSTEM_RESET();
   MODEL_RESET();
   MIXER_RESET();
@@ -683,7 +683,7 @@ TEST_F(MixerTest, flightModeTransition)
   MODEL_RESET();
   MIXER_RESET();
   setModelDefaults();
-  g_model.flightModeData[1].swtch = TR(SWSRC_ID2, SWSRC_SA2);
+  g_model.flightModeData[1].swtch = TR_SW(SWSRC_ID2, SWSRC_SA2);
   g_model.flightModeData[0].fadeIn = 100;
   g_model.flightModeData[0].fadeOut = 100;
   g_model.flightModeData[1].fadeIn = 100;
@@ -709,7 +709,7 @@ TEST_F(MixerTest, flightModeOverflow)
   MODEL_RESET();
   MIXER_RESET();
   setModelDefaults();
-  g_model.flightModeData[1].swtch = TR(SWSRC_ID2, SWSRC_SA2);
+  g_model.flightModeData[1].swtch = TR_SW(SWSRC_ID2, SWSRC_SA2);
   g_model.flightModeData[0].fadeIn = 100;
   g_model.flightModeData[0].fadeOut = 100;
   g_model.mixData[0].destCh = 0;

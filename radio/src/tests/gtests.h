@@ -27,6 +27,7 @@
 
 #define SWAP_DEFINED
 #include "opentx.h"
+#include "model_init.h"  // setModelDefaults() moved out of opentx.h
 
 #define CHANNEL_MAX (1024*256)
 
@@ -42,6 +43,14 @@ void doMixerCalculations();
   #define RADIO_RESET()
 #endif
 
+// Switch names in tests: 9X-style (THR, ID0-ID2, ...) or SA-SH style. TR() picks by screen
+// width, which no longer tells the layouts apart: PCBI6X is 128 px wide but has SA-SF.
+#if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
+  #define TR_SW(x, y)  y
+#else
+  #define TR_SW(x, y)  x
+#endif
+
 inline void SYSTEM_RESET()
 {
 #if defined(EEPROM)
@@ -49,6 +58,10 @@ inline void SYSTEM_RESET()
 #endif
   generalDefault();
   g_eeGeneral.templateSetup = 0;
+  g_eeGeneral.stickMode = 0;  // tests index sticks physically (mode 1); DEFAULT_MODE targets (I6X) default to mode 2
+#if defined(STICK_DEAD_ZONE)
+  g_eeGeneral.stickDeadZone = 0;  // like calibration, the I6X stick dead zone is not part of what mixer tests check
+#endif
   for (int i=0; i<NUM_SWITCHES; i++) {
     simuSetSwitch(i, -1);
   }
