@@ -97,6 +97,18 @@
     <file>images/simulator/9X/9xdl-rd.png</file>
     <file>images/simulator/9X/9xdr-rd.png</file>
     <file>images/simulator/9X/9xdt-rd.png</file>
+    <file>images/simulator/I6X/i6x_left.png</file>
+    <file>images/simulator/I6X/i6x_left_up.png</file>
+    <file>images/simulator/I6X/i6x_left_down.png</file>
+    <file>images/simulator/I6X/i6x_left_bind.png</file>
+    <file>images/simulator/I6X/i6x_left_photo.png</file>
+    <file>images/simulator/I6X/i6x_right.png</file>
+    <file>images/simulator/I6X/i6x_right_ok.png</file>
+    <file>images/simulator/I6X/i6x_right_cancel.png</file>
+    <file>images/simulator/I6X/i6x_frame_left.png</file>
+    <file>images/simulator/I6X/i6x_frame_right.png</file>
+    <file>images/simulator/I6X/i6x_frame_top.png</file>
+    <file>images/simulator/I6X/i6x_frame_bottom.png</file>
     <file>images/simulator/9X/9xmenu.png</file>
     <file>images/simulator/9X/9xmenumenu.png</file>
     <file>images/simulator/9X/9xmenuexit.png</file>
