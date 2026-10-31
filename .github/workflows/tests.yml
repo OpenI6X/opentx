@@ -1,0 +1,113 @@
+name: tests
+
+# Unit tests (gtest) for the radio core.
+#
+# Called by release.yml (every push), nightly.yml and publish.yml so that
+# firmware builds/artifacts only proceed when the tests pass.
+#
+# Runs directly on the ubuntu-24.04 runner — no container image:
+#  - the tests need only the host toolchain (verified: configure, build and
+#    run all pass WITHOUT arm-none-eabi-gcc installed), so the toolchain
+#    setup action is only needed by the firmware jobs
+#  - all other dependencies come from apt (see "Install dependencies")
+# ubuntu-24.04 is pinned rather than ubuntu-latest because ubuntu-latest
+# moves to Ubuntu 26.04 in November 2026, where the Qt5 packages may be gone.
+#
+# googletest is pinned to 1.12.1 (GTEST_VERSION below): the project builds
+# as C++11 (root CMakeLists.txt: set(CMAKE_CXX_STANDARD 11)) and gtest
+# >= 1.13 rejects C++11 with "#error C++ versions less than C++14 are not
+# supported". 1.12.1 is the last release that supports C++11, so it is
+# downloaded from source and handed to cmake with -DGTEST_ROOT instead of
+# installing the distro's libgtest-dev (Ubuntu 24.04 ships 1.14, which
+# would not compile). The layout check below guards the find_path() logic
+# in radio/src/tests/CMakeLists.txt.
+#
+# Build quirks (see radio/src/tests/CMakeLists.txt):
+#  - SIMU_AUDIO=NO: the buzzer-only I6X target has no audio buffer symbols
+#    (simuAudio/AUDIO_BUFFER_SIZE), which simpgmspace.cpp references when
+#    SIMU_AUDIO is on; DISABLE_COMPANION=NO is required because the Qt5
+#    detection that the gtests target hangs off lives inside that guard.
+
+on:
+  workflow_call:
+  workflow_dispatch: # allow running the tests alone from the Actions tab
+
+permissions:
+  contents: read
+
+jobs:
+  gtests:
+    name: gtests
+    runs-on: ubuntu-24.04
+    env:
+      # Last googletest release that builds as C++11 — see header comment.
+      GTEST_VERSION: "1.12.1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            curl \
+            python3-pil \
+            qtbase5-dev qttools5-dev qtmultimedia5-dev libqt5svg5-dev \
+            libsdl1.2-dev
+
+      - name: Install googletest ${{ env.GTEST_VERSION }}
+        run: |
+          curl -fsSL -o "${RUNNER_TEMP}/gtest.tar.gz" \
+            "https://github.com/google/googletest/archive/refs/tags/release-${GTEST_VERSION}.tar.gz"
+          tar -xzf "${RUNNER_TEMP}/gtest.tar.gz" -C "${RUNNER_TEMP}"
+          mv "${RUNNER_TEMP}/googletest-release-${GTEST_VERSION}/googletest" \
+             "${RUNNER_TEMP}/gtest-${GTEST_VERSION}"
+          # Layout expected by find_path() in radio/src/tests/CMakeLists.txt:
+          #   ${GTEST_ROOT}/include/gtest/gtest.h
+          #   ${GTEST_ROOT}/src/gtest-all.cc
+          test -f "${RUNNER_TEMP}/gtest-${GTEST_VERSION}/include/gtest/gtest.h"
+          test -f "${RUNNER_TEMP}/gtest-${GTEST_VERSION}/src/gtest-all.cc"
+
+      - name: Configure
+        run: |
+          set -o pipefail
+          cmake -S "${GITHUB_WORKSPACE}" -B build-tests \
+            -DGTEST_ROOT="${RUNNER_TEMP}/gtest-${GTEST_VERSION}" \
+            -DPCB=I6X \
+            -DDISABLE_COMPANION=NO \
+            -DSIMU_AUDIO=NO \
+            -DCMAKE_BUILD_TYPE=Debug 2>&1 | tee configure.log
+
+          # Fail loudly instead of with a cryptic "No rule to make target":
+          # the target only exists when gtest headers+sources and Qt5Widgets
+          # were all found at configure time.
+          grep -q "Added optional gtests target" configure.log || {
+            echo "ERROR: gtests target was not configured (GTEST_ROOT/GTEST_INCDIR/GTEST_SRCDIR/Qt5Widgets missing?)"
+            exit 1
+          }
+
+      - name: Build gtests
+        run: |
+          cmake --build build-tests -j"$(nproc)" --target gtests
+
+          # Guard the C++11 pin: gtests-lib must keep compiling as gnu++11
+          # (a too-new googletest or a changed CMAKE_CXX_STANDARD would
+          # silently upgrade this — the build would then fail only on
+          # machines with an older gtest).
+          grep -q -- "-std=gnu++11" \
+            build-tests/radio/src/tests/CMakeFiles/gtests-lib.dir/flags.make || {
+            echo "ERROR: gtests-lib is not compiled with -std=gnu++11"
+            grep "CXX_FLAGS" build-tests/radio/src/tests/CMakeFiles/gtests-lib.dir/flags.make
+            exit 1
+          }
+
+      - name: Run tests
+        run: ./build-tests/gtests --gtest_output=xml:build-tests/gtest-results.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtest-results
+          path: build-tests/gtest-results.xml
+          if-no-files-found: ignore
