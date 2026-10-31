@@ -34,11 +34,14 @@ permissions:
   contents: read
 
 jobs:
+  tests:
+    name: Unit tests
+    uses: ./.github/workflows/tests.yml
+
   build:
     name: build-${{ matrix.suffix }}
-    runs-on: ubuntu-latest
-    container:
-      image: ajjjjjjjj/opentx-docker-i6x:1.5.0
+    needs: tests
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -54,6 +57,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up arm-none-eabi-gcc
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: "15.3.Rel2"
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends python3-pil gawk
 
       - name: Build OpenI6X
         run: python3 ./tools/build-flysky.py -b${{ matrix.board }} -tALL "${GITHUB_WORKSPACE}"
