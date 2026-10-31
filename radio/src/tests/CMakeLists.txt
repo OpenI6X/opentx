@@ -42,6 +42,8 @@ if(GTEST_INCDIR AND GTEST_SRCDIR AND Qt5Widgets_FOUND)
   use_cxx11()  # ensure gnu++11 in CXX_FLAGS with CMake < 3.1
 
   set(SIMU_PLATFORM_SRC ../targets/simu/simpgmspace.cpp ../targets/simu/simueeprom.cpp ../targets/simu/simufatfs.cpp)
+  # Native (pthread) os/ backend, same list as targets/simu
+  list(APPEND SIMU_PLATFORM_SRC ../os/task_native.cpp ../os/time_native.cpp ../os/sleep_native.cpp)
   if(CPU_TYPE STREQUAL STM32F0)
     list(APPEND SIMU_PLATFORM_SRC ../targets/simu/simu_f0_memory.cpp)
   endif()
