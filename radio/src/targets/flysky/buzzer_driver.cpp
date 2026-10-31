@@ -24,6 +24,8 @@
 volatile BuzzerState buzzerState;
 Fifo<BuzzerTone, 4> buzzerFifo;
 
+tmr10ms_t timeAutomaticPromptsSilence = 0;
+
 void audioKeyPress()
 {
   if (g_eeGeneral.beepMode == e_mode_all) {

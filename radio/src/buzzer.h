@@ -33,6 +33,8 @@ extern bool isPlaying(uint8_t id = 0);
 extern uint8_t hapticTick;
 #endif /* HAPTIC */
 
+extern tmr10ms_t timeAutomaticPromptsSilence;
+
 void audioEvent(unsigned int index);
 
 #if defined(DFPLAYER)
@@ -84,6 +86,8 @@ void audioPlay(unsigned int index);
 //   AUDIO_EVENT_ON,
 //   AUDIO_EVENT_MID,
 // };
+#define START_SILENCE_PERIOD()        timeAutomaticPromptsSilence = get_tmr10ms()
+#define IS_SILENCE_PERIOD_ELAPSED()   (get_tmr10ms()-timeAutomaticPromptsSilence > 50)
 
  enum {
    // IDs for special functions [0:64]
@@ -103,8 +107,6 @@ extern void playModelEvent(uint8_t category, uint8_t index, event_t event=0);
 #define PLAY_LOGICAL_SWITCH_OFF(sw)   //playModelEvent(LOGICAL_SWITCH_AUDIO_CATEGORY, sw, AUDIO_EVENT_OFF)
 #define PLAY_LOGICAL_SWITCH_ON(sw)    //playModelEvent(LOGICAL_SWITCH_AUDIO_CATEGORY, sw, AUDIO_EVENT_ON)
 #define PLAY_MODEL_NAME()
-#define START_SILENCE_PERIOD()
-#define IS_SILENCE_PERIOD_ELAPSED()   (true)
 
 #define PROMPT_CUSTOM_BASE      0
 #define PROMPT_I18N_BASE        0
@@ -170,8 +172,6 @@ extern void pushUnit(uint8_t unit, uint8_t idx, uint8_t id);
 #define PLAY_LOGICAL_SWITCH_OFF(sw)
 #define PLAY_LOGICAL_SWITCH_ON(sw)
 #define PLAY_MODEL_NAME()
-#define START_SILENCE_PERIOD()
-#define IS_SILENCE_PERIOD_ELAPSED()   (true)
 
 #define PROMPT_CUSTOM_BASE      0
 #define PROMPT_I18N_BASE        256
