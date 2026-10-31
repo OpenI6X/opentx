@@ -23,9 +23,6 @@
 
 #if !defined(SIMU)
 
-// Global trigger flag
-RTOS_FLAG_HANDLE mixerFlag;
-
 // Mixer schedule
 struct MixerSchedule {
 
@@ -53,7 +50,6 @@ uint16_t getMixerSchedulerPeriod()
 
 void mixerSchedulerInit()
 {
-  RTOS_CREATE_FLAG(mixerFlag);
   memset(mixerSchedules, 0, sizeof(mixerSchedules));
 }
 
@@ -69,19 +65,16 @@ void mixerSchedulerSetPeriod(uint8_t moduleIdx, uint16_t periodUs)
   mixerSchedules[moduleIdx].period = periodUs;
 }
 
-void mixerSchedulerClearTrigger()
-{
-  RTOS_CLEAR_FLAG(mixerFlag);
-}
-
+// Mixer task notification (as in EdgeTX): a trigger that arrives while the
+// mixer runs stays pending and the next wait returns at once.
 bool mixerSchedulerWaitForTrigger(uint8_t timeoutMs)
 {
-  return RTOS_WAIT_FLAG(mixerFlag, timeoutMs);
+  return !task_wait_notify(timeoutMs);
 }
 
 void mixerSchedulerISRTrigger()
 {
-  RTOS_ISR_SET_FLAG(mixerFlag);
+  task_notify_isr(&mixerTaskId);
 }
 
 #endif

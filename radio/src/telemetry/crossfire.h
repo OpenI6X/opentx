@@ -136,7 +136,8 @@ struct CrossfireModuleStatus
 
 extern CrossfireModuleStatus crossfireModuleStatus;
 
-void processCrossfireTelemetryData(uint8_t data);
+void processCrossfireTelemetryFrame(uint8_t *rxBuffer, uint8_t rxBufferCount);
+void crossfireProcessFrame(uint8_t *buf, uint8_t *p_len, uint8_t frame_len);
 void crossfireSetDefault(int index, uint16_t id, uint8_t subId);
 bool isCrossfireOutputBufferAvailable();
 uint8_t createCrossfireModelIDFrame(uint8_t * frame);
