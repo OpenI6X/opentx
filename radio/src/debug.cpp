@@ -95,7 +95,7 @@ void dumpTraceBuffer()
 #if !defined(SIMU)
     if ((n % 5) == 0) {
       while (!serialBuffer.auxSerialTxFifo.isEmpty()) {
-        RTOS_WAIT_TICKS(1);
+        sleep_ms(1);
       }
     }
 #endif
@@ -195,7 +195,7 @@ uint16_t taskSwitchLogPos;
 void CoTaskSwitchHook(uint8_t taskID)
 {
   /* Log task switch here */
-  taskSwitchLog[taskSwitchLogPos] = (taskID << 24) + ((uint32_t)CoGetOSTime() & 0xFFFFFF);
+  taskSwitchLog[taskSwitchLogPos] = (taskID << 24) + (time_get_ms() & 0xFFFFFF);
   if(++taskSwitchLogPos >= DEBUG_TASKS_LOG_SIZE) {
     taskSwitchLogPos = 0;
   }

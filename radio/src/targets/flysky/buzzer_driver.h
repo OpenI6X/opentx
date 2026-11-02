@@ -73,7 +73,7 @@ void audioKeyPress();
 void audioKeyError();
 void audioTrimPress(int value);
 void audioTimerCountdown(uint8_t timer, int value);
-void buzzerHeartbeat();
+void buzzerWakeup();
 
 #endif // __cplusplus
 

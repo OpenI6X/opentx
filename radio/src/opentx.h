@@ -638,15 +638,15 @@ uint16_t isqrt32(uint32_t n);
 #define resumeMixerCalculations()
 #else
 #include "tasks.h"
-extern RTOS_MUTEX_HANDLE mixerMutex;
+extern mutex_handle_t mixerMutex;
 inline void pauseMixerCalculations()
 {
-  RTOS_LOCK_MUTEX(mixerMutex);
+  mutex_lock(&mixerMutex);
 }
 
 inline void resumeMixerCalculations()
 {
-  RTOS_UNLOCK_MUTEX(mixerMutex);
+  mutex_unlock(&mixerMutex);
 }
 #endif
 

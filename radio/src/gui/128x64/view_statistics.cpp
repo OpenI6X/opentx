@@ -118,6 +118,10 @@ void menuStatisticsDebug(event_t event)
     case EVT_KEY_FIRST(KEY_ENTER):
     //   telemetryErrors = 0;
       maxMixerDuration = 0;
+#if defined(TELEMETRY_STATS)
+      telemetryStatsRto = 0;
+      telemetryStatsFrames = 0;
+#endif
       break;
 
 
@@ -185,9 +189,80 @@ void menuStatisticsDebug(event_t event)
   y += FH;
 
   lcdDrawTextAlignedLeft(y, STR_FREESTACKMINB);
-  lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, menusStack.available(), LEFT);
+  lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, task_get_stack_usage(&menusTaskId), LEFT);
   lcdDrawText(lcdLastRightPos, y, "/");
-  lcdDrawNumber(lcdLastRightPos, y, mixerStack.available(), LEFT);
+  lcdDrawNumber(lcdLastRightPos, y, task_get_stack_usage(&mixerTaskId), LEFT);
+  lcdDrawText(lcdLastRightPos, y, "/");
+  lcdDrawNumber(lcdLastRightPos, y, task_get_stack_usage(&timerTaskId), LEFT);
+
+#if defined(TASK_CPU_STATS)
+  y += FH;
+  {
+    // 1 s snapshot over the idle / task CPU time counters
+    const uint32_t winMs = 1000u;
+    static uint32_t lastTotal = 0, lastIdle = 0;
+    static uint16_t cpuPc = 0, idleMs = 0;
+    // same order as the stack line: menus / mixer / timer
+    task_handle_t * const tasks[3] = {&menusTaskId, &mixerTaskId, &timerTaskId};
+    static uint32_t lastTask[3];
+    static uint16_t taskPm[3];         // per mille of the window
+    uint32_t total = time_get_ms();
+    uint32_t idle = task_get_idle_time();
+    uint32_t dTotal = total - lastTotal;
+    if (dTotal >= winMs) {
+      bool stale = dTotal > 10u * winMs;
+      uint32_t unitsPerMille = dTotal * TASK_CPU_UNITS_PER_MS / 1000u;
+      for (uint8_t i = 0; i < 3; i++) {
+        uint32_t t = task_get_cpu_time(tasks[i]);
+        if (!stale) {
+          uint32_t pm = (t - lastTask[i]) / unitsPerMille;
+          taskPm[i] = (uint16_t)(pm > 1000 ? 1000 : pm);
+        }
+        lastTask[i] = t;
+      }
+      if (stale) {
+        // stale baseline (screen just opened): reseed, skip this round
+        lastTotal = total;
+        lastIdle = idle;
+      }
+      else {
+        uint32_t dIdle = (idle - lastIdle) / TASK_CPU_UNITS_PER_MS;
+        if (dIdle > dTotal)
+          dIdle = dTotal;                      // tick raced the two reads
+        idleMs = (uint16_t)dIdle;
+        cpuPc = (uint16_t)(100u - (100u * dIdle) / dTotal);
+        lastTotal = total;
+        lastIdle = idle;
+      }
+    }
+    lcdDrawTextAlignedLeft(y, "CPU");
+    lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, cpuPc, LEFT);
+    lcdDrawText(lcdLastRightPos, y, "% ");
+    lcdDrawNumber(lcdLastRightPos, y, idleMs, LEFT);
+    lcdDrawText(lcdLastRightPos, y, "ms");
+//#if defined(RTOS_HAS_TASK_STATS)
+    // CPU % per task, 0.1 % resolution (ISR time goes to the interrupted task)
+    y += FH;
+    lcdDrawTextAlignedLeft(y, "Task%");
+    lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, taskPm[0], PREC1|LEFT);
+    for (uint8_t i = 1; i < 3; i++) {
+      lcdDrawText(lcdLastRightPos, y, "/");
+      lcdDrawNumber(lcdLastRightPos, y, taskPm[i], PREC1|LEFT);
+    }
+//#endif
+  }
+#endif
+
+#if defined(TELEMETRY_STATS)
+  // USART receiver timeouts, then frames parsed OK.
+  // Expected with RTO working (CRSF): RTO ~= Frm (+ junk bursts).
+  y += FH;
+  lcdDrawTextAlignedLeft(y, "Tlm RTO");
+  lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, telemetryStatsRto, LEFT);
+  y += FH;
+  lcdDrawTextAlignedLeft(y, "Tlm Frm");
+  lcdDrawNumber(MENU_DEBUG_COL1_OFS, y, telemetryStatsFrames, LEFT);
+#endif
 
   lcdDrawText(5*FW, 7*FH+1, STR_MENUTORESET);
   lcdInvertLastLine();
