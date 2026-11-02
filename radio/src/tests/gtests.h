@@ -60,7 +60,7 @@ inline void SYSTEM_RESET()
   g_eeGeneral.templateSetup = 0;
   g_eeGeneral.stickMode = 0;  // tests index sticks physically (mode 1); DEFAULT_MODE targets (I6X) default to mode 2
 #if defined(STICK_DEAD_ZONE)
-  g_eeGeneral.stickDeadZone = 0;  // like calibration, the I6X stick dead zone is not part of what mixer tests check
+  g_eeGeneral.stickDeadZone = 2; // Matches EdgeTX test value
 #endif
   for (int i=0; i<NUM_SWITCHES; i++) {
     simuSetSwitch(i, -1);
