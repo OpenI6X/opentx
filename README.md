@@ -8,11 +8,11 @@
 
 # OpenI6X
 
-**OpenTX / EdgeTX for the FlySky FS-i6X** — turn a budget radio into a pro-grade transmitter.
+**OpenTX / EdgeTX for the FlySky FS-i6X** - turn a budget radio into a pro-grade transmitter.
 
-The FlySky **FS-i6X** is solid, inexpensive hardware held back by basic firmware. **OpenI6X** replaces it with a community-driven port of **OpenTX / EdgeTX** — the same open-source radio operating system used by high-end transmitters — unlocking features that would normally cost you a new radio.
+The FlySky **FS-i6X** is solid, inexpensive hardware held back by basic firmware. **OpenI6X** replaces it with a community-driven port of **OpenTX / EdgeTX** - the same open-source radio operating system used by high-end transmitters - unlocking features that would normally cost you a new radio.
 
-The goal of this project is to bring customized EdgeTX / OpenTX to the FlySky i6X and other STM32F0-based radios. It's free, it's open source — and it's reversible: you can back up your stock firmware and go back any time you like.
+The goal of this project is to bring customized EdgeTX / OpenTX to the FlySky i6X and other STM32F0-based radios. It's free, it's open source - and it's reversible: you can back up your stock firmware and go back any time you like.
 
 Join our [Discord](https://discord.gg/3vKfYNTVa2), [RCGroups](https://www.rcgroups.com/forums/showthread.php?3916435-FlySky-I6X-port-of-OpenTX) or [Telegram](https://t.me/otx_flysky_i6x) to contribute, discuss or get help.
 
@@ -20,9 +20,9 @@ Join our [Discord](https://discord.gg/3vKfYNTVa2), [RCGroups](https://www.rcgrou
 ## Quick start
 
 > [!IMPORTANT]
-> **Before your first flash, back up your stock firmware** (the one-command backup is in step 3). Radio settings and model memory are **not** migrated and will be lost — and that backup is also your way back to stock firmware whenever you want it.
+> **Before your first flash, back up your stock firmware** (the one-command backup is in step 3). Radio settings and model memory are **not** migrated and will be lost - and that backup is also your way back to stock firmware whenever you want it.
 
-Good news: **no soldering iron required** — just a screwdriver, a USB cable and something metal to bridge two pads.
+Good news: **no soldering iron required** - just a screwdriver, a USB cable and something metal to bridge two pads.
 
 ### 1 · Download the firmware
 
@@ -30,19 +30,19 @@ Grab a `.zip` from the [latest release](https://github.com/OpenI6X/opentx/releas
 
 | Build | Heli menu | INAV Lite telemetry | DFPlayer voice |
 | --- | :---: | :---: | :---: |
-| `openi6x_<version>.zip` | — | ✓ | — |
-| `openi6x_<version>_dfplayer.zip` | — | ✓ *(English only)* | ✓ |
-| `openi6x_<version>_heli.zip` | ✓ | — | — |
-| `openi6x_<version>_heli_dfplayer.zip` | ✓ | — | ✓ |
+| `openi6x_<version>.zip` | - | ✓ | - |
+| `openi6x_<version>_dfplayer.zip` | - | ✓ *(English only)* | ✓ |
+| `openi6x_<version>_heli.zip` | ✓ | - | - |
+| `openi6x_<version>_heli_dfplayer.zip` | ✓ | - | ✓ |
 
-Every archive contains `.bin` files for **all supported languages** — no need to pick one upfront. DFPlayer voice requires the [hardware mod](https://github.com/OpenI6X/opentx/wiki/Modifications#dfplayer).
+Every archive contains `.bin` files for **all supported languages** - no need to pick one upfront. DFPlayer voice requires the [hardware mod](https://github.com/OpenI6X/opentx/wiki/Modifications#dfplayer).
 
 ### 2 · Put the radio into DFU mode
 
 **Coming from stock firmware (first flash only):**
 
 1. Power the radio off and open the case.
-2. Bridge the two pads labeled `R53` — hold a wire or tweezers across them, no soldering needed.
+2. Bridge the two pads labeled `R53` - hold a wire or tweezers across them, no soldering needed.
 3. Still bridging, connect USB and switch the radio on.
 4. Your computer will detect a new device: **STM32 BOOTLOADER**.
 
@@ -55,13 +55,13 @@ Every archive contains `.bin` files for **all supported languages** — no need 
 </details>
 
 > [!TIP]
-> Already running OpenI6X? Upgrades are much easier — **hold both inner horizontal trim switches while powering on** and the radio enters DFU mode by itself. No disassembly, ever again.
+> Already running OpenI6X? Upgrades are much easier - **hold both inner horizontal trim switches while powering on** and the radio enters DFU mode by itself. No disassembly, ever again.
 
-If your computer doesn't see the *STM32 BOOTLOADER* device, you probably need drivers — the [flashing guide](https://github.com/OpenI6X/opentx/wiki/Flashing-&-Upgrading) covers the Windows fixes (STM32 drivers or [Zadig](https://www.hanselman.com/blog/how-to-fix-dfuutil-stm-winusb-zadig-bootloaders-and-other-firmware-flashing-issues-on-windows)).
+If your computer doesn't see the *STM32 BOOTLOADER* device, you probably need drivers - the [flashing guide](https://github.com/OpenI6X/opentx/wiki/Flashing-&-Upgrading) covers the Windows fixes (STM32 drivers or [Zadig](https://www.hanselman.com/blog/how-to-fix-dfuutil-stm-winusb-zadig-bootloaders-and-other-firmware-flashing-issues-on-windows)).
 
 ### 3 · Flash it
 
-The easiest way is [**EdgeTX Buddy**](https://buddy.edgetx.org) — it flashes straight from your browser via WebUSB (use Chrome, Edge or another Chromium-based browser):
+The easiest way is [**EdgeTX Buddy**](https://buddy.edgetx.org) - it flashes straight from your browser via WebUSB (use Chrome, Edge or another Chromium-based browser):
 
 1. Choose **Local file** and drag & drop your `.bin`.
 2. Click **Flash via USB** and select the STM32 BOOTLOADER device.
@@ -92,23 +92,23 @@ Note: the official FlySky updater **cannot** be used for this.
 Remove the R53 bridge, power-cycle the radio, calibrate your sticks (see the [manual](https://github.com/OpenI6X/opentx/wiki/Manual)) and set up your first model.
 
 > [!TIP]
-> Using third-party firmware is done at your own risk. OpenI6X is a community project and is **not affiliated with or endorsed by FlySky**. Read the [flashing guide](https://github.com/OpenI6X/opentx/wiki/Flashing-&-Upgrading) before you start — and if in doubt, ask on [Discord](https://discord.gg/3vKfYNTVa2).
+> Using third-party firmware is done at your own risk. OpenI6X is a community project and is **not affiliated with or endorsed by FlySky**. Read the [flashing guide](https://github.com/OpenI6X/opentx/wiki/Flashing-&-Upgrading) before you start - and if in doubt, ask on [Discord](https://discord.gg/3vKfYNTVa2).
 
 ## Hardware mods
 
-The fun doesn't stop at firmware — the wiki's [Modifications](https://github.com/OpenI6X/opentx/wiki/Modifications) page covers:
+The fun doesn't stop at firmware - the wiki's [Modifications](https://github.com/OpenI6X/opentx/wiki/Modifications) page covers:
 
 - [DFPlayer voice announcements](https://github.com/OpenI6X/opentx/wiki/Modifications#dfplayer)
 - [Adjustable backlight brightness](https://github.com/OpenI6X/opentx/wiki/Modifications#adjustable-backlight-level)
 - [FS-HZCZ03-ADJ hall gimbal upgrade](https://github.com/OpenI6X/opentx/wiki/Modifications#flysky-fs-hzcz03-adj-gimbal)
-- External ExpressLRS module — and more
+- External ExpressLRS module - and more
 
 ## Documentation
 
 | Guide | What you'll find |
 | --- | --- |
 | [Manual](https://github.com/OpenI6X/opentx/wiki/Manual) | The OpenI6X user interface and differences from official EdgeTX / OpenTX radios |
-| [EdgeTX manual](https://manual.edgetx.org/bw-radios) | The official EdgeTX manual for B&W radios — applies to OpenI6X for the most part |
+| [EdgeTX manual](https://manual.edgetx.org/bw-radios) | The official EdgeTX manual for B&W radios - applies to OpenI6X for the most part |
 | [Flashing & upgrading](https://github.com/OpenI6X/opentx/wiki/Flashing-&-Upgrading) | Install, update or restore firmware, with troubleshooting |
 | [Modifications](https://github.com/OpenI6X/opentx/wiki/Modifications) | Hardware mods: DFPlayer, backlight, gimbals, ELRS module, … |
 | [Development guide](https://github.com/OpenI6X/opentx/wiki/Development) | Building from source and build-time options |
@@ -146,9 +146,9 @@ The fun doesn't stop at firmware — the wiki's [Modifications](https://github.c
 OpenI6X is built by people like you, and new contributors are always welcome:
 
 - Found a bug? [Open an issue](https://github.com/OpenI6X/opentx/issues) (please check [existing ones](https://github.com/OpenI6X/opentx/issues?q=is%3Aissue) first).
-- Have an idea? Feature suggestions are welcome — especially with a pull request attached.
-- Improve the documentation — the [wiki](https://github.com/OpenI6X/opentx/wiki) and this README always need love.
-- Help translate — the radio speaks 11 languages thanks to contributors.
+- Have an idea? Feature suggestions are welcome - especially with a pull request attached.
+- Improve the documentation - the [wiki](https://github.com/OpenI6X/opentx/wiki) and this README always need love.
+- Help translate - the radio speaks 11 languages thanks to contributors.
 - Want to hack on the firmware? The [development guide](https://github.com/OpenI6X/opentx/wiki/Development) gets you building in minutes.
 
-If you find OpenI6X useful, consider starring the repo — it helps others discover the project.
+If you find OpenI6X useful, consider starring the repo - it helps others discover the project.
