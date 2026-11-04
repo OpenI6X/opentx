@@ -82,7 +82,54 @@ extern const unsigned char STORAGE_Inquirydata[] = { //36
 #endif
 };
 
-#define RESERVED_SECTORS (1 /*Boot*/ + 2 /*Fat table */ + 1 /*Root dir*/)
+#if defined(PCBI6X) && defined(EEPROM_RLC) && !defined(BOOT)
+  #define USB_MSD_MODEL_FILES
+#endif
+
+#define FAT12_SECTORS_PER_CLUSTER 8
+#define FAT12_SECTORS_PER_FAT     2
+#if defined(USB_MSD_MODEL_FILES)
+  #define FAT12_ROOT_ENTRIES      32
+#else
+  #define FAT12_ROOT_ENTRIES      16
+#endif
+#define FAT12_ROOT_SECTORS        (FAT12_ROOT_ENTRIES / 16)
+#define RESERVED_SECTORS          (1 /*Boot*/ + FAT12_SECTORS_PER_FAT + FAT12_ROOT_SECTORS)
+#define FLASH_SECTORS             (FLASHSIZE / BLOCK_SIZE)
+#define FLASH_CLUSTERS            (FLASH_SECTORS / FAT12_SECTORS_PER_CLUSTER)
+#if defined(EEPROM)
+  #define EEPROM_SECTORS          (EEPROM_SIZE / BLOCK_SIZE)
+  #define EEPROM_CLUSTERS         (EEPROM_SECTORS / FAT12_SECTORS_PER_CLUSTER)
+#else
+  #define EEPROM_SECTORS          0
+  #define EEPROM_CLUSTERS         0
+#endif
+#define FIRMWARE_START_CLUSTER    2
+#define EEPROM_START_CLUSTER      (FIRMWARE_START_CLUSTER + FLASH_CLUSTERS)
+
+#if defined(USB_MSD_MODEL_FILES)
+  #define BACKUP_HEADER_SIZE      8
+  #define BACKUP_FOURCC          0x6978746f // "otxi"
+  #define MODEL_BACKUP_DATA_MAX  0x0fff // because DirEnt.size is 12 bits
+  #define MODEL_BACKUP_FILE_MAX  (BACKUP_HEADER_SIZE + MODEL_BACKUP_DATA_MAX)
+  #define MODEL_CLUSTERS         ((MODEL_BACKUP_FILE_MAX + (BLOCK_SIZE * FAT12_SECTORS_PER_CLUSTER) - 1) / (BLOCK_SIZE * FAT12_SECTORS_PER_CLUSTER))
+  #define MODEL_SLOT_SECTORS     (MODEL_CLUSTERS * FAT12_SECTORS_PER_CLUSTER)
+  #define RADIO_CLUSTERS         1
+  #define RADIO_SLOT_SECTORS     (RADIO_CLUSTERS * FAT12_SECTORS_PER_CLUSTER)
+  #define RADIO_BACKUP_DATA_MAX  (RADIO_SLOT_SECTORS * BLOCK_SIZE - BACKUP_HEADER_SIZE)
+  #define RADIO_START_CLUSTER    (EEPROM_START_CLUSTER + EEPROM_CLUSTERS)
+  #define RADIO_START_SECTOR     (RESERVED_SECTORS + FLASH_SECTORS + EEPROM_SECTORS)
+  #define MODEL_START_CLUSTER    (RADIO_START_CLUSTER + RADIO_CLUSTERS)
+  #define MODEL_START_SECTOR     (RADIO_START_SECTOR + RADIO_SLOT_SECTORS)
+  #define MODEL_ROOT_INDEX       4
+  #define MODEL_SECTORS_TOTAL    (MAX_MODELS * MODEL_SLOT_SECTORS)
+  #define RADIO_SECTORS_TOTAL    RADIO_SLOT_SECTORS
+#else
+  #define MODEL_SECTORS_TOTAL    0
+  #define RADIO_SECTORS_TOTAL    0
+#endif
+
+#define TOTALSECTORS              (RESERVED_SECTORS + FLASH_SECTORS + EEPROM_SECTORS + RADIO_SECTORS_TOTAL + MODEL_SECTORS_TOTAL)
 
 int32_t fat12Write(const uint8_t * buffer, uint16_t sector, uint16_t count);
 int32_t fat12Read(uint8_t * buffer, uint16_t sector, uint16_t count );
@@ -159,11 +206,7 @@ int8_t STORAGE_GetCapacity (uint8_t lun, uint32_t *block_num, uint32_t *block_si
 {
   if (lun == STORAGE_EEPROM_LUN) {
     *block_size = BLOCK_SIZE;
-#if defined(EEPROM)
-    *block_num  = RESERVED_SECTORS + FLASHSIZE/BLOCK_SIZE + EEPROM_SIZE/BLOCK_SIZE;
-#else
-    *block_num  = RESERVED_SECTORS + FLASHSIZE/BLOCK_SIZE;
-#endif
+    *block_num  = TOTALSECTORS;
     return 0;
   }
 
@@ -289,11 +332,6 @@ int8_t STORAGE_GetMaxLun (void)
 /**
  * FAT12 boot sector partition.
  */
-#if defined(EEPROM)
-#define TOTALSECTORS  (RESERVED_SECTORS + (FLASHSIZE/BLOCK_SIZE) + (EEPROM_SIZE/BLOCK_SIZE))
-#else
-#define TOTALSECTORS  (RESERVED_SECTORS + (FLASHSIZE/BLOCK_SIZE))
-#endif
 const char g_FATboot[62] = // [BLOCK_SIZE] - rest is generated on the fly
 {
   0xeb, 0x3c, 0x90, // Jump instruction.
@@ -303,10 +341,10 @@ const char g_FATboot[62] = // [BLOCK_SIZE] - rest is generated on the fly
   0x01, 0x00, // Reserved sector count
 
   0x01, // Number of FATs
-  0x10, 0x00, // Number of root directory entries
+  FAT12_ROOT_ENTRIES & 0x00ff, (FAT12_ROOT_ENTRIES & 0xff00) >> 8, // Number of root directory entries
   TOTALSECTORS & 0x00ff,  (TOTALSECTORS & 0xff00) >> 8, // Total sectors
   0xf8, // Media descriptor
-  0x02, 0x00, // Sectors per FAT table
+  FAT12_SECTORS_PER_FAT, 0x00, // Sectors per FAT table
   0x20, 0x00, // Sectors per track
   0x40, 0x00, // Number of heads
   0x00, 0x00, 0x00, 0x00, // Number of hidden sectors
@@ -427,12 +465,187 @@ const FATDirEntry_t g_DIRroot[] =
         0x0000,
         0xA302,
         0x3D55,
-        0x0002 + (FLASHSIZE/BLOCK_SIZE)/8,
+        EEPROM_START_CLUSTER,
         EEPROM_SIZE
     },
 #endif
-  // Emty entries are 0x00, omitted here. Up to 16 entries can be defined here
+  // Empty entries are 0x00, omitted here. Up to 16 entries can be defined here
 };
+
+#if defined(USB_MSD_MODEL_FILES)
+static uint16_t usbFileDataSize(uint8_t fileId)
+{
+  DirEnt & file = eeFs.files[fileId];
+  return (eeFs.version == EEFS_VERS && file.startBlk) ? file.size : 0;
+}
+
+static void fillBinDirEntry(FATDirEntry_t * entry, uint16_t cluster, uint16_t size)
+{
+  entry->ext[0] = 'B';
+  entry->ext[1] = 'I';
+  entry->ext[2] = 'N';
+  entry->attribute = 0x20; // Archive
+  entry->start_cluster = cluster;
+  entry->file_size = size ? (uint16_t)(BACKUP_HEADER_SIZE + size) : 0;
+}
+
+static void fillModelDirEntry(FATDirEntry_t * entry, uint8_t id)
+{
+  uint8_t num = id + 1;
+  entry->name[0] = 'M';
+  entry->name[1] = 'O';
+  entry->name[2] = 'D';
+  entry->name[3] = 'E';
+  entry->name[4] = 'L';
+  entry->name[5] = (num / 10) + '0';
+  entry->name[6] = (num % 10) + '0';
+  entry->name[7] = ' ';
+  fillBinDirEntry(entry, MODEL_START_CLUSTER + id * MODEL_CLUSTERS, usbFileDataSize(FILE_MODEL(id)));
+}
+
+static void fillRadioDirEntry(FATDirEntry_t * entry)
+{
+  entry->name[0] = 'R';
+  entry->name[1] = 'A';
+  entry->name[2] = 'D';
+  entry->name[3] = 'I';
+  entry->name[4] = 'O';
+  entry->name[5] = ' ';
+  entry->name[6] = ' ';
+  entry->name[7] = ' ';
+  fillBinDirEntry(entry, RADIO_START_CLUSTER, usbFileDataSize(FILE_GENERAL));
+}
+
+static void fillExtraRootEntries(uint8_t * buffer, uint8_t rootSector)
+{
+  if (rootSector == 0) {
+    fillRadioDirEntry((FATDirEntry_t *)&buffer[3 * sizeof(FATDirEntry_t)]);
+  }
+  for (uint8_t id = 0; id < MAX_MODELS; id++) {
+    uint8_t entryIndex = MODEL_ROOT_INDEX + id;
+    if (entryIndex / 16 == rootSector) {
+      fillModelDirEntry((FATDirEntry_t *)&buffer[(entryIndex & 0x0f) * sizeof(FATDirEntry_t)], id);
+    }
+  }
+}
+
+static void readFileData(uint8_t fileId, uint16_t offset, uint8_t * buffer, uint16_t len)
+{
+  EFile file;
+  file.openRd(fileId);
+
+  while (offset) {
+    uint8_t count = (offset > 0xff ? 0xff : offset);
+    if (file.read(buffer, count) != count) {
+      return;
+    }
+    offset -= count;
+  }
+
+  while (len) {
+    uint8_t count = (len > 0xff ? 0xff : len);
+    count = file.read(buffer, count);
+    if (!count) {
+      return;
+    }
+    buffer += count;
+    len -= count;
+  }
+}
+
+static void readBackupFile(uint8_t * buffer, uint8_t fileId, uint8_t type, uint16_t offset)
+{
+  uint16_t size = usbFileDataSize(fileId);
+  uint16_t fileSize = size ? (uint16_t)(BACKUP_HEADER_SIZE + size) : 0;
+  if (offset >= fileSize) {
+    return;
+  }
+
+  uint16_t len = fileSize - offset;
+  if (len > BLOCK_SIZE) {
+    len = BLOCK_SIZE;
+  }
+
+  if (offset == 0) {
+    *(uint32_t *)buffer = BACKUP_FOURCC;
+    buffer[4] = g_eeGeneral.version;
+    buffer[5] = type;
+    *(uint16_t *)(buffer + 6) = size;
+    buffer += BACKUP_HEADER_SIZE;
+    len -= BACKUP_HEADER_SIZE;
+    offset = BACKUP_HEADER_SIZE;
+  }
+
+  if (len) {
+    readFileData(fileId, offset - BACKUP_HEADER_SIZE, buffer, len);
+  }
+}
+
+static uint16_t writeTotal;
+static uint16_t writeNext;
+static uint8_t writeFileId;
+
+static int32_t writeBackupFile(const uint8_t * buffer, uint8_t fileId, uint8_t type, uint8_t eeType, uint16_t maxSize, uint16_t offset)
+{
+  if (offset == 0) {
+    if (eeFs.version != EEFS_VERS || *(const uint32_t *)buffer != BACKUP_FOURCC || buffer[4] != EEPROM_VER || buffer[5] != type) {
+      return -1;
+    }
+
+    uint16_t size = buffer[6] | (buffer[7] << 8);
+    if (size == 0 || size > maxSize) {
+      return -1;
+    }
+
+    theFile.flush();
+    theFile.create(fileId, eeType, true);
+    writeFileId = fileId;
+    writeTotal = BACKUP_HEADER_SIZE + size;
+    writeNext = BACKUP_HEADER_SIZE;
+
+    buffer += BACKUP_HEADER_SIZE;
+    offset = BACKUP_HEADER_SIZE;
+  }
+  else if (writeNext == 0 || writeFileId != fileId || offset != writeNext) {
+    return -1;
+  }
+
+  uint16_t len = BLOCK_SIZE - (offset & (BLOCK_SIZE - 1));
+  if (offset + len > writeTotal) {
+    len = writeTotal - offset;
+  }
+
+  while (len) {
+    uint8_t count = (len > 0xff ? 0xff : len);
+    theFile.write((uint8_t *)buffer, count);
+    if (write_errno()) {
+      ENABLE_SYNC_WRITE(false);
+      writeNext = 0;
+      return -1;
+    }
+    buffer += count;
+    len -= count;
+    writeNext += count;
+  }
+
+  if (writeNext >= writeTotal) {
+    theFile.finishWrite();
+    if (eeType == FILE_TYP_MODEL) {
+      uint8_t id = fileId - FILE_MODEL(0);
+      eeLoadModelHeader(id, &modelHeaders[id]);
+      if (id == g_eeGeneral.currModel) {
+        eeLoadModelData(id);
+      }
+    }
+    else {
+      eeLoadGeneralSettingsData();
+    }
+    writeNext = 0;
+  }
+
+  return 0;
+}
+#endif
 
 static void writeByte(uint8_t *buffer, uint16_t sector, int byte, uint8_t value)
 {
@@ -477,15 +690,27 @@ int32_t fat12Read(uint8_t * buffer, uint16_t sector, uint16_t count)
       pushCluster (buffer, sector, cluster, rest, (uint16_t) 0xFFF);
 
       // Entry for firmware.bin
-      for (int i=0;i<FLASHSIZE/BLOCK_SIZE/8 -1;i++)
-        pushCluster (buffer, sector, cluster, rest, cluster+1);
-      pushCluster (buffer, sector, cluster, rest, (uint16_t) 0xFFF);
+      for (uint32_t i = 0; i < FLASH_CLUSTERS - 1; i++)
+        pushCluster(buffer, sector, cluster, rest, cluster+1);
+      pushCluster(buffer, sector, cluster, rest, (uint16_t)0xFFF);
 
 #if defined(EEPROM)
       // Entry for eeprom.bin
-      for (int i=0;i<EEPROM_SIZE/BLOCK_SIZE/8 -1;i++)
-        pushCluster (buffer, sector, cluster, rest, cluster+1);
-      pushCluster (buffer, sector, cluster, rest, (uint16_t) 0xFFF);
+      for (uint32_t i = 0; i < EEPROM_CLUSTERS - 1; i++)
+        pushCluster(buffer, sector, cluster, rest, cluster+1);
+      pushCluster(buffer, sector, cluster, rest, (uint16_t)0xFFF);
+#endif
+
+#if defined(USB_MSD_MODEL_FILES)
+      // Entry for radio.bin
+      pushCluster(buffer, sector, cluster, rest, (uint16_t)0xFFF);
+
+      // Entries for fixed MODELxx.BIN slots
+      for (uint8_t id = 0; id < MAX_MODELS; id++) {
+        for (uint32_t i = 0; i < MODEL_CLUSTERS - 1; i++)
+          pushCluster(buffer, sector, cluster, rest, cluster+1);
+        pushCluster(buffer, sector, cluster, rest, (uint16_t)0xFFF);
+      }
 #endif
 
       // Ensure last cluster is written if it is the first half
@@ -493,10 +718,16 @@ int32_t fat12Read(uint8_t * buffer, uint16_t sector, uint16_t count)
 
       // Rest is 0x0 as per memset
     }
-    else if (sector == 3) {
-      memcpy(buffer, g_DIRroot, sizeof(g_DIRroot) ) ;
+    else if (sector >= 1 + FAT12_SECTORS_PER_FAT && sector < RESERVED_SECTORS) {
+      uint8_t rootSector = sector - (1 + FAT12_SECTORS_PER_FAT);
+      if (rootSector == 0) {
+        memcpy(buffer, g_DIRroot, sizeof(g_DIRroot));
+      }
+#if defined(USB_MSD_MODEL_FILES)
+      fillExtraRootEntries(buffer, rootSector);
+#endif
     }
-    else if (sector < RESERVED_SECTORS + (FLASHSIZE/BLOCK_SIZE)) {
+    else if (sector < RESERVED_SECTORS + FLASH_SECTORS) {
       uint32_t address;
       address = sector - RESERVED_SECTORS;
       address *= BLOCK_SIZE;
@@ -504,8 +735,17 @@ int32_t fat12Read(uint8_t * buffer, uint16_t sector, uint16_t count)
       memcpy(buffer, (uint8_t *)address, BLOCK_SIZE);
     }
 #if defined(EEPROM)
-    else if (sector < RESERVED_SECTORS + (FLASHSIZE/BLOCK_SIZE) + (EEPROM_SIZE/BLOCK_SIZE)) {
-      eepromReadBlock(buffer, (sector - RESERVED_SECTORS - (FLASHSIZE/BLOCK_SIZE))*BLOCK_SIZE, BLOCK_SIZE);
+    else if (sector < RESERVED_SECTORS + FLASH_SECTORS + EEPROM_SECTORS) {
+      eepromReadBlock(buffer, (sector - RESERVED_SECTORS - FLASH_SECTORS)*BLOCK_SIZE, BLOCK_SIZE);
+    }
+#endif
+#if defined(USB_MSD_MODEL_FILES)
+    else if (sector < RADIO_START_SECTOR + RADIO_SLOT_SECTORS) {
+      readBackupFile(buffer, FILE_GENERAL, 'G', (sector - RADIO_START_SECTOR) * BLOCK_SIZE);
+    }
+    else if (sector < MODEL_START_SECTOR + MODEL_SECTORS_TOTAL) {
+      uint16_t modelSector = sector - MODEL_START_SECTOR;
+      readBackupFile(buffer, FILE_MODEL(modelSector / MODEL_SLOT_SECTORS), 'M', (modelSector % MODEL_SLOT_SECTORS) * BLOCK_SIZE);
     }
 #endif
     buffer += BLOCK_SIZE ;
@@ -519,30 +759,39 @@ int32_t fat12Write(const uint8_t * buffer, uint16_t sector, uint16_t count)
 {
   TRACE("FAT12 Write(sector=%d, count=%d)", sector, count);
 
-  if (sector < RESERVED_SECTORS) {
-    // reserved, read-only
-  }
-  else if (sector < RESERVED_SECTORS + (FLASHSIZE/BLOCK_SIZE)) {
-    // firmware: read-only (flashing over USB removed), ignore writes
-  }
+  while (count) {
+    if (sector < RESERVED_SECTORS) {
+      // FAT / root directory: generated on the fly, ignore host metadata writes
+    }
+    else if (sector < RESERVED_SECTORS + FLASH_SECTORS) {
+      // firmware: read-only (flashing over USB removed), ignore writes
+    }
 #if defined(EEPROM)
-  else if (sector < RESERVED_SECTORS + (FLASHSIZE/BLOCK_SIZE) + (EEPROM_SIZE/BLOCK_SIZE)) {
-    // eeprom: the virtual disk is fully allocated (no free clusters),
-    // so any write to the data area is EEPROM.BIN content; write sectors
-    // through in whatever order the host delivers them.
-    // The file-offset-0 sector must still pass isEepromStart: non-EEPROM
-    // content there is rejected loudly instead of silently applied.
-    while (count) {
-      if (sector == RESERVED_SECTORS + (FLASHSIZE/BLOCK_SIZE) && !isEepromStart(buffer)) {
+    else if (sector < RESERVED_SECTORS + FLASH_SECTORS + EEPROM_SECTORS) {
+      // EEPROM.BIN: write raw sectors through in whatever order the host sends.
+      if (sector == RESERVED_SECTORS + FLASH_SECTORS && !isEepromStart(buffer)) {
         TRACE("EEPROM header mismatch in sector %d", sector);
         return -1;
       }
-      eepromWriteBlock((uint8_t *)buffer, (sector-RESERVED_SECTORS-(FLASHSIZE/BLOCK_SIZE))*BLOCK_SIZE, BLOCK_SIZE);
-      buffer += BLOCK_SIZE;
-      sector++;
-      count--;
+      eepromWriteBlock((uint8_t *)buffer, (sector - RESERVED_SECTORS - FLASH_SECTORS) * BLOCK_SIZE, BLOCK_SIZE);
     }
-  }
 #endif
-  return 0 ;
+#if defined(USB_MSD_MODEL_FILES)
+    else if (sector < RADIO_START_SECTOR + RADIO_SLOT_SECTORS) {
+      if (writeBackupFile(buffer, FILE_GENERAL, 'G', FILE_TYP_GENERAL, RADIO_BACKUP_DATA_MAX, (sector - RADIO_START_SECTOR) * BLOCK_SIZE) != 0) {
+        return -1;
+      }
+    }
+    else if (sector < MODEL_START_SECTOR + MODEL_SECTORS_TOTAL) {
+      uint16_t modelSector = sector - MODEL_START_SECTOR;
+      if (writeBackupFile(buffer, FILE_MODEL(modelSector / MODEL_SLOT_SECTORS), 'M', FILE_TYP_MODEL, MODEL_BACKUP_DATA_MAX, (modelSector % MODEL_SLOT_SECTORS) * BLOCK_SIZE) != 0) {
+        return -1;
+      }
+    }
+#endif
+    buffer += BLOCK_SIZE;
+    sector++;
+    count--;
+  }
+  return 0;
 }

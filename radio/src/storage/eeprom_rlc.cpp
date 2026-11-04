@@ -404,6 +404,18 @@ void RlcFile::create(uint8_t i_fileId, uint8_t typ, uint8_t sync_write)
   ENABLE_SYNC_WRITE(sync_write);
 }
 
+void RlcFile::finishWrite()
+{
+  blkid_t fri = 0;
+  if (m_currBlk && (fri = EeFsGetLink(m_currBlk)))
+    EeFsSetLink(m_currBlk, 0);
+
+  if (fri) EeFsFree(fri);  // chain in
+
+  eeFs.files[FILE_TMP].size = m_pos;
+  EFile::swap(m_fileId, FILE_TMP); // s_sync_write is set to false in swap();
+}
+
 /*
  * Copy file src to dst
  */
@@ -425,18 +437,10 @@ bool RlcFile::copy(uint8_t i_fileDst, uint8_t i_fileSrc)
     }
   }
 
-  blkid_t fri=0;
-  if (m_currBlk && (fri=EeFsGetLink(m_currBlk)))
-    EeFsSetLink(m_currBlk, 0);
-
-  if (fri) EeFsFree(fri);  //chain in
-
-  eeFs.files[FILE_TMP].size = m_pos;
-  EFile::swap(m_fileId, FILE_TMP);
+  finishWrite();
 
   assert(!m_write_step);
 
-  // s_sync_write is set to false in swap();
   return true;
 }
 
@@ -582,14 +586,7 @@ const char * eeRestoreModel(uint8_t i_fileDst, char *model_name)
     }
   } while (read == 15);
 
-  blkid_t fri=0;
-  if (theFile.m_currBlk && (fri=EeFsGetLink(theFile.m_currBlk)))
-    EeFsSetLink(theFile.m_currBlk, 0);
-
-  if (fri) EeFsFree(fri);  //chain in
-
-  eeFs.files[FILE_TMP].size = theFile.m_pos;
-  EFile::swap(theFile.m_fileId, FILE_TMP); // s_sync_write is set to false in swap();
+  theFile.finishWrite();
 
   f_close(&g_oLogFile);
 
