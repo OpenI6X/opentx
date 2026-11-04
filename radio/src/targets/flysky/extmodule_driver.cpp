@@ -28,8 +28,13 @@ void extmoduleStop()
   TRACE("extmoduleStop");
   EXTERNAL_MODULE_OFF();
 
-  CLEAR_BIT(EXTMODULE_TIMER->DIER, TIM_DIER_CC2IE);
-  CLEAR_BIT(EXTMODULE_TIMER->CCER, TIM_CCER_CC2E);
+  // In trainer Slave mode CC2 is the trainer PPM output, not the module. A model load or a module
+  // protocol change must not stop it: checkTrainerSettings() would not start it again, because the
+  // trainer mode did not change. stop_trainer_ppm() stops it when the mode changes.
+  if (currentTrainerMode != TRAINER_MODE_SLAVE) {
+    CLEAR_BIT(EXTMODULE_TIMER->DIER, TIM_DIER_CC2IE);
+    CLEAR_BIT(EXTMODULE_TIMER->CCER, TIM_CCER_CC2E);
+  }
 
   // Keep timer running because PPM IN uses the same timer
   // NVIC_DisableIRQ(EXTMODULE_TIMER_IRQn);
