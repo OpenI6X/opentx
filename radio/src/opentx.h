@@ -706,9 +706,29 @@ inline int divRoundClosest(const int n, const int d)
 #define calc100to256_16Bits(x) calc100to256(x)
 #define calc100toRESX_16Bits(x) calc100toRESX(x)
 
+/*
+ * The STM32F0 paths below are bounded fixed-point approximations. They are
+ * bit-exact with the generic implementations.
+ */
+#if defined(STM32F0)
+static inline bool isFastCalc100InputValid(int x)
+{
+  return (x >= -GVAR_MAX && x <= GVAR_MAX) ||
+         (x >= -10 * GV_RANGELARGE && x <= 10 * GV_RANGELARGE && x % 10 == 0);
+}
+
+static inline bool isFastCalc1000InputValid(int x)
+{
+  return (x >= -(GV_RANGELARGE + 1000) && x <= GV_RANGELARGE + 1000) ||
+         (x >= -8 * TRIM_EXTENDED_MAX && x <= 8 * TRIM_EXTENDED_MAX && x % 8 == 0) ||
+         (x >= -10 * GVAR_MAX && x <= 10 * GVAR_MAX && x % 10 == 0);
+}
+#endif
+
 inline int calc100to256(int x)
 {
 #if defined(STM32F0)
+  assert(isFastCalc100InputValid(x));
   if (x >= 0)
     return (x * 41943 + 8064) >> 14;
   else
@@ -721,10 +741,11 @@ inline int calc100to256(int x)
 inline int calc100toRESX(int x)
 {
 #if defined(STM32F0)
+  assert(isFastCalc100InputValid(x));
   if (x >= 0)
-    return (x * 167772 + 8024) >> 14;
+    return (x * 167772 + 8192) >> 14;
   else
-    return -((-x * 167772 + 8024) >> 14);
+    return -((-x * 167772 + 8192) >> 14);
 #else
   return divRoundClosest(x*RESX, 100);
 #endif
@@ -733,6 +754,7 @@ inline int calc100toRESX(int x)
 inline int calc1000toRESX(int x)
 {
 #if defined(STM32F0)
+  assert(isFastCalc1000InputValid(x));
   if (x >= 0)
     return (x * 67109 + 32503) >> 16;
   else

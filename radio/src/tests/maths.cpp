@@ -122,13 +122,10 @@ static int refExpo(int x, int k)
 // Bounds shared by the sweeps below.
 // ---------------------------------------------------------------------------
 
-// Worst numerator a mix line can feed div_and_round(., 10): the largest
-// source value (a channel read back as chans[] >> 8 - PREVENT_ARITHMETIC_
-// OVERFLOW is not enabled, so only the 16-bit range bounds it) times the
-// largest weight calc100to256(GV_RANGELARGE * 10) can produce, which is
-// calc100to256(10130) = 25933. The mixer cannot produce anything wider
-// than this; every input within it must divide exactly.
-#define MIXER_MAX_NUMERATOR  (32767 * 25933)  // 849746611
+// Channel feedback comes from the int32 chans[] accumulator and is not
+// restricted to 16 bits. The signed division helpers are therefore checked
+// across their whole defined int32 domain below rather than against a
+// narrower, model-derived numerator bound.
 
 // Dense sweeps cover the band the mixer works in every day. That alone is
 // not enough: a subtly wrong magic constant still divides small inputs
@@ -141,9 +138,8 @@ static int refExpo(int x, int k)
 // div_and_round()/divRoundClosest() evaluate num +/- den/2 in signed int32
 // before dividing. Within den/2 of the int32 limits that overflows (undefined
 // behaviour) and the fast and the generic implementation happen to wrap
-// differently: 11 / 101 / 1001 inputs for den = 10 / 100 / 1000. Those
-// corners are unreachable from the mixer (see MIXER_MAX_NUMERATOR above), so
-// the full-range sweeps step over them instead of testing UB.
+// differently: 11 / 101 / 1001 inputs for den = 10 / 100 / 1000. The
+// full-range sweeps step over those inputs instead of trying to test UB.
 static bool nearInt32Limit(int32_t v)
 {
   return v > INT32_MAX - 512 || v < INT32_MIN + 512;
@@ -191,11 +187,12 @@ TEST(FastMaths, DivBy10_100_1000_MatchFloorDivision)
   }
   EXPECT_EQ(bad, 0) << "strided fast_div* first mismatch at " << bad;
 
-  // ... and the widest numerator the mixer can actually build.
-  for (uint32_t n = (uint32_t)MIXER_MAX_NUMERATOR; n <= (uint32_t)MIXER_MAX_NUMERATOR + 5; n++) {
-    ASSERT_EQ(fast_div10(n), (int)(n / 10)) << n;
-    ASSERT_EQ(fast_div100(n), (int)(n / 100)) << n;
-    ASSERT_EQ(fast_div1000(n), (int)(n / 1000)) << n;
+  // Check the top of uint32 densely as well; the strided sweep does not land
+  // on UINT32_MAX and reciprocal-division errors often occur at the edge.
+  for (uint64_t n = (uint64_t)UINT32_MAX - 1024; n <= UINT32_MAX; n++) {
+    ASSERT_EQ(fast_div10((uint32_t)n), (int)(n / 10)) << n;
+    ASSERT_EQ(fast_div100((uint32_t)n), (int)(n / 100)) << n;
+    ASSERT_EQ(fast_div1000((uint32_t)n), (int)(n / 1000)) << n;
   }
 }
 
@@ -245,9 +242,18 @@ TEST(FastMaths, DivAndRound_MatchesGeneric)
   }
   EXPECT_EQ(bad, 0) << "strided div_and_round first mismatch at " << bad;
 
-  // The widest numerator the mixer can build, both signs.
-  ASSERT_EQ(div_and_round(MIXER_MAX_NUMERATOR, 10), refDivAndRound(MIXER_MAX_NUMERATOR, 10));
-  ASSERT_EQ(div_and_round(-MIXER_MAX_NUMERATOR, 10), refDivAndRound(-MIXER_MAX_NUMERATOR, 10));
+  // Dense checks near both edges of the defined domain. A 1024 margin keeps
+  // num +/- den/2 representable for all three optimized denominators.
+  for (int32_t delta = 1024; delta < 2048; delta++) {
+    int32_t positive = INT32_MAX - delta;
+    int32_t negative = INT32_MIN + delta;
+    ASSERT_EQ(div_and_round(positive, 10), refDivAndRound(positive, 10));
+    ASSERT_EQ(div_and_round(positive, 100), refDivAndRound(positive, 100));
+    ASSERT_EQ(div_and_round(positive, 1000), refDivAndRound(positive, 1000));
+    ASSERT_EQ(div_and_round(negative, 10), refDivAndRound(negative, 10));
+    ASSERT_EQ(div_and_round(negative, 100), refDivAndRound(negative, 100));
+    ASSERT_EQ(div_and_round(negative, 1000), refDivAndRound(negative, 1000));
+  }
 
   // denominators that are not dispatched to a fast path
   for (int32_t n = -50000; n <= 50000; n++) {
@@ -313,104 +319,82 @@ TEST(FastMaths, DivRoundClosest_MatchesGeneric)
   }
 }
 
-// calc100to256() call sites:
-//  - mixer.cpp:770  mix weight, fed as GET_GVAR_PREC1() -> 10*weight with
-//                   |weight| <= GV_RANGELARGE (1013); the 11-bit field stops
-//                   at +-1024 so the whole +-10130 range is swept
-//  - mixer.cpp:104  expou(), the expo curve parameter, a plain +-100 percent
+// calc100to256() receives two GVar precision domains from mixer.cpp:770:
+//  - precision 0.1: every integer through +-GVAR_MAX
+//  - precision 1  : multiples of 10 through +-GV_RANGELARGE*10
+// expou() (mixer.cpp:104) supplies a plain +-100 value, covered by the first.
 TEST(FastMaths, Calc100to256_MatchesGeneric)
 {
-  for (int32_t x = -GV_RANGELARGE * 10; x <= GV_RANGELARGE * 10; x += 10) {
+  for (int32_t x = -GVAR_MAX; x <= GVAR_MAX; x++) {
     ASSERT_EQ(calc100to256(x), refCalc100to256(x)) << x;
   }
-  for (int32_t x = -128; x <= 128; x++) {
+  for (int32_t k = -GV_RANGELARGE; k <= GV_RANGELARGE; k++) {
+    int32_t x = 10 * k;
     ASSERT_EQ(calc100to256(x), refCalc100to256(x)) << x;
   }
 }
 
-// calc100toRESX() call sites:
-//  - mixer.cpp:824  mix offset, fed as 10*offset. The editor clamps the raw
-//                   field to +-GV_RANGELARGE_OFFSET (500), see
-//                   model_mix_edit.cpp:139 - see the tripwire test below for
-//                   why that bound matters.
-//  - mixer.cpp:193  expo offset, 10*offset with |offset| <= 100
-//  - mixer.cpp:282  safety channel, plain int8
-//  - mixer.cpp:581  swash plate value, plain int8
-//  - curves.cpp     curve points / logical switch values, plain int8/int10
+// calc100toRESX() receives the same two domains from mix offsets at
+// mixer.cpp:824. The arbitrary +-GVAR_MAX sweep also contains every other
+// caller: expo offsets (+-1000), trims/logical-switch thresholds (+-512),
+// safety channels (+-150), swash ring values (+-100), and int8 curve points.
 TEST(FastMaths, Calc100toRESX_MatchesGeneric)
 {
-  for (int32_t x = -GV_RANGELARGE_OFFSET * 10; x <= GV_RANGELARGE_OFFSET * 10; x += 10) {
+  for (int32_t x = -GVAR_MAX; x <= GVAR_MAX; x++) {
     ASSERT_EQ(calc100toRESX(x), refCalc100toRESX(x)) << x;
   }
-  for (int32_t x = -1000; x <= 1000; x += 10) {
-    ASSERT_EQ(calc100toRESX(x), refCalc100toRESX(x)) << x;
-  }
-  for (int32_t x = -512; x <= 512; x++) {
+  for (int32_t k = -GV_RANGELARGE; k <= GV_RANGELARGE; k++) {
+    int32_t x = 10 * k;
     ASSERT_EQ(calc100toRESX(x), refCalc100toRESX(x)) << x;
   }
 }
 
 // calc1000toRESX() call sites:
-//  - mixer.cpp:339   a trim source, 8*trim with |trim| <= TRIM_EXTENDED_MAX
-//  - myeeprom.h      LIMIT_MAX_RESX / LIMIT_MIN_RESX / LIMIT_OFS_RESX. The
-//                    plain (non-GVAR) values reach it as lim->max + 1000,
-//                    lim->min - 1000 and lim->offset, which stays inside
-//                    +-2013; GVAR-backed limits stay inside +-1280.
+//  - mixer.cpp:339   trim sources are multiples of 8 through
+//                    +-8*TRIM_EXTENDED_MAX
+//  - myeeprom.h      plain limits are arbitrary values inside +-2013
+//  - myeeprom.h      precision-0.1 GVar limits stay inside +-GVAR_MAX;
+//                    precision-1 GVar limits are multiples of 10 through
+//                    +-10*GVAR_MAX
 TEST(FastMaths, Calc1000toRESX_MatchesGeneric)
 {
-  for (int32_t k = -TRIM_EXTENDED_MAX; k <= TRIM_EXTENDED_MAX; k++) {
-    ASSERT_EQ(calc1000toRESX(8 * k), refCalc1000toRESX(8 * k)) << k;
+  for (int32_t x = -(GV_RANGELARGE + 1000); x <= GV_RANGELARGE + 1000; x++) {
+    ASSERT_EQ(calc1000toRESX(x), refCalc1000toRESX(x)) << x;
   }
-  for (int32_t x = -2013; x <= 2013; x++) {
+  for (int32_t k = -TRIM_EXTENDED_MAX; k <= TRIM_EXTENDED_MAX; k++) {
+    int32_t x = 8 * k;
+    ASSERT_EQ(calc1000toRESX(x), refCalc1000toRESX(x)) << x;
+  }
+  for (int32_t k = -GVAR_MAX; k <= GVAR_MAX; k++) {
+    int32_t x = 10 * k;
     ASSERT_EQ(calc1000toRESX(x), refCalc1000toRESX(x)) << x;
   }
 }
 
-// The fast paths are *not* bit-identical to the generic ones everywhere -
-// they only agree over the input ranges the mixer can actually produce.
-// This test pins those ranges, so widening one of them fails here instead of
-// silently changing a computed value on the radio.
-TEST(FastMaths, KnownDivergencesStayOutsideMixerReach)
+// The fast paths are deliberately bounded. Simulator assertions use these
+// same predicates at every call site; the exhaustive tests above prove exact
+// equivalence over each accepted domain.
+#if defined(STM32F0)
+TEST(FastMaths, FastConversionDomainsAreExplicit)
 {
-  // ---- signed overflow corner (see nearInt32Limit) -----------------------
-  // num +/- den/2 overflows int32 within den/2 of the limits, where the fast
-  // and the generic implementation wrap differently. The mixer's widest
-  // possible numerator has to stay well clear of that region.
-  EXPECT_LT(MIXER_MAX_NUMERATOR, (int64_t)INT32_MAX - 512);
+  EXPECT_TRUE(isFastCalc100InputValid(GVAR_MAX));
+  EXPECT_TRUE(isFastCalc100InputValid(-GVAR_MAX));
+  EXPECT_TRUE(isFastCalc100InputValid(10 * GV_RANGELARGE));
+  EXPECT_TRUE(isFastCalc100InputValid(-10 * GV_RANGELARGE));
+  EXPECT_FALSE(isFastCalc100InputValid(GVAR_MAX + 1));
+  EXPECT_FALSE(isFastCalc100InputValid(10 * (GV_RANGELARGE + 1)));
 
-  // ---- calc1000toRESX ----------------------------------------------------
-  // First disagreement at |x| == 3979 ...
-  ASSERT_NE(calc1000toRESX(3979), refCalc1000toRESX(3979));
-  EXPECT_EQ(refCalc1000toRESX(3979), 4074);
-  EXPECT_EQ(calc1000toRESX(3979), 4075);
-  // ... and the first *diverging* multiple of 8 - the trim source multiplies
-  // by 8 - is 4104 = 8 * 513, i.e. a single trim step past the limit.
-  EXPECT_EQ(8 * (TRIM_EXTENDED_MAX + 1), 4104);
-  EXPECT_LT(8 * TRIM_EXTENDED_MAX, 4104);
-  // limits and limit offsets stop far short of 3979
-  EXPECT_LT(LIMIT_EXT_MAX + 1000, 3979);
-  EXPECT_LT(GV_RANGELARGE, 3979);
-
-  // ---- calc100to256 ------------------------------------------------------
-  // First disagreement at |x| == 5017 and only for x == 8 or 17 (mod 25).
-  // Every reachable input is 10*weight, and (10*k) mod 25 can only be
-  // 0, 5, 10, 15 or 20 - so the mixer can never land on one.
-  ASSERT_NE(calc100to256(5017), refCalc100to256(5017));
-  for (int32_t k = -GV_RANGELARGE; k <= GV_RANGELARGE; k++) {
-    int32_t r = (10 * k) % 25;
-    ASSERT_NE(r, 8) << k;
-    ASSERT_NE(r, 17) << k;
-  }
-
-  // ---- calc100toRESX -----------------------------------------------------
-  // First disagreement at |x| == 1023. The offset path only feeds it
-  // multiples of 10, and the first diverging one is 9240 == 10 * 924, so the
-  // editor's +-GV_RANGELARGE_OFFSET range has to stay below 924.
-  ASSERT_NE(calc100toRESX(1023), refCalc100toRESX(1023));
-  ASSERT_NE(calc100toRESX(9240), refCalc100toRESX(9240));
-  EXPECT_EQ(GV_RANGELARGE_OFFSET, 500);
-  EXPECT_LT(GV_RANGELARGE_OFFSET * 10, 9240);
+  EXPECT_TRUE(isFastCalc1000InputValid(GV_RANGELARGE + 1000));
+  EXPECT_TRUE(isFastCalc1000InputValid(-GV_RANGELARGE - 1000));
+  EXPECT_TRUE(isFastCalc1000InputValid(8 * TRIM_EXTENDED_MAX));
+  EXPECT_TRUE(isFastCalc1000InputValid(-8 * TRIM_EXTENDED_MAX));
+  EXPECT_TRUE(isFastCalc1000InputValid(10 * GVAR_MAX));
+  EXPECT_TRUE(isFastCalc1000InputValid(-10 * GVAR_MAX));
+  EXPECT_FALSE(isFastCalc1000InputValid(GV_RANGELARGE + 1001));
+  EXPECT_FALSE(isFastCalc1000InputValid(8 * (TRIM_EXTENDED_MAX + 1)));
+  EXPECT_FALSE(isFastCalc1000InputValid(10 * (GVAR_MAX + 1)));
 }
+#endif
 
 // ---------------------------------------------------------------------------
 // Layer 2 - end-to-end mixer goldens.
@@ -463,6 +447,36 @@ TEST_F(FastMathsMixerTest, MixWeightMatchesReference)
   }
 }
 
+// Channel feedback is int32, not int16. Four high-weight additive lines make
+// a source above INT16_MAX; the following line verifies the wider numerator
+// still takes the exact fast-division path.
+TEST_F(FastMathsMixerTest, ChainedChannelFeedbackMatchesReference)
+{
+  FASTMATHS_RESET();
+
+  for (uint8_t i = 0; i < 4; i++) {
+    g_model.mixData[i].destCh = 0;
+    g_model.mixData[i].mltpx = MLTPX_ADD;
+    g_model.mixData[i].srcRaw = MIXSRC_MAX;
+    g_model.mixData[i].weight = GV_RANGELARGE;
+    g_model.mixData[i].carryTrim = TRIM_OFF;
+  }
+  g_model.mixData[4].destCh = 1;
+  g_model.mixData[4].mltpx = MLTPX_ADD;
+  g_model.mixData[4].srcRaw = MIXSRC_CH1;
+  g_model.mixData[4].weight = GV_RANGELARGE;
+  g_model.mixData[4].carryTrim = TRIM_OFF;
+
+  evalFlightModeMixes(e_perout_mode_normal, 0);
+
+  int32_t weight = refCalc100to256(10 * GV_RANGELARGE);
+  int32_t oneLine = refDivAndRound(1024 * weight, 10);
+  int32_t feedback = (4 * oneLine) >> 8;
+  ASSERT_GT(feedback, INT16_MAX);
+  EXPECT_EQ(chans[0], 4 * oneLine);
+  EXPECT_EQ(chans[1], refDivAndRound(feedback * weight, 10));
+}
+
 // mixer.cpp:824 - dv += div_and_round(calc100toRESX(10*offset), 10) << 8,
 // added on top of the weight term from the test above.
 TEST_F(FastMathsMixerTest, MixOffsetMatchesReference)
@@ -487,6 +501,60 @@ TEST_F(FastMathsMixerTest, MixOffsetMatchesReference)
     EXPECT_EQ(chans[0], expected) << "offset " << offsets[i];
   }
 }
+
+#if defined(GVARS)
+// Exercise the two domains produced by GET_GVAR_PREC1(): arbitrary values for
+// 0.1-precision GVars and multiples of 10 for integer-precision GVars. The
+// integer case includes 9240, which exposed the old calc100toRESX bias.
+TEST_F(FastMathsMixerTest, MixGVarPrecisionDomainsMatchReference)
+{
+  struct GVarCase {
+    uint8_t precision;
+    int16_t weightValue;
+    int16_t offsetValue;
+    int32_t weightInput;
+    int32_t offsetInput;
+  };
+
+  static const GVarCase cases[] = {
+    { 0,  GVAR_MAX,  924,  GV_RANGELARGE * 10,  9240 },
+    { 0, -GVAR_MAX, -924, -GV_RANGELARGE * 10, -9240 },
+    { 1,  GVAR_MAX, 1023,  GVAR_MAX,             1023 },
+    { 1, -GVAR_MAX,-1023, -GVAR_MAX,            -1023 },
+  };
+
+  for (unsigned i = 0; i < sizeof(cases)/sizeof(cases[0]); i++) {
+    FASTMATHS_RESET();
+
+    g_model.gvars[0].prec = cases[i].precision;
+    g_model.gvars[1].prec = cases[i].precision;
+    setGVarValue(0, cases[i].weightValue, 0);
+    setGVarValue(1, cases[i].offsetValue, 0);
+
+    MixData * md = &g_model.mixData[0];
+    md->destCh = 0;
+    md->mltpx = MLTPX_ADD;
+    md->srcRaw = MIXSRC_MAX;
+    md->weight = GV_CALC_VALUE_IDX_POS(0, GV1_LARGE);
+    md->offset = GV_CALC_VALUE_IDX_POS(1, GV1_LARGE);
+    md->carryTrim = TRIM_OFF;
+
+    int32_t weightInput = GET_GVAR_PREC1(MD_WEIGHT(md), GV_RANGELARGE_NEG, GV_RANGELARGE, 0);
+    int32_t offsetInput = GET_GVAR_PREC1(MD_OFFSET(md), GV_RANGELARGE_NEG, GV_RANGELARGE, 0);
+    ASSERT_EQ(weightInput, cases[i].weightInput);
+    ASSERT_EQ(offsetInput, cases[i].offsetInput);
+
+    evalFlightModeMixes(e_perout_mode_normal, 0);
+
+    int32_t expected = refDivAndRound(1024 * refCalc100to256(weightInput), 10);
+    expected += refDivAndRound(refCalc100toRESX(offsetInput), 10) << 8;
+    EXPECT_EQ(chans[0], expected)
+      << "precision " << (int)cases[i].precision
+      << " weight " << cases[i].weightValue
+      << " offset " << cases[i].offsetValue;
+  }
+}
+#endif
 
 // mixer.cpp:339 - a trim source is calc1000toRESX(8 * trim). 512 is the
 // interesting end of the range: it is one step away from the first value
@@ -576,14 +644,13 @@ TEST_F(FastMathsMixerTest, ExpoCurveWeightAndOffsetMatchReference)
 }
 
 // Replica of applyLimits() from mixer.cpp:227-287, with the LIMIT_*_RESX
-// macros expanded through the reference calc1000toRESX(). Only plain
-// (non-GVAR) limit values are used, so the macros reduce to
-// lim->max + 1000 / lim->min - 1000 / lim->offset.
+// macros expanded through the reference calc1000toRESX(). LIMIT_OFS/MAX/MIN
+// are retained so this reference also covers both GVar precision modes.
 static int16_t refApplyLimits(uint8_t channel, int32_t value, const LimitData *lim)
 {
-  int16_t ofs   = refCalc1000toRESX(lim->offset);
-  int16_t lim_p = refCalc1000toRESX(lim->max + 1000);
-  int16_t lim_n = refCalc1000toRESX(lim->min - 1000);
+  int16_t ofs   = refCalc1000toRESX(LIMIT_OFS(lim));
+  int16_t lim_p = refCalc1000toRESX(LIMIT_MAX(lim));
+  int16_t lim_n = refCalc1000toRESX(LIMIT_MIN(lim));
 
   if (ofs > lim_p) ofs = lim_p;
   if (ofs < lim_n) ofs = lim_n;
@@ -667,6 +734,51 @@ TEST_F(FastMathsMixerTest, ApplyLimitsMatchesReference)
     }
   }
 }
+
+#if defined(GVARS)
+TEST_F(FastMathsMixerTest, ApplyLimitsGVarPrecisionDomainsMatchReference)
+{
+  static const int32_t inVals[] = { 0, 65536, -65536 };
+
+  for (uint8_t precision = 0; precision <= 1; precision++) {
+    FASTMATHS_RESET();
+#if defined(OVERRIDE_CHANNEL_FUNCTION)
+    for (uint32_t i = 0; i < MAX_OUTPUT_CHANNELS; i++) {
+      safetyCh[i] = OVERRIDE_CHANNEL_UNDEFINED;
+    }
+#endif
+
+    g_model.gvars[0].prec = precision;
+    g_model.gvars[1].prec = precision;
+    g_model.gvars[2].prec = precision;
+    setGVarValue(0, -GVAR_MAX, 0);
+    setGVarValue(1,  GVAR_MAX, 0);
+    setGVarValue(2,  precision ? 1023 : 924, 0);
+
+    LimitData * lim = limitAddress(0);
+    lim->min = GV_CALC_VALUE_IDX_POS(0, GV1_LARGE);
+    lim->max = GV_CALC_VALUE_IDX_POS(1, GV1_LARGE);
+    lim->offset = GV_CALC_VALUE_IDX_POS(2, GV1_LARGE);
+    lim->revert = 0;
+    lim->symetrical = 0;
+    lim->curve = 0;
+
+    int32_t expectedMin = precision ? -GVAR_MAX : -10 * GVAR_MAX;
+    int32_t expectedMax = precision ?  GVAR_MAX :  10 * GVAR_MAX;
+    int32_t expectedOfs = precision ? 1023 : 9240;
+    ASSERT_EQ(LIMIT_MIN(lim), expectedMin);
+    ASSERT_EQ(LIMIT_MAX(lim), expectedMax);
+    ASSERT_EQ(LIMIT_OFS(lim), expectedOfs);
+
+    for (unsigned v = 0; v < sizeof(inVals)/sizeof(inVals[0]); v++) {
+      int16_t got = applyLimits(0, inVals[v]);
+      int16_t expected = refApplyLimits(0, inVals[v], lim);
+      EXPECT_EQ(got, expected)
+        << "precision " << (int)precision << " value " << inVals[v];
+    }
+  }
+}
+#endif
 
 // mixer.cpp:282 - an active safety channel replaces the limit offset with
 // calc100toRESX(safetyCh[channel]).
