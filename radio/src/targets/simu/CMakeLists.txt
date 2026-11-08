@@ -15,7 +15,9 @@ set(SIMU_SRC
   simueeprom.cpp
   simufatfs.cpp
   simudisk.cpp
-
+  ../../os/task_native.cpp
+  ../../os/time_native.cpp
+  ../../os/sleep_native.cpp
   )
 
 if(CPU_TYPE STREQUAL STM32F0)

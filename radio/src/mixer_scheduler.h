@@ -46,9 +46,6 @@ void mixerSchedulerResetTimer();
 // Set the scheduling period for a given module
 void mixerSchedulerSetPeriod(uint8_t moduleIdx, uint16_t periodUs);
 
-// Clear the flag before waiting
-void mixerSchedulerClearTrigger();
-
 // Wait for the scheduler timer to trigger
 // returns true if timeout, false otherwise
 bool mixerSchedulerWaitForTrigger(uint8_t timeoutMs);
@@ -72,7 +69,6 @@ void mixerSchedulerISRTrigger();
 #define mixerSchedulerStop()
 #define mixerSchedulerResetTimer()
 #define mixerSchedulerSetPeriod(m,p)
-#define mixerSchedulerClearTrigger()
 
 uint8_t simuSleep(uint32_t ms);  // targets/simu/simpgmspace.h, not yet included on every target
 

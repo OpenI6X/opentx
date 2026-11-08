@@ -18,14 +18,18 @@
  * GNU General Public License for more details.
  */
 
-#include <OsConfig.h>
 #include "board.h"
 #if defined(STM32F2)
   #include "dwt.h"    // the old ST library that we use does not define DWT register for STM32F2xx
 #endif
 
-#define SYSTEM_TICKS_1US    ((CFG_CPU_FREQ + 500000)  / 1000000)      // number of system ticks in 1us
-#define SYSTEM_TICKS_01US   ((CFG_CPU_FREQ + 5000000) / 10000000)     // number of system ticks in 0.1us (rounding needed for sys frequencies that are not multiple of 10MHz)
+#if defined(STM32F0)
+  #define SYSTEM_CLOCK_HZ    48000000
+#else
+  #define SYSTEM_CLOCK_HZ   120000000  // STM32F2 (STM32F0 uses TIM6 below)
+#endif
+#define SYSTEM_TICKS_1US    ((SYSTEM_CLOCK_HZ + 500000)  / 1000000)      // number of system ticks in 1us
+#define SYSTEM_TICKS_01US   ((SYSTEM_CLOCK_HZ + 5000000) / 10000000)     // number of system ticks in 0.1us (rounding needed for sys frequencies that are not multiple of 10MHz)
 
 #if defined(STM32F0)
 // void delaysInit(void)
