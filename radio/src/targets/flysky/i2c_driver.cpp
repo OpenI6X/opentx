@@ -17,154 +17,161 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+
 #include "opentx.h"
 #include "board.h"
 
-void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrite);
 void eepromWaitEepromStandbyState(void);
+
+#define I2C_TIMEOUT             1000U
+
+#define EEPROM_READ_CHUNK         0xFFU
+
+// Waits until one of `flags` is set. Returns false on NACK or timeout.
+__attribute__((noinline))
+static bool i2cWaitFlags(uint32_t flags)
+{
+  uint32_t timeout = I2C_TIMEOUT;
+  while (timeout--) {
+    uint32_t isr = I2C->ISR;
+    if (isr & I2C_ISR_NACKF) {
+      break;
+    }
+    if (isr & flags) {
+      return true;
+    }
+  }
+  return false;
+}
 
 void i2cInit()
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
-  GPIO_InitStruct.Pin = I2C_SCL_GPIO_PIN | I2C_SDA_GPIO_PIN;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_MEDIUM;
-  GPIO_InitStruct.Alternate = I2C_GPIO_AF;
-  LL_GPIO_Init(I2C_GPIO, &GPIO_InitStruct);
+  // PB10 = SCL, PB11 = SDA: alternate function 1, open-drain, medium speed,
+  // internal pull-ups. Only the nibbles/mode bits of these pins are touched.
+  GPIOB->AFR[1]  = (GPIOB->AFR[1]  & ~0x0000FF00U) | 0x00001100U;
+  GPIOB->MODER   = (GPIOB->MODER   & ~0x00F00000U) | 0x00A00000U;
+  GPIOB->OTYPER |= 0x00000C00U;
+  GPIOB->OSPEEDR = (GPIOB->OSPEEDR & ~0x00F00000U) | 0x00500000U;
+  GPIOB->PUPDR   = (GPIOB->PUPDR   & ~0x00F00000U) | 0x00500000U;
 
-  // LL_I2C_DeInit(I2C);
-
-  LL_I2C_InitTypeDef I2C_InitStruct; // = {0};
-  I2C_InitStruct.PeripheralMode = LL_I2C_MODE_I2C;
-  I2C_InitStruct.Timing = I2C_TIMING;
-  I2C_InitStruct.OwnAddress1 = 0x00;
-  I2C_InitStruct.TypeAcknowledge = LL_I2C_ACK;
-  I2C_InitStruct.OwnAddrSize = LL_I2C_OWNADDRESS1_7BIT;
-  I2C_InitStruct.AnalogFilter = LL_I2C_ANALOGFILTER_DISABLE;
-  I2C_InitStruct.DigitalFilter = 0x00;
-  LL_I2C_Init(I2C, &I2C_InitStruct);
+  // PE = 0 resets the I2C state machine and aborts any transfer left over
+  // from a timeout. TIMINGR may only be written while PE = 0.
+  I2C->CR1     = 0;
+  I2C->TIMINGR = I2C_TIMING;
+  I2C->ICR     = I2C_ICR_STOPCF | I2C_ICR_NACKCF | I2C_ICR_BERRCF |
+                 I2C_ICR_ARLOCF | I2C_ICR_OVRCF;
+  I2C->CR1     = I2C_CR1_PE | I2C_CR1_ANFOFF; // analog filter off, matches I2C_TIMING
 }
 
-static inline uint32_t I2C_GetFlagStatus(const I2C_TypeDef *I2Cx, uint32_t flag)
+static bool i2cSendAddress(uint16_t address, bool read)
 {
-  return ((I2Cx->ISR & flag) != 0U);
-}
-
-#define I2C_TIMEOUT_MAX 1000
-bool I2C_WaitEvent(uint32_t flag)
-{
-  uint32_t timeout = I2C_TIMEOUT_MAX;
-  while (!I2C_GetFlagStatus(I2C, flag)) {
-    if ((timeout--) == 0) return false;
+  I2C->CR2 = I2C_ADDRESS_EEPROM | (2U << I2C_CR2_NBYTES_Pos) |
+             (read ? 0U : I2C_CR2_RELOAD) | I2C_CR2_START;
+  if (!i2cWaitFlags(I2C_ISR_TXIS)) {
+    return false;
   }
-  return true;
-}
-
-bool I2C_WaitEventCleared(uint32_t flag)
-{
-  uint32_t timeout = I2C_TIMEOUT_MAX;
-  while (I2C_GetFlagStatus(I2C, flag)) {
-    if ((timeout--) == 0) return false;
+  I2C->TXDR = (uint8_t)(address >> 8);
+  if (!i2cWaitFlags(I2C_ISR_TXIS)) {
+    return false;
   }
-  return true;
+  I2C->TXDR = (uint8_t)address;
+  return i2cWaitFlags(read ? I2C_ISR_TC : I2C_ISR_TCR);
 }
 
 /**
-  * @brief  Reads a block of data from the EEPROM.
-  * @param  pBuffer : pointer to the buffer that receives the data read
-  *   from the EEPROM.
-  * @param  ReadAddr : EEPROM's internal address to read from.
-  * @param  NumByteToRead : number of bytes to read from the EEPROM.
-  * @retval None
+  * @brief  Transfers one chunk (1..255 bytes) to or from the EEPROM.
+  * @param  buffer : data buffer
+  * @param  address : EEPROM's internal address
+  * @param  size : number of bytes, 1..255
+  * @param  read : true = read, false = write
+  * @retval true on success, false on NACK/timeout (bus needs re-init)
   */
-static constexpr uint16_t EEPROM_READ_CHUNK = I2C_FLASH_PAGESIZE * 3;  // 192, must be <= 255
-
-bool I2C_EE_ReadBlock(uint8_t* pBuffer, uint16_t ReadAddr, uint16_t NumByteToRead)
+__attribute__((noinline))
+static bool i2cTransfer(uint8_t* buffer, uint16_t address, uint32_t size, bool read)
 {
-  if (!I2C_WaitEventCleared(I2C_ISR_BUSY))
-    return false;
-
-  LL_I2C_HandleTransfer(I2C, I2C_ADDRESS_EEPROM, LL_I2C_ADDRSLAVE_7BIT,
-                        2, LL_I2C_MODE_SOFTEND, LL_I2C_GENERATE_START_WRITE);
-
-  // address
-  LL_I2C_TransmitData8(I2C, (uint8_t)(ReadAddr >> 8));
-  if (!I2C_WaitEvent(I2C_ISR_TXIS))
-    return false;
-
-  LL_I2C_TransmitData8(I2C, (uint8_t)(ReadAddr));
-  if (!I2C_WaitEvent(I2C_ISR_TC))
-    return false;
-
-  // data
-  uint32_t request = LL_I2C_GENERATE_START_READ;
-
-  while (NumByteToRead) {
-    uint16_t chunk;
-    uint32_t mode;
-
-    if (NumByteToRead > EEPROM_READ_CHUNK) {
-      chunk = EEPROM_READ_CHUNK;
-      mode  = LL_I2C_MODE_RELOAD;
-    } else {
-      chunk = NumByteToRead;
-      mode  = LL_I2C_MODE_AUTOEND;
-    }
-
-    LL_I2C_HandleTransfer(I2C, I2C_ADDRESS_EEPROM, LL_I2C_ADDRSLAVE_7BIT, chunk, mode, request);
-
-    NumByteToRead -= chunk;
-
-    while (chunk--) {
-      if (!I2C_WaitEvent(I2C_ISR_RXNE))
-        return false;
-      *pBuffer++ = LL_I2C_ReceiveData8(I2C);
-    }
-
-    if (!I2C_WaitEvent(NumByteToRead ? I2C_ISR_TCR : I2C_ISR_STOPF))
+  // Never start a transfer while the bus is still busy; a STOP from the
+  // previous transfer clears BUSY, so this only trips when something went
+  // wrong or the slave is stretching.
+  uint32_t timeout = I2C_TIMEOUT;
+  while ((I2C->ISR & I2C_ISR_BUSY) != 0) {
+    if (timeout-- == 0) {
       return false;
-
-    request = LL_I2C_GENERATE_NOSTARTSTOP;
+    }
   }
 
+  if (!i2cSendAddress(address, read)) {
+    return false;
+  }
+
+  if (read) {
+    // Repeated start, turn the bus round, and let AUTOEND close it.
+    I2C->CR2 = I2C_ADDRESS_EEPROM | I2C_CR2_RD_WRN | I2C_CR2_START |
+               ((uint32_t)size << I2C_CR2_NBYTES_Pos) | I2C_CR2_AUTOEND;
+    while (size) {
+      if (!i2cWaitFlags(I2C_ISR_RXNE)) {
+        return false;
+      }
+      *buffer++ = (uint8_t)I2C->RXDR;
+      size--;
+    }
+  }
+  else {
+    // Continue in the same direction, no restart.
+    I2C->CR2 = I2C_ADDRESS_EEPROM | ((uint32_t)size << I2C_CR2_NBYTES_Pos) | I2C_CR2_AUTOEND;
+    while (size) {
+      if (!i2cWaitFlags(I2C_ISR_TXIS)) {
+        return false;
+      }
+      I2C->TXDR = *buffer++;
+      size--;
+    }
+  }
+
+  if (!i2cWaitFlags(I2C_ISR_STOPF)) {
+    return false;
+  }
+  I2C->ICR = I2C_ICR_STOPCF;
   return true;
 }
 
 #if !defined(SIMU)  // the simulator's emulated EEPROM (targets/simu/simueeprom.cpp) provides these
 void eepromReadBlock(uint8_t* buffer, size_t address, size_t size)
 {
-  while (!I2C_EE_ReadBlock(buffer, (uint16_t)address, (uint16_t)size)) {
-    i2cInit();
+  while (size) {
+    uint32_t chunk = (size > EEPROM_READ_CHUNK) ? EEPROM_READ_CHUNK : (uint32_t)size;
+
+    while (!i2cTransfer(buffer, (uint16_t)address, chunk, true)) {
+      i2cInit();
+    }
+    buffer += chunk;
+    address += chunk;
+    size -= chunk;
   }
 }
 
 /**
-  * @brief  Writes buffer of data to the I2C EEPROM.
-  * @param  buffer : pointer to the buffer containing the data to be
-  *   written to the EEPROM.
-  * @param  address : EEPROM's internal address to write to.
-  * @param  size : number of bytes to write to the EEPROM.
+  * @brief  Writes a buffer to the EEPROM, splitting it on page boundaries.
+  * @param  buffer : pointer to the data
+  * @param  address : EEPROM's internal address to write to
+  * @param  size : number of bytes to write
   * @retval None
   */
-void eepromWriteBlock(uint8_t * buffer, size_t address, size_t size)
+void eepromWriteBlock(uint8_t* buffer, size_t address, size_t size)
 {
-  uint8_t offset = address % I2C_FLASH_PAGESIZE;
-  uint8_t count = I2C_FLASH_PAGESIZE - offset;
-  if (size < count) {
-    count = size;
-  }
-  while (count > 0) {
-    eepromPageWrite(buffer, address, count);
+  while (size) {
+    uint32_t count = I2C_FLASH_PAGESIZE - (address % I2C_FLASH_PAGESIZE);
+    if (count > size) {
+      count = (uint32_t)size;
+    }
+
+    while (!i2cTransfer(buffer, (uint16_t)address, count, false)) {
+      i2cInit();
+    }
+
     eepromWaitEepromStandbyState();
     address += count;
     buffer += count;
     size -= count;
-    count = I2C_FLASH_PAGESIZE;
-    if (size < I2C_FLASH_PAGESIZE) {
-      count = size;
-    }
   }
 }
 
@@ -175,91 +182,57 @@ uint8_t eepromIsTransferComplete()
 #endif // !defined(SIMU)
 
 /**
-  * @brief  Writes more than one byte to the EEPROM with a single WRITE cycle.
-  * @note   The number of byte can't exceed the EEPROM page size.
-  * @param  pBuffer : pointer to the buffer containing the data to be
-  *   written to the EEPROM.
-  * @param  WriteAddr : EEPROM's internal address to write to.
-  * @param  NumByteToWrite : number of bytes to write to the EEPROM.
-  * @retval None
+  * @brief  Wait for the EEPROM's internal write cycle to finish.
+  *
+  * The default is the datasheet's 5 ms tWR (smallest code). Define
+  * I2C_PROPER_WAIT to poll ACK instead: that is faster but bigger.
   */
-bool I2C_EE_PageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrite)
+//#define I2C_PROPER_WAIT // +56B
+#if defined(I2C_PROPER_WAIT)
+static bool i2cWaitIdle()
 {
-  if (!I2C_WaitEventCleared(I2C_ISR_BUSY))
-    return false;
-
-  LL_I2C_HandleTransfer(I2C, I2C_ADDRESS_EEPROM, LL_I2C_ADDRSLAVE_7BIT, 2, LL_I2C_MODE_RELOAD, LL_I2C_GENERATE_START_WRITE);
-
-  if (!I2C_WaitEvent(I2C_ISR_TXIS))
-    return false;
-
-  LL_I2C_TransmitData8(I2C, (uint8_t)((WriteAddr & 0xFF00) >> 8));
-  if (!I2C_WaitEvent(I2C_ISR_TXIS))
-    return false;
-
-  LL_I2C_TransmitData8(I2C, (uint8_t)(WriteAddr & 0x00FF));
-  if (!I2C_WaitEvent(I2C_ISR_TCR))
-    return false;
-
-  LL_I2C_HandleTransfer(I2C, I2C_ADDRESS_EEPROM, LL_I2C_ADDRSLAVE_7BIT, NumByteToWrite, LL_I2C_MODE_AUTOEND, LL_I2C_GENERATE_NOSTARTSTOP);
-
-  /* While there is data to be written */
-  while (NumByteToWrite--) {
-    if (!I2C_WaitEvent(I2C_ISR_TXIS))
+  uint32_t timeout = I2C_TIMEOUT;
+  while (I2C->ISR & I2C_ISR_BUSY) {
+    if (timeout-- == 0) {
       return false;
-
-    LL_I2C_TransmitData8(I2C, *pBuffer);
-    pBuffer++;
+    }
   }
-
-  if (!I2C_WaitEvent(I2C_ISR_STOPF))
-    return false;
-
   return true;
 }
 
-void eepromPageWrite(uint8_t* pBuffer, uint16_t WriteAddr, uint8_t NumByteToWrite)
+static bool i2cWaitReady()
 {
-  while (!I2C_EE_PageWrite(pBuffer, WriteAddr, NumByteToWrite)) {
-    i2cInit();
-  }
-}
-
-/**
-  * @brief  Wait for EEPROM Standby state
-  * @param  None
-  * @retval None
-  */
-#define I2C_STANDBY_WAIT_MAX 100
-bool I2C_EE_WaitEepromStandbyState(void)
-{
-  for (uint32_t trials = 0; trials < I2C_STANDBY_WAIT_MAX; trials++)
-  {
+  for (uint32_t retry = 0; retry < 100; retry++) {
+    if (!i2cWaitIdle()) {
+      return false;
+    }
+    // A NACK while the EEPROM is busy is expected; both flags are cleared
+    // before every attempt so a stale STOPF can not fake a ready EEPROM.
     I2C->ICR = I2C_ICR_NACKCF | I2C_ICR_STOPCF;
+    I2C->CR2 = I2C_ADDRESS_EEPROM | I2C_CR2_AUTOEND | I2C_CR2_START;
 
-    LL_I2C_HandleTransfer(I2C, I2C_ADDRESS_EEPROM, LL_I2C_ADDRSLAVE_7BIT, 0,
-                          LL_I2C_MODE_AUTOEND, LL_I2C_GENERATE_START_WRITE);
-
-    uint32_t t = I2C_TIMEOUT_MAX;
-    while (!LL_I2C_IsActiveFlag_STOP(I2C)) {
-      if (t-- == 0)
-        return false;               /* bus stuck — SCL/SDA held low */
+    uint32_t timeout = I2C_TIMEOUT;
+    while (!(I2C->ISR & (I2C_ISR_STOPF | I2C_ISR_NACKF))) {
+      if (timeout-- == 0) {
+        return false;
+      }
     }
 
-    if (!LL_I2C_IsActiveFlag_NACK(I2C)) {
-      LL_I2C_ClearFlag_STOP(I2C);   /* tidy: don't leak a stale STOPF */
+    bool nack = (I2C->ISR & I2C_ISR_NACKF) != 0;
+    I2C->ICR = I2C_ICR_NACKCF | I2C_ICR_STOPCF;
+    if (!nack && i2cWaitIdle()) {
       return true;
     }
   }
 
   return false;
 }
+#endif
 
-//#define I2C_PROPER_WAIT // +56B
-void eepromWaitEepromStandbyState(void)
+void eepromWaitEepromStandbyState()
 {
 #if defined(I2C_PROPER_WAIT)
-  while (!I2C_EE_WaitEepromStandbyState()) {
+  while (!i2cWaitReady()) {
     i2cInit();
   }
 #else
