@@ -31,6 +31,11 @@ void init_trainer_ppm()
   GPIO_InitStruct.Alternate = TRAINER_GPIO_AF;
   LL_GPIO_Init(TRAINER_GPIO, &GPIO_InitStruct);
 
+  // The timer may never have been started: at power-on the model goes straight to Slave, and only
+  // init_trainer_capture() (Master) or the external PPM module start it. Without this, Slave gives
+  // no PPM until the mode is switched to Master and back.
+  extmoduleTimerStart();
+
   setupPulsesPPMTrainer();
 
   // Enable CC2 compare interrupt — shared EXTMODULE_TIMER ISR will dispatch
