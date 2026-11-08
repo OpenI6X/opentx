@@ -29,6 +29,15 @@
 #define CROSSFIRE_CENTER_CH_OFFSET(ch) (0)
 #endif
 
+static inline int scaleCrossfireChannel(int value)
+{
+  // Exact truncating 4/5 scaling over the full int16_t input domain.
+  uint32_t sign = 0u - (uint32_t)(value < 0);
+  uint32_t magnitude = (((uint32_t)value ^ sign) - sign);
+  uint32_t result = (magnitude * 52429u) >> 16;
+  return (int32_t)((result ^ sign) - sign);
+}
+
 uint8_t createCrossfireBindFrame(uint8_t * frame)
 {
   uint8_t * buf = frame;
@@ -97,7 +106,7 @@ uint8_t createCrossfireChannelsFrame(uint8_t* frame, int16_t * pulses) {
   uint32_t bits = 0;
   uint8_t bitsavailable = 0;
   for (int i = 0; i < CROSSFIRE_CHANNELS_COUNT; i++) {
-    uint32_t val = limit(0, CROSSFIRE_CENTER + (CROSSFIRE_CENTER_CH_OFFSET(i) * 4) / 5 + (pulses[i] * 4) / 5, 2 * CROSSFIRE_CENTER);
+    uint32_t val = limit(0, CROSSFIRE_CENTER + scaleCrossfireChannel(CROSSFIRE_CENTER_CH_OFFSET(i)) + scaleCrossfireChannel(pulses[i]), 2 * CROSSFIRE_CENTER);
     bits |= val << bitsavailable;
     bitsavailable += CROSSFIRE_CH_BITS;
     while (bitsavailable >= 8) {

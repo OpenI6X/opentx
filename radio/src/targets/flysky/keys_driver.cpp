@@ -211,8 +211,8 @@ uint32_t switchState(uint8_t index)
 {
   uint32_t xxx = 0;
 
-  uint8_t pos = index % 3;    // 0, 1, 2
-  uint8_t sw_num = index / 3; // 0, 1, 2, 3
+  uint8_t sw_num = ((uint16_t)index * 171u) >> 9; // div / 3
+  uint8_t pos = index - 3 * sw_num;               // 0, 1, 2
   uint8_t adc_num = sw_num + 4;
 
   if (index < SW_SE0) { // SA, SB, SC, SD
