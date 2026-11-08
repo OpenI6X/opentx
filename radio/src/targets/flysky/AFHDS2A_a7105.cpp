@@ -327,7 +327,7 @@ ResData_:  //-----------------------------------------------------------
       if (!memcmp(&rxPacket[1], ID.rx_tx_addr, 4) && // Validate TX address
         !memcmp(&rxPacket[5], &g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], 4)) {  // Validate RX address
         if (rxPacket[0] == 0xAA) {
-          int16_t tx_rssi = 256 - (A7105_ReadReg(A7105_1D_RSSI_THOLD) * 8) / 5;  // value from A7105 is between 8 for maximum signal strength to 160 or less
+          int16_t tx_rssi = 256 - (A7105_ReadReg(A7105_1D_RSSI_THOLD) * 1639 >> 10);  // value from A7105 is between 8 for maximum signal strength to 160 or less
           tx_rssi = limit<int16_t>(0, tx_rssi, 255);
           rxPacket[8] = tx_rssi;
         }
