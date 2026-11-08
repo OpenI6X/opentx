@@ -523,7 +523,7 @@ TEST_F(TrimsTest, MoveTrimsToOffsetsWithTrimIdle)
   // so it cancels out between the two passes of moveTrimsToOffsets(). This
   // fork always drops trims in that pass, hence the idle trim measured at
   // centered sticks (228 -> 222 in offset units) does land in the offset.
-  EXPECT_EQ(g_model.limitData[2].offset, 222);
+  EXPECT_EQ(g_model.limitData[THR_CHAN].offset, 222);
 
   // Other trims should
   EXPECT_EQ(getTrimValue(0, MIXSRC_TRIMELE - MIXSRC_FIRST_TRIM), 0);  // back to neutral
