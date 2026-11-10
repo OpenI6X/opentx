@@ -74,7 +74,11 @@ static uint8_t *paramData = &reusableBuffer.cToolData[0];
 static uint32_t paramDataLen = 0;
 
 static constexpr uint8_t MAX_PARAMS_COUNT = 18;
-static Parameter *params = (Parameter *)&reusableBuffer.cToolData[BUFFER_SIZE - MAX_PARAMS_COUNT * sizeof(Parameter)];
+static constexpr uint16_t PARAMS_OFFSET = BUFFER_SIZE - MAX_PARAMS_COUNT * sizeof(Parameter);
+static constexpr uint16_t STRING_BUFFER_SIZE = PARAMS_OFFSET - 44;
+static Parameter *params = (Parameter *)&reusableBuffer.cToolData[PARAMS_OFFSET];
+static_assert(PARAMS_OFFSET + MAX_PARAMS_COUNT * sizeof(Parameter) + 8 <= CTOOL_DATA_SIZE,
+              "ELRS tool scratch layout exceeds cToolData");
 static uint8_t allocatedParamsCount = 0;
 
 static constexpr uint8_t DEVICES_MAX_COUNT = 8;
@@ -183,6 +187,7 @@ static void luaLcdDrawGauge(coord_t x, coord_t y, coord_t w, coord_t h, int32_t 
 }
 
 static void bufferPush(char * data, uint8_t len) {
+  if (bufferOffset + len > STRING_BUFFER_SIZE) return;
   memcpy(&buffer[bufferOffset], data, len);
   bufferOffset += len;
 }
@@ -194,10 +199,11 @@ static void resetParamData() {
 
 static void crossfireTelemetryCmd(const uint8_t cmd, const uint8_t index, const uint8_t * data, const uint8_t size) {
   // TRACE("crsf cmd %x %x %x", cmd, index, size);
-  uint8_t crsfPushData[60/*max: 3 + size*/] = { device.id, handsetId, index };
-  for (uint32_t i = 0; i < size; i++) {
-    crsfPushData[3 + i] = data[i];
-  }
+  uint8_t crsfPushData[60/*max: 3 + size*/];
+  crsfPushData[0] = device.id;
+  crsfPushData[1] = handsetId;
+  crsfPushData[2] = index;
+  memcpy(&crsfPushData[3], data, size);
   crossfireTelemetryPush(cmd, crsfPushData, 3 + size);
 }
 
@@ -377,14 +383,10 @@ static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
   unitDisplay(param, y, unitOffset);
 }
 
-static uint8_t findSelectMinValue(const uint8_t * data) {
+static void findSelectRange(const uint8_t * data, uint8_t & minVal, uint8_t & maxVal) {
   uint8_t min = 0;
-  while (data[min] == ';') min++;
-  return min;
-}
-
-static uint8_t findSelectValuesCount(const uint8_t * data) {
   uint8_t count = 0;
+  while (*data == ';') { min++; data++; }
   while (*data) {
     if (*data == ';') {
       data++;
@@ -393,7 +395,8 @@ static uint8_t findSelectValuesCount(const uint8_t * data) {
     count++;
     while (*data && *data != ';') data++;
   }
-  return count;
+  minVal = min;
+  maxVal = min + count - 1;
 }
 
 static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) {
@@ -428,8 +431,8 @@ static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) 
   param->value = paramGetValue(&data[offset + optionsLen], valueSize);
   
   if (param->type == TYPE_SELECT) {
-    uint8_t minVal = findSelectMinValue(&data[offset]);
-    uint8_t maxVal = minVal + findSelectValuesCount(&data[offset]) - 1;
+    uint8_t minVal, maxVal;
+    findSelectRange(&data[offset], minVal, maxVal);
     bufferPush((char*)&minVal, 1);
     bufferPush((char*)&maxVal, 1);
     bufferPush((char*)&data[offset], optionsLen);
@@ -545,25 +548,22 @@ static void paramCommandSave(Parameter * param) {
 }
 
 static void paramUnifiedDisplay(Parameter * param, uint8_t y, uint8_t attr) {
-  uint8_t textIndent = COL1 + 9;
-  char tmp[28];
-  char * tmpString = tmp;
-  if (param->type == TYPE_FOLDER) {
-    *tmpString++ = '>';
-    *tmpString++ = ' ';
-    strAppend(tmpString, (char *)&buffer[param->offset], param->nameLength);
-    textIndent = COL1;
-  } else if (param->type == TYPE_DEVICES_FOLDER) {
-    strAppend(tmpString, "> Other Devices");
-    textIndent = COL1;
-  } else { // CMD || DEVICE || BACK
-    *tmpString++ = '[';
-    if (param->type == TYPE_BACK) tmpString = strAppend(tmpString, "----BACK----");
-    else tmpString = strAppend(tmpString, (char *)&buffer[param->offset], param->nameLength);
-    *tmpString++ = ']';
-    *tmpString = '\0';
+  attr |= BOLD;
+  if (param->type == TYPE_DEVICES_FOLDER) {
+    lcdDrawText(COL1, y, "> Other Devices", attr);
+    return;
   }
-  lcdDrawText(textIndent, y, tmp, attr | BOLD);
+  if (param->type == TYPE_FOLDER) {
+    lcdDrawText(COL1, y, "> ", attr);
+  } else { // CMD || DEVICE || BACK
+    lcdDrawChar(COL1 + 9, y, '[', attr);
+  }
+  if (param->type == TYPE_BACK)
+    lcdDrawText(lcdNextPos, y, "----BACK----", attr);
+  else
+    lcdDrawSizedText(lcdNextPos, y, (char *)&buffer[param->offset], param->nameLength, attr);
+  if (param->type != TYPE_FOLDER)
+    lcdDrawChar(lcdNextPos, y, ']', attr);
 }
 
 static void paramBackExec(Parameter * param = 0) {
@@ -649,7 +649,7 @@ static const ParamFunctions functions[] = {
   { .load=noopLoad, .save=paramFolderDeviceOpen, .display=paramUnifiedDisplay },         // 16: DEVICES_FOLDER
 };
 
-static const ParamFunctions getFunctions(uint32_t type) {
+static const ParamFunctions & getFunctions(uint32_t type) {
   // Types 0-8 all use the integer function set
   if (type <= TYPE_FLOAT) return functions[0];
   // Types 9-16 map to functions[1-8]
