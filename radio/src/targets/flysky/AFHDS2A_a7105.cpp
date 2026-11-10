@@ -186,6 +186,9 @@ void AFHDS2A_callback()
   uint8_t *rxPacket = (uint8_t *)&telemetryRxBuffer;
 
   static uint16_t packet_counter = 0;
+
+  uint8_t data_rx = 0;
+
 #if defined(AFHDS2A_FREQ_TUNING)
   A7105_AdjustLOBaseFreq();
 #endif
@@ -271,12 +274,13 @@ SendBIND4_:  //--------------------------------------------------------------
   }
 SendBIND_:  //--------------------------------------------------------------
   AFHDS2A_build_bind_packet((uint8_t *)&txPacket);
+  data_rx = A7105_ReadReg(A7105_00_MODE);      // Check if something has been received...
   Channel = (packet_count % 2 ? 0x0d : 0x8c);
   SETBIT(RadioState, SEND_RES, SEND);
   goto Send_;
 EndSendBIND123_:  //-----------------------------------------------------------
   A7105_SetPower();
-  A7105_SetTxRxMode(TXRX_OFF);  // Turn LNA off since we are in near range and we want to prevent swamping
+  A7105_SetTxRxMode((packet_count & 0x40) ? TXRX_OFF : RX_EN);  // Turn LNA off time to time since we are in near range and we want to prevent swamping
   A7105_Strobe(A7105_RX);
   EnableGIO();
   RadioState++;
@@ -285,7 +289,7 @@ EndSendBIND123_:  //-----------------------------------------------------------
   SETBIT(RadioState, SEND_RES, RES);
   return;
 ResBIND123_:  //-----------------------------------------------------------
-  if (!(A7105_ReadReg(A7105_00_MODE) & (1<<5))) { // CRCF Ok
+  if (!(A7105_ReadReg(A7105_00_MODE) & (1<<5)) && !(data_rx & 1)) { // CRCF Ok
     A7105_ReadData(rxPacket, AFHDS2A_RXPACKET_SIZE);
     if ((rxPacket[0] == 0xbc) & (rxPacket[9] == 0x01)) {
         memcpy(&g_eeGeneral.receiverId[g_model.header.modelId[INTERNAL_MODULE]], &rxPacket[5], 4);
