@@ -27,6 +27,12 @@
 static tmr10ms_t dfplayerLastCmdTime = 0;
 static Fifo<uint16_t, 16> dfplayerFifo;
 
+// fix for MH2024K and other setups slow init
+static constexpr tmr10ms_t DFP_INIT_TIME = 20; // 200 ms in 10 ms ticks
+static tmr10ms_t dfplayerInitStart = 0;
+static bool dfplayerReady = false;
+static int16_t dfplayerPendingVolume = -1;
+
 static constexpr uint8_t DFP_PLAY         = 0x03; // root,         file: 0-2999, plays by filesystem order, fastest
 static constexpr uint8_t DFP_PLAY_MP3     = 0x12; // folder: mp3,  file: 0-2999, plays by filename, too slow
 static constexpr uint8_t DFP_PLAY_FOLDER  = 0x14; // folder: 0-15, file: 0-2999, plays by filename, too slow
@@ -131,12 +137,18 @@ void setScaledVolume(uint8_t volume) {
   // if (volume > VOLUME_LEVEL_MAX) {
   //   volume = VOLUME_LEVEL_MAX;
   // }
-
-  //sleep_ms(200);
-  dfplayerCommand(DFP_SET_VOLUME, volume);
+  dfplayerPendingVolume = volume;
 }
 
 void dfplayerWakeup() {
+  if (!dfplayerReady) {
+    if (get_tmr10ms() - dfplayerInitStart < DFP_INIT_TIME) return;
+    dfplayerReady = true;
+  }
+  if (dfplayerPendingVolume >= 0) { // volume first, then queued sounds
+    dfplayerCommand(DFP_SET_VOLUME, dfplayerPendingVolume);
+    dfplayerPendingVolume = -1;
+  }
   uint16_t index;
   if (!dfPlayerBusy() && dfplayerFifo.pop(index)) {
     dfplayerPlayFile(index);
@@ -144,6 +156,7 @@ void dfplayerWakeup() {
 }
 
 void dfplayerInit() {
+    dfplayerInitStart = get_tmr10ms();
     // setup BUSY pin
     LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
     GPIO_InitStruct.Pin   = DFPLAYER_GPIO_PIN_BUSY;
@@ -151,11 +164,8 @@ void dfplayerInit() {
     GPIO_InitStruct.Pull  = LL_GPIO_PULL_DOWN;
     LL_GPIO_Init(DFPLAYER_GPIO_PORT, &GPIO_InitStruct);
 
-    delay_ms(150); // fix for MH2024K slow init
-
     aux3SerialInit();
-    // dfplayerSetVolume(0); // default volume, done in opentxInit
-    
+
     if (!globalData.unexpectedShutdown) {
         AUDIO_HELLO();
     }
