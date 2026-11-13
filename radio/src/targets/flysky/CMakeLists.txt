@@ -1,5 +1,6 @@
 option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
-option(PCBI6X_ELRS "Enable ExpressLRS configuration tool" NO) # ~4.0kB
+option(PCBI6X_ELRS "Enable ExpressLRS configuration tool" NO) # ~3.6kB
+option(PCBI6X_ELRS_BIND "Enable ExpressLRS bind phrase tool" NO) # ~2.3kB
 option(CRSF_EXTENDED_TYPES "Enable Support for CRSF STRING and FLOAT types" NO) # ~0.2kB
 option(PCBI6X_HELLO "Enable Hello World example tool" NO)
 option(PCBI6X_INAV "Enable INAV Lite telemetry screen" NO) # ~2kB
@@ -92,6 +93,14 @@ if(PCBI6X_ELRS STREQUAL YES)
   set(TARGET_SRC
     ${TARGET_SRC}
     tools/elrs.cpp
+    )
+endif()
+
+if(PCBI6X_ELRS_BIND STREQUAL YES)
+  add_definitions(-DPCBI6X_ELRS_BIND)
+  set(TARGET_SRC
+    ${TARGET_SRC}
+    tools/elrs_bind.cpp
     )
 endif()
 
