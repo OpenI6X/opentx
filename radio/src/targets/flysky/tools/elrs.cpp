@@ -60,18 +60,10 @@ struct Parameter {
   };
 };
 
-struct ParamFunctions {
-  void (*load)(Parameter*, uint8_t *, uint8_t);
-  void (*save)(Parameter*);
-  void (*display)(Parameter*, uint8_t, uint8_t);
-};
 
 static constexpr uint16_t BUFFER_SIZE = CTOOL_DATA_SIZE - 8/*DEVICES_MAX_COUNT*/;
 static uint8_t *buffer = &reusableBuffer.cToolData[0];
-static uint16_t bufferOffset = 0;
 
-static uint8_t *paramData = &reusableBuffer.cToolData[0];
-static uint32_t paramDataLen = 0;
 
 static constexpr uint8_t MAX_PARAMS_COUNT = 18;
 static constexpr uint16_t PARAMS_OFFSET = BUFFER_SIZE - MAX_PARAMS_COUNT * sizeof(Parameter);
@@ -79,12 +71,10 @@ static constexpr uint16_t STRING_BUFFER_SIZE = PARAMS_OFFSET - 44;
 static Parameter *params = (Parameter *)&reusableBuffer.cToolData[PARAMS_OFFSET];
 static_assert(PARAMS_OFFSET + MAX_PARAMS_COUNT * sizeof(Parameter) + 8 <= CTOOL_DATA_SIZE,
               "ELRS tool scratch layout exceeds cToolData");
-static uint8_t allocatedParamsCount = 0;
 
 static constexpr uint8_t DEVICES_MAX_COUNT = 8;
 static uint8_t *deviceIds = &reusableBuffer.cToolData[BUFFER_SIZE];
 //static uint8_t deviceIds[DEVICES_MAX_COUNT];
-static uint8_t devicesLen = 0;
 
 // Button and UI state IDs
 static constexpr uint8_t backButtonId = 100;
@@ -95,50 +85,70 @@ static constexpr uint8_t handsetId = 0xEA;
 
 // Device communication state
 struct DeviceState {
-  uint8_t id = 0xEE;
-  uint8_t isELRS_TX = 0;
-  uint8_t paramCount = 0;
-  char name[20] = {};
+  uint8_t id;
+  uint8_t isELRS_TX;
+  uint8_t paramCount;
+  char name[20];
 };
-static DeviceState device;
 
 // UI navigation state
 struct UIState {
-  uint8_t btnState = BTN_NONE;
-  uint8_t lineIndex = 1;
-  uint8_t pageOffset = 0;
-  Parameter * paramPopup = nullptr;
+  uint8_t btnState;
+  uint8_t lineIndex;
+  uint8_t pageOffset;
+  Parameter * paramPopup;
 };
-static UIState ui;
 
 // Link statistics for ELRS TX modules
 struct LinkStat {
   uint16_t good;
   uint8_t bad;
   uint8_t flags;
-} static linkstat = {};
+};
 
 // Parameter loading state
 struct ParamLoadState {
-  uint8_t id = 1;
-  uint8_t chunk = 0;
-  tmr10ms_t timeout = 0;
-  uint8_t expectedCount = 0;
-  int8_t expectedChunks = -1;
-  uint8_t allLoaded = 0;
-  uint8_t currentFolderId = 0;
+  uint8_t id;
+  uint8_t chunk;
+  tmr10ms_t timeout;
+  uint8_t expectedCount;
+  int8_t expectedChunks;
+  uint8_t allLoaded;
+  uint8_t currentFolderId;
 };
-static ParamLoadState paramLoad;
 
 // UI display state
 struct DisplayState {
-  char elrsInfo[20] = {};
-  uint8_t titleShowWarn = 0;
-  tmr10ms_t titleShowWarnTimeout = 100;
-  tmr10ms_t devicesRefreshTimeout = 50;
-  tmr10ms_t linkstatTimeout = 100;
+  char elrsInfo[20];
+  uint8_t titleShowWarn;
+  tmr10ms_t titleShowWarnTimeout;
+  tmr10ms_t devicesRefreshTimeout;
+  tmr10ms_t linkstatTimeout;
 };
-static DisplayState display;
+
+// All state in one object: one base address per function
+static struct ElrsState {
+  ParamLoadState paramLoad;
+  UIState ui;
+  LinkStat linkstat;
+  uint8_t allocatedParamsCount;
+  uint8_t devicesLen;
+  uint16_t bufferOffset;
+  DeviceState device;
+  uint8_t *paramData;
+  uint32_t paramDataLen;
+  DisplayState display;
+} st;
+#define paramLoad st.paramLoad
+#define ui st.ui
+#define linkstat st.linkstat
+#define paramData st.paramData
+#define paramDataLen st.paramDataLen
+#define bufferOffset st.bufferOffset
+#define allocatedParamsCount st.allocatedParamsCount
+#define devicesLen st.devicesLen
+#define device st.device
+#define display st.display
 
 static constexpr uint8_t STRING_LEN_MAX = 15; // without trailing \0
 static event_t currentEvent;
@@ -525,8 +535,6 @@ static void paramFolderDeviceOpen(Parameter * param) {
   paramFolderOpen(param);
 }
 
-static void noopLoad(Parameter * param, uint8_t * data, uint8_t offset) {}
-static void noopSave(Parameter * param) {}
 
 static void paramCommandLoad(Parameter * param, uint8_t * data, uint8_t offset) {
   param->status = data[offset];
@@ -628,32 +636,34 @@ static void parseDeviceInfoMessage(uint8_t* data) {
   }
 }
 
-// Function table: types 0-8 (UINT8 through FLOAT) use index 0
-static const ParamFunctions functions[] = {
-  { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay },    // 0: UINT8/INT8/UINT16/INT16/FLOAT
-  // { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // INT8(1)
-  // { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // UINT16(2)
-  // { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // INT16(3)
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay },
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay },
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay },
-  // { .load=noopLoad, .save=noopSave, .display=noopDisplay },
-  // { .load=paramFloatLoad, .save=paramMultibyteSave, .display=paramIntegerDisplay }, // FLOAT(8)
-  { .load=paramIntegerLoad, .save=paramMultibyteSave, .display=paramTextSelectionDisplay }, // 9: SELECT
-  { .load=paramStringLoad, .save=paramStringSave, .display=paramStringDisplay },          // 10: STRING
-  { .load=noopLoad, .save=paramFolderOpen, .display=paramUnifiedDisplay },                // 11: FOLDER
-  { .load=paramInfoLoad, .save=noopSave, .display=paramStringDisplay },                  // 12: INFO
-  { .load=paramCommandLoad, .save=paramCommandSave, .display=paramUnifiedDisplay },       // 13: COMMAND
-  { .load=noopLoad, .save=paramBackExec, .display=paramUnifiedDisplay },                 // 14: BACK
-  { .load=noopLoad, .save=paramDeviceIdSelect, .display=paramUnifiedDisplay },           // 15: DEVICE
-  { .load=noopLoad, .save=paramFolderDeviceOpen, .display=paramUnifiedDisplay },         // 16: DEVICES_FOLDER
-};
+// Dispatch by type
+static void paramLoadByType(Parameter * param, uint8_t * data, uint8_t offset) {
+  uint32_t type = param->type;
+  if (type <= TYPE_SELECT) paramIntegerLoad(param, data, offset);
+  else if (type == TYPE_STRING) paramStringLoad(param, data, offset);
+  else if (type == TYPE_INFO) paramInfoLoad(param, data, offset);
+  else if (type == TYPE_COMMAND) paramCommandLoad(param, data, offset);
+}
 
-static const ParamFunctions & getFunctions(uint32_t type) {
-  // Types 0-8 all use the integer function set
-  if (type <= TYPE_FLOAT) return functions[0];
-  // Types 9-16 map to functions[1-8]
-  return functions[type - 8];
+static void paramSaveByType(Parameter * param) {
+  switch (param->type) {
+    case TYPE_STRING: paramStringSave(param); break;
+    case TYPE_FOLDER: paramFolderOpen(param); break;
+    case TYPE_INFO: break;
+    case TYPE_COMMAND: paramCommandSave(param); break;
+    case TYPE_BACK: paramBackExec(param); break;
+    case TYPE_DEVICE: paramDeviceIdSelect(param); break;
+    case TYPE_DEVICES_FOLDER: paramFolderDeviceOpen(param); break;
+    default: if (param->type <= TYPE_SELECT) paramMultibyteSave(param); break;
+  }
+}
+
+static void paramDisplayByType(Parameter * param, uint8_t y, uint8_t attr) {
+  uint32_t type = param->type;
+  if (type < TYPE_SELECT) paramIntegerDisplay(param, y, attr);
+  else if (type == TYPE_SELECT) paramTextSelectionDisplay(param, y, attr);
+  else if (type == TYPE_STRING || type == TYPE_INFO) paramStringDisplay(param, y, attr);
+  else paramUnifiedDisplay(param, y, attr);
 }
 
 static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
@@ -721,7 +731,7 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
         param->offset = bufferOffset;
         bufferPush((char*)&paramData[2], param->nameLength);
       }
-      getFunctions(param->type).load(param, paramData, 2 + nameLen + 1);
+      paramLoadByType(param, paramData, 2 + nameLen + 1);
       storeParam(param);
     }
 
@@ -888,7 +898,7 @@ static void handleDevicePageEvent(event_t event) {
           paramLoad.timeout = getTime() + 20;
           // Also push the next bad/good update further out
           display.linkstatTimeout = paramLoad.timeout + 100;
-          getFunctions(param->type).save(param);
+          paramSaveByType(param);
           if (param->type < TYPE_FOLDER) {
             // For editable param types
             // Reload all editable fields at the same level
@@ -939,7 +949,7 @@ static void runDevicePage(event_t event) {
       if (param->type < TYPE_FOLDER || param->type == TYPE_INFO) { // if not folder, command, or back
         lcdDrawSizedText(COL1, y * TEXT_SIZE + TEXT_YOFFSET, (char *)&buffer[param->offset], param->nameLength, 0);
       }
-      getFunctions(param->type).display(param, y * TEXT_SIZE + TEXT_YOFFSET, attr);
+      paramDisplayByType(param, y * TEXT_SIZE + TEXT_YOFFSET, attr);
     }
   }
 }
@@ -1003,6 +1013,11 @@ void elrsStop() {
 void elrsRun(event_t event) {
   if (globalData.cToolRunning == 0) {
     globalData.cToolRunning = 1;
+    // What used to be the static initializers (83 of the firmware's 104 bytes of .data)
+    device.id = 0xEE;
+    if (ui.lineIndex == 0) ui.lineIndex = 1;
+    paramLoad.id = 1;
+    resetParamData();
     registerCrossfireTelemetryCallback(refreshNextCallback);
   }
 
