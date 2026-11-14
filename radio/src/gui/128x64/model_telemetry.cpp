@@ -65,6 +65,9 @@ static uint8_t SENSOR_ROW(uint8_t value)
   #else
     #define TELEM_COL2                 (8*FW)
   #endif
+
+  #define TELEM_COL3                   (17 * FW)
+
   #define TELEM_BARS_COLMIN            (56-3*FW)
   #define TELEM_BARS_COLMAX            (14*FW-3)
   #define TELEM_SCRTYPE_COL            TELEM_COL2
@@ -493,8 +496,16 @@ void menuModelTelemetry(event_t event)
 #endif
 
       case ITEM_TELEMETRY_SENSORS_LABEL:
+      {
         telemExpandState.sensors = expandableSection(y, STR_TELEMETRY_SENSORS, telemExpandState.sensors, attr, event);
+        uint8_t sensorCount = getTelemetrySensorsCount();
+        if (sensorCount && !telemExpandState.sensors) {
+          lcdDrawChar(TELEM_COL3, y, '(', 0);
+          lcdDrawNumber(lcdNextPos, y, sensorCount, 0);
+          lcdDrawChar(lcdNextPos, y, ')', 0);
+        }
         break;
+      }
 
       case ITEM_TELEMETRY_DISCOVER_SENSORS:
         lcdDrawText(0, y, allowNewSensors ? STR_STOP_DISCOVER_SENSORS : STR_DISCOVER_SENSORS, attr);

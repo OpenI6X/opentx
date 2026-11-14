@@ -67,6 +67,7 @@ bool isGPSSensor(int sensor);
 bool isAltSensor(int sensor);
 bool isVoltsSensor(int sensor);
 bool isCurrentSensor(int sensor);
+uint8_t getTelemetrySensorsCount();
 bool isTelemetryFieldAvailable(int index);
 bool isTelemetryFieldComparisonAvailable(int index);
 bool isSensorAvailable(int sensor);
