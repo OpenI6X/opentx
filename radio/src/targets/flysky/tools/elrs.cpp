@@ -485,7 +485,7 @@ static void paramStringSave(Parameter * param) {
 static void paramMultibyteSave(Parameter * param) {
   uint8_t data[4];
   for (uint32_t i = 0; i < param->size; i++) {
-      data[i] = (uint8_t)((param->value >> (8 * i)) & 0xFF);
+      data[i] = (uint8_t)((param->value >> (8 * (param->size - 1 - i))) & 0xFF); // MSB first
     }
   crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, (uint8_t *)&data, param->size);
 }
