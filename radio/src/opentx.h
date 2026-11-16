@@ -190,11 +190,7 @@
 #endif
 
 #if defined(PCBI6X_ELRS)
-#if defined(CRSF_EXTENDED_TYPES)
-#define CTOOL_DATA_SIZE (720/*strings buffer*/ + 44/*max popup packet*/ + (18*12)/*params*/ + 8/*devices*/ + 0/*data alignment*/) // 988
-#else
 #define CTOOL_DATA_SIZE (720/*strings buffer*/ + 44/*max popup packet*/ + (18*10)/*params*/ + 8/*devices*/ + 0/*data alignment*/) // 952
-#endif
 #else
 #define CTOOL_DATA_SIZE 512 // minimize RAM usage for non ELRS builds
 #endif

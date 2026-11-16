@@ -121,6 +121,7 @@ enum CrossfireFrames{
   CRSF_FRAME_MODELID_SENT
 };
 
+extern void (*crossfireTelemetryCallback)(uint8_t, uint8_t*, uint8_t);
 void registerCrossfireTelemetryCallback(void (*callback)(uint8_t, uint8_t*, uint8_t));
 void runCrossfireTelemetryCallback(uint8_t command, uint8_t* data, uint8_t length);
 
