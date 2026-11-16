@@ -48,10 +48,10 @@ struct Parameter {
   union {
     uint8_t value[4];       // INT8/16/FLOAT/SELECT: as on the wire, `size` bytes, high byte first
     struct {
-      uint8_t timeout;      // COMMAND
-      uint8_t lastStatus;   // COMMAND
-      uint8_t status;       // COMMAND
-      uint8_t infoOffset;   // COMMAND, paramData info offset
+      uint8_t timeout;         // COMMAND
+      uint8_t reserved;        // COMMAND (padding, preserves sizeof(Parameter) == 10)
+      volatile uint8_t status; // COMMAND (shared between timerTask and menusTask)
+      uint8_t infoOffset;      // COMMAND, paramData info offset
     };
   };
 };
@@ -93,7 +93,7 @@ struct UIState {
   uint8_t btnState;
   uint8_t lineIndex;
   uint8_t pageOffset;
-  Parameter * paramPopup;
+  Parameter * volatile paramPopup;
 };
 
 // Link statistics for ELRS TX modules
@@ -168,10 +168,6 @@ static constexpr uint8_t PARAM_DEFAULT_OFFSET  = 3;  // offset index for default
 #define EVT_VIRTUAL_ENTER EVT_KEY_BREAK(KEY_ENTER)
 #define EVT_VIRTUAL_NEXT  EVT_KEY_FIRST(KEY_DOWN)
 #define EVT_VIRTUAL_PREV  EVT_KEY_FIRST(KEY_UP)
-
-static constexpr uint8_t RESULT_NONE = 0;
-static constexpr uint8_t RESULT_OK = 2;
-static constexpr uint8_t RESULT_CANCEL = 1;
 
 static void storeParam(Parameter * param);
 static void clearData();
@@ -533,21 +529,17 @@ static void paramFolderDeviceOpen(Parameter * param) {
 
 
 static void paramCommandLoad(Parameter * param, uint8_t * data, uint8_t offset) {
-  param->status = data[offset];
   param->timeout = data[offset+1];
   param->infoOffset = offset+2; // do not copy info, access directly
-  if (param->status == STATUS_READY) {
-    ui.paramPopup = nullptr;
-  }
+  param->status = data[offset]; // publish status last; menusTask owns closing ui.paramPopup
 }
 
 static void paramCommandSave(Parameter * param) {
   if (param->status < STATUS_CONFIRM) {
     param->status = STATUS_START;
-    crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->status);
-    ui.paramPopup = param;
-    ui.paramPopup->lastStatus = STATUS_READY;
     paramLoad.timeout = getTime() + param->timeout;
+    ui.paramPopup = param; // publish before sending so fast replies see active popup
+    crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, STATUS_START);
   }
 }
 
@@ -739,7 +731,7 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
       }
       paramLoad.timeout = getTime() + 200;
     } else {
-      paramLoad.timeout = getTime() + ui.paramPopup->timeout;
+      paramLoad.timeout = getTime() + param->timeout;
     }
     resetParamData();
   }
@@ -787,10 +779,12 @@ static void refreshNextCallback(uint8_t command, uint8_t* data, uint8_t length) 
 static void refreshNext() {
   tmr10ms_t time = getTime();
   
-  if (ui.paramPopup != nullptr) {
-    if (time > paramLoad.timeout && ui.paramPopup->status != STATUS_CONFIRMATION_NEEDED) {
-      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, ui.paramPopup->id, STATUS_POLL);
-      paramLoad.timeout = time + ui.paramPopup->timeout;
+  Parameter * popup = ui.paramPopup;
+  if (popup != nullptr) {
+    uint8_t status = popup->status;
+    if (time > paramLoad.timeout && status != STATUS_CONFIRMATION_NEEDED && status != STATUS_READY) {
+      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, popup->id, STATUS_POLL);
+      paramLoad.timeout = time + popup->timeout;
     }
   } else if (time > display.devicesRefreshTimeout && paramLoad.expectedCount < 1) {
     display.devicesRefreshTimeout = time + 100; // 1s
@@ -950,47 +944,30 @@ static void runDevicePage(event_t event) {
   }
 }
 
-static uint8_t popupCompat(event_t event) {
-  showMessageBox((char *)&paramData[ui.paramPopup->infoOffset]);
-  lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+4*FH+2, STR_POPUPS_ENTER_EXIT);
-
-  if (event == EVT_VIRTUAL_EXIT) {
-    return RESULT_CANCEL;
-  } else if (event == EVT_VIRTUAL_ENTER) {
-    return RESULT_OK;
-  }
-  return RESULT_NONE;
-}
-
 static void runPopupPage(event_t event) {
+  Parameter * popup = ui.paramPopup;
+
   if (event == EVT_VIRTUAL_EXIT) {
-    crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, ui.paramPopup->id, STATUS_CANCEL);
+    ui.paramPopup = nullptr;
+    popup->status = STATUS_READY;
     paramLoad.timeout = getTime() + 200;
+    crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, popup->id, STATUS_CANCEL);
+    return;
   }
 
-  uint8_t result = RESULT_NONE;
-  if (ui.paramPopup->status == STATUS_READY && ui.paramPopup->lastStatus != STATUS_READY) { // stopped
-    reloadAllParam();
+  uint8_t status = popup->status;
+  if (status == STATUS_READY) {
     ui.paramPopup = nullptr;
-  } else if (ui.paramPopup->status == STATUS_CONFIRMATION_NEEDED) {
-    result = popupCompat(event);
-    ui.paramPopup->lastStatus = ui.paramPopup->status;
-    if (result == RESULT_OK) {
-      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, ui.paramPopup->id, STATUS_CONFIRM);
-      paramLoad.timeout = getTime() + ui.paramPopup->timeout; // we are expecting an immediate response
-      ui.paramPopup->status = STATUS_CONFIRM;
-    } else if (result == RESULT_CANCEL) {
-      ui.paramPopup = nullptr;
-    }
-  } else if (ui.paramPopup->status == STATUS_PROGRESS) {
-    result = popupCompat(event);
-    if (ui.paramPopup != nullptr) { // guard, otherwise can reboot on popup -> cancel
-      ui.paramPopup->lastStatus = ui.paramPopup->status;
-    }
-    if (result == RESULT_CANCEL) {
-      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, ui.paramPopup->id, STATUS_CANCEL);
-      paramLoad.timeout = getTime() + ui.paramPopup->timeout;
-      ui.paramPopup = nullptr;
+    return;
+  }
+
+  if (status == STATUS_CONFIRMATION_NEEDED || status == STATUS_PROGRESS) {
+    showMessageBox((char *)&paramData[popup->infoOffset]);
+    lcdDrawText(WARNING_LINE_X, WARNING_LINE_Y+4*FH+2, STR_POPUPS_ENTER_EXIT);
+    if (status == STATUS_CONFIRMATION_NEEDED && event == EVT_VIRTUAL_ENTER) {
+      popup->status = STATUS_CONFIRM;
+      paramLoad.timeout = getTime() + popup->timeout; // we are expecting an immediate response
+      crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, popup->id, STATUS_CONFIRM);
     }
   }
 }
@@ -1016,10 +993,12 @@ void elrsRun(event_t event) {
 
   if (event == EVT_KEY_LONG(KEY_EXIT)) {
     elrsStop();
-  } else { 
+  } else {
     if (ui.paramPopup != nullptr) {
       runPopupPage(event);
-    } else {
+      event = 0; // consumed by popup
+    }
+    if (ui.paramPopup == nullptr) {
       runDevicePage(event);
     }
     refreshNext();
