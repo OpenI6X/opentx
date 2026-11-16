@@ -293,12 +293,20 @@ static int32_t paramGetValue(uint8_t * data, uint8_t size) {
   return result;
 }
 
+// Wire min/max/value for signed types are two's complement; sign-extend so
+// ranges like -128..127 aren't read as an inverted 128..127.
+static int32_t paramSignExtend(Parameter * param, int32_t value) {
+  if (param->type == TYPE_INT8) return (int8_t)value;
+  if (param->type == TYPE_INT16) return (int16_t)value;
+  return value;
+}
+
 static int32_t paramGetMin(Parameter * param) {
-  return paramGetValue(&buffer[param->offset + param->nameLength + (0 * param->size)], param->size);
+  return paramSignExtend(param, paramGetValue(&buffer[param->offset + param->nameLength + (0 * param->size)], param->size));
 }
 
 static int32_t paramGetMax(Parameter * param) {
-  return paramGetValue(&buffer[param->offset + param->nameLength + (1 * param->size)], param->size);
+  return paramSignExtend(param, paramGetValue(&buffer[param->offset + param->nameLength + (1 * param->size)], param->size));
 }
 
 /**
@@ -438,7 +446,7 @@ static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) 
     optionsLen = strlen((char*)&data[offset]) + 1; // + \0
   }
   
-  param->value = paramGetValue(&data[offset + optionsLen], valueSize);
+  param->value = paramSignExtend(param, paramGetValue(&data[offset + optionsLen], valueSize));
   
   if (param->type == TYPE_SELECT) {
     uint8_t minVal, maxVal;
