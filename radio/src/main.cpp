@@ -70,8 +70,9 @@ void handleUsbConnection()
       #if !defined(PCBI6X) || defined(USB_MSD)
       if (getSelectedUsbMode() == USB_MASS_STORAGE_MODE) {
         #if defined(PCBI6X_ELRS)
-        extern void elrsStop();
-        elrsStop();
+        // reusableBuffer is the USB sector buffer from now on: the callback of the ELRS
+        // tool must not write to it. The menus do not run again, see perMain().
+        registerCrossfireTelemetryCallback(nullptr);
         #endif
         opentxClose(false);
         usbPluggedIn();

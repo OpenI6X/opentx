@@ -1007,25 +1007,22 @@ static void runPopupPage(event_t event) {
   }
 }
 
-void elrsStop() {
+// Leaves the tool. Its state is reset when it starts, see elrsRun().
+static void elrsStop() {
   registerCrossfireTelemetryCallback(nullptr);
-  // reloadAllParam();
-  paramBackExec();
-  ui.paramPopup = nullptr;
-  device.id = 0xEE;
   globalData.cToolRunning = 0;
-  clearData();
   popMenu();
 }
 
 void elrsRun(event_t event) {
-  if (globalData.cToolRunning == 0) {
-    globalData.cToolRunning = 1;
-    // What used to be the static initializers (83 of the firmware's 104 bytes of .data)
+  if (crossfireTelemetryCallback == nullptr) {
+    paramBackExec();
+    ui.paramPopup = nullptr;
     device.id = 0xEE;
     if (ui.lineIndex == 0) ui.lineIndex = 1;
-    paramLoad.id = 1;
-    resetParamData();
+    clearData();
+    paramData = buffer; // as resetParamData(): bufferOffset and paramDataLen are 0 here
+    globalData.cToolRunning = 1;
     registerCrossfireTelemetryCallback(refreshNextCallback);
   }
 
