@@ -379,6 +379,7 @@ static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
   uint32_t unitOffset = param->offset + param->nameLength + (PARAM_VALUE_SIZE_MULT * param->size);
   if (param->type == TYPE_FLOAT) {
 #if defined(CRSF_EXTENDED_TYPES)
+    unitOffset += param->size; // the default value is in the buffer too
     uint8_t prec = buffer[unitOffset];
     if (prec > 0) {
       attr |= (prec == 1 ? PREC1 : PREC2);
