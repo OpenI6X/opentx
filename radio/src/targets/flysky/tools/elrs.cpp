@@ -46,11 +46,7 @@ struct Parameter {
   uint8_t size;         // INT8/16/FLOAT/SELECT size
   uint8_t id;
   union {
-#if defined(CRSF_EXTENDED_TYPES)
-    int32_t value;
-#else
-    int16_t value;
-#endif
+    uint8_t value[4];       // INT8/16/FLOAT/SELECT: as on the wire, `size` bytes, high byte first
     struct {
       uint8_t timeout;      // COMMAND
       uint8_t lastStatus;   // COMMAND
@@ -59,6 +55,7 @@ struct Parameter {
     };
   };
 };
+static_assert(sizeof(Parameter) == 10, "CTOOL_DATA_SIZE counts 10 bytes per parameter");
 
 
 static constexpr uint16_t BUFFER_SIZE = CTOOL_DATA_SIZE - 8/*DEVICES_MAX_COUNT*/;
@@ -285,28 +282,35 @@ static void storeParam(Parameter * param) {
   memcpy(storedParam, param, sizeof(Parameter));
 }
 
-static int32_t paramGetValue(uint8_t * data, uint8_t size) {
-  int32_t result = 0;
-  for (uint32_t i = 0; i < size; i++) {
-    result = (result << 8) + data[i];
+// An integer as it is on the wire: `size` bytes, high byte first, two's complement
+// for the signed types. Value, min and max of a parameter are all kept that way and
+// read here, so that this is the one place that knows about the sign.
+static int32_t paramGetValue(const uint8_t * data, uint32_t size, uint32_t type = TYPE_UINT8) {
+  uint32_t result = 0;
+  while (size--) {
+    result = (result << 8) + *data++;
   }
+  if (type == TYPE_INT8) return (int8_t)result;
+  if (type == TYPE_INT16) return (int16_t)result;
   return result;
 }
 
-// Wire min/max/value for signed types are two's complement; sign-extend so
-// ranges like -128..127 aren't read as an inverted 128..127.
-static int32_t paramSignExtend(Parameter * param, int32_t value) {
-  if (param->type == TYPE_INT8) return (int8_t)value;
-  if (param->type == TYPE_INT16) return (int16_t)value;
-  return value;
+static int32_t paramGetValue(Parameter * param) {
+  return paramGetValue(param->value, param->size, param->type);
+}
+
+static void paramSetValue(Parameter * param, int32_t value) {
+  for (uint32_t i = param->size; i--; value >>= 8) {
+    param->value[i] = value; // the low byte is the last one
+  }
 }
 
 static int32_t paramGetMin(Parameter * param) {
-  return paramSignExtend(param, paramGetValue(&buffer[param->offset + param->nameLength + (0 * param->size)], param->size));
+  return paramGetValue(&buffer[param->offset + param->nameLength + (0 * param->size)], param->size, param->type);
 }
 
 static int32_t paramGetMax(Parameter * param) {
-  return paramSignExtend(param, paramGetValue(&buffer[param->offset + param->nameLength + (1 * param->size)], param->size));
+  return paramGetValue(&buffer[param->offset + param->nameLength + (1 * param->size)], param->size, param->type);
 }
 
 /**
@@ -372,19 +376,6 @@ static void unitDisplay(Parameter * param, uint8_t y, uint16_t offset) {
 }
 
 static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
-  int32_t value = param->value;
-  // paramGetValue() returns the raw big-endian accumulation, so only the
-  // signed types need sign-extension here. The UINT8/UINT16 casts in the
-  // original chain were no-ops (value already fits), and for the non-extended
-  // build the int16_t union member is already sign-extended on promotion.
-  if (param->type == TYPE_INT8) {
-    value = (int8_t)value;
-  }
-#if defined(CRSF_EXTENDED_TYPES)
-  else if (param->type == TYPE_INT16) {
-    value = (int16_t)value;
-  }
-#endif
   uint32_t unitOffset = param->offset + param->nameLength + (PARAM_VALUE_SIZE_MULT * param->size);
   if (param->type == TYPE_FLOAT) {
 #if defined(CRSF_EXTENDED_TYPES)
@@ -397,7 +388,7 @@ static void paramIntegerDisplay(Parameter *param, uint8_t y, uint8_t attr) {
     return;
 #endif
   }
-  lcdDrawNumber(COL2, y, value, attr);
+  lcdDrawNumber(COL2, y, paramGetValue(param), attr);
   unitDisplay(param, y, unitOffset);
 }
 
@@ -446,7 +437,7 @@ static void paramIntegerLoad(Parameter * param, uint8_t * data, uint8_t offset) 
     optionsLen = strlen((char*)&data[offset]) + 1; // + \0
   }
   
-  param->value = paramSignExtend(param, paramGetValue(&data[offset + optionsLen], valueSize));
+  memcpy(param->value, &data[offset + optionsLen], valueSize);
   
   if (param->type == TYPE_SELECT) {
     uint8_t minVal, maxVal;
@@ -491,11 +482,7 @@ static void paramStringSave(Parameter * param) {
 }
 
 static void paramMultibyteSave(Parameter * param) {
-  uint8_t data[4];
-  for (uint32_t i = 0; i < param->size; i++) {
-      data[i] = (uint8_t)((param->value >> (8 * (param->size - 1 - i))) & 0xFF); // MSB first
-    }
-  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, (uint8_t *)&data, param->size);
+  crossfireTelemetryCmd(CRSF_FRAMETYPE_PARAMETER_WRITE, param->id, param->value, param->size);
 }
 
 static bool getSelectedOption(char * option, char * options, const uint8_t value) {
@@ -515,7 +502,7 @@ static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr
   const uint32_t optionsOffset = param->offset + param->nameLength + 2 /* min, max */;
   const uint32_t optionsLen = strlen((char*)&buffer[optionsOffset]);
   char option[24];
-  if (!getSelectedOption(option, (char*)&buffer[optionsOffset], param->value)) {
+  if (!getSelectedOption(option, (char*)&buffer[optionsOffset], param->value[0])) {
     option[0] = 'E';
     option[1] = 'R';
     option[2] = 'R';
@@ -927,7 +914,7 @@ static void handleDevicePageEvent(event_t event) {
 //      incrParam(-1);
 //    }
     // smaller but missing step support (FLOAT)
-    param->value = checkIncDec(event, param->value, paramGetMin(param), paramGetMax(param), 0);
+    paramSetValue(param, checkIncDec(event, paramGetValue(param), paramGetMin(param), paramGetMax(param), 0));
   } else {
     if (event == EVT_VIRTUAL_NEXT) {
       selectParam(1);
