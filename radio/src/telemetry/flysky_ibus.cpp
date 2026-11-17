@@ -93,7 +93,9 @@ enum {
   AFHDS2A_ID_VOLT_FULL = 0xF0,
   AFHDS2A_ID_ACC_FULL = 0xEF,
   AFHDS2A_ID_TX_RSSI = 0x200,  // Pseudo id outside 1 byte range of FlySky sensors
+#if defined(AFHDS2A_CALC_VSPD)
   AFHDS2A_ID_VSPD = 0x2041,    // Virtual, derived from pressure altitude
+#endif
 };
 
 const FlySkySensor flySkySensors[] = {
@@ -122,7 +124,9 @@ const FlySkySensor flySkySensors[] = {
   {AFHDS2A_ID_FLIGHT_MODE,     ZSTR_FLIGHT_MODE, UNIT_RAW,               0},  // 2 bytes index
   {AFHDS2A_ID_PRES,            ZSTR_PRES,        UNIT_RAW,               2},  // 4 bytes In fact Temperature + Pressure -> Altitude
   {AFHDS2A_ID_PRES | 0x100,    ZSTR_TEMP2,       UNIT_CELSIUS,           1},  // 2 bytes Temperature
+#if defined(AFHDS2A_CALC_VSPD)
   {AFHDS2A_ID_VSPD,            ZSTR_VSPD,        UNIT_METERS_PER_SECOND, 2},  // Virtual, derived from pressure altitude
+#endif
 //  {AFHDS3_FRM_TEMP,             ZSTR_TEMP2,             UNIT_CELSIUS,                1},  // 2 bytes temperature
 //  {AFHDS3_FRM_EXT_V,            ZSTR_TXV,               UNIT_VOLTS,                  2},  // 2 bytes voltage
   {AFHDS2A_ID_ODO1,            ZSTR_ODO1,        UNIT_METERS,            2},  // 2 bytes Odometer1 -- some magic with 330 needed
@@ -144,6 +148,7 @@ const FlySkySensor flySkySensors[] = {
   {0x00,                       NULL,                   UNIT_RAW,               0},  // sentinel
 };
 
+#if defined(AFHDS2A_CALC_VSPD)
 void FlySkyVSpeed::update(int32_t alt, tmr10ms_t now)
 {
   // Telemetry stalled: restart rather than report a bogus jump
@@ -187,6 +192,7 @@ void FlySkyVSpeed::update(int32_t alt, tmr10ms_t now)
   int32_t slope = (num / den) * 100 + (num % den) * 100 / den;
   vspdQ4 += (slope * 16 - vspdQ4) * FILTER_WEIGHT / 10;
 }
+#endif
 
 #if defined(FAKE_RSSI)
 static bool rssiSensorPresent = false;
@@ -227,11 +233,13 @@ void processFlySkySensor(const uint8_t *packet, uint8_t type) {
     // Extract alt to a new sensor
     int32_t alt = getALT(value);
     setTelemetryValue(PROTOCOL_TELEMETRY_FLYSKY_IBUS, AFHDS2A_ID_ALT, 0, instance, alt, UNIT_METERS, 2);
+#if defined(AFHDS2A_CALC_VSPD)
     // Derive vertical speed, the sensor only reports pressure
     static FlySkyVSpeed afhds2VSpeed;
     afhds2VSpeed.update(alt, get_tmr10ms());
     setTelemetryValue(PROTOCOL_TELEMETRY_FLYSKY_IBUS, AFHDS2A_ID_VSPD, 0, instance,
                       afhds2VSpeed.value(), UNIT_METERS_PER_SECOND, 2);
+#endif
     value &= PRESSURE_MASK;
   }
   else if ((id >= AFHDS2A_ID_ACC_X && id <= AFHDS2A_ID_VERTICAL_SPEED) || id == AFHDS2A_ID_CLIMB_RATE || id == AFHDS2A_ID_ALT_FLYSKY) {

@@ -20,7 +20,7 @@
 #include "telemetry/telemetry.h"
 #include "telemetry/flysky_ibus.h"
 
-#if defined(MULTIMODULE) || defined(AFHDS2A)
+#if defined(MULTIMODULE) || (defined(AFHDS2A) && defined(AFHDS2A_CALC_VSPD))
 
 // Typical spacing between pressure samples (~120ms)
 static constexpr tmr10ms_t STEP = 12;

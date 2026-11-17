@@ -5,6 +5,7 @@ option(PCBI6X_HELLO "Enable Hello World example tool" NO)
 option(PCBI6X_INAV "Enable INAV Lite telemetry screen" NO) # ~2kB
 option(USB_MSD "Enable USB mass storage mode" YES) # 3.2kB
 option(AFHDS2A_LQI_CH "Send RSSI at channel 1-17" OFF)
+option(AFHDS2A_CALC_VSPD "Derive VSpd from barometric altitude" YES) # ~0.4kB
 option(DFPLAYER "Enables DFPlayer on AUX3 TX" NO) # ~1.7kB
 option(FAKE_RSSI "Enables converting TRSS to RSSI data for receivers not sending RSSI" NO)
 option(SBUS_TRAINER "Enables SBUS Trainer mode and trainer lost/back sounds" NO) # ~0.6kB
@@ -48,6 +49,10 @@ endif()
 
 if(NOT AFHDS2A_LQI_CH STREQUAL OFF)
   add_definitions(-DAFHDS2A_LQI_CH=${AFHDS2A_LQI_CH})
+endif()
+
+if(AFHDS2A_CALC_VSPD)
+  add_definitions(-DAFHDS2A_CALC_VSPD)
 endif()
 
 set(TARGET_SRC

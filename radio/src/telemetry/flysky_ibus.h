@@ -43,6 +43,7 @@ void processFlySkyPacketAC(const uint8_t * packet);
 
 int32_t getALT(uint32_t pressure);
 
+#if defined(AFHDS2A_CALC_VSPD)
 // Vertical speed derived from barometric altitude samples, for pressure-only
 // sensors such as the FS-CAT01 which do not report VSpd. Every sample is used:
 // the raw estimate is the least-squares slope of altitude over the last
@@ -81,5 +82,6 @@ class FlySkyVSpeed
     return samples[idx];
   }
 };
+#endif
 
 #endif
