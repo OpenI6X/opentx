@@ -271,7 +271,9 @@ if(USB_LOGS)
   set(SRC ${SRC} usb_logs.cpp)
 endif()
 
+if(RTCLOCK)
 set(SRC ${SRC} rtc.cpp)
+endif()
 
 if(SHUTDOWN_CONFIRMATION)
   add_definitions(-DSHUTDOWN_CONFIRMATION)
