@@ -14,6 +14,7 @@
  */
 
 #include "opentx.h"
+#include "flysky_ibus.h"
 
 /*
  *  TXID + RXID are already skipped in MULTI module to save memory+transmission time, format from Multi is:
@@ -92,6 +93,7 @@ enum {
   AFHDS2A_ID_VOLT_FULL = 0xF0,
   AFHDS2A_ID_ACC_FULL = 0xEF,
   AFHDS2A_ID_TX_RSSI = 0x200,  // Pseudo id outside 1 byte range of FlySky sensors
+  AFHDS2A_ID_VSPD = 0x2041,    // Virtual, derived from pressure altitude
 };
 
 const FlySkySensor flySkySensors[] = {
@@ -120,6 +122,7 @@ const FlySkySensor flySkySensors[] = {
   {AFHDS2A_ID_FLIGHT_MODE,     ZSTR_FLIGHT_MODE, UNIT_RAW,               0},  // 2 bytes index
   {AFHDS2A_ID_PRES,            ZSTR_PRES,        UNIT_RAW,               2},  // 4 bytes In fact Temperature + Pressure -> Altitude
   {AFHDS2A_ID_PRES | 0x100,    ZSTR_TEMP2,       UNIT_CELSIUS,           1},  // 2 bytes Temperature
+  {AFHDS2A_ID_VSPD,            ZSTR_VSPD,        UNIT_METERS_PER_SECOND, 2},  // Virtual, derived from pressure altitude
 //  {AFHDS3_FRM_TEMP,             ZSTR_TEMP2,             UNIT_CELSIUS,                1},  // 2 bytes temperature
 //  {AFHDS3_FRM_EXT_V,            ZSTR_TXV,               UNIT_VOLTS,                  2},  // 2 bytes voltage
   {AFHDS2A_ID_ODO1,            ZSTR_ODO1,        UNIT_METERS,            2},  // 2 bytes Odometer1 -- some magic with 330 needed
@@ -141,7 +144,49 @@ const FlySkySensor flySkySensors[] = {
   {0x00,                       NULL,                   UNIT_RAW,               0},  // sentinel
 };
 
-int32_t getALT(uint32_t value);
+void FlySkyVSpeed::update(int32_t alt, tmr10ms_t now)
+{
+  // Telemetry stalled: restart rather than report a bogus jump
+  if (count && now - at(count - 1).time > MAX_INTERVAL) {
+    count = 0;
+    vspdQ4 = 0;
+  }
+
+  // Drop samples that have left the window, or the oldest if full
+  while (count && (now - at(0).time > WINDOW || count == MAX_SAMPLES)) {
+    if (++first >= MAX_SAMPLES) first = 0;
+    count--;
+  }
+
+  uint8_t tail = first + count;
+  if (tail >= MAX_SAMPLES) tail -= MAX_SAMPLES;
+  samples[tail] = {now, alt};
+  count++;
+
+  if (count < 3 || now - at(0).time < MIN_SPAN) return;
+
+  // Least-squares slope, relative to the oldest sample to keep sums small.
+  // Two-pass int32_t form avoids 64-bit division (__aeabi_ldivmod) on STM32F0
+  // while staying bit-exact for altitude changes up to +/-500 m over WINDOW.
+  const Sample& base = at(0);
+  int32_t st = 0;
+  for (uint8_t i = 0; i < count; i++) {
+    st += (int32_t)(at(i).time - base.time);
+  }
+  int32_t num = 0;
+  int32_t den = 0;
+  for (uint8_t i = 0; i < count; i++) {
+    int32_t t = (int32_t)(at(i).time - base.time);
+    int32_t w = (int32_t)count * t - st;
+    int32_t a = limit<int32_t>(-50000, at(i).alt - base.alt, 50000);
+    den += w * t;
+    num += w * a;
+  }
+  if (!den) return;
+  // cm per 10ms tick -> cm/s; split quotient/remainder so (rem * 100) fits in int32_t
+  int32_t slope = (num / den) * 100 + (num % den) * 100 / den;
+  vspdQ4 += (slope * 16 - vspdQ4) * FILTER_WEIGHT / 10;
+}
 
 #if defined(FAKE_RSSI)
 static bool rssiSensorPresent = false;
@@ -180,7 +225,13 @@ void processFlySkySensor(const uint8_t *packet, uint8_t type) {
     // Extract temperature to a new sensor
     setTelemetryValue(PROTOCOL_TELEMETRY_FLYSKY_IBUS, id | 0x100, 0, instance, ((value >> 19) - 400), UNIT_CELSIUS, 1);
     // Extract alt to a new sensor
-    setTelemetryValue(PROTOCOL_TELEMETRY_FLYSKY_IBUS, AFHDS2A_ID_ALT, 0, instance, getALT(value), UNIT_METERS, 2);
+    int32_t alt = getALT(value);
+    setTelemetryValue(PROTOCOL_TELEMETRY_FLYSKY_IBUS, AFHDS2A_ID_ALT, 0, instance, alt, UNIT_METERS, 2);
+    // Derive vertical speed, the sensor only reports pressure
+    static FlySkyVSpeed afhds2VSpeed;
+    afhds2VSpeed.update(alt, get_tmr10ms());
+    setTelemetryValue(PROTOCOL_TELEMETRY_FLYSKY_IBUS, AFHDS2A_ID_VSPD, 0, instance,
+                      afhds2VSpeed.value(), UNIT_METERS_PER_SECOND, 2);
     value &= PRESSURE_MASK;
   }
   else if ((id >= AFHDS2A_ID_ACC_X && id <= AFHDS2A_ID_VERTICAL_SPEED) || id == AFHDS2A_ID_CLIMB_RATE || id == AFHDS2A_ID_ALT_FLYSKY) {
