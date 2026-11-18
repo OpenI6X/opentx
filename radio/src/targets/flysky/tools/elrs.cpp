@@ -57,19 +57,20 @@ struct Parameter {
 };
 static_assert(sizeof(Parameter) == 10, "CTOOL_DATA_SIZE counts 10 bytes per parameter");
 
+static constexpr uint8_t DEVICES_MAX_COUNT = 16;
 
-static constexpr uint16_t BUFFER_SIZE = CTOOL_DATA_SIZE - 8/*DEVICES_MAX_COUNT*/;
+static constexpr uint16_t BUFFER_SIZE = CTOOL_DATA_SIZE - DEVICES_MAX_COUNT;
 static uint8_t *buffer = &reusableBuffer.cToolData[0];
 
 
-static constexpr uint8_t MAX_PARAMS_COUNT = 18;
+static constexpr uint8_t MAX_PARAMS_COUNT = 24;
 static constexpr uint16_t PARAMS_OFFSET = BUFFER_SIZE - MAX_PARAMS_COUNT * sizeof(Parameter);
 static constexpr uint16_t STRING_BUFFER_SIZE = PARAMS_OFFSET - 44;
 static Parameter *params = (Parameter *)&reusableBuffer.cToolData[PARAMS_OFFSET];
-static_assert(PARAMS_OFFSET + MAX_PARAMS_COUNT * sizeof(Parameter) + 8 <= CTOOL_DATA_SIZE,
+static_assert(PARAMS_OFFSET + MAX_PARAMS_COUNT * sizeof(Parameter) + DEVICES_MAX_COUNT <= CTOOL_DATA_SIZE,
               "ELRS tool scratch layout exceeds cToolData");
 
-static constexpr uint8_t DEVICES_MAX_COUNT = 8;
+
 static uint8_t *deviceIds = &reusableBuffer.cToolData[BUFFER_SIZE];
 //static uint8_t deviceIds[DEVICES_MAX_COUNT];
 
@@ -498,7 +499,7 @@ static bool getSelectedOption(char * option, char * options, const uint8_t value
 static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   const uint32_t optionsOffset = param->offset + param->nameLength + 2 /* min, max */;
   const uint32_t optionsLen = strlen((char*)&buffer[optionsOffset]);
-  char option[24];
+  char option[32];
   if (!getSelectedOption(option, (char*)&buffer[optionsOffset], param->value[0])) {
     option[0] = 'E';
     option[1] = 'R';
