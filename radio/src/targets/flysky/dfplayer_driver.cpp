@@ -31,7 +31,6 @@ static Fifo<uint16_t, 16> dfplayerFifo;
 static constexpr tmr10ms_t DFP_INIT_TIME = 20; // 200 ms in 10 ms ticks
 static tmr10ms_t dfplayerInitStart = 0;
 static bool dfplayerReady = false;
-static int16_t dfplayerPendingVolume = -1;
 
 static constexpr uint8_t DFP_PLAY         = 0x03; // root,         file: 0-2999, plays by filesystem order, fastest
 static constexpr uint8_t DFP_PLAY_MP3     = 0x12; // folder: mp3,  file: 0-2999, plays by filename, too slow
@@ -128,16 +127,9 @@ static void dfplayerCommand(uint8_t cmd, uint16_t param = 0) {
     }
 }
 
-void dfplayerPlayFile(uint16_t number) {
+static void dfplayerPlayFile(uint16_t number) {
     // dfPlayerCurrentId = id;
     dfplayerCommand(DFP_PLAY, number + 1); // +1 because first file is "zero" and dfplayer uses filesystem index, not filename
-}
-
-void setScaledVolume(uint8_t volume) {
-  // if (volume > VOLUME_LEVEL_MAX) {
-  //   volume = VOLUME_LEVEL_MAX;
-  // }
-  dfplayerPendingVolume = volume;
 }
 
 void dfplayerWakeup() {
@@ -145,12 +137,13 @@ void dfplayerWakeup() {
     if (get_tmr10ms() - dfplayerInitStart < DFP_INIT_TIME) return;
     dfplayerReady = true;
   }
-  if (dfplayerPendingVolume >= 0) { // volume first, then queued sounds
-    dfplayerCommand(DFP_SET_VOLUME, dfplayerPendingVolume);
-    dfplayerPendingVolume = -1;
-  }
+
   uint16_t index;
-  if (!dfPlayerBusy() && dfplayerFifo.pop(index)) {
+
+  if (currentSpeakerVolume != requiredSpeakerVolume) {
+    currentSpeakerVolume = requiredSpeakerVolume;
+    dfplayerCommand(DFP_SET_VOLUME, currentSpeakerVolume);
+  } else if (!dfPlayerBusy() && dfplayerFifo.pop(index)) {
     dfplayerPlayFile(index);
   }
 }

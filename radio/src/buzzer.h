@@ -154,8 +154,6 @@ extern void pushUnit(uint8_t unit, uint8_t idx, uint8_t id);
 #define IS_PLAYING(id)                  isPlaying((id))
 #define PLAY_VALUE(v, id)        		playValue((v), (id))
 
-#define setScaledVolume(v)
-
 #endif // DFPLAYER
 
 #endif // _BUZZER_H_

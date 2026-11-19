@@ -96,6 +96,7 @@ void handleUsbConnection()
 #endif // defined(STM32) && !defined(SIMU)
 }
 
+#if defined(AUDIO)
 void checkSpeakerVolume()
 {
   if (currentSpeakerVolume != requiredSpeakerVolume) {
@@ -105,6 +106,7 @@ void checkSpeakerVolume()
 #endif
   }
 }
+#endif
 
 #if defined(EEPROM)
 void checkEeprom()
@@ -415,7 +417,7 @@ void perMain()
 {
   DEBUG_TIMER_START(debugTimerPerMain1);
 
-#if defined(AUDIO) || defined(DFPLAYER)
+#if defined(AUDIO)
   checkSpeakerVolume();
 #endif
 
