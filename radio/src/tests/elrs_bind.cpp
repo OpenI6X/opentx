@@ -226,8 +226,8 @@ TEST_F(ElrsBindTest, firstRunAsksForTheUid)
   EXPECT_EQ(open(), "7A: EE EA 30 01 2D 00");
   EXPECT_TRUE(running());
   frame();
-  EXPECT_TRUE(shows(1, 1, "ExpressLRS Bind Tool", INVERS));
-  EXPECT_TRUE(shows(LCD_W - 1, 1, "-", INVERS | RIGHT));
+  EXPECT_TRUE(shows(0, 0, "ExpressLRS Bind Tool", INVERS));
+  EXPECT_TRUE(shows(LCD_W - 7, 0, "-", INVERS));
   EXPECT_TRUE(shows(0, row(0), "Phrase"));
   EXPECT_TRUE(shows(70, row(0), "---", INVERS));
   EXPECT_TRUE(shows(0, row(1), "Target"));
@@ -235,7 +235,7 @@ TEST_F(ElrsBindTest, firstRunAsksForTheUid)
   EXPECT_TRUE(shows(0, row(2), "Updating...", SMLSIZE));
   EXPECT_TRUE(shows(10, row(3), "[Set]", BOLD));
   EXPECT_TRUE(shows(0, row(4), "> History", BOLD));
-  EXPECT_TRUE(shows(10, row(5), "[-- EXIT (" VERSION ") --]", BOLD));
+  EXPECT_TRUE(shows(10, row(5), "[---- EXIT ----]", BOLD));
 
   // opening the tool writes nothing
   EXPECT_EQ(eeprom[HIST_ADDR], 0xFF);
@@ -244,7 +244,7 @@ TEST_F(ElrsBindTest, firstRunAsksForTheUid)
   link(true);
   frame();
   EXPECT_TRUE(shows(0, row(2), "TX: 13,213,105,32,0,1", SMLSIZE));
-  EXPECT_TRUE(shows(LCD_W - 1, 1, "C", INVERS | RIGHT));
+  EXPECT_TRUE(shows(LCD_W - 7, 0, "C", INVERS));
   EXPECT_EQ(frames(30), ""); // answered: no retry
 
   // shows() does tell texts and attributes apart
@@ -255,7 +255,7 @@ TEST_F(ElrsBindTest, firstRunAsksForTheUid)
   EXPECT_FALSE(shows(70, row(1), "TX", INVERS));
   EXPECT_FALSE(shows(70, row(1), "RX"));
   EXPECT_FALSE(shows(10, row(3), "[Set]"));
-  EXPECT_FALSE(shows(LCD_W - 1, 1, "-", INVERS | RIGHT));
+  EXPECT_FALSE(shows(LCD_W - 7, 0, "-", INVERS));
 }
 
 TEST_F(ElrsBindTest, givesUpAfter12Requests)
