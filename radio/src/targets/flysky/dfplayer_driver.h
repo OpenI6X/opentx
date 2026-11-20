@@ -38,7 +38,6 @@ extern const char * audioNames;
 
 extern uint8_t currentSpeakerVolume;
 
-void dfplayerPlayFile(uint16_t number);
 void dfplayerInit(void);
 void dfplayerWakeup(void);
 bool dfPlayerBusy(void);

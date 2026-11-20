@@ -1716,8 +1716,8 @@ void opentxInit()
 #endif
 
 #if defined(DFPLAYER)
-  currentSpeakerVolume = requiredSpeakerVolume = g_eeGeneral.speakerVolume + VOLUME_LEVEL_DEF;
-  setScaledVolume(currentSpeakerVolume);
+  requiredSpeakerVolume = g_eeGeneral.speakerVolume + VOLUME_LEVEL_DEF;
+  currentSpeakerVolume = UINT8_MAX; // trigger volume change to set the correct volume
 #endif
 
 #if defined(PCBHORUS)
