@@ -94,7 +94,7 @@ static constexpr uint8_t ROW_Y = FH + 3; // of the first row
   "[Bind]\0"                          /* + telemetry */ \
   "[Unbind]\0" \
   "> History\0" \
-  "[-- EXIT --]\0" \
+  "[---- EXIT ----]\0" \
   "[Clear All]\0" \
   "[---- BACK ----]\0" \
   "Idle\0" \
