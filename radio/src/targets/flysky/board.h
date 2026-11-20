@@ -438,9 +438,8 @@ int32_t getVolume(void);
 #endif
 
 // Second serial port driver
-#if defined(AUX_SERIAL_GPIO)
+#if defined(AUX_SERIAL)
 #define DEBUG_BAUDRATE                  115200
-#define AUX_SERIAL
 extern uint8_t auxSerialMode;
 void auxSerialInit(unsigned int mode, unsigned int protocol);
 void auxSerialPutc(char c);

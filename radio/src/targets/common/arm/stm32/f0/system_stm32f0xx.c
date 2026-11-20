@@ -178,8 +178,13 @@ void SystemInit(void)
      /* Reset PREDIV1[3:0] bits */
      RCC->CFGR2 &= (uint32_t)0xFFFFFFF0;
 
-     /* Reset USARTSW[1:0], I2CSW, CECSW and ADCSW bits */
+     /* Reset USART1SW[1:0], I2CSW, CECSW and ADCSW bits. On i6X,
+        select PCLK for USART2 too: the serial driver uses the fixed PCLK rate. */
+   #if defined(PCBI6X) && defined(RCC_CFGR3_USART2SW)
+     RCC->CFGR3 &= (uint32_t)0xFFFFFEAC & ~RCC_CFGR3_USART2SW;
+   #else
      RCC->CFGR3 &= (uint32_t)0xFFFFFEAC;
+   #endif
 
      /* Reset HSI14 bit */
      RCC->CR2 &= (uint32_t)0xFFFFFFFE;

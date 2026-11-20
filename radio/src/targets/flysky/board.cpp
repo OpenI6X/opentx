@@ -90,7 +90,7 @@ void boardInit()
     SystemBootloaderJump();
   }
 
-#if defined(DEBUG) && defined(AUX_SERIAL_GPIO)
+#if defined(DEBUG) && defined(AUX_SERIAL)
   auxSerialInit(UART_MODE_DEBUG, 0); // default serial mode (None if DEBUG not defined)
   // TRACE("\ni6X board started :)");
   // TRACE("RCC->CSR = %08x", RCC->CSR);

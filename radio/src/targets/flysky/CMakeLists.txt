@@ -187,6 +187,7 @@ set(TARGET_SRC
   i2c_driver.cpp
   crc_driver.cpp
   ../common/arm/stm32/mixer_scheduler_driver.cpp
+  ../common/arm/stm32/f0/stm32f0_serial.cpp
   )
 
 set(FIRMWARE_TARGET_SRC

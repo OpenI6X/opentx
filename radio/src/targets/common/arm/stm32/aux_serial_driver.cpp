@@ -20,62 +20,35 @@
 
 #include "opentx.h"
 
+#if defined(PCBI6X)
+#include "serial_ports.h"
+
+// Keep direct USART accesses in the IRQs, while making the wiring a single
+// source of truth in the board's port descriptors.
+#define AUX_SERIAL_USART  (flysky_serial::aux1.regs())
+#define AUX3_SERIAL_USART (flysky_serial::aux3.regs())
+#define AUX4_SERIAL_USART (flysky_serial::aux4.regs())
+#define AUX_SERIAL_DMA_Channel_RX (stm32f0_serial::dmaRegs(flysky_serial::aux1.rxDma))
+#endif
+
 #if defined(AUX_SERIAL)
 uint8_t auxSerialMode = UART_MODE_COUNT;  // Prevent debug output before port is setup
 #include "serial_buffer_union.h"
 extern SerialBufferUnion serialBuffer;
 DMAFifo<32> auxSerialRxFifo __DMA (AUX_SERIAL_DMA_Channel_RX);
 
-void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_DATAWIDTH_8B, uint16_t parity = LL_USART_PARITY_NONE, uint16_t stop = LL_USART_STOPBITS_1)
+void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t dataWidth = LL_USART_DATAWIDTH_8B, uint16_t parity = LL_USART_PARITY_NONE, uint16_t stop = LL_USART_STOPBITS_1)
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
-  GPIO_InitStruct.Pin        = AUX_SERIAL_GPIO_PIN_TX | AUX_SERIAL_GPIO_PIN_RX;
-  GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
-  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate  = AUX_SERIAL_GPIO_AF;
-  LL_GPIO_Init(AUX_SERIAL_GPIO, &GPIO_InitStruct);
-
-  LL_USART_InitTypeDef usart_initstruct; // = {0};
-  usart_initstruct.BaudRate            = baudrate;
-  usart_initstruct.DataWidth           = lenght;
-  usart_initstruct.StopBits            = stop;
-  usart_initstruct.Parity              = parity;
-  usart_initstruct.TransferDirection   = LL_USART_DIRECTION_TX_RX;
-  usart_initstruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
-  usart_initstruct.OverSampling        = LL_USART_OVERSAMPLING_16;
-
-  LL_USART_Init(AUX_SERIAL_USART, &usart_initstruct);
+  using namespace stm32f0_serial;
+  configure(flysky_serial::aux1, baudrate, dataWidth | parity | LL_USART_DIRECTION_TX_RX,
+            {Pad::SlowPullUp, stop | (dma ? USART_CR2_RXINV : 0u)});
 //  LL_USART_ConfigAsyncMode(AUX_SERIAL_USART);
 
   if (dma) {
 #if defined(SBUS_TRAINER)
     auxSerialRxFifo.channel = AUX_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
     auxSerialRxFifo.clear();
-    LL_USART_DisableIT_RXNE(AUX_SERIAL_USART);
-    LL_USART_DisableIT_TXE(AUX_SERIAL_USART);
-
-    AUX_SERIAL_DMA_Channel_RX->CPAR = (uint32_t) &AUX_SERIAL_USART->RDR;
-    AUX_SERIAL_DMA_Channel_RX->CMAR = (uint32_t) auxSerialRxFifo.buffer();
-    AUX_SERIAL_DMA_Channel_RX->CNDTR = auxSerialRxFifo.size();
-    AUX_SERIAL_DMA_Channel_RX->CCR = LL_DMA_MEMORY_INCREMENT
-                                | LL_DMA_MODE_CIRCULAR
-                                | LL_DMA_PRIORITY_LOW
-                                | LL_DMA_DIRECTION_PERIPH_TO_MEMORY
-                                | LL_DMA_PERIPH_NOINCREMENT
-                                | LL_DMA_PDATAALIGN_BYTE
-                                | LL_DMA_MDATAALIGN_BYTE;
-
-    LL_USART_SetRxTimeout(AUX_SERIAL_USART, 10);
-    LL_USART_EnableRxTimeout(AUX_SERIAL_USART);
-    LL_USART_ClearFlag_RTO(AUX_SERIAL_USART);
-    LL_USART_EnableIT_RTO(AUX_SERIAL_USART);
-
-    LL_USART_SetRXPinLevel(AUX_SERIAL_USART, LL_USART_RXPIN_LEVEL_INVERTED); // Only for SBUS
-    LL_USART_EnableDMAReq_RX(AUX_SERIAL_USART);
-    LL_USART_Enable(AUX_SERIAL_USART);
-    LL_DMA_EnableChannel(DMA1, AUX_SERIAL_DMA_Channel_RX_CH);
+    startRxDma(flysky_serial::aux1, auxSerialRxFifo.buffer(), auxSerialRxFifo.size(), true);
 #endif // SBUS_TRAINER
   }
   else {
@@ -86,8 +59,8 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_
 #endif
     LL_USART_DisableIT_TXE(AUX_SERIAL_USART);
   }
-  NVIC_SetPriority(AUX_SERIAL_USART_IRQn, 7);
-  NVIC_EnableIRQ(AUX_SERIAL_USART_IRQn);
+
+  enableIrq(flysky_serial::aux1);
 }
 
 void auxSerialInit(unsigned int mode, unsigned int protocol)
@@ -149,7 +122,7 @@ void auxSerialSbusInit()
 void auxSerialStop()
 {
 #if defined(SBUS_TRAINER)
-  LL_DMA_DeInit(DMA1, AUX_SERIAL_DMA_Channel_RX_CH);
+  stm32f0_serial::resetDma(flysky_serial::aux1.rxDma);
 #endif
   LL_USART_DeInit(AUX_SERIAL_USART);
 }
@@ -230,36 +203,14 @@ extern "C" void AUX_SERIAL_USART_IRQHandler(void)
 #if defined(AUX3_SERIAL)
 Fifo<uint8_t, 16> aux3SerialTxFifo;
 
-void aux3SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_DATAWIDTH_8B, uint16_t parity = LL_USART_PARITY_NONE, uint16_t stop = LL_USART_STOPBITS_1)
-{
-  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
-  GPIO_InitStruct.Pin        = AUX3_SERIAL_GPIO_PIN_TX;
-  GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
-  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate  = AUX3_SERIAL_GPIO_AF;
-  LL_GPIO_Init(AUX3_SERIAL_GPIO, &GPIO_InitStruct);
-
-  LL_USART_InitTypeDef USART_InitStruct; // = {0};
-  USART_InitStruct.BaudRate = baudrate;
-  USART_InitStruct.DataWidth = lenght;
-  USART_InitStruct.StopBits = stop;
-  USART_InitStruct.Parity = parity;
-  USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX;
-  USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
-  USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
-  LL_USART_Init(AUX3_SERIAL_USART, &USART_InitStruct);
-
-  LL_USART_Enable(AUX3_SERIAL_USART);
-
-  NVIC_SetPriority(AUX34_SERIAL_USART_IRQn, 7);
-  NVIC_EnableIRQ(AUX34_SERIAL_USART_IRQn);
-}
-
 void aux3SerialInit(void)
 {
-  aux3SerialSetup(AUX3_SERIAL_BAUDRATE, true);
+  using namespace stm32f0_serial;
+  const auto& port = flysky_serial::aux3;
+  LL_USART_DeInit(port.regs());
+  configure(port, AUX3_SERIAL_BAUDRATE, LL_USART_DIRECTION_TX, {Pad::SlowPullUp});
+  LL_USART_Enable(port.regs());
+  enableIrq(port);
 }
 
 void aux3SerialPutc(char c)
@@ -278,63 +229,27 @@ void aux3SerialPutc(char c)
  * Reduced implementation to use IDLE irq, only RX
 */
 #if defined(AUX4_SERIAL)
-DMAFifo<AUX4_SERIAL_RXFIFO_SIZE> aux4SerialRxFifo __DMA (AUX4_SERIAL_DMA_Channel_RX);
+DMAFifo<AUX4_SERIAL_RXFIFO_SIZE> aux4SerialRxFifo __DMA
+    (stm32f0_serial::dmaRegs(flysky_serial::aux4.rxDma));
 void (*aux4SerialIdleCb)(void);
 
-void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART_DATAWIDTH_8B, uint16_t parity = LL_USART_PARITY_NONE, uint16_t stop = LL_USART_STOPBITS_1)
+void aux4SerialInit()
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
-  GPIO_InitStruct.Pin        = AUX4_SERIAL_GPIO_PIN_RX;
-  GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull       = LL_GPIO_PULL_UP;
-  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate  = AUX4_SERIAL_GPIO_AF;
-  LL_GPIO_Init(AUX4_SERIAL_GPIO, &GPIO_InitStruct);
-
-  LL_USART_InitTypeDef USART_InitStruct; // = {0};
-  USART_InitStruct.BaudRate = baudrate;
-  USART_InitStruct.DataWidth = lenght;
-  USART_InitStruct.StopBits = stop;
-  USART_InitStruct.Parity = parity;
-  USART_InitStruct.TransferDirection = LL_USART_DIRECTION_RX;
-  USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
-  USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
-  LL_USART_Init(AUX4_SERIAL_USART, &USART_InitStruct);
-
-    aux4SerialRxFifo.channel = AUX4_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
-    aux4SerialRxFifo.clear();
-    LL_USART_DisableIT_RXNE(AUX4_SERIAL_USART);
-
-    AUX4_SERIAL_DMA_Channel_RX->CPAR = (uint32_t) &AUX4_SERIAL_USART->RDR;
-    AUX4_SERIAL_DMA_Channel_RX->CMAR = (uint32_t) aux4SerialRxFifo.buffer();
-    AUX4_SERIAL_DMA_Channel_RX->CNDTR = aux4SerialRxFifo.size();
-    AUX4_SERIAL_DMA_Channel_RX->CCR = LL_DMA_MEMORY_INCREMENT
-                                | LL_DMA_MODE_CIRCULAR
-                                | LL_DMA_PRIORITY_LOW
-                                | LL_DMA_DIRECTION_PERIPH_TO_MEMORY
-                                | LL_DMA_PERIPH_NOINCREMENT
-                                | LL_DMA_PDATAALIGN_BYTE
-                                | LL_DMA_MDATAALIGN_BYTE;
-
-    LL_USART_EnableDMAReq_RX(AUX4_SERIAL_USART);
-    LL_USART_Enable(AUX4_SERIAL_USART);
-    LL_DMA_EnableChannel(DMA1, AUX4_SERIAL_DMA_Channel_RX_CH);
-
-    NVIC_SetPriority(AUX34_SERIAL_USART_IRQn, 7);
-    NVIC_EnableIRQ(AUX34_SERIAL_USART_IRQn);
+  using namespace stm32f0_serial;
+  const auto& port = flysky_serial::aux4;
+  aux4SerialStop();
+  configure(port, AUX4_SERIAL_BAUDRATE, LL_USART_DIRECTION_RX, {Pad::SlowPullUp});
+  aux4SerialRxFifo.channel = dmaRegs(port.rxDma);
+  aux4SerialRxFifo.clear();
+  // Hall keeps its own IDLE framing, armed when the callback is installed.
+  startRxDma(port, aux4SerialRxFifo.buffer(), aux4SerialRxFifo.size(), false);
+  enableIrq(port);
 }
 
-void aux4SerialInit(void)
+void aux4SerialStop()
 {
-  aux4SerialSetup(AUX4_SERIAL_BAUDRATE, true);
-}
-
-void aux4SerialStop(void)
-{
-  LL_DMA_DisableChannel(DMA1, AUX4_SERIAL_DMA_Channel_RX_CH);
-  LL_DMA_DeInit(DMA1, AUX4_SERIAL_DMA_Channel_RX_CH);
-  LL_USART_DeInit(AUX4_SERIAL_USART);
+  stm32f0_serial::resetDma(flysky_serial::aux4.rxDma);
+  LL_USART_DeInit(flysky_serial::aux4.regs());
 }
 
 void aux4SerialSetIdleCb(void (*cb)()) {

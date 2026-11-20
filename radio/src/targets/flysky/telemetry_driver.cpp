@@ -19,171 +19,92 @@
  */
 
 #include "opentx.h"
+#include "serial_ports.h"
 
-// uint32_t telemetryErrors = 0;
-DMAFifo<TELEMETRY_FIFO_SIZE> telemetryDMAFifo __DMA (TELEMETRY_DMA_Channel_RX);
+using namespace stm32f0_serial;
+static constexpr auto& port = flysky_serial::telemetry;
 
-#define TELEMETRY_USART_IRQ_PRIORITY 0
-
-// Receiver timeout in bit times after the stop bit of the last received byte
-// (~1 characters at 8N1, baud-rate independent). Used as "frame received".
-#define TELEMETRY_RX_TIMEOUT_BITS    10
+DMAFifo<TELEMETRY_FIFO_SIZE> telemetryDMAFifo __DMA (dmaRegs(port.rxDma));
 
 void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
   TRACE("telemetryPortInit %d", baudrate);
 
-  NVIC_SetPriority(TELEMETRY_DMA_TX_IRQn, 1);
-  NVIC_EnableIRQ(TELEMETRY_DMA_TX_IRQn);
+  NVIC_SetPriority(flysky_serial::telemetryDmaTxIrq, flysky_serial::telemetryDmaTxPriority);
+  NVIC_EnableIRQ(flysky_serial::telemetryDmaTxIrq);
 
-  LL_GPIO_InitTypeDef GPIO_InitStruct; // = {0};
+  const bool halfDuplex = !g_eeGeneral.crsfFullDuplex;
+  LL_USART_DeInit(port.regs());
+  configure(port, baudrate, LL_USART_DIRECTION_TX_RX | LL_USART_OVERSAMPLING_8,
+            {halfDuplex ? Pad::FastPullDown : Pad::FastPullUp,
+             halfDuplex ? USART_CR2_TXINV | USART_CR2_RXINV : 0u, halfDuplex});
 
-  GPIO_InitStruct.Pin        = TELEMETRY_TX_GPIO_PIN;
-  GPIO_InitStruct.Mode       = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Alternate  = TELEMETRY_TX_GPIO_AF;
-  GPIO_InitStruct.Pull       = g_eeGeneral.crsfFullDuplex ? LL_GPIO_PULL_UP : LL_GPIO_PULL_DOWN;
-  GPIO_InitStruct.Speed      = LL_GPIO_SPEED_FREQ_HIGH;
-  LL_GPIO_Init(TELEMETRY_GPIO, &GPIO_InitStruct);
-
-  if (g_eeGeneral.crsfFullDuplex) {
-    GPIO_InitStruct.Pin        = TELEMETRY_RX_GPIO_PIN;
-    GPIO_InitStruct.Alternate  = TELEMETRY_RX_GPIO_AF;
-    LL_GPIO_Init(TELEMETRY_RX_GPIO, &GPIO_InitStruct);
-  }
-
-  LL_USART_DeInit(TELEMETRY_USART);
-
-  LL_USART_InitTypeDef USART_InitStruct; // = {0};
-  USART_InitStruct.BaudRate = baudrate;
-  USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
-  USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
-  USART_InitStruct.Parity = LL_USART_PARITY_NONE;
-  USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
-  USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
-  USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_8;
-  LL_USART_Init(TELEMETRY_USART, &USART_InitStruct);
-
-  // Receiver timeout (RTO) calls telemetryFrameTrigger_ISR() at the end of every RX
-  // burst. Unlike IDLE, the RTO counter only starts after a received stop bit,
-  // so re-enabling the receiver at the half-duplex turnaround (which sets IDLE
-  // on STM32F0) does not raise it: works the same in half and full duplex.
-  // Configured while UE=0 (LL_USART_Init above leaves the USART disabled).
-  LL_USART_SetRxTimeout(TELEMETRY_USART, TELEMETRY_RX_TIMEOUT_BITS);
-  LL_USART_EnableRxTimeout(TELEMETRY_USART);
-  LL_USART_ClearFlag_RTO(TELEMETRY_USART);
-  LL_USART_EnableIT_RTO(TELEMETRY_USART);
-
-  LL_USART_SetTXPinLevel(TELEMETRY_USART, ((g_eeGeneral.crsfFullDuplex) ? LL_USART_TXPIN_LEVEL_STANDARD : LL_USART_TXPIN_LEVEL_INVERTED));
-  LL_USART_SetRXPinLevel(TELEMETRY_USART, ((g_eeGeneral.crsfFullDuplex) ? LL_USART_TXPIN_LEVEL_STANDARD : LL_USART_RXPIN_LEVEL_INVERTED));
-
-  LL_DMA_DisableChannel(DMA1, TELEMETRY_DMA_Channel_RX_CH); // TODO done by DMA_DeInit?
-  LL_USART_DisableDMAReq_RX(TELEMETRY_USART);
-  LL_DMA_DeInit(DMA1, TELEMETRY_DMA_Channel_RX_CH);
-
-  telemetryDMAFifo.channel = TELEMETRY_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
+  resetDma(port.rxDma);
+  telemetryDMAFifo.channel = dmaRegs(port.rxDma);
   telemetryDMAFifo.clear();
-
-  LL_USART_DisableIT_RXNE(TELEMETRY_USART);
-  LL_USART_DisableIT_TXE(TELEMETRY_USART);
-  NVIC_SetPriority(TELEMETRY_USART_IRQn, TELEMETRY_USART_IRQ_PRIORITY);
-  NVIC_EnableIRQ(TELEMETRY_USART_IRQn);
-
-  TELEMETRY_DMA_Channel_RX->CPAR = (uint32_t) &TELEMETRY_USART->RDR;
-  TELEMETRY_DMA_Channel_RX->CMAR = (uint32_t) telemetryDMAFifo.buffer();
-  TELEMETRY_DMA_Channel_RX->CNDTR = telemetryDMAFifo.size();
-  TELEMETRY_DMA_Channel_RX->CCR = LL_DMA_MEMORY_INCREMENT
-                                | LL_DMA_MODE_CIRCULAR
-                                | LL_DMA_PRIORITY_LOW
-                                | LL_DMA_DIRECTION_PERIPH_TO_MEMORY
-                                | LL_DMA_PERIPH_NOINCREMENT
-                                | LL_DMA_PDATAALIGN_BYTE
-                                | LL_DMA_MDATAALIGN_BYTE;
-
-  if (g_eeGeneral.crsfFullDuplex) {
-    TELEMETRY_USART->CR3 |= USART_CR3_DMAR;
-  } else {
-    TELEMETRY_USART->CR3 |= USART_CR3_DMAR | USART_CR3_HDSEL /*Half duplex*/;
-  }
-
-  LL_USART_Enable(TELEMETRY_USART);
-  LL_DMA_EnableChannel(DMA1, TELEMETRY_DMA_Channel_RX_CH);
+  enableIrq(port);
+  startRxDma(port, telemetryDMAFifo.buffer(), telemetryDMAFifo.size(), true);
 }
 
 void telemetryPortSetDirectionOutput() {
   // Disable RX
   if (!g_eeGeneral.crsfFullDuplex) {
-    TELEMETRY_DMA_Channel_RX->CCR &= ~DMA_CCR_EN;
-    TELEMETRY_USART->CR1 &= ~USART_CR1_RE;
+    dmaRegs(port.rxDma)->CCR &= ~DMA_CCR_EN;
+    port.regs()->CR1 &= ~USART_CR1_RE;
   }
 
   // Enable TX
-  TELEMETRY_USART->CR1 |= USART_CR1_TE;
+  port.regs()->CR1 |= USART_CR1_TE;
 }
 
 void telemetryPortSetDirectionInput() {
   // Disable TX
   if (!g_eeGeneral.crsfFullDuplex) {
-    TELEMETRY_DMA_Channel_TX->CCR &= ~DMA_CCR_EN;
-    TELEMETRY_USART->CR1 &= ~USART_CR1_TE;
+    dmaRegs(port.txDma)->CCR &= ~DMA_CCR_EN;
+    port.regs()->CR1 &= ~USART_CR1_TE;
   }
 
   // Enable RX
-  TELEMETRY_USART->CR1 |= USART_CR1_RE;
-  TELEMETRY_DMA_Channel_RX->CCR |= DMA_CCR_EN;
+  port.regs()->CR1 |= USART_CR1_RE;
+  dmaRegs(port.rxDma)->CCR |= DMA_CCR_EN;
 }
 
 void sportSendBuffer(const uint8_t* buffer, uint32_t count) {
   telemetryPortSetDirectionOutput();
 
-  LL_DMA_DisableChannel(DMA1, TELEMETRY_DMA_Channel_TX_CH);
-  LL_DMA_DeInit(DMA1, TELEMETRY_DMA_Channel_TX_CH);
-
-  TELEMETRY_DMA_Channel_TX->CPAR = (uint32_t) &TELEMETRY_USART->TDR;
-  TELEMETRY_DMA_Channel_TX->CMAR = (uint32_t) buffer;
-  TELEMETRY_DMA_Channel_TX->CNDTR = count;
-  TELEMETRY_DMA_Channel_TX->CCR = LL_DMA_MEMORY_INCREMENT
-                                | LL_DMA_MODE_NORMAL
-                                | LL_DMA_PRIORITY_VERYHIGH
-                                | LL_DMA_DIRECTION_MEMORY_TO_PERIPH
-                                | LL_DMA_PERIPH_NOINCREMENT
-                                | LL_DMA_PDATAALIGN_BYTE
-                                | LL_DMA_MDATAALIGN_BYTE;
-
-  LL_DMA_EnableChannel(DMA1, TELEMETRY_DMA_Channel_TX_CH);
-  LL_USART_EnableDMAReq_TX(TELEMETRY_USART);
-  LL_DMA_EnableIT_TC(DMA1, TELEMETRY_DMA_Channel_TX_CH);
+  sendTxDma(port, buffer, count);
 }
 
 extern "C" void TELEMETRY_DMA_TX_IRQHandler(void) {
   DEBUG_INTERRUPT(INT_TELEM_DMA);
-  if (LL_DMA_IsActiveFlag_TC4(DMA1)) {
-    LL_DMA_ClearFlag_TC4(DMA1);
+  constexpr auto txComplete = dmaFlag(port.txDma, DMA_ISR_TCIF1);
+  if (DMA1->ISR & txComplete) {
+    DMA1->IFCR = txComplete;
     // clear TC flag before enabling interrupt
-    TELEMETRY_USART->ICR = USART_ICR_TCCF;
-    TELEMETRY_USART->CR1 |= USART_CR1_TCIE;
+    port.regs()->ICR = USART_ICR_TCCF;
+    port.regs()->CR1 |= USART_CR1_TCIE;
   }
 }
 
 extern "C" void TELEMETRY_USART_IRQHandler(void) {
   DEBUG_INTERRUPT(INT_TELEM_USART);
-  uint32_t status = TELEMETRY_USART->ISR;
+  uint32_t status = port.regs()->ISR;
 
   // RX, end of burst (receiver timeout); handled before the TX turnaround
   if (status & USART_ISR_RTOF) {
-    TELEMETRY_USART->ICR = USART_ICR_RTOCF;
+    port.regs()->ICR = USART_ICR_RTOCF;
     TELEMETRY_STATS_INC(telemetryStatsRto);
     telemetryFrameTrigger_ISR();
   }
 
   // TX, transfer complete
-  if ((status & USART_ISR_TC) && (TELEMETRY_USART->CR1 & USART_CR1_TCIE)) {
+  if ((status & USART_ISR_TC) && (port.regs()->CR1 & USART_CR1_TCIE)) {
     // disable TC IRQ
-    TELEMETRY_USART->CR1 &= ~USART_CR1_TCIE;
+    port.regs()->CR1 &= ~USART_CR1_TCIE;
 
     telemetryPortSetDirectionInput();
 
-    while (TELEMETRY_USART->ISR & USART_ISR_RXNE) {
-      (void)TELEMETRY_USART->RDR;
+    while (port.regs()->ISR & USART_ISR_RXNE) {
+      (void)port.regs()->RDR;
     }
   }
 

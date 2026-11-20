@@ -256,60 +256,28 @@ void AFHDS2A_callback();
 #define TRAINER_BATTERY_COMPARTMENT
 #endif
 
-// AUX Serial
-#define AUX_SERIAL_RCC_AHB1Periph         (LL_AHB1_GRP1_PERIPH_GPIOA | LL_AHB1_GRP1_PERIPH_DMA1)
-#define AUX_SERIAL_RCC_APB2Periph         LL_APB1_GRP2_PERIPH_USART1
-#define AUX_SERIAL_GPIO                   GPIOA
-#define AUX_SERIAL_GPIO_PIN_TX            LL_GPIO_PIN_9 // PA9
-#define AUX_SERIAL_GPIO_PIN_RX            LL_GPIO_PIN_10 // PA10
-#define AUX_SERIAL_GPIO_AF                LL_GPIO_AF_1
-#define AUX_SERIAL_USART                  USART1
-#define AUX_SERIAL_USART_IRQHandler       USART1_IRQHandler
-#define AUX_SERIAL_USART_IRQn             USART1_IRQn
-#define AUX_SERIAL_DMA_Channel_RX         DMA1_Channel3
-#define AUX_SERIAL_DMA_Channel_RX_CH      LL_DMA_CHANNEL_3
+// Pins, USARTs and DMA channels are in serial_ports.h. Keep the startup
+// clock masks and vector names here; update the masks if a pin moves banks.
+#define AUX_SERIAL
+#define AUX_SERIAL_RCC_AHB1Periph        (LL_AHB1_GRP1_PERIPH_GPIOA | LL_AHB1_GRP1_PERIPH_DMA1)
+#define AUX_SERIAL_RCC_APB2Periph        LL_APB1_GRP2_PERIPH_USART1
+#define AUX_SERIAL_USART_IRQHandler      USART1_IRQHandler
 
-// AUX3 Serial, only TX for DFPLAYER
-#define AUX3_SERIAL_RCC_AHB1Periph         LL_AHB1_GRP1_PERIPH_GPIOC
-#define AUX3_SERIAL_RCC_APB1Periph         LL_APB1_GRP1_PERIPH_USART3
-#define AUX3_SERIAL_GPIO                   GPIOC
-#define AUX3_SERIAL_GPIO_PIN_TX            LL_GPIO_PIN_10 // PC10
-#define AUX3_SERIAL_GPIO_AF                LL_GPIO_AF_1
-#define AUX3_SERIAL_USART                  USART3
+#define AUX3_SERIAL_RCC_AHB1Periph       LL_AHB1_GRP1_PERIPH_GPIOC
+#define AUX3_SERIAL_RCC_APB1Periph       LL_APB1_GRP1_PERIPH_USART3
 
-// AUX4 Serial, only RX for FLYSKY_GIMBAL
-#define AUX4_SERIAL_RCC_AHB1Periph         (LL_AHB1_GRP1_PERIPH_GPIOC | LL_AHB1_GRP1_PERIPH_DMA1)
-#define AUX4_SERIAL_RCC_APB1Periph         LL_APB1_GRP1_PERIPH_USART4
-#define AUX4_SERIAL_GPIO                   GPIOC
-#define AUX4_SERIAL_GPIO_PIN_RX            LL_GPIO_PIN_11 // PC11
-#define AUX4_SERIAL_GPIO_AF                LL_GPIO_AF_0
-#define AUX4_SERIAL_USART                  USART4
-#define AUX4_SERIAL_DMA_Channel_RX         DMA1_Channel6
-#define AUX4_SERIAL_DMA_Channel_RX_CH      LL_DMA_CHANNEL_6
+#define AUX4_SERIAL_RCC_AHB1Periph       (LL_AHB1_GRP1_PERIPH_GPIOC | LL_AHB1_GRP1_PERIPH_DMA1)
+#if defined(FLYSKY_GIMBAL)
+#define AUX4_SERIAL_RCC_APB1Periph       LL_APB1_GRP1_PERIPH_USART4
+#else
+#define AUX4_SERIAL_RCC_APB1Periph       0
+#endif
+#define AUX34_SERIAL_USART_IRQHandler    USART3_4_IRQHandler
 
-#define AUX34_SERIAL_USART_IRQHandler       USART3_4_IRQHandler
-#define AUX34_SERIAL_USART_IRQn             USART3_4_IRQn
-
-
-// Telemetry
-#define TELEMETRY_RCC_AHB1Periph        (LL_AHB1_GRP1_PERIPH_GPIOD | LL_AHB1_GRP1_PERIPH_GPIOA | LL_AHB1_GRP1_PERIPH_DMA1)
-#define TELEMETRY_RCC_APB1Periph        LL_APB1_GRP1_PERIPH_USART2
-#define TELEMETRY_GPIO                  GPIOD
-#define TELEMETRY_TX_GPIO_PIN           LL_GPIO_PIN_5  // PD.05
-#define TELEMETRY_RX_GPIO               GPIOA
-#define TELEMETRY_RX_GPIO_PIN           LL_GPIO_PIN_15 // PA.15
-#define TELEMETRY_TX_GPIO_AF            LL_GPIO_AF_0
-#define TELEMETRY_RX_GPIO_AF            LL_GPIO_AF_1
-#define TELEMETRY_USART                 USART2
-#define TELEMETRY_DMA_Channel_TX        DMA1_Channel4
-#define TELEMETRY_DMA_Channel_TX_CH     LL_DMA_CHANNEL_4
-#define TELEMETRY_DMA_TX_IRQn           DMA1_Channel4_5_6_7_IRQn
+#define TELEMETRY_RCC_AHB1Periph         (LL_AHB1_GRP1_PERIPH_GPIOD | LL_AHB1_GRP1_PERIPH_GPIOA | LL_AHB1_GRP1_PERIPH_DMA1)
+#define TELEMETRY_RCC_APB1Periph         LL_APB1_GRP1_PERIPH_USART2
 #define TELEMETRY_DMA_TX_IRQHandler     DMA1_Channel4_5_6_7_IRQHandler
-#define TELEMETRY_DMA_TX_FLAG_TC        DMA1_IT_TC4
-#define TELEMETRY_DMA_Channel_RX        DMA1_Channel5
-#define TELEMETRY_DMA_Channel_RX_CH     LL_DMA_CHANNEL_5
 #define TELEMETRY_USART_IRQHandler      USART2_IRQHandler
-#define TELEMETRY_USART_IRQn            USART2_IRQn
 
 
 // Backlight
