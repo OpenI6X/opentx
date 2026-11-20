@@ -42,6 +42,11 @@ void menuRadioTools(event_t event)
   addRadioTool(index++, "ExpressLRS", elrsRun, event);
 #endif
 
+#if defined(PCBI6X_ELRS_BIND)
+  extern void elrsBindRun(event_t event);
+  addRadioTool(index++, "ExpressLRS Bind", elrsBindRun, event);
+#endif
+
 #if defined(PCBI6X_HELLO)
   extern void hello_run(event_t event);
   addRadioTool(index++, "Hello World", hello_run, event);
