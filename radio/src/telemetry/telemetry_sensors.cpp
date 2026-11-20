@@ -570,27 +570,27 @@ PACK(typedef struct {
 UnitConversionRule;
 
 const UnitConversionRule unitConversionTable[] = {
-    /* unitFrom     unitTo                    multiplier   divisor */
-    {UNIT_METERS, UNIT_FEET, 105, 32},
-    {UNIT_FEET, UNIT_METERS, 32, 105},
-    {UNIT_METERS_PER_SECOND, UNIT_FEET_PER_SECOND, 105, 32},
+  /* unitFrom     unitTo                    multiplier   divisor */
+  { UNIT_METERS,            UNIT_FEET,             105,    32},
+  { UNIT_FEET,              UNIT_METERS,            32,   105},
+  { UNIT_METERS_PER_SECOND, UNIT_FEET_PER_SECOND,  105,    32},
 
-    {UNIT_KTS, UNIT_KMH, 1852, 1000},                // 1 knot = 1.85200 kilometers per hour
-    {UNIT_KTS, UNIT_MPH, 1151, 1000},                // 1 knot = 1.15077945 miles per hour
-    {UNIT_KTS, UNIT_METERS_PER_SECOND, 1000, 1944},  // 1 knot = 0.514444444 meters / second (divide with 1.94384449)
-    {UNIT_KTS, UNIT_FEET_PER_SECOND, 1688, 1000},    // 1 knot = 1.68780986 feet per second
+  { UNIT_KTS, UNIT_KMH,                           1852,  1000}, // 1 knot = 1.85200 kilometers per hour
+  { UNIT_KTS, UNIT_MPH,                           1151,  1000}, // 1 knot = 1.15077945 miles per hour
+  { UNIT_KTS, UNIT_METERS_PER_SECOND,             1000,  1944}, // 1 knot = 0.514444444 meters / second (divide with 1.94384449)
+  { UNIT_KTS, UNIT_FEET_PER_SECOND,               1688,  1000}, // 1 knot = 1.68780986 feet per second
 
-    {UNIT_KMH, UNIT_KTS, 1000, 1852},             // 1 km/h = 0.539956803 knots (divide with 1.85200)
-    {UNIT_KMH, UNIT_MPH, 1000, 1609},             // 1 km/h = 0.621371192 miles per hour (divide with 1.60934400)
-    {UNIT_KMH, UNIT_METERS_PER_SECOND, 10, 36},   // 1 km/h = 0.277777778 meters / second (divide with 3.6)
-    {UNIT_KMH, UNIT_FEET_PER_SECOND, 911, 1000},  // 1 km/h = 0.911344415 feet per second
+  { UNIT_KMH, UNIT_KTS,                           1000,  1852}, // 1 km/h = 0.539956803 knots (divide with 1.85200)
+  { UNIT_KMH, UNIT_MPH,                           1000,  1609}, // 1 km/h = 0.621371192 miles per hour (divide with 1.60934400)
+  { UNIT_KMH, UNIT_METERS_PER_SECOND,               10,    36}, // 1 km/h = 0.277777778 meters / second (divide with 3.6)
+  { UNIT_KMH, UNIT_FEET_PER_SECOND,                911,  1000}, // 1 km/h = 0.911344415 feet per second
 
-    {UNIT_MILLILITERS, UNIT_FLOZ, 100, 2957},
+  { UNIT_MILLILITERS, UNIT_FLOZ,                   100,  2957},
 
-    { UNIT_RADIANS, UNIT_DEGREE,                    1547,    27}, // 1 rad = 57.29578 deg (1547 / 27 = 57.2963)
-    { UNIT_DEGREE, UNIT_RADIANS,                      27,  1547}, // 1 deg = 0.0174533 rad (27 / 1547 = 0.0174531)
+  { UNIT_RADIANS, UNIT_DEGREE,                    1547,    27}, // 1 rad = 57.29578 deg (1547 / 27 = 57.2963)
+  { UNIT_DEGREE, UNIT_RADIANS,                      27,  1547}, // 1 deg = 0.0174533 rad (27 / 1547 = 0.0174531)
 
-    {0, 0, 0, 0}  // termination
+  { 0, 0, 0, 0}  // termination
 };
 
 int32_t convertTelemetryValue(int32_t value, uint8_t unit, uint8_t prec, uint8_t destUnit, uint8_t destPrec) {
