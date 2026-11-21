@@ -36,6 +36,10 @@
 #define USB_VID_PID_CODES 0x1209    // https://pid.codes
 #define USB_LANGID        0x0409
 
+#define USBD_MSC_PID      0x5720
+#define USBD_HID_PID      0x4F54     // OpenTX assigned PID
+#define USBD_CDC_PID      0x5740 
+
 #if defined(BOOT)
   #define USB_PRODUCT_MSC  USB_NAME " Bootloader"
 #else
@@ -68,20 +72,30 @@ const uint8_t * usbGetDeviceDesc(uint16_t * len)
   uint8_t * devDesc = descBuf;
   uint16_t vid, pid;
 
+  // 0x00: class defined per interface (HID, MSC, DFU)
+  uint8_t device_class = 0x00;
+  uint8_t device_subclass = 0x00;
+
   switch (getSelectedUsbMode()) {
     case USB_JOYSTICK_MODE:
       vid = USB_VID_PID_CODES;
-      pid = 0x4F54;              // OpenTX assigned PID
+      pid = USBD_HID_PID;
       break;
 #if defined(USB_SERIAL)
     case USB_SERIAL_MODE:
       vid = USB_VID_STM;        // required by the ST Windows CDC driver
-      pid = 0x5740;
+      pid = USBD_CDC_PID;
+      // CDC / ACM at device level: Windows 10+ inbox usbser.inf matches
+      // USB\Class_02&SubClass_02, so it binds to the whole device instead
+      // of usbccgp splitting the CDC interfaces apart (usbser then fails
+      // on MI_00 with Code 10).
+      device_class = 0x02;
+      device_subclass = 0x02;
       break;
 #endif
     default:
       vid = USB_VID_PID_CODES;
-      pid = 0x5720;
+      pid = USBD_MSC_PID;
       break;
   }
 
@@ -89,9 +103,9 @@ const uint8_t * usbGetDeviceDesc(uint16_t * len)
   devDesc[1] = 0x01;             // DEVICE
   devDesc[2] = 0x00;             // bcdUSB 2.00
   devDesc[3] = 0x02;
-  devDesc[4] = 0x00;             // class / subclass / protocol: defined by the interface
-  devDesc[5] = 0x00;
-  devDesc[6] = 0x00;
+  devDesc[4] = device_class;     // class
+  devDesc[5] = device_subclass;  // subclass
+  devDesc[6] = 0x00;             // protocol
   devDesc[7] = 64;               // bMaxPacketSize0
   devDesc[8] = (uint8_t)(vid & 0xFF);
   devDesc[9] = (uint8_t)(vid >> 8);
