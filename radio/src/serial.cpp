@@ -61,18 +61,3 @@ void serialCrlf()
   serialPutc('\r');
   serialPutc('\n');
 }
-
-// TODO: replace serialSetupCallBacks & serialSetupPort
-//       with usage based handlers.
-//
-// static void serialSetCallBacks(int mode, void* ctx, const etx_serial_port_t* port)
-// {
-
-// }
-
-void serialInit(uint8_t port_nr, int mode)
-{
-
-}
-
-

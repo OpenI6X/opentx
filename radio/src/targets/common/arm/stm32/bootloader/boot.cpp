@@ -251,7 +251,7 @@ int main() {
   delaysInit();  // needed for lcdInit()
 
 #if defined(DEBUG)
-  auxSerialInit(UART_MODE_DEBUG, 0);  // default serial mode (None if DEBUG not defined)
+  auxSerialInit(UART_MODE_DEBUG);  // default serial mode (None if DEBUG not defined)
 #endif
 
   __enable_irq();

@@ -51,7 +51,6 @@ constexpr Pin gpioAfPin()
 
 struct Usart {
   uint32_t base;
-  uint32_t clockHz; // supplied by the board; no clock-tree lookup
   Pin tx;
   Pin rx;
   uint8_t irq;      // external NVIC IRQ number
@@ -62,31 +61,55 @@ struct Usart {
   USART_TypeDef* regs() const { return reinterpret_cast<USART_TypeDef*>(static_cast<uintptr_t>(base)); }
 };
 
-enum class Pad : uint8_t {
-  SlowPullUp = (LL_GPIO_SPEED_FREQ_LOW << 2) | LL_GPIO_PULL_UP,
-  FastPullUp = (LL_GPIO_SPEED_FREQ_HIGH << 2) | LL_GPIO_PULL_UP,
-  FastPullDown = (LL_GPIO_SPEED_FREQ_HIGH << 2) | LL_GPIO_PULL_DOWN,
+namespace line_bits {
+constexpr uint32_t slowPullUp = (LL_GPIO_SPEED_FREQ_LOW << 2) | LL_GPIO_PULL_UP;
+constexpr uint32_t fastPullUp = (LL_GPIO_SPEED_FREQ_HIGH << 2) | LL_GPIO_PULL_UP;
+constexpr uint32_t fastPullDown = (LL_GPIO_SPEED_FREQ_HIGH << 2) | LL_GPIO_PULL_DOWN;
+constexpr uint32_t drive = 0xf;
+constexpr uint32_t singleWire = 0x10;
+constexpr uint32_t cr1 = LL_USART_DATAWIDTH_9B | LL_USART_PARITY_EVEN | LL_USART_OVERSAMPLING_8;
+constexpr uint32_t cr2 = LL_USART_STOPBITS_2 | USART_CR2_TXINV | USART_CR2_RXINV;
+static_assert(!(cr1 & cr2) && !((cr1 | cr2) & (drive | singleWire)), "Line fields overlap");
+} // namespace line_bits
+
+// The line formats used on this board. Pack only the register bits they use:
+// with one or two stop bits, CR2's stop field doesn't overlap CR1's word length.
+// TX/RX direction is supplied by the port's wired pins, not the format.
+enum class LineProfile : uint32_t {
+  Aux8N1 = line_bits::slowPullUp,
+  Aux8N1Inverted = Aux8N1 | USART_CR2_RXINV,
+  Sbus = Aux8N1Inverted | LL_USART_DATAWIDTH_9B | LL_USART_PARITY_EVEN | LL_USART_STOPBITS_2,
+  CrsfFull = line_bits::fastPullUp | LL_USART_OVERSAMPLING_8,
+  CrsfHalf = line_bits::fastPullDown | LL_USART_OVERSAMPLING_8 |
+             USART_CR2_TXINV | USART_CR2_RXINV | line_bits::singleWire,
 };
 
-// Pass line options in one word. The low bits hold pin drive and the single-wire
-// flag; CR2 stop bits and TX/RX inversion flags retain their hardware positions.
-struct LineOptions {
-  constexpr LineOptions(Pad pad, uint32_t cr2 = 0, bool singleWire = false):
-    bits(static_cast<uint32_t>(pad) | (cr2 & cr2Mask) | (singleWire ? singleWireBit : 0u)) {}
-  constexpr uint32_t drive() const { return bits & 0xf; }
-  constexpr bool singleWire() const { return bits & singleWireBit; }
-  constexpr uint32_t cr2() const { return bits & cr2Mask; }
+// Match LL_USART_SetBaudRate's rounding and BRR encoding. AUX rates fold
+// at compile time; the caller still supplies the telemetry rate at runtime.
+constexpr uint16_t brr16(uint32_t clockHz, uint32_t baudRate)
+{
+  return baudRate ? static_cast<uint16_t>(__LL_USART_DIV_SAMPLING16(clockHz, baudRate)) : 0;
+}
 
- private:
-  static constexpr uint32_t singleWireBit = 0x10u;
-  static constexpr uint32_t cr2Mask = USART_CR2_STOP | USART_CR2_TXINV | USART_CR2_RXINV;
-  uint32_t bits;
+inline uint16_t brr8(uint32_t clockHz, uint32_t baudRate)
+{
+  if (!baudRate) return 0;
+  const uint16_t div = __LL_USART_DIV_SAMPLING8(clockHz, baudRate);
+  return (div & 0xfff0u) | ((div & 0xfu) >> 1);
+}
+
+struct SerialLineInit {
+  uint16_t brr;
+  LineProfile profile;
 };
 
-// Initialize a freshly reset USART, leaving UE=0. The board selects the clock
-// source before calling this driver; clockHz is the actual input clock. cr1
-// supplies word length, parity, direction and oversampling, not UE or IRQ bits.
-void configure(const Usart& port, uint32_t baudRate, uint32_t cr1, LineOptions options);
+// Configure a freshly reset USART; leave UE and interrupt/DMA enables to the caller.
+void configure(const Usart& port, uint16_t brr, LineProfile profile);
+
+__attribute__((always_inline)) inline void configure(const Usart& port, const SerialLineInit& line)
+{
+  configure(port, line.brr, line.profile);
+}
 
 // Keep IRQ number and priority constant at each call site.
 __attribute__((always_inline)) inline void enableIrq(const Usart& port)

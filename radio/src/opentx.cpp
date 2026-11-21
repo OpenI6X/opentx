@@ -1695,7 +1695,7 @@ void opentxInit()
 #endif  // #if !defined(EEPROM)
 
 #if defined(AUX_SERIAL) && !defined(DEBUG)
-  auxSerialInit(g_eeGeneral.auxSerialMode, modelTelemetryProtocol());
+  auxSerialInit(g_eeGeneral.auxSerialMode);
 #endif
 
 #if MENUS_LOCK == 1

@@ -293,7 +293,7 @@ void menuRadioHardware(event_t event)
       case ITEM_RADIO_HARDWARE_AUX_SERIAL_MODE:
         g_eeGeneral.auxSerialMode = editChoice(HW_SETTINGS_COLUMN2, y, "AUX1", STR_AUX_SERIAL_MODES, g_eeGeneral.auxSerialMode, 0, UART_MODE_MAX, attr, event, INDENT_WIDTH);
         if (attr && checkIncDec_Ret) {
-          auxSerialInit(g_eeGeneral.auxSerialMode, modelTelemetryProtocol());
+          auxSerialInit(g_eeGeneral.auxSerialMode);
           // storageDirty(EE_GENERAL);
         }
         break;

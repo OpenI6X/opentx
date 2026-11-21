@@ -441,7 +441,7 @@ int32_t getVolume(void);
 #if defined(AUX_SERIAL)
 #define DEBUG_BAUDRATE                  115200
 extern uint8_t auxSerialMode;
-void auxSerialInit(unsigned int mode, unsigned int protocol);
+void auxSerialInit(unsigned int mode);
 void auxSerialPutc(char c);
 #define auxSerialTelemetryInit(protocol) //auxSerialInit(UART_MODE_TELEMETRY, protocol)
 void auxSerialSbusInit(void);

@@ -30,15 +30,18 @@ using stm32f0_serial::Usart;
 
 // SystemInit selects PCLK for USART1/2 and configures HSI48 with AHB/APB
 // prescalers at /1. USART3/4 are wired to PCLK on the STM32F072.
+// BRR is calculated before configure(), so the descriptors need no clock word.
+constexpr uint32_t clockHz = PERI1_FREQUENCY;
+static_assert(PERI2_FREQUENCY == clockHz, "I6X serial ports use the same PCLK");
 constexpr Usart aux1{
-  USART1_BASE, PERI2_FREQUENCY,
+  USART1_BASE,
   STM32F0_GPIO_AF_PIN(GPIOA, 9, LL_GPIO_AF_1),
   STM32F0_GPIO_AF_PIN(GPIOA, 10, LL_GPIO_AF_1),
   USART1_IRQn, 7, LL_DMA_CHANNEL_3, 0,
 };
 
 constexpr Usart telemetry{
-  USART2_BASE, PERI1_FREQUENCY,
+  USART2_BASE,
   STM32F0_GPIO_AF_PIN(GPIOD, 5, LL_GPIO_AF_0),
   STM32F0_GPIO_AF_PIN(GPIOA, 15, LL_GPIO_AF_1),
   USART2_IRQn, 0, LL_DMA_CHANNEL_5, LL_DMA_CHANNEL_4,
@@ -48,7 +51,7 @@ constexpr uint8_t telemetryDmaTxPriority = 1;
 
 #if defined(AUX3_SERIAL)
 constexpr Usart aux3{
-  USART3_BASE, PERI1_FREQUENCY,
+  USART3_BASE,
   STM32F0_GPIO_AF_PIN(GPIOC, 10, LL_GPIO_AF_1), NoPin,
   USART3_4_IRQn, 7, 0, 0,
 };
@@ -56,7 +59,7 @@ constexpr Usart aux3{
 
 #if defined(AUX4_SERIAL)
 constexpr Usart aux4{
-  USART4_BASE, PERI1_FREQUENCY,
+  USART4_BASE,
   NoPin, STM32F0_GPIO_AF_PIN(GPIOC, 11, LL_GPIO_AF_0),
   USART3_4_IRQn, 7, LL_DMA_CHANNEL_6, 0,
 };

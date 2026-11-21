@@ -37,14 +37,17 @@ uint8_t auxSerialMode = UART_MODE_COUNT;  // Prevent debug output before port is
 extern SerialBufferUnion serialBuffer;
 DMAFifo<32> auxSerialRxFifo __DMA (AUX_SERIAL_DMA_Channel_RX);
 
-void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t dataWidth = LL_USART_DATAWIDTH_8B, uint16_t parity = LL_USART_PARITY_NONE, uint16_t stop = LL_USART_STOPBITS_1)
+using stm32f0_serial::LineProfile;
+using stm32f0_serial::SerialLineInit;
+
+enum class AuxRx : uint8_t { NoDma, DmaWithTimeout };
+
+static void auxSerialStart(const SerialLineInit& line, AuxRx rx)
 {
   using namespace stm32f0_serial;
-  configure(flysky_serial::aux1, baudrate, dataWidth | parity | LL_USART_DIRECTION_TX_RX,
-            {Pad::SlowPullUp, stop | (dma ? USART_CR2_RXINV : 0u)});
-//  LL_USART_ConfigAsyncMode(AUX_SERIAL_USART);
+  configure(flysky_serial::aux1, line);
 
-  if (dma) {
+  if (rx == AuxRx::DmaWithTimeout) {
 #if defined(SBUS_TRAINER)
     auxSerialRxFifo.channel = AUX_SERIAL_DMA_Channel_RX; // workaround, CNDTR reading do not work otherwise
     auxSerialRxFifo.clear();
@@ -63,41 +66,57 @@ void auxSerialSetup(unsigned int baudrate, bool dma, uint16_t dataWidth = LL_USA
   enableIrq(flysky_serial::aux1);
 }
 
-void auxSerialInit(unsigned int mode, unsigned int protocol)
+// Select AUX1 settings only. If no mode matches, leave BRR zero and keep it stopped.
+static AuxRx serialSetupPort(unsigned int mode, SerialLineInit& line)
 {
-  auxSerialStop();
-
-  auxSerialMode = mode;
-
+  using stm32f0_serial::brr16;
+  using flysky_serial::clockHz;
   switch (mode) {
     case UART_MODE_TELEMETRY_MIRROR:
       // The same baudrate for Crossfire and AFHDS2A, CROSSFIRE_TELEM_MIRROR_BAUDRATE
-      auxSerialSetup(AFHDS2A_TELEM_MIRROR_BAUDRATE, false);
+      line.brr = brr16(clockHz, AFHDS2A_TELEM_MIRROR_BAUDRATE);
       break;
 
 #if defined(DEBUG) || defined(CLI)
     case UART_MODE_DEBUG:
-      auxSerialSetup(DEBUG_BAUDRATE, false);
+      line.brr = brr16(clockHz, DEBUG_BAUDRATE);
       break;
 #endif
 
 #if defined(SBUS_TRAINER)
     case UART_MODE_SBUS_TRAINER:
-      auxSerialSetup(SBUS_BAUDRATE, true, LL_USART_DATAWIDTH_9B, LL_USART_PARITY_EVEN, LL_USART_STOPBITS_2); // LL_USART_DATAWIDTH_9B due to parity bit
-//      AUX_SERIAL_POWER_ON();
-      break;
+      line.brr = brr16(clockHz, SBUS_BAUDRATE);
+      line.profile = LineProfile::Sbus;
+      return AuxRx::DmaWithTimeout;
 #endif
 
 #if !defined(PCBI6X)
     case UART_MODE_TELEMETRY:
-      if (protocol == PROTOCOL_TELEMETRY_FRSKY_D_SECONDARY) {
-        auxSerialSetup(FRSKY_D_BAUDRATE, true);
+      if (g_model.telemetryProtocol == PROTOCOL_TELEMETRY_FRSKY_D_SECONDARY) {
+        line.brr = brr16(clockHz, FRSKY_D_BAUDRATE);
+        line.profile = LineProfile::Aux8N1Inverted;
+        return AuxRx::DmaWithTimeout;
       }
       break;
 
     case UART_MODE_LUA:
-      auxSerialSetup(DEBUG_BAUDRATE, false);
+      line.brr = brr16(clockHz, DEBUG_BAUDRATE);
+      break;
 #endif
+  }
+  return AuxRx::NoDma;
+}
+
+void auxSerialInit(unsigned int mode)
+{
+  auxSerialStop();
+  auxSerialMode = mode;
+
+  using namespace stm32f0_serial;
+  SerialLineInit line{0, LineProfile::Aux8N1};  // disabled, 8N1
+  const auto rx = serialSetupPort(mode, line);
+  if (line.brr != 0) {
+    auxSerialStart(line, rx);
   }
 }
 
@@ -115,7 +134,7 @@ void auxSerialPutc(char c)
 #if defined(SBUS_TRAINER)
 void auxSerialSbusInit()
 {
-  auxSerialInit(UART_MODE_SBUS_TRAINER, 0);
+  auxSerialInit(UART_MODE_SBUS_TRAINER);
 }
 #endif
 
@@ -207,8 +226,9 @@ void aux3SerialInit(void)
 {
   using namespace stm32f0_serial;
   const auto& port = flysky_serial::aux3;
+  constexpr SerialLineInit line{brr16(flysky_serial::clockHz, AUX3_SERIAL_BAUDRATE), LineProfile::Aux8N1};
   LL_USART_DeInit(port.regs());
-  configure(port, AUX3_SERIAL_BAUDRATE, LL_USART_DIRECTION_TX, {Pad::SlowPullUp});
+  configure(port, line);
   LL_USART_Enable(port.regs());
   enableIrq(port);
 }
@@ -237,8 +257,9 @@ void aux4SerialInit()
 {
   using namespace stm32f0_serial;
   const auto& port = flysky_serial::aux4;
+  constexpr SerialLineInit line{brr16(flysky_serial::clockHz, AUX4_SERIAL_BAUDRATE), LineProfile::Aux8N1};
   aux4SerialStop();
-  configure(port, AUX4_SERIAL_BAUDRATE, LL_USART_DIRECTION_RX, {Pad::SlowPullUp});
+  configure(port, line);
   aux4SerialRxFifo.channel = dmaRegs(port.rxDma);
   aux4SerialRxFifo.clear();
   // Hall keeps its own IDLE framing, armed when the callback is installed.

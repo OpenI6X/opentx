@@ -32,24 +32,27 @@ static void configurePin(Pin pin, uint32_t drive)
   LL_GPIO_Init(gpio, &config);
 }
 
-void configure(const Usart& port, uint32_t baudRate, uint32_t cr1, LineOptions options)
+void configure(const Usart& port, uint16_t brr, LineProfile profile)
 {
+  const auto bits = static_cast<uint32_t>(profile);
+  const bool singleWire = bits & line_bits::singleWire;
+  const auto drive = bits & line_bits::drive;
+  uint32_t cr1 = bits & line_bits::cr1;
   if (port.tx.present()) {
-    configurePin(port.tx, options.drive());
+    configurePin(port.tx, drive);
+    cr1 |= LL_USART_DIRECTION_TX;
   }
-  if (port.rx.present() && !options.singleWire()) {
-    configurePin(port.rx, options.drive());
+  if (port.rx.present()) {
+    // Single-wire CRSF still uses the receiver, but on the TX pad.
+    if (!singleWire) configurePin(port.rx, drive);
+    cr1 |= LL_USART_DIRECTION_RX;
   }
 
-  // All callers just reset the USART. Program only the fields used in this
-  // driver, with no flow control and without rediscovering the board clock.
   auto* usart = port.regs();
   usart->CR1 = cr1;
-  usart->CR2 = options.cr2();
-  usart->CR3 = options.singleWire() ? USART_CR3_HDSEL : 0;
-  if (baudRate != 0) {
-    LL_USART_SetBaudRate(usart, port.clockHz, cr1 & USART_CR1_OVER8, baudRate);
-  }
+  usart->CR2 = bits & line_bits::cr2;
+  usart->CR3 = singleWire ? USART_CR3_HDSEL : 0;
+  usart->BRR = brr;
 }
 
 void resetDma(uint32_t channel)
