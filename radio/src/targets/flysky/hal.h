@@ -279,7 +279,7 @@ void AFHDS2A_callback();
 
 // AUX4 Serial, only RX for FLYSKY_GIMBAL
 #define AUX4_SERIAL_RCC_AHB1Periph         (LL_AHB1_GRP1_PERIPH_GPIOC | LL_AHB1_GRP1_PERIPH_DMA1)
-#define AUX4_SERIAL_RCC_APB1Periph         LL_APB1_GRP1_PERIPH_USART3
+#define AUX4_SERIAL_RCC_APB1Periph         LL_APB1_GRP1_PERIPH_USART4
 #define AUX4_SERIAL_GPIO                   GPIOC
 #define AUX4_SERIAL_GPIO_PIN_RX            LL_GPIO_PIN_11 // PC11
 #define AUX4_SERIAL_GPIO_AF                LL_GPIO_AF_0
