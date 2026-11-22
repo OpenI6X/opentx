@@ -319,7 +319,7 @@ void aux4SerialSetup(unsigned int baudrate, bool dma, uint16_t lenght = LL_USART
 
     LL_USART_EnableDMAReq_RX(AUX4_SERIAL_USART);
     LL_USART_Enable(AUX4_SERIAL_USART);
-    LL_DMA_EnableChannel(DMA1, AUX4_SERIAL_DMA_Channel_RX);
+    LL_DMA_EnableChannel(DMA1, AUX4_SERIAL_DMA_Channel_RX_CH);
 
     NVIC_SetPriority(AUX34_SERIAL_USART_IRQn, 7);
     NVIC_EnableIRQ(AUX34_SERIAL_USART_IRQn);
@@ -332,8 +332,8 @@ void aux4SerialInit(void)
 
 void aux4SerialStop(void)
 {
-  LL_DMA_DisableChannel(DMA1, AUX4_SERIAL_DMA_Channel_RX);
-  LL_DMA_DeInit(DMA1, AUX4_SERIAL_DMA_Channel_RX);
+  LL_DMA_DisableChannel(DMA1, AUX4_SERIAL_DMA_Channel_RX_CH);
+  LL_DMA_DeInit(DMA1, AUX4_SERIAL_DMA_Channel_RX_CH);
   LL_USART_DeInit(AUX4_SERIAL_USART);
 }
 

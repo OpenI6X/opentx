@@ -285,6 +285,7 @@ void AFHDS2A_callback();
 #define AUX4_SERIAL_GPIO_AF                LL_GPIO_AF_0
 #define AUX4_SERIAL_USART                  USART4
 #define AUX4_SERIAL_DMA_Channel_RX         DMA1_Channel6
+#define AUX4_SERIAL_DMA_Channel_RX_CH      LL_DMA_CHANNEL_6
 
 #define AUX34_SERIAL_USART_IRQHandler       USART3_4_IRQHandler
 #define AUX34_SERIAL_USART_IRQn             USART3_4_IRQn
