@@ -38,6 +38,7 @@ constexpr Usart aux1{
   STM32F0_GPIO_AF_PIN(GPIOA, 9, LL_GPIO_AF_1),
   STM32F0_GPIO_AF_PIN(GPIOA, 10, LL_GPIO_AF_1),
   USART1_IRQn, 7, LL_DMA_CHANNEL_3, 0,
+  LL_USART_OVERSAMPLING_16, LL_GPIO_SPEED_FREQ_LOW,
 };
 
 constexpr Usart telemetry{
@@ -45,6 +46,7 @@ constexpr Usart telemetry{
   STM32F0_GPIO_AF_PIN(GPIOD, 5, LL_GPIO_AF_0),
   STM32F0_GPIO_AF_PIN(GPIOA, 15, LL_GPIO_AF_1),
   USART2_IRQn, 0, LL_DMA_CHANNEL_5, LL_DMA_CHANNEL_4,
+  LL_USART_OVERSAMPLING_8, LL_GPIO_SPEED_FREQ_HIGH,
 };
 constexpr IRQn_Type telemetryDmaTxIrq = DMA1_Channel4_5_6_7_IRQn;
 constexpr uint8_t telemetryDmaTxPriority = 1;
@@ -54,6 +56,7 @@ constexpr Usart aux3{
   USART3_BASE,
   STM32F0_GPIO_AF_PIN(GPIOC, 10, LL_GPIO_AF_1), NoPin,
   USART3_4_IRQn, 7, 0, 0,
+  LL_USART_OVERSAMPLING_16, LL_GPIO_SPEED_FREQ_LOW,
 };
 #endif
 
@@ -62,6 +65,7 @@ constexpr Usart aux4{
   USART4_BASE,
   NoPin, STM32F0_GPIO_AF_PIN(GPIOC, 11, LL_GPIO_AF_0),
   USART3_4_IRQn, 7, LL_DMA_CHANNEL_6, 0,
+  LL_USART_OVERSAMPLING_16, LL_GPIO_SPEED_FREQ_LOW,
 };
 #endif
 

@@ -22,37 +22,49 @@
 
 namespace stm32f0_serial {
 
-static void configurePin(Pin pin, uint32_t drive)
+static void configurePin(Pin pin, uint32_t speed, uint32_t pull)
 {
   auto* gpio = reinterpret_cast<GPIO_TypeDef*>(static_cast<uintptr_t>(pin.base()));
   LL_GPIO_InitTypeDef config = {
-    1u << pin.number(), LL_GPIO_MODE_ALTERNATE, drive >> 2,
-    LL_GPIO_OUTPUT_PUSHPULL, drive & 3u, pin.af(),
+    1u << pin.number(), LL_GPIO_MODE_ALTERNATE, speed,
+    LL_GPIO_OUTPUT_PUSHPULL, pull, pin.af(),
   };
   LL_GPIO_Init(gpio, &config);
 }
 
-void configure(const Usart& port, uint16_t brr, LineProfile profile)
+void configure(const Usart& port, SerialInit params, bool halfDuplex)
 {
-  const auto bits = static_cast<uint32_t>(profile);
-  const bool singleWire = bits & line_bits::singleWire;
-  const auto drive = bits & line_bits::drive;
-  uint32_t cr1 = bits & line_bits::cr1;
+  const uint32_t pull = halfDuplex ? LL_GPIO_PULL_DOWN : LL_GPIO_PULL_UP;
+  uint32_t cr1 = port.oversampling;
+  uint32_t cr2 = LL_USART_STOPBITS_1;
+
+  if (params.encoding == SerialEncoding::Bits8E2) {
+    // STM32 includes the parity bit in the configured word length.
+    cr1 |= LL_USART_DATAWIDTH_9B | LL_USART_PARITY_EVEN;
+    cr2 = LL_USART_STOPBITS_2;
+  }
+  if (params.polarity != SerialPolarity::Normal) {
+    cr2 |= USART_CR2_RXINV;
+    if (params.polarity == SerialPolarity::TxRxInverted) {
+      cr2 |= USART_CR2_TXINV;
+    }
+  }
+
   if (port.tx.present()) {
-    configurePin(port.tx, drive);
+    configurePin(port.tx, port.gpioSpeed, pull);
     cr1 |= LL_USART_DIRECTION_TX;
   }
   if (port.rx.present()) {
     // Single-wire CRSF still uses the receiver, but on the TX pad.
-    if (!singleWire) configurePin(port.rx, drive);
+    if (!halfDuplex) configurePin(port.rx, port.gpioSpeed, pull);
     cr1 |= LL_USART_DIRECTION_RX;
   }
 
   auto* usart = port.regs();
   usart->CR1 = cr1;
-  usart->CR2 = bits & line_bits::cr2;
-  usart->CR3 = singleWire ? USART_CR3_HDSEL : 0;
-  usart->BRR = brr;
+  usart->CR2 = cr2;
+  usart->CR3 = halfDuplex ? USART_CR3_HDSEL : 0;
+  usart->BRR = params.brr;
 }
 
 void resetDma(uint32_t channel)

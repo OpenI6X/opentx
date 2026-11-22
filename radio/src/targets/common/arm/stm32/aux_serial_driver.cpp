@@ -37,15 +37,16 @@ uint8_t auxSerialMode = UART_MODE_COUNT;  // Prevent debug output before port is
 extern SerialBufferUnion serialBuffer;
 DMAFifo<32> auxSerialRxFifo __DMA (AUX_SERIAL_DMA_Channel_RX);
 
-using stm32f0_serial::LineProfile;
-using stm32f0_serial::SerialLineInit;
+using stm32f0_serial::SerialEncoding;
+using stm32f0_serial::SerialInit;
+using stm32f0_serial::SerialPolarity;
 
 enum class AuxRx : uint8_t { NoDma, DmaWithTimeout };
 
-static void auxSerialStart(const SerialLineInit& line, AuxRx rx)
+static void auxSerialStart(const SerialInit& params, AuxRx rx)
 {
   using namespace stm32f0_serial;
-  configure(flysky_serial::aux1, line);
+  configure(flysky_serial::aux1, params);
 
   if (rx == AuxRx::DmaWithTimeout) {
 #if defined(SBUS_TRAINER)
@@ -67,40 +68,41 @@ static void auxSerialStart(const SerialLineInit& line, AuxRx rx)
 }
 
 // Select AUX1 settings only. If no mode matches, leave BRR zero and keep it stopped.
-static AuxRx serialSetupPort(unsigned int mode, SerialLineInit& line)
+static AuxRx serialSetupPort(unsigned int mode, SerialInit& params)
 {
   using stm32f0_serial::brr16;
   using flysky_serial::clockHz;
   switch (mode) {
     case UART_MODE_TELEMETRY_MIRROR:
       // The same baudrate for Crossfire and AFHDS2A, CROSSFIRE_TELEM_MIRROR_BAUDRATE
-      line.brr = brr16(clockHz, AFHDS2A_TELEM_MIRROR_BAUDRATE);
+      params.brr = brr16(clockHz, AFHDS2A_TELEM_MIRROR_BAUDRATE);
       break;
 
 #if defined(DEBUG) || defined(CLI)
     case UART_MODE_DEBUG:
-      line.brr = brr16(clockHz, DEBUG_BAUDRATE);
+      params.brr = brr16(clockHz, DEBUG_BAUDRATE);
       break;
 #endif
 
 #if defined(SBUS_TRAINER)
     case UART_MODE_SBUS_TRAINER:
-      line.brr = brr16(clockHz, SBUS_BAUDRATE);
-      line.profile = LineProfile::Sbus;
+      params.brr = brr16(clockHz, SBUS_BAUDRATE);
+      params.encoding = SerialEncoding::Bits8E2;
+      params.polarity = SerialPolarity::RxInverted;
       return AuxRx::DmaWithTimeout;
 #endif
 
 #if !defined(PCBI6X)
     case UART_MODE_TELEMETRY:
       if (g_model.telemetryProtocol == PROTOCOL_TELEMETRY_FRSKY_D_SECONDARY) {
-        line.brr = brr16(clockHz, FRSKY_D_BAUDRATE);
-        line.profile = LineProfile::Aux8N1Inverted;
+        params.brr = brr16(clockHz, FRSKY_D_BAUDRATE);
+        params.polarity = SerialPolarity::RxInverted;
         return AuxRx::DmaWithTimeout;
       }
       break;
 
     case UART_MODE_LUA:
-      line.brr = brr16(clockHz, DEBUG_BAUDRATE);
+      params.brr = brr16(clockHz, DEBUG_BAUDRATE);
       break;
 #endif
   }
@@ -113,10 +115,10 @@ void auxSerialInit(unsigned int mode)
   auxSerialMode = mode;
 
   using namespace stm32f0_serial;
-  SerialLineInit line{0, LineProfile::Aux8N1};  // disabled, 8N1
-  const auto rx = serialSetupPort(mode, line);
-  if (line.brr != 0) {
-    auxSerialStart(line, rx);
+  SerialInit params{0, SerialEncoding::Bits8N1, SerialPolarity::Normal};
+  const auto rx = serialSetupPort(mode, params);
+  if (params.brr != 0) {
+    auxSerialStart(params, rx);
   }
 }
 
@@ -226,9 +228,12 @@ void aux3SerialInit(void)
 {
   using namespace stm32f0_serial;
   const auto& port = flysky_serial::aux3;
-  constexpr SerialLineInit line{brr16(flysky_serial::clockHz, AUX3_SERIAL_BAUDRATE), LineProfile::Aux8N1};
+  constexpr SerialInit params{
+    brr16(flysky_serial::clockHz, AUX3_SERIAL_BAUDRATE),
+    SerialEncoding::Bits8N1, SerialPolarity::Normal,
+  };
   LL_USART_DeInit(port.regs());
-  configure(port, line);
+  configure(port, params);
   LL_USART_Enable(port.regs());
   enableIrq(port);
 }
@@ -257,9 +262,12 @@ void aux4SerialInit()
 {
   using namespace stm32f0_serial;
   const auto& port = flysky_serial::aux4;
-  constexpr SerialLineInit line{brr16(flysky_serial::clockHz, AUX4_SERIAL_BAUDRATE), LineProfile::Aux8N1};
+  constexpr SerialInit params{
+    brr16(flysky_serial::clockHz, AUX4_SERIAL_BAUDRATE),
+    SerialEncoding::Bits8N1, SerialPolarity::Normal,
+  };
   aux4SerialStop();
-  configure(port, line);
+  configure(port, params);
   aux4SerialRxFifo.channel = dmaRegs(port.rxDma);
   aux4SerialRxFifo.clear();
   // Hall keeps its own IDLE framing, armed when the callback is installed.

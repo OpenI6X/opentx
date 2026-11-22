@@ -34,9 +34,11 @@ void telemetryPortInit(uint32_t baudrate, uint8_t mode) {
 
   const bool halfDuplex = !g_eeGeneral.crsfFullDuplex;
   LL_USART_DeInit(port.regs());
-  const SerialLineInit line{brr8(flysky_serial::clockHz, baudrate),
-                            halfDuplex ? LineProfile::CrsfHalf : LineProfile::CrsfFull};
-  configure(port, line);
+  const SerialInit params{
+    brr8(flysky_serial::clockHz, baudrate), SerialEncoding::Bits8N1,
+    halfDuplex ? SerialPolarity::TxRxInverted : SerialPolarity::Normal,
+  };
+  configure(port, params, halfDuplex);
 
   resetDma(port.rxDma);
   telemetryDMAFifo.channel = dmaRegs(port.rxDma);

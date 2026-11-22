@@ -57,32 +57,14 @@ struct Usart {
   uint8_t priority;
   uint8_t rxDma;  // DMA1 channel number, 0 if unused
   uint8_t txDma;  // DMA1 channel number, 0 if unused
+  uint16_t oversampling;  // LL_USART_OVERSAMPLING_*
+  uint8_t gpioSpeed;      // LL_GPIO_SPEED_FREQ_*
 
   USART_TypeDef* regs() const { return reinterpret_cast<USART_TypeDef*>(static_cast<uintptr_t>(base)); }
 };
 
-namespace line_bits {
-constexpr uint32_t slowPullUp = (LL_GPIO_SPEED_FREQ_LOW << 2) | LL_GPIO_PULL_UP;
-constexpr uint32_t fastPullUp = (LL_GPIO_SPEED_FREQ_HIGH << 2) | LL_GPIO_PULL_UP;
-constexpr uint32_t fastPullDown = (LL_GPIO_SPEED_FREQ_HIGH << 2) | LL_GPIO_PULL_DOWN;
-constexpr uint32_t drive = 0xf;
-constexpr uint32_t singleWire = 0x10;
-constexpr uint32_t cr1 = LL_USART_DATAWIDTH_9B | LL_USART_PARITY_EVEN | LL_USART_OVERSAMPLING_8;
-constexpr uint32_t cr2 = LL_USART_STOPBITS_2 | USART_CR2_TXINV | USART_CR2_RXINV;
-static_assert(!(cr1 & cr2) && !((cr1 | cr2) & (drive | singleWire)), "Line fields overlap");
-} // namespace line_bits
-
-// The line formats used on this board. Pack only the register bits they use:
-// with one or two stop bits, CR2's stop field doesn't overlap CR1's word length.
-// TX/RX direction is supplied by the port's wired pins, not the format.
-enum class LineProfile : uint32_t {
-  Aux8N1 = line_bits::slowPullUp,
-  Aux8N1Inverted = Aux8N1 | USART_CR2_RXINV,
-  Sbus = Aux8N1Inverted | LL_USART_DATAWIDTH_9B | LL_USART_PARITY_EVEN | LL_USART_STOPBITS_2,
-  CrsfFull = line_bits::fastPullUp | LL_USART_OVERSAMPLING_8,
-  CrsfHalf = line_bits::fastPullDown | LL_USART_OVERSAMPLING_8 |
-             USART_CR2_TXINV | USART_CR2_RXINV | line_bits::singleWire,
-};
+enum class SerialEncoding : uint8_t { Bits8N1, Bits8E2 };
+enum class SerialPolarity : uint8_t { Normal, RxInverted, TxRxInverted };
 
 // Match LL_USART_SetBaudRate's rounding and BRR encoding. AUX rates fold
 // at compile time; the caller still supplies the telemetry rate at runtime.
@@ -98,18 +80,15 @@ inline uint16_t brr8(uint32_t clockHz, uint32_t baudRate)
   return (div & 0xfff0u) | ((div & 0xfu) >> 1);
 }
 
-struct SerialLineInit {
+// The caller supplies BRR; TX/RX direction follows the port's wired pins.
+struct SerialInit {
   uint16_t brr;
-  LineProfile profile;
+  SerialEncoding encoding;
+  SerialPolarity polarity;
 };
 
 // Configure a freshly reset USART; leave UE and interrupt/DMA enables to the caller.
-void configure(const Usart& port, uint16_t brr, LineProfile profile);
-
-__attribute__((always_inline)) inline void configure(const Usart& port, const SerialLineInit& line)
-{
-  configure(port, line.brr, line.profile);
-}
+void configure(const Usart& port, SerialInit params, bool halfDuplex = false);
 
 // Keep IRQ number and priority constant at each call site.
 __attribute__((always_inline)) inline void enableIrq(const Usart& port)
