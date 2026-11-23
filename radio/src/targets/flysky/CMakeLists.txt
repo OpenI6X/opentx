@@ -88,6 +88,11 @@ if(CRSF_EXTENDED_TYPES STREQUAL YES)
   add_definitions(-DCRSF_EXTENDED_TYPES)
 endif()
 
+set(TARGET_SRC
+  ${TARGET_SRC}
+  tools/common/common.cpp
+  )
+
 if(PCBI6X_ELRS STREQUAL YES)
   add_definitions(-DPCBI6X_ELRS)
   set(TARGET_SRC

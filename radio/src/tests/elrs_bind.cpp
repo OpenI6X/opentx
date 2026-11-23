@@ -235,7 +235,7 @@ TEST_F(ElrsBindTest, firstRunAsksForTheUid)
   EXPECT_TRUE(shows(0, row(2), "Updating...", SMLSIZE));
   EXPECT_TRUE(shows(10, row(3), "[Set]", BOLD));
   EXPECT_TRUE(shows(0, row(4), "> History", BOLD));
-  EXPECT_TRUE(shows(10, row(5), "[---- EXIT ----]", BOLD));
+  EXPECT_TRUE(shows(10, row(5), "[----EXIT----]", BOLD));
 
   // opening the tool writes nothing
   EXPECT_EQ(eeprom[HIST_ADDR], 0xFF);
@@ -487,7 +487,7 @@ TEST_F(ElrsBindTest, historyKeepsTheNewestThatFit)
   EXPECT_TRUE(shows(0, row(0), "aaaaaaaaaaaaaaa", INVERS));
   EXPECT_TRUE(shows(0, row(1), "bbbbbbbbbbbbbb"));
   EXPECT_TRUE(shows(10, row(2), "[Clear All]", BOLD));
-  EXPECT_TRUE(shows(10, row(3), "[---- BACK ----]", BOLD));
+  EXPECT_TRUE(shows(10, row(3), "[----BACK----]", BOLD));
   frame(DOWN);
   frame(ENTER);
   frame();
@@ -553,7 +553,7 @@ TEST_F(ElrsBindTest, deleteAnEntryAndClearAll)
   EXPECT_TRUE(history().empty());
   EXPECT_EQ(eeprom[HIST_ADDR], HIST_MAGIC);
   EXPECT_TRUE(shows(10, row(0), "[Clear All]", BOLD));
-  EXPECT_TRUE(shows(10, row(1), "[---- BACK ----]", BOLD | INVERS));
+  EXPECT_TRUE(shows(10, row(1), "[----BACK----]", BOLD | INVERS));
 }
 
 TEST_F(ElrsBindTest, foreignEepromBytesAreNoHistory)
@@ -599,7 +599,7 @@ TEST_F(ElrsBindTest, noCrossfireModule)
 {
   g_model.moduleData[EXTERNAL_MODULE].type = MODULE_TYPE_NONE;
   EXPECT_EQ(open(), "");
-  EXPECT_TRUE(shows(2, 0, " No ExpressLRS", MIDSIZE));
+  EXPECT_TRUE(shows(2, 0, "No ExpressLRS", MIDSIZE));
   EXPECT_TRUE(shows(2, 14, "Enable a CRSF External"));
   EXPECT_TRUE(shows(2, 22, "module in Model settings"));
   EXPECT_EQ(crossfireTelemetryCallback, nullptr);

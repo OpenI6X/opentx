@@ -4,6 +4,7 @@
  *
  */
 #include "opentx.h"
+#include "common/common.h"
 
 enum cmd_status {
     STATUS_READY = 0,
@@ -1017,6 +1018,12 @@ static void elrsStop() {
 }
 
 void elrsRun(event_t event) {
+
+  if (!isModuleCrossfire(EXTERNAL_MODULE)) {
+    crsfNotEnabledPopup(event);
+    return;
+  }
+
   if (crossfireTelemetryCallback == nullptr) {
     paramLoad.currentFolderId = 0;
     paramBackExec();

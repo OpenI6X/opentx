@@ -47,7 +47,7 @@
  */
 
 #include "opentx.h"
-#include "stamp.h"
+#include "common/common.h"
 
 // CRSF / MSP over CRSF (ExpressLRS msptypes.h, RxTxEndpoint.cpp)
 static constexpr uint8_t FRAMETYPE_MSP_REQ    = 0x7A;
@@ -94,9 +94,9 @@ static constexpr uint8_t ROW_Y = FH + 3; // of the first row
   "[Bind]\0"                          /* + telemetry */ \
   "[Unbind]\0" \
   "> History\0" \
-  "[---- EXIT ----]\0" \
+  "[----EXIT----]\0" \
   "[Clear All]\0" \
-  "[---- BACK ----]\0" \
+  "[----BACK----]\0" \
   "Idle\0" \
   "Updating...\0" \
   "No response (needs ELRS 4.1+)\0" \
@@ -107,15 +107,12 @@ static constexpr uint8_t ROW_Y = FH + 3; // of the first row
   "Sending unbind to RX...\0" \
   "Sent\0" \
   "Delete entry?\0" \
-  "Clear history?\0" \
-  " No ExpressLRS\0" \
-  "Enable a CRSF External\036module in Model settings"
+  "Clear history?\0"
 
 enum {
   TXT_LABELS, TXT_TITLE, TXT_NONE, TXT_TARGET, TXT_SET = TXT_TARGET + 3, TXT_BIND,
   TXT_HISTORY = TXT_BIND + 2, TXT_EXIT, TXT_CLEAR, TXT_BACK, TXT_IDLE, TXT_UPDATING, TXT_NO_RESPONSE,
   TXT_SETTING, TXT_SENDING = TXT_SETTING + 3, TXT_SENT = TXT_SENDING + 2, TXT_DELETE_ENTRY, TXT_CLEAR_HISTORY,
-  TXT_NO_ELRS, TXT_ENABLE
 };
 
 struct BindData {
@@ -384,10 +381,7 @@ void elrsBindRun(event_t event)
   OPAQUE(d);
 
   if (!isModuleCrossfire(EXTERNAL_MODULE)) {
-    // dialogs.lua drawNoModule()
-    lcdDrawText(2, 0, text(TXT_NO_ELRS), MIDSIZE);
-    lcdDrawText(2, 14, text(TXT_ENABLE));
-    if (event == EVT_KEY_BREAK(KEY_EXIT)) popMenu();
+    crsfNotEnabledPopup(event);
     return;
   }
 
