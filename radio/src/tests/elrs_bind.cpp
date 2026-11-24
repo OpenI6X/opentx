@@ -599,7 +599,7 @@ TEST_F(ElrsBindTest, noCrossfireModule)
 {
   g_model.moduleData[EXTERNAL_MODULE].type = MODULE_TYPE_NONE;
   EXPECT_EQ(open(), "");
-  EXPECT_TRUE(shows(2, 0, "No ExpressLRS", MIDSIZE));
+  EXPECT_TRUE(shows(7, 0, "No ExpressLRS", MIDSIZE));
   EXPECT_TRUE(shows(2, 14, "Enable a CRSF External"));
   EXPECT_TRUE(shows(2, 22, "module in Model settings"));
   EXPECT_EQ(crossfireTelemetryCallback, nullptr);

@@ -86,7 +86,6 @@ static constexpr uint8_t ROW_Y = FH + 3; // of the first row
 #define TEXTS \
   "Phrase\036Target\0"                /* labels of the first two rows, \036: new line */ \
   "ExpressLRS Bind Tool\0" \
-  "---\0"                             /* no phrase */ \
   "TX\0"                              /* + target */ \
   "RX\0" \
   "Both\0" \
@@ -110,7 +109,7 @@ static constexpr uint8_t ROW_Y = FH + 3; // of the first row
   "Clear history?\0"
 
 enum {
-  TXT_LABELS, TXT_TITLE, TXT_NONE, TXT_TARGET, TXT_SET = TXT_TARGET + 3, TXT_BIND,
+  TXT_LABELS, TXT_TITLE, TXT_TARGET, TXT_SET = TXT_TARGET + 3, TXT_BIND,
   TXT_HISTORY = TXT_BIND + 2, TXT_EXIT, TXT_CLEAR, TXT_BACK, TXT_IDLE, TXT_UPDATING, TXT_NO_RESPONSE,
   TXT_SETTING, TXT_SENDING = TXT_SETTING + 3, TXT_SENT = TXT_SENDING + 2, TXT_DELETE_ENTRY, TXT_CLEAR_HISTORY,
 };
@@ -340,15 +339,6 @@ static void elrsBindCallback(uint8_t command, uint8_t * data, uint8_t length)
 // UI (ui/lcd.lua)
 // ---------------------------------------------------------------------------
 
-// The editor's chars in the order of the Lua tool (EdgeTX nameChars):
-// " a-z 0-9 _ - , ." are 0..40, a negative index is the lower case letter.
-// zchar ends with ". ,": without the swap it is the order of the firmware's editName().
-static uint8_t editChar(int32_t idx)
-{
-  if (idx > 38) idx ^= 39 ^ 40;
-  return zchar2char(idx);
-}
-
 // Draws the next row. Returns the event when the row is the selected one.
 static uint32_t drawRow(coord_t x, LcdFlags flags, const char * s)
 {
@@ -437,46 +427,9 @@ void elrsBindRun(event_t event)
         s_editMode = 0;
       else
         d->target = checkIncDec(event, d->target, TARGET_TX, TARGET_BOTH, 0);
+      event = 0;
     }
-    else {
-      // phrase (text_edit.lua, itself a port of the EdgeTX editName())
-      char * p;
-      uint32_t c;
-      if (event == EVT_KEY_BREAK(KEY_ENTER)) {
-        if (d->cur >= PHRASE_MAX - 1) goto commit;
-        d->cur++;
-      }
-      p = &d->phrase[d->cur];
-      if (*p == '\0') {
-        // past the end
-        p[0] = ' ';
-        p[1] = '\0';
-      }
-      c = *p;
-      if (event == EVT_KEY_BREAK(KEY_EXIT)) {
-commit:
-        // trailing spaces are stripped
-        char * end = d->phrase + strlen(d->phrase);
-        while (end > d->phrase && end[-1] == ' ') end--;
-        *end = '\0';
-        s_editMode = 0;
-      }
-      else if (event == EVT_KEY_LONG(KEY_ENTER)) {
-        killEvents(event);
-        if (c == ' ') goto commit;
-        if (((c | 0x20) - 'a') < 26) *p = c ^ 0x20; // toggle case
-      }
-      else if (event != EVT_KEY_BREAK(KEY_ENTER)) {
-        // -26..-1: a lower case letter, 1..26: an upper case one (27, '0', for a foreign char)
-        int32_t idx = LEN_STD_CHARS;
-        while (idx > -27 && editChar(idx) != c) idx--;
-        int32_t now = idx < 0 ? -idx : idx;
-        int32_t pos = checkIncDec(event, now, 0, LEN_STD_CHARS, 0);
-        // letters are lower case, unless an upper case one is changed
-        if (pos != now) *p = editChar(((uint32_t)(idx - 1) < 26 || pos > 26) ? pos : -pos);
-      }
-    }
-    event = 0;
+    // the phrase is edited by editString() below, which consumes the key and draws it
   }
   else if (event == EVT_KEY_BREAK(KEY_EXIT)) {
     if (d->page == PAGE_MAIN)
@@ -507,32 +460,16 @@ commit:
   if (d->page == PAGE_MAIN) {
     lcdDrawText(0, ROW_Y, text(TXT_LABELS));
 
-    // phrase: 9 chars fit the row
+    // phrase (text_edit.lua, itself a port of the EdgeTX editName())
     d->row = ROW_TARGET;
-    const char * s = d->phrase;
-    const char * cursor = nullptr;
-    LcdFlags flags = 0;
-    if (line == ROW_PHRASE) {
-      if (selected != INVERS) {
-        // editing: keep the cursor on screen
-        cursor = s + d->cur;
-        if (d->cur > 8) s = cursor - 8;
-      }
-      else {
-        flags = INVERS;
-        if (event == EVT_KEY_BREAK(KEY_ENTER) && d->reachable) {
-          d->cur = 0;
-          s_editMode = EDIT_MODIFY_FIELD;
-        }
-      }
+    bool editing = s_editMode > 0 && line == ROW_PHRASE;
+    LcdFlags flags = (line == ROW_PHRASE && !editing) ? INVERS : 0;
+    if (line == ROW_PHRASE && !editing && event == EVT_KEY_BREAK(KEY_ENTER) && d->reachable) {
+      d->cur = 0;
+      s_editMode = EDIT_MODIFY_FIELD;
     }
-    if (!cursor && *s == '\0') s = text(TXT_NONE);
-    lcdDrawSizedText(COL2, ROW_Y, s, 9, flags);
-    if (cursor) {
-      coord_t x = COL2;
-      if (cursor != s) x += getTextWidth(s, cursor - s);
-      lcdDrawChar(x, ROW_Y, *cursor, INVERS);
-    }
+    if (editString(d->phrase, &d->cur, event, PHRASE_MAX, COL2, ROW_Y, flags, editing))
+      s_editMode = 0;
 
     // target
     if (drawRow(COL2, 0, text(TXT_TARGET + d->target)) == EVT_KEY_BREAK(KEY_ENTER)) {
@@ -544,7 +481,7 @@ commit:
       char c[4 + 6 * 4];
       uint32_t prefix;
     } uid;
-    s = uid.c;
+    const char * s = uid.c;
     if (d->status) {
       s = text(d->status);
     }
