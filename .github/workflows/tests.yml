@@ -27,6 +27,8 @@ name: tests
 #    (simuAudio/AUDIO_BUFFER_SIZE), which simpgmspace.cpp references when
 #    SIMU_AUDIO is on; DISABLE_COMPANION=NO is required because the Qt5
 #    detection that the gtests target hangs off lives inside that guard.
+#  - PCBI6X_ELRS_BIND=YES: builds targets/flysky/tools/elrs_bind.cpp, which
+#    tests/elrs_bind.cpp drives (the tests compile to nothing without it).
 
 on:
   workflow_call:
@@ -76,6 +78,7 @@ jobs:
             -DPCB=I6X \
             -DDISABLE_COMPANION=NO \
             -DSIMU_AUDIO=NO \
+            -DPCBI6X_ELRS_BIND=YES \
             -DCMAKE_BUILD_TYPE=Debug 2>&1 | tee configure.log
 
           # Fail loudly instead of with a cryptic "No rule to make target":

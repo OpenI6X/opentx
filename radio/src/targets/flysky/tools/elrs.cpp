@@ -4,6 +4,7 @@
  *
  */
 #include "opentx.h"
+#include "common/common.h"
 
 enum cmd_status {
     STATUS_READY = 0,
@@ -1017,6 +1018,12 @@ static void elrsStop() {
 }
 
 void elrsRun(event_t event) {
+
+  if (!isModuleCrossfire(EXTERNAL_MODULE)) {
+    crsfNotEnabledPopup(event);
+    return;
+  }
+
   if (crossfireTelemetryCallback == nullptr) {
     paramLoad.currentFolderId = 0;
     paramBackExec();
@@ -1026,6 +1033,11 @@ void elrsRun(event_t event) {
     clearData();
     paramData = buffer; // as resetParamData(): bufferOffset and paramDataLen are 0 here
     globalData.cToolRunning = 1;
+    // What used to be the static initializers (83 of the firmware's 104 bytes of .data)
+    device.id = 0xEE;
+    if (ui.lineIndex == 0) ui.lineIndex = 1;
+    paramLoad.id = 1;
+    resetParamData();
     registerCrossfireTelemetryCallback(refreshNextCallback);
   }
 
