@@ -178,6 +178,7 @@ static void addBackButton();
 static void reloadAllParam();
 static Parameter * getParam(uint8_t line);
 static void paramBackExec(Parameter * param);
+static void elrsStop();
 static void parseDeviceInfoMessage(uint8_t* data);
 static void parseParameterInfoMessage(uint8_t* data, uint8_t length);
 static void parseElrsInfoMessage(uint8_t* data);
@@ -570,8 +571,8 @@ static void paramUnifiedDisplay(Parameter * param, uint8_t y, uint8_t attr) {
   } else { // CMD || DEVICE || BACK
     lcdDrawChar(COL1 + 9, y, '[', attr);
   }
-  if (param->type == TYPE_BACK)
-    lcdDrawText(lcdNextPos, y, "----BACK----", attr);
+  if (param->type == TYPE_BACK) // at root it exits the tool
+    lcdDrawText(lcdNextPos, y, paramLoad.currentFolderId ? "----BACK----" : "----EXIT----", attr);
   else
     lcdDrawSizedText(lcdNextPos, y, (char *)&buffer[param->offset], param->nameLength, attr);
   if (param->type != TYPE_FOLDER)
@@ -666,7 +667,7 @@ static void paramSaveByType(Parameter * param) {
     case TYPE_FOLDER: paramFolderOpen(param); break;
     case TYPE_INFO: break;
     case TYPE_COMMAND: paramCommandSave(param); break;
-    case TYPE_BACK: paramBackExec(param); break;
+    case TYPE_BACK: if (paramLoad.currentFolderId == 0) elrsStop(); else paramBackExec(param); break;
     case TYPE_DEVICE: paramDeviceIdSelect(param); break;
     case TYPE_DEVICES_FOLDER: paramFolderDeviceOpen(param); break;
     default: if (param->type <= TYPE_SELECT) paramMultibyteSave(param); break;
@@ -799,11 +800,8 @@ static void refreshNextCallback(uint8_t command, uint8_t* data, uint8_t length) 
   }
 
   if (ui.btnState == BTN_NONE && paramLoad.allLoaded) {
-    if (paramLoad.currentFolderId == 0) {
-      if (devicesLen > 1) addOtherDevicesButton();
-    } else {
-      addBackButton();
-    }
+    if (paramLoad.currentFolderId == 0 && devicesLen > 1) addOtherDevicesButton();
+    addBackButton(); // [----EXIT----] at root, [----BACK----] in folders
   }
 }
 
