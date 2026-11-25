@@ -106,18 +106,20 @@ struct LinkStat {
 
 // Parameter loading state
 struct ParamLoadState {
+  tmr10ms_t timeout;
   uint8_t id;
   uint8_t chunk;
-  tmr10ms_t timeout;
   uint8_t expectedCount;
   int8_t expectedChunks;
   uint8_t allLoaded;
   uint8_t currentFolderId;
+  uint8_t parentFolderId;  // parent of currentFolderId (0 = device root)
 };
 
 // UI display state
 struct DisplayState {
   char elrsInfo[20];
+  char folderName[20];     // name of the currently opened folder (shown in the title bar)
   uint8_t titleShowWarn;
   tmr10ms_t titleShowWarnTimeout;
   tmr10ms_t devicesRefreshTimeout;
@@ -513,7 +515,20 @@ static void paramTextSelectionDisplay(Parameter * param, uint8_t y, uint8_t attr
 static void paramFolderOpen(Parameter * param) {
   ui.lineIndex = 1;
   ui.pageOffset = 0;
+  paramLoad.parentFolderId = paramLoad.currentFolderId;
   paramLoad.currentFolderId = param->id;
+  // Remember the opened folder name so the title bar can show it instead of the
+  // device name. Copy it now: clearData() below wipes the shared name buffer.
+  if (param->type == TYPE_DEVICES_FOLDER) {
+    strcpy(display.folderName, "Other Devices");
+  } else if (param->type == TYPE_FOLDER && param->nameLength > 0) {
+    uint8_t n = param->nameLength;
+    if (n > sizeof(display.folderName) - 1) n = sizeof(display.folderName) - 1;
+    memcpy(display.folderName, &buffer[param->offset], n);
+    display.folderName[n] = '\0';
+  } else {
+    display.folderName[0] = '\0';
+  }
   reloadAllParam();
   if (param->type == TYPE_FOLDER) { // guard because it is reused for devices
     paramLoad.id = param->id + 1; // UX hack: start loading from first folder item to fetch it faster
@@ -564,6 +579,17 @@ static void paramUnifiedDisplay(Parameter * param, uint8_t y, uint8_t attr) {
 }
 
 static void paramBackExec(Parameter * param = 0) {
+  uint8_t up = paramLoad.parentFolderId;
+  if (paramLoad.currentFolderId != 0 && up != 0) {
+    // Ascend one level. Parent of `up` and its name are unknown until its own
+    // entry is seen during the rescan (see parseParameterInfoMessage).
+    paramLoad.currentFolderId = up;
+    paramLoad.parentFolderId = 0;
+    display.folderName[0] = '\0';
+    reloadAllParam();
+    clearData();
+    return;
+  }
   paramLoad.currentFolderId = 0;
   reloadAllParam();
   devicesLen = 0;
@@ -679,6 +705,10 @@ static void parseParameterInfoMessage(uint8_t* data, uint8_t length) {
   paramLoad.expectedChunks = chunksRemain - 1;
 
   if (paramDataLen == 0 && data[5] != paramLoad.currentFolderId) {
+    if (paramLoad.id == paramLoad.currentFolderId) { // opened folder's own entry
+      paramLoad.parentFolderId = data[5];
+      strncpy(display.folderName, (char*)&data[7], sizeof(display.folderName) - 1);
+    }
     if (paramLoad.id == paramLoad.expectedCount) {
       paramLoad.allLoaded = 1;
     }
@@ -825,10 +855,18 @@ static void lcd_title() {
   if (paramLoad.allLoaded != 1 && paramLoad.expectedCount > 0) {
     luaLcdDrawGauge(0, 1, COL2, BAR_HEIGHT, paramLoad.id, paramLoad.expectedCount);
   } else {
-    const char* textToDisplay = display.titleShowWarn ? display.elrsInfo :
-                            (paramLoad.allLoaded == 1) ? device.name : TR_EXTERNALRF; // "External TX...";
-    uint8_t textLen = display.titleShowWarn ? 20 : 20;
-    lcdDrawSizedText(COL1, 0, textToDisplay, textLen, INVERS);
+    const char* textToDisplay;
+    if (display.titleShowWarn) {
+      textToDisplay = display.elrsInfo;
+    } else if (paramLoad.currentFolderId != 0) {
+      // Inside a (possibly nested) folder: show its name instead of the device name.
+      // currentFolderId always holds the deepest opened folder, so this works at any
+      // folder depth; backing out resets it to 0 and the device name is shown again.
+      textToDisplay = display.folderName[0] ? display.folderName : device.name;
+    } else {
+      textToDisplay = (paramLoad.allLoaded == 1) ? device.name : TR_EXTERNALRF; // "External TX..."
+    }
+    lcdDrawSizedText(COL1, 0, textToDisplay, 20, INVERS);
   }
 }
 
@@ -982,6 +1020,7 @@ static void elrsStop() {
 
 void elrsRun(event_t event) {
   if (crossfireTelemetryCallback == nullptr) {
+    paramLoad.currentFolderId = 0;
     paramBackExec();
     ui.paramPopup = nullptr;
     device.id = 0xEE;
