@@ -127,9 +127,6 @@
 #define LEN_XJT_PROTOCOLS      "\004"
 #define TR_XJT_PROTOCOLS       "Av\0 ""D16\0""D8\0 ""LR12"
 
-#define LEN_I6X_PROTOCOLS      "\004"
-#define TR_I6X_PROTOCOLS       "OFF\0""FS2A"
-
 #define TR_MULTI_CUSTOM        "Custom"
 
 #define LEN_VTRIMINC           TR("\006","\014")

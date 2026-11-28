@@ -23,6 +23,8 @@
 #else
   #define TR_TARANIS_PROTOCOLS   "OFF\0""PPM\0""XJT\0""DSM2""CRSF""MULT""R9M\0""SBUS"
 #endif
+#define LEN_I6X_PROTOCOLS              "\004"
+#define TR_I6X_PROTOCOLS               "OFF\0""FS2A"
 #define LEN_DSM_PROTOCOLS              "\004"
 #define TR_DSM_PROTOCOLS               "LP45""DSM2""DSMX"
 #define LEN_MULTI_PROTOCOLS            "\006"
