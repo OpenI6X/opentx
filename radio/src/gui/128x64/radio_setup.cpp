@@ -28,7 +28,7 @@ const unsigned char sticks[]  = {
 
 #define RADIO_SETUP_2ND_COLUMN  79
 
-int8_t slider_5pos(coord_t y, int8_t value, event_t event, uint8_t attr, const char* title)
+int8_t slider_5pos(coord_t y, int8_t value, event_t event, uint8_t attr, trz_text title)
 {
   drawSlider(RADIO_SETUP_2ND_COLUMN, y, LCD_W - 2 - RADIO_SETUP_2ND_COLUMN, 2+value, 4, attr);
   return editChoice(RADIO_SETUP_2ND_COLUMN, y, title, nullptr, value, -2, +2, attr, event, INDENT_WIDTH);

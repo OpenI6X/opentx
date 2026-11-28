@@ -442,7 +442,7 @@ uint16_t evalChkSum();
   #define ALERT(title, msg, sound) alert(title, msg, sound)
 #endif
 
-void alert(const char * t, const char * s , uint8_t sound);
+void alert(trz_text t, trz_text s, uint8_t sound);
 
 enum PerOutMode {
   e_perout_mode_normal = 0,

@@ -23,7 +23,7 @@
 #include <inttypes.h>
 #include "buzzer.h"
 
-extern const char * warningText;
+extern trz_item warningText;
 extern const char * warningInfoText;
 extern uint8_t      warningInfoLength;
 extern uint8_t      warningResult;
@@ -56,17 +56,17 @@ extern PopupFunc popupFunc;
 extern uint8_t popupMenuOffsetType;
 
 extern uint16_t popupMenuOffset;
-extern const char * popupMenuItems[POPUP_MENU_MAX_LINES];
+extern trz_item popupMenuItems[POPUP_MENU_MAX_LINES];
 extern uint16_t popupMenuItemsCount;
 typedef void         (* PopupMenuHandler)(const char * result);
 extern PopupMenuHandler popupMenuHandler;
-extern const char * popupMenuTitle;
+extern trz_text popupMenuTitle;
 extern uint8_t popupMenuSelectedItem;
 
 // Message box
 void drawMessageBoxBackground(coord_t top, coord_t height);
 void drawMessageBox();
-void showMessageBox(const char * title);
+void showMessageBox(trz_text title);
 
 // Popup menu
 const char * runPopupMenu(event_t event);
@@ -90,15 +90,15 @@ enum
 #else
   #define DISPLAY_WARNING(evt)              (*popupFunc)(evt)
   extern void POPUP_INFORMATION(const char * s);
-  extern void POPUP_WARNING(const char * message/*, const char * info = nullptr, bool waitForClose = true*/);
+  extern void POPUP_WARNING(trz_item message/*, const char * info = nullptr, bool waitForClose = true*/);
   extern void SET_WARNING_INFO(const char * info, uint8_t length, uint8_t flags);
-  extern void POPUP_CONFIRMATION(const char * s/*, PopupMenuHandler handler*/);
+  extern void POPUP_CONFIRMATION(trz_item s/*, PopupMenuHandler handler*/);
   extern void POPUP_INPUT(const char * s, PopupFunc func);
-  extern void POPUP_MENU_ADD_ITEM(const char * s);
+  extern void POPUP_MENU_ADD_ITEM(trz_item s);
   extern bool isEventCaughtByPopup();
-  extern void POPUP_MENU_TITLE(const char * s);
+  extern void POPUP_MENU_TITLE(trz_text s);
   extern void POPUP_MENU_START(PopupMenuHandler handler);
-  extern void POPUP_MENU_START(PopupMenuHandler handler, int count, ...);
+  extern void POPUP_MENU_START(PopupMenuHandler handler, int count, TRZ_VA_ITEMS ...);
 #endif
 
 

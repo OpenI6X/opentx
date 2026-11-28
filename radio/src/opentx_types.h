@@ -31,4 +31,16 @@ typedef int32_t swsrc_t;
 typedef int16_t safetych_t;
 typedef uint32_t bitfield_channels_t;
 
+// Text parameters/variables that may receive a TRZ-compressed STR_ string
+// (radio/util/trz.py reads these marks; both are plain const char *):
+//   trz_text      the text is only ever drawn (lcdDrawSizedText()/getTextWidth()
+//                 decode it) or passed on to another trz_text
+//   trz_item      the same, but the pointer is also kept and compared later
+//                 (popup menu items and results)
+//   TRZ_VA_ITEMS  in front of "...": every variadic argument is a trz_item
+// Function-like macros need no mark: trz.py follows them to the call they expand to.
+typedef const char * trz_text;
+typedef const char * trz_item;
+#define TRZ_VA_ITEMS
+
 #endif // _OTXTYPES_H_

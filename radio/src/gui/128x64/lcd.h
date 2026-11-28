@@ -99,13 +99,13 @@ extern coord_t lcdNextPos;
 
 void lcdDrawChar(coord_t x, coord_t y, const unsigned char c);
 void lcdDrawChar(coord_t x, coord_t y, const unsigned char c, LcdFlags flags);
-void lcdDrawText(coord_t x, coord_t y, const char * s, LcdFlags flags);
+void lcdDrawText(coord_t x, coord_t y, trz_text s, LcdFlags flags);
 void lcdDrawTextAtIndex(coord_t x, coord_t y, const char * s, uint8_t idx, LcdFlags flags);
-void lcdDrawSizedText(coord_t x, coord_t y, const char * s, unsigned char len, LcdFlags flags);
-void lcdDrawText(coord_t x, coord_t y, const char * s);
-void lcdDrawSizedText(coord_t x, coord_t y, const char * s, unsigned char len);
-void lcdDrawTextAlignedLeft(coord_t y, const char * s);
-void lcdDrawTextIndented(coord_t y, const char * s);
+void lcdDrawSizedText(coord_t x, coord_t y, trz_text s, unsigned char len, LcdFlags flags);
+void lcdDrawText(coord_t x, coord_t y, trz_text s);
+void lcdDrawSizedText(coord_t x, coord_t y, trz_text s, unsigned char len);
+void lcdDrawTextAlignedLeft(coord_t y, trz_text s);
+void lcdDrawTextIndented(coord_t y, trz_text s);
 void drawTimerWithMode(coord_t x, coord_t y, uint8_t index, LcdFlags att);
 
   void lcdDrawHexNumber(coord_t x, coord_t y, uint32_t val, LcdFlags mode=0);
@@ -114,7 +114,7 @@ void lcdDrawNumber(coord_t x, coord_t y, int val, LcdFlags mode, uint8_t len);
 void lcdDrawNumber(coord_t x, coord_t y, int val, LcdFlags mode=0);
 void lcdDraw8bitsNumber(coord_t x, coord_t y, int8_t val);
 
-void drawStringWithIndex(coord_t x, coord_t y, const char * str, uint8_t idx, LcdFlags att=0);
+void drawStringWithIndex(coord_t x, coord_t y, trz_text str, uint8_t idx, LcdFlags att=0);
 void putsModelName(coord_t x, coord_t y, char * name, uint8_t id, LcdFlags att);
 #if !defined(BOOT) // TODO not here ...
 void drawSwitch(coord_t x, coord_t y, swsrc_t swtch, LcdFlags att=0, bool autoBold = true);
