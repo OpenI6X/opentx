@@ -20,6 +20,8 @@ def addLine(filename, newline, after):
 
 def modifyTranslations(constant, translation, after):
     for filename in glob.glob('translations/*.h.txt'):
+        if filename.endswith('untranslated.h.txt'):
+            continue  # language independent strings are edited by hand
         newline = "#define " + constant + " " * max(1, 31 - len(constant)) + '"' + translation + '"'
         addLine(filename, newline, after + " ")
 

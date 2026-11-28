@@ -21,6 +21,9 @@
 #ifndef _TRANSLATIONS_H_
 #define _TRANSLATIONS_H_
 
+// Language independent strings, shared by all translations (see EdgeTX)
+#include "translations/untranslated.h"
+
 #if defined(TRANSLATIONS_FR)
   #include "translations/fr.h"
   #define LEN_SPECIAL_CHARS 3

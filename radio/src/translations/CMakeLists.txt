@@ -6,6 +6,10 @@ foreach(translation ${translations})
   if(NOT(PCB STREQUAL X12S OR PCB STREQUAL X10) AND language STREQUAL "cz")
     set(language cz_reduced)
   endif()
+  if(language STREQUAL "untranslated")
+    # language independent strings: only the common ("all") char mapping and ZSTR_ encoding
+    set(language en)
+  endif()
   if(Python3_Interpreter_FOUND)
     add_custom_command(
       OUTPUT ${target}

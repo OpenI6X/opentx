@@ -121,27 +121,14 @@
 #define TR_USBMODES                    TR("Popup\0""Joyst\0""Storag""Série\0", "Demander""Joystick""Stockage""Série\0  ")
 #endif
 
-#define LEN_TARANIS_PROTOCOLS  "\004"
-#if defined(PCBI6X)
-  #define TR_TARANIS_PROTOCOLS   "OFF\0""PPM\0""CRSF"
-#else
-  #define TR_TARANIS_PROTOCOLS   "OFF\0""PPM\0""XJT\0""DSM2""CRSF""MULT""R9M\0""SBUS"
-#endif
-
 #define LEN_TELEMETRY_PROTOCOLS        "\017"
 #define TR_TELEMETRY_PROTOCOLS         "FrSky S.PORT\0  ""FrSky D\0       ""FrSky D (Kabel)""TBS Crossfire\0 ""Spektrum\0      ""AFHDS2A IBUS\0  ""Multi Telemetry"
 
 #define LEN_XJT_PROTOCOLS              "\004"
 #define TR_XJT_PROTOCOLS               "OFF\0""D16\0""D8\0 ""LR12"
 
-#define LEN_DSM_PROTOCOLS              "\004"
-#define TR_DSM_PROTOCOLS               "LP45""DSM2""DSMX"
-
 #define LEN_I6X_PROTOCOLS              "\004"
 #define TR_I6X_PROTOCOLS               "OFF\0""FS2A"
-
-#define LEN_MULTI_PROTOCOLS            "\006"
-#define TR_MULTI_PROTOCOLS             "FlySky""Hubsan""FrSky\0""Hisky\0""V2x2\0 ""DSM\0 ""Devo\0 ""YD717\0""KN\0 ""SymaX\0""SLT\0 ""CX10\0 ""CG023\0""Bayang""ESky\0 ""MT99XX""MJXq\0 ""Shenqi""FY326\0""SFHSS\0""J6 PRO""FQ777\0""Assan\0""Hontai""OpnLrs""FS 2A\0""Q2x2\0 ""Walk.\0""Q303\0 ""GW008\0""DM002\0""Cabell""Esy150""H8 3D\0""Corona""CFlie\0""Hitec\0""WFly\0 ""Bugs\0 ""BugMin""Traxas""NC1701""E01X\0 ""V911S\0""GD00X\0"
 
 #define TR_MULTI_CUSTOM                "Perso"
 
@@ -172,16 +159,6 @@
   #define TR_RETA123                   "DPGA123"
 #endif
 
-#define LEN_VPROTOS                    "\006"
-
-#if defined(PXX)
-  #define TR_PXX                       "PXX\0  "
-#elif defined(DSM2) || defined(IRPROTOS)
-  #define TR_PXX                       "[PXX]\0"
-#else
-  #define TR_PXX
-#endif
-
 #if defined(DSM2)
   #define TR_DSM2                      "LP45\0 ""DSM2\0 ""DSMX\0 "
 #elif defined(IRPROTOS)
@@ -196,21 +173,11 @@
   #define TR_IRPROTOS
 #endif
 
-  #define TR_XPPM
-
-#define TR_VPROTOS                     "PPM\0  " TR_DSM2
-
 #define LEN_POSNEG                     "\003"
 #define TR_POSNEG                      "POS""NEG"
 
-#define LEN_VCURVEFUNC                 "\003"
-#define TR_VCURVEFUNC                  "---""x>0""x<0""|x|""f>0""f<0""|f|"
-
 #define LEN_VMLTPX                     TR("\010", "\013")
 #define TR_VMLTPX                      TR("Ajoute\0 ""Multipl.""Remplace", "Additionner""Multiplier\0""Remplacer\0")
-
-#define LEN_VMLTPX2                    "\002"
-#define TR_VMLTPX2                     "+=""*="":="
 
 #define LEN_VMIXTRIMS                  "\003"
 
@@ -231,8 +198,6 @@
     #define TR_CSWRANGE                "Zone\0"
     #define TR_CSWSTAY                 "Flnc\0"
 #endif
-
-  #define TR_CSWEQUAL                  "a=x\0 "
 
 #define LEN_VCSWFUNC                   "\005"
 #define TR_VCSWFUNC                    "---\0 " TR_CSWEQUAL "a~x\0 ""a>x\0 ""a<x\0 " TR_CSWRANGE "|a|>x""|a|<x""ET\0  ""OU\0  ""OUX\0 " TR_CSWSTAY "a=b\0 ""a>b\0 ""a<b\0 ""Δ}x\0 ""|Δ|}x" TR_CSWTIMER TR_CSWSTICKY
@@ -375,9 +340,6 @@
 #define LEN_VALARM                     "\004"
 #define TR_VALARM                      "----""Jaun""Oran""Roug"
 
-#define LEN_VALARMFN                   "\001"
-#define TR_VALARMFN                    "<>"
-
 #define LEN_VTELPROTO                  "\007"
 #define TR_VTELPROTO                   "Aucun  ""Hub\0   ""WSHHigh"
 
@@ -435,7 +397,6 @@
 #define LEN_VRENCODERS                 "\003"
 #define TR_VRENCODERS                  "REa""REb"
 
-#define LEN_VSWITCHES                  "\003"
 #define LEN_VSRCRAW                    "\004"
 
 #define TR_STICKS_VSRCRAW              "\307Dir""\307Prf""\307Gaz""\307Ail"
@@ -473,16 +434,11 @@
   #define TR_9X_3POS_SWITCHES          "ID0""ID1""ID2"
 #endif
 
-  #define TR_LOGICALSW                 "L01""L02""L03""L04""L05""L06""L07""L08""L09""L10""L11""L12""L13""L14""L15""L16""L17""L18""L19""L20""L21""L22""L23""L24""L25""L26""L27""L28""L29""L30""L31""L32"
-
 #if defined(PCBHORUS)
   #define TR_TRIMS_SWITCHES            "\313Dg""\313Dd""\313Pb""\313Ph""\313Gb""\313Gh""\313Ag""\313Ad""\3135d""\3135u""\3136d""\3136u"
 #else
   #define TR_TRIMS_SWITCHES            TR("tDg""tDd""tPb""tPh""tGb""tGh""tAg""tAd", "\313Dg""\313Dd""\313Pb""\313Ph""\313Gb""\313Gh""\313Ag""\313Ad")
 #endif
-
-#define TR_ROTARY_ENCODERS
-#define TR_ROTENC_SWITCHES
 
 #if !defined(PCBTARANIS) && !defined(PCBHORUS)  && !defined(PCBI6X)
   #define TR_2POS_SWITCHES             "THR""RUD""ELE""AIL""GEA""TRN"
@@ -492,9 +448,6 @@
 
 #if defined(PCBTARANIS) || defined(PCBHORUS) || defined(PCBI6X)
   // only special switches here
-  #define TR_VSWITCHES                 "---" TR_TRIMS_SWITCHES TR_ON_ONE_SWITCHES
-#else
-  #define TR_VSWITCHES                 "---" TR_9X_3POS_SWITCHES TR_2POS_SWITCHES TR_TRIMS_SWITCHES TR_ROTENC_SWITCHES TR_LOGICALSW TR_ON_ONE_SWITCHES
 #endif
 
 #if defined(HELI)
@@ -503,7 +456,6 @@
   #define TR_CYC_VSRCRAW               "[C1]""[C2]""[C3]"
 #endif
 
-  #define TR_RESERVE_VSRCRAW           "[--]"
   #define TR_EXTRA_VSRCRAW             "Batt""H:M\0""GPS\0" TR_RESERVE_VSRCRAW TR_RESERVE_VSRCRAW TR_RESERVE_VSRCRAW TR_RESERVE_VSRCRAW "Chr1""Chr2""Chr3"
 
 #define TR_VSRCRAW                     "---\0" TR_STICKS_VSRCRAW TR_POTS_VSRCRAW TR_ROTARY_ENCODERS "MAX\0" TR_CYC_VSRCRAW TR_TRIMS_VSRCRAW TR_SW_VSRCRAW TR_EXTRA_VSRCRAW
@@ -605,7 +557,6 @@
   #define TR_PPMFRAME                  INDENT "Trame PPM"
 #define TR_REFRESHRATE               TR(INDENT "Refresh", INDENT "Refresh rate")
 #define STR_WARN_BATTVOLTAGE           TR(INDENT "Output is VBAT: ", INDENT "Warning: output level is VBAT: ")
-#define TR_MS                          "ms"
 #define TR_SWITCH                      TR("Inter", "Interrupteur")
 #define TR_TRIMS                       "Trims"
 #define TR_FADEIN                      "Fondu ON"
@@ -691,7 +642,6 @@
 #define TR_POTWARNING                  TR(INDENT "Alerte pot", INDENT "Pos. potentios")
 #define TR_TIMEZONE                    "Fuseau horaire"
 #define TR_ADJUST_RTC                  TR("Ajust. RTC", INDENT "Ajust. heure auto")
-#define TR_GPS                         "GPS"
 #define TR_RXCHANNELORD                TR("Ordre voies RX","Ordre des voies préféré")
 #define TR_STICKS                      "Manches"
 #define TR_STICK_DEADZONE              "Zone Neutre"
@@ -703,7 +653,6 @@
 #define TR_MULTIPLIER                  "Multiplieur"
 #define TR_CAL                         "Cal"
 #define TR_VTRIM                       "Trim- +"
-#define TR_BG                          "BG:"
 #if defined(PCBHORUS)
   #define TR_MENUTOSTART               "Presser [Enter] pour commencer"
   #define TR_SETMIDPOINT               "Centrer manches/pots/sliders puis [Enter]"
@@ -718,17 +667,9 @@
   #define TR_MOVESTICKSPOTS            CENTER"\004BOUGER STICKS/POTS"
 #endif
 #define TR_RXBATT                      "Batt.RX"
-#define TR_TXnRX                       "Tx:\0Rx:"
-#define OFS_RX                         4
-#define TR_ACCEL                       "Acc:"
 #define TR_NODATA                      CENTER "NO DATA"
 #define TR_TOTTM1TM2THRTHP             "\037\146SES\036TM1\037\146TM2\036GAZ\037\146GZ%"
-#define TR_TMR1LATMAXUS                "Tmr1Lat max\037\124us"
-#define STR_US                         (STR_TMR1LATMAXUS+13)
-#define TR_TMR1LATMINUS                "Tmr1Lat min\037\124us"
-#define TR_TMR1JITTERUS                "Tmr1 Jitter\037\124us"
 
-  #define TR_TMIXMAXMS                 "Tmix max"
   #define TR_FREESTACKMINB             "Free stack"
 
 #define TR_MENUTORESET                 CENTER TR_ENTER" pour reset"
@@ -878,8 +819,6 @@
 #define TR_CAPAWARNING                 INDENT "Capacité Basse"
 #define TR_TEMPWARNING                 INDENT "Surchauffe"
 #define TR_FUNC                        "Fonction"
-#define TR_V1                          "V1"
-#define TR_V2                          "V2"
 #define TR_DURATION                    "Durée"
 #define TR_DELAY                       "Délai"
 #define TR_SD_CARD                     "Carte SD"
@@ -1124,7 +1063,6 @@
 #define TR_MODEL_SELECT                "Sélection modèle"
 #define TR_MODS_FORBIDDEN              "Modifications désactivées!"
 #define TR_UNLOCKED                    "Déverrouillé"
-#define TR_ID                          "ID"
 #define TR_PRECISION                   "Précision"
 #define TR_RATIO                       "Ratio"
 #define TR_FORMULA                     "Formule"
@@ -1167,7 +1105,6 @@
 #define TR_MENU_LUA                    "\322Scripts Lua"
 #define TR_MENU_STICKS                 "\307Manches"
 #define TR_MENU_POTS                   "\310Pots"
-#define TR_MENU_MAX                    "\315MAX"
 #define TR_MENU_HELI                   "\316Cyclique"
 #define TR_MENU_TRIMS                  "\313Trims"
 #define TR_MENU_SWITCHES               "\312Inters"
@@ -1181,102 +1118,6 @@
 #define TR_MENU_INVERT                 "Inverser"
 #define TR_JITTER_FILTER               "Filtre ADC"
 
-#define ZSTR_RSSI                      "RSSI"
-#define ZSTR_RAS                       "SWR"
-#define ZSTR_A1                        "A1"
-#define ZSTR_A2                        "A2"
-#define ZSTR_A3                        "A3"
-#define ZSTR_A4                        "A4"
-#define ZSTR_VOLT                      "Volt"
 #define ZSTR_BATT                      "BtRx"
-#define ZSTR_ALT                       "Alt"
-#define ZSTR_TEMP             "Temp"
-#define ZSTR_TEMP1                     "Tmp1"
-#define ZSTR_TEMP2                     "Tmp2"
-#define ZSTR_PRES                      "Pres"
-#define ZSTR_ODO1                      "Odo1"
-#define ZSTR_ODO2                      "Odo2"
-#define ZSTR_TXV                       "TX_V"
-#define ZSTR_DIST                      "Dist"
-#define ZSTR_ARM                       "Arm"
-#define ZSTR_RPM                       "RPM"
-#define ZSTR_FUEL                      "Fuel"
-#define ZSTR_VSPD                      "VSpd"
-#define ZSTR_ACCX                      "AccX"
-#define ZSTR_ACCY                      "AccY"
-#define ZSTR_ACCZ                      "AccZ"
-#define ZSTR_GYROX                     "GYRX"
-#define ZSTR_GYROY                     "GYRY"
-#define ZSTR_GYROZ                     "GYRZ"
-#define ZSTR_CURR                      "Curr"
-#define ZSTR_CAPACITY                  "Capa"
-#define ZSTR_VFAS                      "VFAS"
-#define ZSTR_BATT_PERCENT              "Bat%"
-#define ZSTR_ASPD                      "ASpd"
-#define ZSTR_GSPD                      "GSpd"
-#define ZSTR_HDG                       "Hdg"
-#define ZSTR_SATELLITES                "Sats"
-#define ZSTR_CELLS                     "Cels"
-#define ZSTR_GPSALT                    "GAlt"
 #define ZSTR_GPSDATETIME               "Date"
-#define ZSTR_GPS                       "GPS"
-#define ZSTR_BATT1_VOLTAGE             "RB1V"
-#define ZSTR_BATT2_VOLTAGE             "RB2V"
-#define ZSTR_BATT1_CURRENT             "RB1A"
-#define ZSTR_BATT2_CURRENT             "RB2A"
-#define ZSTR_BATT1_CONSUMPTION         "RB1C"
-#define ZSTR_BATT2_CONSUMPTION         "RB2C"
-#define ZSTR_BATT1_TEMP                "RB1T"
-#define ZSTR_BATT2_TEMP                "RB2T"
-#define ZSTR_RB_STATE                  "RBS"
-#define ZSTR_CHANS_STATE               "RBCS"
-#define ZSTR_RX_RSSI1                  "1RSS"
-#define ZSTR_RX_RSSI2                  "2RSS"
-#define ZSTR_RX_QUALITY                "RQly"
-#define ZSTR_RX_SNR                    "RSNR"
-#define ZSTR_RX_NOISE                  "RNse"
-#define ZSTR_ANTENNA                   "ANT"
-#define ZSTR_RF_MODE                   "RFMD"
-#define ZSTR_TX_POWER                  "TPW2"
-#define ZSTR_TX_RSSI                   "TRSS"
-#define ZSTR_TX_QUALITY                "TQly"
-#define ZSTR_RX_RSSI_PERC              "RRSP"
-#define ZSTR_RX_RF_POWER               "RPWR"
-#define ZSTR_TX_RSSI_PERC              "TRSP"
-#define ZSTR_TX_RF_POWER               "TPWR"
-#define ZSTR_TX_FPS                    "TFPS"
-#define ZSTR_TX_SNR                    "TSNR"
-#define ZSTR_TX_NOISE                  "TNse"
-#define ZSTR_PITCH                     "Ptch"
-#define ZSTR_ROLL                      "Roll"
-#define ZSTR_YAW                       "Yaw"
 #define ZSTR_FLIGHT_MODE               "PV"
-#define ZSTR_THROTTLE                  "Thr"
-#define ZSTR_QOS_A                     "FdeA"
-#define ZSTR_QOS_B                     "FdeB"
-#define ZSTR_QOS_L                     "FdeL"
-#define ZSTR_QOS_R                     "FdeR"
-#define ZSTR_QOS_F                     "FLss"
-#define ZSTR_QOS_H                     "Hold"
-#define ZSTR_BIND                      "BIND"
-#define ZSTR_LAP_NUMBER                "Lap "
-#define ZSTR_GATE_NUMBER               "Gate"
-#define ZSTR_LAP_TIME                  "LapT"
-#define ZSTR_GATE_TIME                 "GteT"
-#define ZSTR_ESC_VOLTAGE               "EscV"
-#define ZSTR_ESC_CURRENT               "EscA"
-#define ZSTR_ESC_RPM                   "EscR"
-#define ZSTR_ESC_CONSUMPTION           "EscC"
-#define ZSTR_ESC_TEMP                  "EscT"
-#define ZSTR_SD1_CHANNEL               "Chan"
-#define ZSTR_GASSUIT_TEMP1             "GTp1"
-#define ZSTR_GASSUIT_TEMP2             "GTp2"
-#define ZSTR_GASSUIT_RPM               "GRPM"
-#define ZSTR_GASSUIT_FLOW              "GFlo"
-#define ZSTR_GASSUIT_CONS              "GFue"
-#define ZSTR_GASSUIT_RES_VOL           "GRVl"
-#define ZSTR_GASSUIT_RES_PERC          "GRPc"
-#define ZSTR_GASSUIT_MAX_FLOW          "GMFl"
-#define ZSTR_GASSUIT_AVG_FLOW          "GAFl"
-#define ZSTR_SBEC_VOLTAGE              "BecV"
-#define ZSTR_SBEC_CURRENT              "BecA"
