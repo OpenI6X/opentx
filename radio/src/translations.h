@@ -999,6 +999,37 @@ extern const char STR_BLCOLOR[];
 #define CHR_HOUR   TR_CHR_HOUR
 #define CHR_INPUT  TR_CHR_INPUT
 
+#if defined(PCBI6X_ELRS_BIND)
+extern const char STR_ELRS_LABELS[];
+extern const char STR_ELRS_TITLE[];
+extern const char STR_ELRS_TX[];
+extern const char STR_ELRS_RX[];
+extern const char STR_ELRS_BOTH[];
+extern const char STR_ELRS_SET[];
+extern const char STR_ELRS_BIND[];
+extern const char STR_ELRS_UNBIND[];
+extern const char STR_ELRS_HISTORY[];
+extern const char STR_ELRS_EXIT[];
+extern const char STR_ELRS_CLEAR[];
+extern const char STR_ELRS_BACK[];
+extern const char STR_ELRS_IDLE[];
+extern const char STR_ELRS_UPDATING[];
+extern const char STR_ELRS_NO_RESPONSE[];
+extern const char STR_ELRS_SETTING_TX[];
+extern const char STR_ELRS_SETTING_RX[];
+extern const char STR_ELRS_SETTING_BOTH[];
+extern const char STR_ELRS_SENDING_BIND[];
+extern const char STR_ELRS_SENDING_UNBIND[];
+extern const char STR_ELRS_SENT[];
+extern const char STR_ELRS_DELETE_ENTRY[];
+extern const char STR_ELRS_CLEAR_HISTORY[];
+#endif
+
+// Marks a use of a STR_ string that is not a direct draw call (stored in a variable or
+// a table, passed to a local helper) but only ever ends up as displayed text, so
+// radio/util/trz.py may compress it. No effect on the code.
+#define TRZ_TEXT(s) (s)
+
 #if defined(TRZ)
   // TRZ: build-time compressed UI strings (radio/util/trz.py, two-pass link).
   // Strings selected by the generator live in TRZ_BLOB; STR_X is a link-time

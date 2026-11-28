@@ -34,9 +34,9 @@
  *
  * Size (see also the notes at the functions):
  *  - No static data at all: the state lives in reusableBuffer.cToolData, as in elrs.cpp.
- *  - All texts sit in one string and are found by index: a text costs 4 bytes of code
- *    where it is used (no pointer in a literal pool), the status is one byte, and
- *    texts that depend on the target or on telemetry are "index + value".
+ *  - The texts are STR_ELRS_* strings (untranslated.h), so TRZ compresses them. Those
+ *    that depend on the target or on telemetry are "index + value" in a table; uses
+ *    that are not draw calls are marked TRZ_TEXT() for radio/util/trz.py.
  *  - Rows are drawn top down by one function that tells its caller when the row is
  *    selected and a key came: no table of rows, no second pass for the keys.
  *  - Everything that goes out is built by one function, send().
@@ -82,40 +82,17 @@ static constexpr uint8_t EVT_CONFIRMED = 1; // no key event: the popup was answe
 static constexpr uint8_t COL2  = 70;
 static constexpr uint8_t ROW_Y = FH + 3; // of the first row
 
-// All texts, by index
-#define TEXTS \
-  "Phrase\036Target\0"                /* labels of the first two rows, \036: new line */ \
-  "ExpressLRS Bind Tool\0" \
-  "TX\0"                              /* + target */ \
-  "RX\0" \
-  "Both\0" \
-  "[Set]\0" \
-  "[Bind]\0"                          /* + telemetry */ \
-  "[Unbind]\0" \
-  "> History\0" \
-  "[----EXIT----]\0" \
-  "[Clear All]\0" \
-  "[----BACK----]\0" \
-  "Idle\0" \
-  "Updating...\0" \
-  "No response (needs ELRS 4.1+)\0" \
-  "Setting transmitter...\0"          /* + target */ \
-  "Setting receiver...\0" \
-  "Setting RX and disconnecting...\0" \
-  "Sending bind command...\0"         /* + telemetry */ \
-  "Sending unbind to RX...\0" \
-  "Sent\0" \
-  "Delete entry?\0" \
-  "Clear history?\0"
-
-enum {
-  TXT_LABELS, TXT_TITLE, TXT_TARGET, TXT_SET = TXT_TARGET + 3, TXT_BIND,
-  TXT_HISTORY = TXT_BIND + 2, TXT_EXIT, TXT_CLEAR, TXT_BACK, TXT_IDLE, TXT_UPDATING, TXT_NO_RESPONSE,
-  TXT_SETTING, TXT_SENDING = TXT_SETTING + 3, TXT_SENT = TXT_SENDING + 2, TXT_DELETE_ENTRY, TXT_CLEAR_HISTORY,
+// The texts that are picked by the target or by telemetry: "index + value"
+enum { IDX_TARGET = 0, IDX_SETTING = 3, IDX_BIND = 6, IDX_SENDING = 8 };
+static const char * const indexed[] = {
+  TRZ_TEXT(STR_ELRS_TX), TRZ_TEXT(STR_ELRS_RX), TRZ_TEXT(STR_ELRS_BOTH),
+  TRZ_TEXT(STR_ELRS_SETTING_TX), TRZ_TEXT(STR_ELRS_SETTING_RX), TRZ_TEXT(STR_ELRS_SETTING_BOTH),
+  TRZ_TEXT(STR_ELRS_BIND), TRZ_TEXT(STR_ELRS_UNBIND),
+  TRZ_TEXT(STR_ELRS_SENDING_BIND), TRZ_TEXT(STR_ELRS_SENDING_UNBIND),
 };
 
 struct BindData {
-  uint8_t status;               // text index; 0 shows the UID
+  const char * status;          // text; nullptr shows the UID
   uint8_t deferFn;              // DEFER_*: one pending callback, a new one replaces it
   uint8_t deferFrames;
   uint8_t target;
@@ -154,15 +131,6 @@ static inline BindData * bindData()
 // from a 4 byte literal. Hiding the pointer makes them register + offset instead,
 // and lets the state be passed on in a register.
 #define OPAQUE(ptr) __asm__("" : "+r"(ptr))
-
-static const char * text(uint32_t idx)
-{
-  const char * p = TEXTS;
-  while (idx) {
-    if (*p++ == '\0') idx--;
-  }
-  return p;
-}
 
 static void setTimeout(BindData * d, uint32_t fn, uint32_t frames)
 {
@@ -278,13 +246,13 @@ static void histAdd(BindData * d)
 static void requestUid(BindData * d)
 {
   uint32_t target = d->target;
-  uint32_t status = TXT_IDLE;
+  const char * status = TRZ_TEXT(STR_ELRS_IDLE);
   // reachable: the TX, or the RX over a live link
   if (target <= (uint32_t)TELEMETRY_STREAMING()) {
-    status = TXT_NO_RESPONSE;
+    status = TRZ_TEXT(STR_ELRS_NO_RESPONSE);
     if (d->attempts < UID_MAX_ATTEMPTS) {
       d->attempts++;
-      status = TXT_UPDATING;
+      status = TRZ_TEXT(STR_ELRS_UPDATING);
       send(FRAMETYPE_MSP_REQ, CSRF_ADDRESS_TX - 2 * target, nullptr);
       setTimeout(d, DEFER_REQUEST_UID, UID_RETRY_FRAMES);
     }
@@ -311,7 +279,7 @@ static void sendSet(BindData * d, uint32_t second)
     else
       next = DEFER_SEND_SET;
   }
-  d->status = TXT_SETTING + target;
+  d->status = indexed[IDX_SETTING + target];
   send(FRAMETYPE_MSP_WRITE, target == TARGET_TX ? CSRF_ADDRESS_TX : CSRF_ADDRESS_RX, d->phrase);
   histAdd(d);
   setTimeout(d, next, FOLLOWUP_FRAMES);
@@ -331,7 +299,7 @@ static void elrsBindCallback(uint8_t command, uint8_t * data, uint8_t length)
   BindData * d = bindData();
   memcpy(&d->uidFrom, &data[2], 5 + 6);
   d->deferFn = DEFER_NONE;
-  d->status = 0;
+  d->status = nullptr;
   d->attempts = 0;
 }
 
@@ -354,9 +322,9 @@ static uint32_t drawRow(coord_t x, LcdFlags flags, const char * s)
 }
 
 // "[...]" rows
-static uint32_t button(uint32_t idx)
+static uint32_t button(const char * s)
 {
-  return drawRow(idx == TXT_HISTORY ? 0 : 10, BOLD, text(idx));
+  return drawRow(s == STR_ELRS_HISTORY ? 0 : 10, BOLD, s);
 }
 
 static void stop()
@@ -395,7 +363,7 @@ void elrsBindRun(event_t event)
     if (fn != DEFER_NONE && --d->deferFrames == 0) {
       d->deferFn = DEFER_NONE; // the callback may schedule a successor
       if (fn == DEFER_SENT)
-        d->status = TXT_SENT;
+        d->status = TRZ_TEXT(STR_ELRS_SENT);
       else if (fn == DEFER_SEND_SET)
         sendSet(d, true);
       else if (fn == DEFER_START_UID)
@@ -450,15 +418,14 @@ void elrsBindRun(event_t event)
   d->row = 0;
 
   // --- title ---
-  lcdDrawText(0, 0, text(TXT_TITLE));
-//  lcdDrawText(LCD_W - 1, 1, text(TXT_LINK + tele), RIGHT); // C while RX telemetry is alive
+  lcdDrawText(0, 0, STR_ELRS_TITLE);
   lcdDrawChar(LCD_W - 7, 0, tele ? 'C' : '-'); // C while RX telemetry is alive
 //  lcdDrawSolidFilledRect(0, 0, LCD_W, 9);
   lcdInvertLine(0);
 
   // --- rows; no scrolling: a page has at most 7 ---
   if (d->page == PAGE_MAIN) {
-    lcdDrawText(0, ROW_Y, text(TXT_LABELS));
+    lcdDrawText(0, ROW_Y, STR_ELRS_LABELS);
 
     // phrase (text_edit.lua, itself a port of the EdgeTX editName())
     d->row = ROW_TARGET;
@@ -472,7 +439,7 @@ void elrsBindRun(event_t event)
       s_editMode = 0;
 
     // target
-    if (drawRow(COL2, 0, text(TXT_TARGET + d->target)) == EVT_KEY_BREAK(KEY_ENTER)) {
+    if (drawRow(COL2, 0, indexed[IDX_TARGET + d->target]) == EVT_KEY_BREAK(KEY_ENTER)) {
       s_editMode = EDIT_MODIFY_FIELD;
     }
 
@@ -481,11 +448,9 @@ void elrsBindRun(event_t event)
       char c[4 + 6 * 4];
       uint32_t prefix;
     } uid;
-    const char * s = uid.c;
-    if (d->status) {
-      s = text(d->status);
-    }
-    else {
+    const char * s = d->status;
+    if (!s) {
+      s = uid.c;
       // "TX: " or "RX: " in one go: 'T' - 0xEE == 'R' - 0xEC
       uid.prefix = d->uidFrom + ((' ' << 24) + (':' << 16) + ('X' << 8) + 'T' - CSRF_ADDRESS_TX);
       char * b = &uid.c[4];
@@ -499,19 +464,19 @@ void elrsBindRun(event_t event)
       startUidRequest(d);
     }
 
-    if (button(TXT_SET) == EVT_KEY_BREAK(KEY_ENTER) && d->reachable) {
+    if (button(TRZ_TEXT(STR_ELRS_SET)) == EVT_KEY_BREAK(KEY_ENTER) && d->reachable) {
       sendSet(d, d->deferFn == DEFER_SEND_SET);
     }
-    if (d->target == TARGET_RX && button(TXT_BIND + tele) == EVT_KEY_BREAK(KEY_ENTER)) {
+    if (d->target == TARGET_RX && button(indexed[IDX_BIND + tele]) == EVT_KEY_BREAK(KEY_ENTER)) {
       // to the TX: enter bind mode; to the connected RX: unbind
-      d->status = TXT_SENDING + tele;
+      d->status = indexed[IDX_SENDING + tele];
       send(COMMAND_ID, CSRF_ADDRESS_TX - 2 * tele, nullptr);
       setTimeout(d, DEFER_SENT, FOLLOWUP_FRAMES);
     }
-    if (button(TXT_HISTORY) == EVT_KEY_BREAK(KEY_ENTER)) {
+    if (button(TRZ_TEXT(STR_ELRS_HISTORY)) == EVT_KEY_BREAK(KEY_ENTER)) {
       d->pageLine = PAGE_HISTORY;
     }
-    if (button(TXT_EXIT) == EVT_KEY_BREAK(KEY_ENTER)) {
+    if (button(TRZ_TEXT(STR_ELRS_EXIT)) == EVT_KEY_BREAK(KEY_ENTER)) {
       stop();
     }
   }
@@ -529,19 +494,19 @@ void elrsBindRun(event_t event)
       }
       else if (e == EVT_KEY_LONG(KEY_ENTER)) {
         killEvents(e); // or the release answers the popup
-        POPUP_CONFIRMATION(text(TXT_DELETE_ENTRY));
+        POPUP_CONFIRMATION(STR_ELRS_DELETE_ENTRY);
       }
       p = histNext(p);
     }
-    uint32_t e = button(TXT_CLEAR);
+    uint32_t e = button(TRZ_TEXT(STR_ELRS_CLEAR));
     if (e == EVT_KEY_BREAK(KEY_ENTER)) {
-      POPUP_CONFIRMATION(text(TXT_CLEAR_HISTORY));
+      POPUP_CONFIRMATION(STR_ELRS_CLEAR_HISTORY);
     }
     else if (e == EVT_CONFIRMED) {
       memclear(d->hist, HIST_SIZE);
       histSave(d);
     }
-    if (button(TXT_BACK) == EVT_KEY_BREAK(KEY_ENTER)) {
+    if (button(TRZ_TEXT(STR_ELRS_BACK)) == EVT_KEY_BREAK(KEY_ENTER)) {
       d->pageLine = PAGE_MAIN;
     }
   }

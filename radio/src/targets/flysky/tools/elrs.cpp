@@ -573,7 +573,7 @@ static void paramUnifiedDisplay(Parameter * param, uint8_t y, uint8_t attr) {
     lcdDrawChar(COL1 + 9, y, '[', attr);
   }
   if (param->type == TYPE_BACK) // at root it exits the tool
-    lcdDrawText(lcdNextPos, y, paramLoad.currentFolderId ? "----BACK----" : "----EXIT----", attr);
+    lcdDrawText(lcdNextPos, y, TRZ_TEXT(paramLoad.currentFolderId ? STR_ELRS_BACK : STR_ELRS_EXIT), attr);
   else
     lcdDrawSizedText(lcdNextPos, y, (char *)&buffer[param->offset], param->nameLength, attr);
   if (param->type != TYPE_FOLDER)

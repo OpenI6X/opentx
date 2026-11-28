@@ -57,6 +57,7 @@ WHITELIST = {
     'SIMPLE_SUBMENU': {0},
     'ALERT': {0, 1}, 'RAISE_ALERT': {0, 1, 2}, 'drawAlertBox': {0, 1, 2},
     'showMessageBox': {0}, 'drawProgressBar': {0},
+    'TRZ_TEXT': {0},  # explicit marker (translations.h): only ever used as displayed text
 }
 # directories / files that are not compiled for the 128x64 firmware
 EXCLUDED_PATHS = re.compile(r'gui/212x64|gui/480x272|colorlcd|horus|taranis|sky9x|tests/|'
