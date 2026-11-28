@@ -2,7 +2,7 @@ include(CMakeForceCompiler)
 include(Bitmaps)
 
 set(PCB_TYPES X7 XLITE X9D X9D+ X9E X10 X12S SKY9X 9XRPRO AR9X I6X)
-set(GUI_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL)
+set(GUI_LANGUAGES CZ DE EN ES FI FR IT PT SK SE PL HU NL)
 #set(TTS_LANGUAGES CZ DE EN ES FR IT PT SK SE PL HU NL RU)
 set(TTS_LANGUAGES EN) # i6X dfplayer
 
@@ -511,7 +511,42 @@ if(NOT MSVC)
       add_definitions(-DTELEMETRY_STATS)
     endif()
 
-    add_executable(firmware ${SRC} ${FIRMWARE_HEADERS})
+    if(TRZ)
+      # TRZ: build-time compressed UI strings, two-pass link (see radio/util/trz.py)
+      #  1. all sources except translations.cpp are compiled once (object library)
+      #  2. firmware_pass1.elf is linked normally (with an empty TRZ stub)
+      #  3. trz.py reads it and generates trz_data.c (blob, dictionary, STR_ aliases)
+      #  4. firmware.elf = same objects + translations.cpp (TRZ_FINAL) + trz_data.c
+      set(TRZ_COMMON_SRC)
+      set(TRZ_EXTRA_OBJS)   # $<TARGET_OBJECTS:...> entries cannot go through another object library
+      foreach(FILE ${SRC})
+        if(FILE MATCHES "^\\$<TARGET_OBJECTS:")
+          list(APPEND TRZ_EXTRA_OBJS ${FILE})
+        elseif(NOT FILE STREQUAL "translations.cpp")
+          list(APPEND TRZ_COMMON_SRC ${FILE})
+        endif()
+      endforeach()
+      set(TRZ_DIR ${CMAKE_CURRENT_BINARY_DIR}/trz)
+      add_library(firmware_objs OBJECT ${TRZ_COMMON_SRC})
+      target_compile_definitions(firmware_objs PRIVATE TRZ)
+      add_dependencies(firmware_objs ${FIRMWARE_DEPENDENCIES})
+      add_executable(firmware_pass1 $<TARGET_OBJECTS:firmware_objs> ${TRZ_EXTRA_OBJS} translations.cpp trz_stub.c)
+      target_compile_definitions(firmware_pass1 PRIVATE TRZ)
+      add_custom_command(
+        OUTPUT ${TRZ_DIR}/trz_data.c ${TRZ_DIR}/trz_rename.h
+        COMMAND ${Python3_EXECUTABLE} ${RADIO_DIRECTORY}/util/trz.py --elf $<TARGET_FILE:firmware_pass1> --src ${RADIO_SRC_DIRECTORY} --out ${TRZ_DIR}
+        COMMAND ${CMAKE_COMMAND} -E touch ${TRZ_DIR}/trz_data.c ${TRZ_DIR}/trz_rename.h
+        DEPENDS firmware_pass1 ${RADIO_DIRECTORY}/util/trz.py
+        COMMENT "TRZ: compressing UI strings (report: ${TRZ_DIR}/trz_report.txt)"
+        )
+      # plain object: the STR_ aliases are top-level asm, keep them out of LTO
+      set_source_files_properties(${TRZ_DIR}/trz_data.c PROPERTIES GENERATED TRUE COMPILE_FLAGS -fno-lto)
+      add_executable(firmware $<TARGET_OBJECTS:firmware_objs> ${TRZ_EXTRA_OBJS} translations.cpp ${TRZ_DIR}/trz_data.c ${TRZ_DIR}/trz_rename.h)
+      target_compile_definitions(firmware PRIVATE TRZ TRZ_FINAL)
+      target_include_directories(firmware PRIVATE ${TRZ_DIR})
+    else()
+      add_executable(firmware ${SRC} ${FIRMWARE_HEADERS})
+    endif()
     link_libraries(firmware -lstdc++)
     add_dependencies(firmware ${FIRMWARE_DEPENDENCIES})
 

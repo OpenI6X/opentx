@@ -996,4 +996,16 @@ extern const char STR_BLCOLOR[];
 #define CHR_HOUR   TR_CHR_HOUR
 #define CHR_INPUT  TR_CHR_INPUT
 
+#if defined(TRZ)
+  // TRZ: build-time compressed UI strings (radio/util/trz.py, two-pass link).
+  // Strings selected by the generator live in TRZ_BLOB; STR_X is a link-time
+  // alias into it. getTextWidth()/lcdDrawSizedText() decode them via trzResolve().
+  #define TRZ_MAXLEN 32    // decoded length limit (decoder stack buffer), read by trz.py
+  extern const char TRZ_BLOB[];
+  extern const char TRZ_BLOB_END[];
+  extern const unsigned char TRZ_DICT[];
+  #define IS_TRZ_STRING(s) ((s) >= TRZ_BLOB && (s) < TRZ_BLOB_END)
+  const char * trzResolve(const char * s, char * buf);
+#endif
+
 #endif // _TRANSLATIONS_H_

@@ -1,4 +1,5 @@
 option(SHUTDOWN_CONFIRMATION "Shutdown confirmation" OFF)
+option(TRZ "Compress UI strings at build time (two-pass link, radio/util/trz.py)" YES) # ~-0.4kB
 option(PCBI6X_ELRS "Enable ExpressLRS configuration tool" NO) # ~3.6kB
 option(PCBI6X_ELRS_BIND "Enable ExpressLRS bind phrase tool" NO) # ~2.3kB
 option(CRSF_EXTENDED_TYPES "Enable Support for CRSF STRING and FLOAT types" NO) # ~0.2kB

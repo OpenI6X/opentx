@@ -237,9 +237,39 @@ void lcdDrawChar(coord_t x, coord_t y, const unsigned char c)
   lcdDrawChar(x, y, c, 0);
 }
 
+#if defined(TRZ) && !defined(BOOT)
+// TRZ: expand one (possibly nested) BPE token; TRZ_DICT holds a byte pair for
+// each code 0x80..0xFF, or {0, 0} when the code is a normal character
+static char * trzExpand(char * d, uint8_t c)
+{
+  while (c >= 0x80) {
+    const uint8_t * p = &TRZ_DICT[(c - 0x80) * 2];
+    if (!p[0]) break;
+    d = trzExpand(d, p[0]);
+    c = p[1];
+  }
+  *d++ = c;
+  return d;
+}
+
+// returns s, or s decoded into buf (TRZ_MAXLEN + 1 bytes) when s is a TRZ string
+const char * trzResolve(const char * s, char * buf)
+{
+  if (!IS_TRZ_STRING(s)) return s;
+  char * d = buf;
+  while (*s) d = trzExpand(d, (uint8_t)*s++);
+  *d = '\0';
+  return buf;
+}
+#endif
+
 #if !defined(BOOT)
 uint8_t getTextWidth(const char * s, uint8_t len, LcdFlags flags)
 {
+#if defined(TRZ)
+  char trzbuf[TRZ_MAXLEN + 1];
+  s = trzResolve(s, trzbuf);
+#endif
   uint8_t width = 0;
   for (int i=0; len==0 || i<len; ++i) {
     unsigned char c = (flags & ZCHAR) ? zchar2char(*s) : *s;
@@ -256,6 +286,10 @@ uint8_t getTextWidth(const char * s, uint8_t len, LcdFlags flags)
 void lcdDrawSizedText(coord_t x, coord_t y, const char * s, uint8_t len, LcdFlags flags)
 {
   const coord_t orig_x = x;
+#if defined(TRZ) && !defined(BOOT)
+  char trzbuf[TRZ_MAXLEN + 1];
+  s = trzResolve(s, trzbuf);
+#endif
 
   const uint8_t orig_len = len;
   uint32_t fontsize = FONTSIZE(flags);
