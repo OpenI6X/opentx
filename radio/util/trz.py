@@ -41,13 +41,22 @@ import re
 import struct
 import sys
 
+# draw functions and the 0-based positions of their *text* arguments. Only these
+# positions are safe: other string arguments (e.g. editChoice "values", a
+# fixed-width table read with an index) must stay uncompressed. An int n means
+# "every argument from position n on" (variadic).
 WHITELIST = {
-    'lcdDrawText', 'lcdDrawTextAlignedLeft', 'lcdDrawTextIndented', 'lcdDrawSizedText',
-    'POPUP_MENU_ADD_ITEM', 'POPUP_MENU_TITLE', 'POPUP_MENU_START', 'POPUP_WARNING',
-    'POPUP_CONFIRMATION', 'editChoice', 'editCheckBox', 'drawStringWithIndex',
-    'ON_OFF_MENU_ITEM', 'SIMPLE_MENU', 'MENU', 'TITLE', 'SUBMENU', 'SIMPLE_SUBMENU',
-    'ALERT', 'RAISE_ALERT', 'showMessageBox', 'editDelay', 'drawProgressBar',
-    'drawAlertBox', 'editSingleName', 'title', 'slider_5pos',
+    'lcdDrawText': {2}, 'lcdDrawTextAlignedLeft': {1}, 'lcdDrawTextIndented': {1},
+    'lcdDrawSizedText': {2}, 'drawStringWithIndex': {2},
+    'POPUP_MENU_ADD_ITEM': {0}, 'POPUP_MENU_TITLE': {0}, 'POPUP_WARNING': {0},
+    'POPUP_CONFIRMATION': {0},
+    'POPUP_MENU_START': 2,  # (handler, count, item, item, ...): every argument from 2 on
+    'editChoice': {2}, 'editCheckBox': {3}, 'ON_OFF_MENU_ITEM': {3},
+    'editDelay': {3}, 'editSingleName': {2}, 'slider_5pos': {4},
+    'SIMPLE_MENU': {0}, 'MENU': {0}, 'TITLE': {0}, 'title': {0}, 'SUBMENU': {0},
+    'SIMPLE_SUBMENU': {0},
+    'ALERT': {0, 1}, 'RAISE_ALERT': {0, 1, 2}, 'drawAlertBox': {0, 1, 2},
+    'showMessageBox': {0}, 'drawProgressBar': {0},
 }
 # directories / files that are not compiled for the 128x64 firmware
 EXCLUDED_PATHS = re.compile(r'gui/212x64|gui/480x272|colorlcd|horus|taranis|sky9x|tests/|'
@@ -113,6 +122,8 @@ def scan_uses(src):
 
 def classify_use(name, line):
     """returns 'ok', 'compare' or a reason string for exclusion"""
+    if line.lstrip().startswith(('//', '/*', '* ')):
+        return 'ok'  # commented-out code is not a use
     if re.search(r'(==|!=)\s*%s\b|\b%s\s*(==|!=)' % (name, name), line):
         return 'compare'
     if re.search(r'\bwarningText\s*=\s*%s\s*;' % name, line):
@@ -122,13 +133,58 @@ def classify_use(name, line):
     line = re.sub(r',\s*\(([^()]*\?[^()]*)\)', r', \1', line)
     if re.search(r'\b%s\s*(\+|\[|-)' % name, line) or re.search(r'(\+|-)\s*%s\b' % name, line):
         return 'pointer arithmetic'
-    call = None
-    for m in re.finditer(r'(\w+)\s*\(([^()]*)', line):
-        if re.search(r'\b%s\b' % name, m.group(2)):
-            call = m.group(1)
-    if call in WHITELIST:
-        return 'ok'
-    return 'used outside a draw call: ' + line.strip()[:70]
+    for call, argn in enclosing_calls(name, line):
+        allowed = WHITELIST.get(call, ())
+        ok = argn >= allowed if isinstance(allowed, int) else argn in allowed
+        if argn is None or not ok:
+            return 'used outside a draw call: ' + line.strip()[:70]
+    return 'ok'
+
+
+def enclosing_calls(name, line):
+    """(innermost named call, 0-based argument index) for every use of name in line.
+    Uses inside comments and string/char literals do not count; unnamed (grouping)
+    parentheses are transparent. A use outside any call gives (None, None)."""
+    res, stack, i, n = [], [], 0, len(line)
+    while i < n:
+        c = line[i]
+        if c in '"\'':
+            j = i + 1
+            while j < n and line[j] != c:
+                j += 2 if line[j] == '\\' else 1
+            i = j + 1
+            continue
+        if line.startswith('//', i):
+            break
+        m = re.match(r'[A-Za-z_]\w*', line[i:])
+        if m:
+            tok = m.group()
+            k = i + len(tok)
+            while k < n and line[k] in ' \t':
+                k += 1
+            if k < n and line[k] == '(':
+                stack.append([tok, 0])
+                i = k + 1
+                continue
+            if tok == name:
+                named = [e for e in stack if e[0] is not None]
+                res.append((named[-1][0], named[-1][1]) if named else (None, None))
+            i += len(tok)
+            continue
+        if c == '(':
+            stack.append([None, 0])
+        elif c == ')':
+            if stack:
+                stack.pop()
+        elif c == ',':
+            named = [e for e in stack if e[0] is not None]
+            if stack and stack[-1][0] is None and named:
+                pass  # comma inside a grouping paren (rare); keep the call's index
+            elif stack:
+                stack[-1][1] += 1
+        i += 1
+    return res
+
 
 
 # ----------------------------------------------------------------------------- main
