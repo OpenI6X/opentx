@@ -195,9 +195,10 @@
 #endif
 
 #if defined(PCBI6X_ELRS) || defined(PCBI6X_ELRS_BIND)
-#define TR_ELRS_TITLE                  "ExpressLRS"
+// shared by the ExpressLRS tools (elrs.cpp, elrs_bind.cpp, tools/common/common.cpp, radio_tools.cpp)
+#define TR_ELRS_TITLE                   "ExpressLRS"
 #define TR_ELRS_EXIT                    "[----EXIT----]"
 #define TR_ELRS_BACK                    "[----BACK----]"
-#define TR_ELRS_NOT_FOUND                "No ExpressLRS"
-#define TR_ELRS_ENABLE_CRSF              "Enable a CRSF\036module in Model setup"
+#define TR_ELRS_NOT_FOUND               "No ExpressLRS"
+#define TR_ELRS_ENABLE_CRSF             "Enable a CRSF\036module in Model setup"
 #endif

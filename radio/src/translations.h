@@ -1040,8 +1040,8 @@ extern const char STR_ELRS_ENABLE_CRSF[];
   // TRZ: build-time compressed UI strings (radio/util/trz.py, two-pass link).
   // Strings selected by the generator live in TRZ_BLOB; STR_X is a link-time
   // alias into it. getTextWidth()/lcdDrawSizedText() decode them via trzResolve().
-  #define TRZ_MAXLEN 48    // decoded length limit (decoder stack buffer), read by trz.py;
-                           // 48: the longest is STR_ELRS_ENABLE_CRSF (47, two lines)
+  #define TRZ_MAXLEN 36    // decoded length limit (decoder stack buffer), read by trz.py;
+                           // 36: the longest is STR_ELRS_ENABLE_CRSF (35, two lines)
   extern const char TRZ_BLOB[];
   extern const char TRZ_BLOB_END[];
   extern const unsigned char TRZ_DICT[];

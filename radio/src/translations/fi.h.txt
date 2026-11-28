@@ -1094,3 +1094,10 @@
 #define ZSTR_GPSDATETIME       "Date"
 #define ZSTR_FLIGHT_MODE       "FM"
 
+// Missing in FI - English fallback (to be translated)
+#define TR_USER_INTERFACE              "User interface"
+#define TR_THEME                       "Theme"
+#define TR_SETUP                       "Setup"
+#define TR_MAINVIEWX                   "Main view X"
+#define TR_LAYOUT                      "Layout"
+#define TR_ADDMAINVIEW                 "Add main view"

@@ -567,15 +567,16 @@ static void paramUnifiedDisplay(Parameter * param, uint8_t y, uint8_t attr) {
     lcdDrawText(COL1, y, "> Other Devices", attr);
     return;
   }
+  if (param->type == TYPE_BACK) { // at root it exits the tool; the strings include the [ ]
+    lcdDrawText(COL1 + 9, y, paramLoad.currentFolderId ? STR_ELRS_BACK : STR_ELRS_EXIT, attr);
+    return;
+  }
   if (param->type == TYPE_FOLDER) {
     lcdDrawText(COL1, y, "> ", attr);
-  } else { // CMD || DEVICE || BACK
+  } else { // CMD || DEVICE
     lcdDrawChar(COL1 + 9, y, '[', attr);
   }
-  if (param->type == TYPE_BACK) // at root it exits the tool
-    lcdDrawText(lcdNextPos, y, TRZ_TEXT(paramLoad.currentFolderId ? STR_ELRS_BACK : STR_ELRS_EXIT), attr);
-  else
-    lcdDrawSizedText(lcdNextPos, y, (char *)&buffer[param->offset], param->nameLength, attr);
+  lcdDrawSizedText(lcdNextPos, y, (char *)&buffer[param->offset], param->nameLength, attr);
   if (param->type != TYPE_FOLDER)
     lcdDrawChar(lcdNextPos, y, ']', attr);
 }

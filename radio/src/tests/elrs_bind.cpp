@@ -226,7 +226,7 @@ TEST_F(ElrsBindTest, firstRunAsksForTheUid)
   EXPECT_EQ(open(), "7A: EE EA 30 01 2D 00");
   EXPECT_TRUE(running());
   frame();
-  EXPECT_TRUE(shows(0, 0, "ExpressLRS Bind Tool", INVERS));
+  EXPECT_TRUE(shows(0, 0, "ExpressLRS Bind", INVERS));
   EXPECT_TRUE(shows(LCD_W - 7, 0, "-", INVERS));
   EXPECT_TRUE(shows(0, row(0), "Phrase"));
   EXPECT_TRUE(shows(70, row(0), "---", INVERS));
@@ -600,8 +600,8 @@ TEST_F(ElrsBindTest, noCrossfireModule)
   g_model.moduleData[EXTERNAL_MODULE].type = MODULE_TYPE_NONE;
   EXPECT_EQ(open(), "");
   EXPECT_TRUE(shows(7, 0, "No ExpressLRS", MIDSIZE));
-  EXPECT_TRUE(shows(2, 14, "Enable a CRSF External"));
-  EXPECT_TRUE(shows(2, 22, "module in Model settings"));
+  EXPECT_TRUE(shows(2, 14, "Enable a CRSF"));
+  EXPECT_TRUE(shows(2, 22, "module in Model setup"));
   EXPECT_EQ(crossfireTelemetryCallback, nullptr);
   EXPECT_EQ(frames(30), "");
   frame(EXIT);
