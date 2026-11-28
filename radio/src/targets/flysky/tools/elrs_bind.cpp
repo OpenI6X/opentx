@@ -418,7 +418,7 @@ void elrsBindRun(event_t event)
   d->row = 0;
 
   // --- title ---
-  lcdDrawText(0, 0, STR_ELRS_TITLE);
+  lcdDrawText(0, 0, STR_ELRS_BIND_TITLE);
   lcdDrawChar(LCD_W - 7, 0, tele ? 'C' : '-'); // C while RX telemetry is alive
 //  lcdDrawSolidFilledRect(0, 0, LCD_W, 9);
   lcdInvertLine(0);

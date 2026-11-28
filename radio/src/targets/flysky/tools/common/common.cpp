@@ -1,16 +1,18 @@
 
 #include "opentx.h"
 
+#if defined(PCBI6X_ELRS) || defined(PCBI6X_ELRS_BIND)
 void crsfNotEnabledPopup(event_t event)
 {
   if (!isModuleCrossfire(EXTERNAL_MODULE)) {
     // dialogs.lua drawNoModule()
-    lcdDrawText(7, 0, "No ExpressLRS", MIDSIZE);
-    lcdDrawText(2, 14, "Enable a CRSF External\036module in Model settings");
+    lcdDrawText(7, 0, STR_ELRS_NOT_FOUND, MIDSIZE);
+    lcdDrawText(2, 14, STR_ELRS_ENABLE_CRSF);
     if (event == EVT_KEY_BREAK(KEY_EXIT)) popMenu();
     return;
   }
 }
+#endif
 
 // The editor's chars in the order of the Lua tool (EdgeTX nameChars):
 // " a-z 0-9 _ - , ." are 0..40, a negative index is the lower case letter.

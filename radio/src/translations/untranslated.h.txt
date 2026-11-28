@@ -172,7 +172,7 @@
 #if defined(PCBI6X_ELRS_BIND)
 // ExpressLRS Bind tool (targets/flysky/tools/elrs_bind.cpp); English only, like the Lua tool
 #define TR_ELRS_LABELS                  "Phrase\036Target"
-#define TR_ELRS_TITLE                   "ExpressLRS Bind Tool"
+#define TR_ELRS_BIND_TITLE              "ExpressLRS Bind"
 #define TR_ELRS_TX                      "TX"
 #define TR_ELRS_RX                      "RX"
 #define TR_ELRS_BOTH                    "Both"
@@ -180,9 +180,7 @@
 #define TR_ELRS_BIND                    "[Bind]"
 #define TR_ELRS_UNBIND                  "[Unbind]"
 #define TR_ELRS_HISTORY                 "> History"
-#define TR_ELRS_EXIT                    "[----EXIT----]"
 #define TR_ELRS_CLEAR                   "[Clear All]"
-#define TR_ELRS_BACK                    "[----BACK----]"
 #define TR_ELRS_IDLE                    "Idle"
 #define TR_ELRS_UPDATING                "Updating..."
 #define TR_ELRS_NO_RESPONSE             "No response (needs ELRS 4.1+)"
@@ -194,4 +192,12 @@
 #define TR_ELRS_SENT                    "Sent"
 #define TR_ELRS_DELETE_ENTRY            "Delete entry?"
 #define TR_ELRS_CLEAR_HISTORY           "Clear history?"
+#endif
+
+#if defined(PCBI6X_ELRS) || defined(PCBI6X_ELRS_BIND)
+#define TR_ELRS_TITLE                  "ExpressLRS"
+#define TR_ELRS_EXIT                    "[----EXIT----]"
+#define TR_ELRS_BACK                    "[----BACK----]"
+#define TR_ELRS_NOT_FOUND                "No ExpressLRS"
+#define TR_ELRS_ENABLE_CRSF              "Enable a CRSF\036module in Model setup"
 #endif

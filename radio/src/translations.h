@@ -1001,7 +1001,7 @@ extern const char STR_BLCOLOR[];
 
 #if defined(PCBI6X_ELRS_BIND)
 extern const char STR_ELRS_LABELS[];
-extern const char STR_ELRS_TITLE[];
+extern const char STR_ELRS_BIND_TITLE[];
 extern const char STR_ELRS_TX[];
 extern const char STR_ELRS_RX[];
 extern const char STR_ELRS_BOTH[];
@@ -1009,9 +1009,7 @@ extern const char STR_ELRS_SET[];
 extern const char STR_ELRS_BIND[];
 extern const char STR_ELRS_UNBIND[];
 extern const char STR_ELRS_HISTORY[];
-extern const char STR_ELRS_EXIT[];
 extern const char STR_ELRS_CLEAR[];
-extern const char STR_ELRS_BACK[];
 extern const char STR_ELRS_IDLE[];
 extern const char STR_ELRS_UPDATING[];
 extern const char STR_ELRS_NO_RESPONSE[];
@@ -1025,6 +1023,14 @@ extern const char STR_ELRS_DELETE_ENTRY[];
 extern const char STR_ELRS_CLEAR_HISTORY[];
 #endif
 
+#if defined(PCBI6X_ELRS) || defined(PCBI6X_ELRS_BIND)
+extern const char STR_ELRS_TITLE[];
+extern const char STR_ELRS_EXIT[];
+extern const char STR_ELRS_BACK[];
+extern const char STR_ELRS_NOT_FOUND[];
+extern const char STR_ELRS_ENABLE_CRSF[];
+#endif
+
 // Marks a use of a STR_ string that is not a direct draw call (stored in a variable or
 // a table, passed to a local helper) but only ever ends up as displayed text, so
 // radio/util/trz.py may compress it. No effect on the code.
@@ -1034,7 +1040,8 @@ extern const char STR_ELRS_CLEAR_HISTORY[];
   // TRZ: build-time compressed UI strings (radio/util/trz.py, two-pass link).
   // Strings selected by the generator live in TRZ_BLOB; STR_X is a link-time
   // alias into it. getTextWidth()/lcdDrawSizedText() decode them via trzResolve().
-  #define TRZ_MAXLEN 32    // decoded length limit (decoder stack buffer), read by trz.py
+  #define TRZ_MAXLEN 48    // decoded length limit (decoder stack buffer), read by trz.py;
+                           // 48: the longest is STR_ELRS_ENABLE_CRSF (47, two lines)
   extern const char TRZ_BLOB[];
   extern const char TRZ_BLOB_END[];
   extern const unsigned char TRZ_DICT[];
